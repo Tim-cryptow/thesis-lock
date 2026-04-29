@@ -19,6 +19,28 @@ export default function VerifyPage() {
   const [verifyHash, setVerifyHash] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
 
+  const [shareUrl, setShareUrl] = useState("");
+  const [copiedShare, setCopiedShare] = useState(false);
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
+
+  const copyShareUrl = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopiedShare(true);
+    setTimeout(() => setCopiedShare(false), 1500);
+  };
+
+  const tweetIntent = (() => {
+    if (!shareUrl) return "";
+    const text = "Anchored on Stacks. Verifiable timestamp without sharing the file:";
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      text,
+    )}&url=${encodeURIComponent(shareUrl)}`;
+  })();
+
   useEffect(() => {
     if (!valid) {
       setLoading(false);
@@ -139,6 +161,34 @@ export default function VerifyPage() {
           </div>
         )}
       </div>
+
+      {anchor && (
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
+          <h2 className="text-xl mb-2">Share this verification</h2>
+          <p className="text-foreground/70 text-sm mb-4">
+            Anyone with this link can confirm the timestamp without you ever
+            sending the file.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={copyShareUrl}
+              disabled={!shareUrl}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+            >
+              {copiedShare ? "Link copied" : "Copy verification link"}
+            </button>
+            <a
+              href={tweetIntent || "#"}
+              target="_blank"
+              rel="noreferrer"
+              aria-disabled={!shareUrl}
+              className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
+            >
+              Share on X
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="mt-10 rounded-lg border border-foreground/10 bg-white p-6">
         <h2 className="text-xl mb-2">Verify a file</h2>
