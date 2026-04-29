@@ -1,0 +1,32 @@
+
+**/settings/Mainnet.toml
+**/settings/Testnet.toml
+settings/Mainnet.toml
+.cache/**
+history.txt
+
+logs
+*.log
+npm-debug.log*
+coverage
+*.info
+costs-reports.json
+node_modules
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Web (Next.js)
+web/node_modules
+web/.next
+web/.vercel
+web/out
+
+# OS / editor
+.DS_Store
+.idea
+
+# Claude Code (local-only)
+.claude/settings.local.json
