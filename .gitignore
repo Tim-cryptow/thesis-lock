@@ -30,3 +30,6 @@ web/out
 
 # Claude Code (local-only)
 .claude/settings.local.json
+
+# Deployment logs
+.deploy-logs/

@@ -1,0 +1,18 @@
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: thesislock
+            expected-sender: SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM
+            cost: 10410
+            path: contracts/thesislock.clar
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.1"
