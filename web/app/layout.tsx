@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "ThesisLock",
   description:
     "Permanent, verifiable timestamps for your work. Anchor a SHA-256 hash on Bitcoin via Stacks without ever sharing the file.",
+  other: {
+    "talentapp:project_verification":
+      "20612ea82236e7d5496a497d1a0b8365db5f52e3f165bdddee934452fbd947eb23f319049f11231ba4059180e440ea794710df90c355964ab98385391d6a461e",
+  },
 };
 
 export default function RootLayout({
