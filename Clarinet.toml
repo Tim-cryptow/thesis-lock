@@ -1,10 +1,23 @@
 [project]
-name = "thesislock"
-description = "Hash-anchor service for academic and creative documents on the Stacks blockchain."
+name = 'thesislock'
+description = 'Hash-anchor service for academic and creative documents on the Stacks blockchain.'
 authors = []
 telemetry = false
-cache_dir = "./.cache"
-
+cache_dir = './.cache'
+requirements = []
+[contracts.thesislock]
+path = 'contracts/thesislock.clar'
+clarity_version = 3
+epoch = 3.1
 [repl.analysis]
-passes = ["check_checker"]
-check_checker = { trusted_sender = false, trusted_caller = false, callee_filter = false }
+passes = ['check_checker']
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = false
+api_url = 'https://api.hiro.so'
