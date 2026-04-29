@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const REPO_URL = "https://github.com/your-org/thesis-lock";
+const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
 
 export default function Page() {
   return (
