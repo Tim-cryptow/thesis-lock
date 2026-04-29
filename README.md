@@ -4,7 +4,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 
 ## Live demo
 
-- App: _to be filled in after Vercel deploy_
+- App: [thesis-lock.vercel.app](https://thesis-lock.vercel.app/)
 - Contract: [`SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM.thesislock`](https://explorer.hiro.so/txid/SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM.thesislock?chain=mainnet)
 - Deploy transaction: [`0x2ba6cc78...1bd6c7be`](https://explorer.hiro.so/txid/0x2ba6cc78561a6992f17a2c41c452ac84467dc3021d74b9bccf637fef1bd6c7be?chain=mainnet) (Stacks block 7785628, burn block 947123)
 
