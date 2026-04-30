@@ -14,8 +14,8 @@ ThesisLock is a hash-anchor service for academic and creative documents on the S
 
 ## Identifiers
 
-- Mainnet deployer principal: `SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM`
-- Contract identifier (after deploy): `SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM.thesislock`
+- Mainnet deployer principal: `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`
+- Contract identifier (after deploy): `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock`
 
 ## Repo layout
 

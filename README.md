@@ -5,8 +5,8 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 ## Live demo
 
 - App: [thesis-lock.vercel.app](https://thesis-lock.vercel.app/)
-- Contract: [`SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM.thesislock`](https://explorer.hiro.so/txid/SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM.thesislock?chain=mainnet)
-- Deploy transaction: [`0x2ba6cc78...1bd6c7be`](https://explorer.hiro.so/txid/0x2ba6cc78561a6992f17a2c41c452ac84467dc3021d74b9bccf637fef1bd6c7be?chain=mainnet) (Stacks block 7785628, burn block 947123)
+- Contract: [`SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet)
+- Deploy transaction: [`0xd1bdda30...df8f5d8e`](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet) (Stacks block 7798720, burn block 947300)
 
 ## Stack
 
@@ -42,9 +42,9 @@ Encode the 32-byte hash as a Clarity buffer by prefixing it with `0x0200000020` 
 HASH=0000000000000000000000000000000000000000000000000000000000000000
 
 curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM/thesislock/get-anchor \
+  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock/get-anchor \
   -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
+  --data "{\"sender\":\"SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
 ```
 
 The response is a serialized Clarity value:
@@ -70,7 +70,7 @@ For a quick boolean check use `is-anchored` instead, which returns `0x03` for `t
 
 ```bash
 curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM/thesislock/is-anchored \
+  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock/is-anchored \
   -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
+  --data "{\"sender\":\"SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
 ```

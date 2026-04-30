@@ -10,7 +10,7 @@ plan:
       transactions:
         - contract-publish:
             contract-name: thesislock
-            expected-sender: SP2CJBNE5DMQA3KS2S2AAE0AW8BZDS33RXCBTXPQM
+            expected-sender: SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
             cost: 10410
             path: contracts/thesislock.clar
             anchor-block-only: true
