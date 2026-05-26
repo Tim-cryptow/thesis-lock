@@ -1,25 +1,36 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { hashFile, submitAnchor } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { formatBytes } from "@/lib/format";
+import FileDropZone from "@/app/components/FileDropZone";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
+const LARGE_FILE_BYTES = 250 * 1024 * 1024;
 
 export default function AnchorPage() {
   const router = useRouter();
-  const { address, connecting, connectWallet, disconnectWallet } = useWallet();
+  const {
+    address,
+    connecting,
+    error: walletError,
+    connectWallet,
+    disconnectWallet,
+  } = useWallet();
   const [file, setFile] = useState<File | null>(null);
   const [hash, setHash] = useState<string | null>(null);
   const [hashing, setHashing] = useState(false);
+  const [hashError, setHashError] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
+  const [labelNotice, setLabelNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInput = useRef<HTMLInputElement | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   useEffect(() => {
     if (!pending) return;
@@ -35,24 +46,19 @@ export default function AnchorPage() {
     if (!selected) return;
     setFile(selected);
     setHash(null);
+    setHashError(null);
     setHashing(true);
     try {
       const h = await hashFile(selected);
       setHash(h);
+    } catch (e) {
+      setHashError(
+        e instanceof Error ? e.message : "Could not hash this file.",
+      );
     } finally {
       setHashing(false);
     }
   }, []);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setDragOver(false);
-      const f = e.dataTransfer.files?.[0] ?? null;
-      void onFileSelect(f);
-    },
-    [onFileSelect],
-  );
 
   const onLabelChange = (next: string) => {
     if (!ASCII_REGEX.test(next)) {
@@ -62,32 +68,42 @@ export default function AnchorPage() {
     if (next.length > 64) {
       setLabel(next.slice(0, 64));
       setLabelError(null);
+      setLabelNotice("Label was trimmed to 64 characters.");
       return;
     }
     setLabel(next);
     setLabelError(null);
+    setLabelNotice(null);
   };
 
   const copyHash = async () => {
     if (!hash) return;
-    await navigator.clipboard.writeText(hash);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 1500);
+    }
   };
 
   const canSubmit = !!hash && !labelError && !!address && !pending;
 
   const onSubmit = () => {
     if (!hash || !address) return;
+    setSubmitError(null);
     setPending(true);
-    submitAnchor(
-      hash,
-      label,
-      () => {
-        router.push(`/v/${hash}`);
+    submitAnchor(hash, label, {
+      onFinish: (txId) => {
+        router.push(`/v/${hash}?tx=${encodeURIComponent(txId)}`);
       },
-      () => setPending(false),
-    );
+      onCancel: () => setPending(false),
+      onError: (message) => {
+        setPending(false);
+        setSubmitError(message);
+      },
+    });
   };
 
   return (
@@ -101,6 +117,7 @@ export default function AnchorPage() {
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             title="Disconnect"
+            aria-label="Disconnect wallet"
           >
             {truncateAddress(address)}
           </button>
@@ -115,36 +132,26 @@ export default function AnchorPage() {
         )}
       </div>
 
+      {walletError && (
+        <p className="mb-6 text-sm text-red-600" role="alert">
+          {walletError}
+        </p>
+      )}
+
       <h1 className="text-3xl mb-2">Anchor a document</h1>
       <p className="text-foreground/70 mb-8">
         The file is hashed in your browser. Only the hash is submitted on chain.
       </p>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        onClick={() => fileInput.current?.click()}
-        className={`rounded-lg border-2 border-dashed p-12 text-center cursor-pointer transition ${
-          dragOver
-            ? "border-foreground/60 bg-foreground/5"
-            : "border-foreground/20 hover:border-foreground/40"
-        }`}
+      <FileDropZone
+        onFile={(f) => void onFileSelect(f)}
+        ariaLabel="Choose a document to anchor, or drop one here"
       >
-        <input
-          ref={fileInput}
-          type="file"
-          className="hidden"
-          onChange={(e) => void onFileSelect(e.target.files?.[0] ?? null)}
-        />
         {file ? (
           <p className="text-foreground/80">
             <span className="font-medium">{file.name}</span>{" "}
             <span className="text-foreground/50 text-sm">
-              ({(file.size / 1024).toFixed(1)} KB)
+              ({formatBytes(file.size)})
             </span>
           </p>
         ) : (
@@ -152,9 +159,22 @@ export default function AnchorPage() {
             Drop a file here, or click to choose one
           </p>
         )}
-      </div>
+      </FileDropZone>
 
-      {(hashing || hash) && (
+      {file && file.size > LARGE_FILE_BYTES && (
+        <p className="mt-3 text-sm text-foreground/60">
+          This is a large file. Hashing runs entirely in your browser and may
+          take a while.
+        </p>
+      )}
+
+      {hashError && (
+        <p className="mt-6 text-sm text-red-600" role="alert">
+          {hashError}
+        </p>
+      )}
+
+      {(hashing || hash) && !hashError && (
         <div className="mt-6">
           <label className="block text-sm text-foreground/60 mb-2">
             SHA-256
@@ -168,9 +188,10 @@ export default function AnchorPage() {
               </code>
               <button
                 onClick={copyHash}
+                aria-label="Copy hash to clipboard"
                 className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
               </button>
             </div>
           )}
@@ -190,8 +211,16 @@ export default function AnchorPage() {
           className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50"
         />
         <div className="mt-1 flex items-center justify-between text-xs">
-          <span className={labelError ? "text-red-600" : "text-transparent"}>
-            {labelError ?? "."}
+          <span
+            className={
+              labelError
+                ? "text-red-600"
+                : labelNotice
+                  ? "text-foreground/60"
+                  : "text-transparent"
+            }
+          >
+            {labelError ?? labelNotice ?? "."}
           </span>
           <span className="text-foreground/50 font-mono">
             {label.length}/64
@@ -202,7 +231,7 @@ export default function AnchorPage() {
       <button
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+        className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition"
       >
         {pending ? "Awaiting wallet signature..." : "Anchor on Stacks"}
       </button>
@@ -210,6 +239,12 @@ export default function AnchorPage() {
       {pending && (
         <p className="mt-4 text-sm text-foreground/60 text-center">
           Do not navigate away while the transaction is in your wallet.
+        </p>
+      )}
+
+      {submitError && (
+        <p className="mt-4 text-sm text-red-600 text-center" role="alert">
+          {submitError}
         </p>
       )}
     </main>
