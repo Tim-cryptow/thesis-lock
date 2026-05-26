@@ -70,7 +70,9 @@ export default function VerifyPage() {
         setAnchor(result);
       } catch (e) {
         console.error(e);
-        setError(e instanceof Error ? e.message : "Read failed.");
+        setError(
+          "Could not look up this anchor. Check your connection and try again.",
+        );
       } finally {
         if (showLoading) setLoading(false);
       }
@@ -140,7 +142,17 @@ export default function VerifyPage() {
         {loading ? (
           <p className="text-foreground/60">Looking up on chain...</p>
         ) : error ? (
-          <p className="text-red-600">{error}</p>
+          <div className="mt-4 pt-4 border-t border-foreground/10">
+            <p className="text-red-600" role="alert">
+              {error}
+            </p>
+            <button
+              onClick={() => void loadAnchor()}
+              className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Try again
+            </button>
+          </div>
         ) : !anchor ? (
           txId ? (
             <div className="mt-4 pt-4 border-t border-foreground/10">
