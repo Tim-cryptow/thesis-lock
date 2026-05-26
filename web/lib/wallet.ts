@@ -20,6 +20,7 @@ function readStxAddress(): string | null {
 export function useWallet() {
   const [address, setAddress] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setAddress(readStxAddress());
@@ -27,9 +28,17 @@ export function useWallet() {
 
   const connectWallet = useCallback(async () => {
     setConnecting(true);
+    setError(null);
     try {
       await connect();
       setAddress(readStxAddress());
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      setError(
+        /cancel|reject|denied|closed/i.test(message)
+          ? "Wallet connection was cancelled."
+          : "Could not connect. Make sure a Stacks wallet (Leather, Xverse, or Asigna) is installed.",
+      );
     } finally {
       setConnecting(false);
     }
@@ -38,7 +47,8 @@ export function useWallet() {
   const disconnectWallet = useCallback(() => {
     disconnect();
     setAddress(null);
+    setError(null);
   }, []);
 
-  return { address, connecting, connectWallet, disconnectWallet };
+  return { address, connecting, error, connectWallet, disconnectWallet };
 }

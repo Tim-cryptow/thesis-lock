@@ -10,7 +10,13 @@ const ASCII_REGEX = /^[\x20-\x7E]*$/;
 
 export default function AnchorPage() {
   const router = useRouter();
-  const { address, connecting, connectWallet, disconnectWallet } = useWallet();
+  const {
+    address,
+    connecting,
+    error: walletError,
+    connectWallet,
+    disconnectWallet,
+  } = useWallet();
   const [file, setFile] = useState<File | null>(null);
   const [hash, setHash] = useState<string | null>(null);
   const [hashing, setHashing] = useState(false);
@@ -120,6 +126,12 @@ export default function AnchorPage() {
           </button>
         )}
       </div>
+
+      {walletError && (
+        <p className="mb-6 text-sm text-red-600" role="alert">
+          {walletError}
+        </p>
+      )}
 
       <h1 className="text-3xl mb-2">Anchor a document</h1>
       <p className="text-foreground/70 mb-8">
