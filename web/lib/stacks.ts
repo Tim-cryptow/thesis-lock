@@ -48,22 +48,43 @@ export async function readAnchor(hash: string): Promise<Anchor | null> {
   };
 }
 
+export type SubmitAnchorCallbacks = {
+  onFinish: (txId: string) => void;
+  onCancel?: () => void;
+  onError?: (message: string) => void;
+};
+
 export function submitAnchor(
   hash: string,
   label: string,
-  onFinish: (txId: string) => void,
-  onCancel?: () => void,
+  callbacks: SubmitAnchorCallbacks,
 ): void {
   const cleanHex = hash.startsWith("0x") ? hash.slice(2) : hash;
-  openContractCall({
-    contractAddress: CONTRACT_ADDRESS,
-    contractName: CONTRACT_NAME,
-    functionName: "anchor-document",
-    functionArgs: [bufferCV(hexToBytes(cleanHex)), stringAsciiCV(label)],
-    network: getNetwork(),
-    onFinish: (data) => onFinish(data.txId),
-    onCancel: () => onCancel?.(),
-  });
+  try {
+    openContractCall({
+      contractAddress: CONTRACT_ADDRESS,
+      contractName: CONTRACT_NAME,
+      functionName: "anchor-document",
+      functionArgs: [bufferCV(hexToBytes(cleanHex)), stringAsciiCV(label)],
+      network: getNetwork(),
+      onFinish: (data) => callbacks.onFinish(data.txId),
+      // @stacks/connect routes both user cancellation and post-signature
+      // failures through onCancel; an error argument distinguishes them.
+      onCancel: (error?: Error) => {
+        if (error) {
+          callbacks.onError?.(
+            error.message || "The transaction could not be submitted.",
+          );
+        } else {
+          callbacks.onCancel?.();
+        }
+      },
+    });
+  } catch (e) {
+    callbacks.onError?.(
+      e instanceof Error ? e.message : "Could not open your wallet.",
+    );
+  }
 }
 
 export async function hashFile(file: File): Promise<string> {

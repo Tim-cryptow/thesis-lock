@@ -24,6 +24,7 @@ export default function AnchorPage() {
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>(null);
@@ -91,15 +92,18 @@ export default function AnchorPage() {
 
   const onSubmit = () => {
     if (!hash || !address) return;
+    setSubmitError(null);
     setPending(true);
-    submitAnchor(
-      hash,
-      label,
-      () => {
+    submitAnchor(hash, label, {
+      onFinish: () => {
         router.push(`/v/${hash}`);
       },
-      () => setPending(false),
-    );
+      onCancel: () => setPending(false),
+      onError: (message) => {
+        setPending(false);
+        setSubmitError(message);
+      },
+    });
   };
 
   return (
@@ -234,6 +238,12 @@ export default function AnchorPage() {
       {pending && (
         <p className="mt-4 text-sm text-foreground/60 text-center">
           Do not navigate away while the transaction is in your wallet.
+        </p>
+      )}
+
+      {submitError && (
+        <p className="mt-4 text-sm text-red-600 text-center" role="alert">
+          {submitError}
         </p>
       )}
     </main>
