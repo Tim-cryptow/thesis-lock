@@ -26,6 +26,7 @@ export default function AnchorPage() {
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>(null);
 
@@ -83,9 +84,14 @@ export default function AnchorPage() {
 
   const copyHash = async () => {
     if (!hash) return;
-    await navigator.clipboard.writeText(hash);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 1500);
+    }
   };
 
   const canSubmit = !!hash && !labelError && !!address && !pending;
@@ -198,7 +204,7 @@ export default function AnchorPage() {
                 onClick={copyHash}
                 className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
               </button>
             </div>
           )}

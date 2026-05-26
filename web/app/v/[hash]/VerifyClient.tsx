@@ -28,6 +28,7 @@ export default function VerifyPage() {
 
   const [shareUrl, setShareUrl] = useState("");
   const [copiedShare, setCopiedShare] = useState(false);
+  const [copyShareFailed, setCopyShareFailed] = useState(false);
   const [txId, setTxId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,9 +38,14 @@ export default function VerifyPage() {
 
   const copyShareUrl = async () => {
     if (!shareUrl) return;
-    await navigator.clipboard.writeText(shareUrl);
-    setCopiedShare(true);
-    setTimeout(() => setCopiedShare(false), 1500);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 1500);
+    } catch {
+      setCopyShareFailed(true);
+      setTimeout(() => setCopyShareFailed(false), 1500);
+    }
   };
 
   const tweetIntent = (() => {
@@ -215,7 +221,11 @@ export default function VerifyPage() {
               disabled={!shareUrl}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
-              {copiedShare ? "Link copied" : "Copy verification link"}
+              {copiedShare
+                ? "Link copied"
+                : copyShareFailed
+                  ? "Copy failed"
+                  : "Copy verification link"}
             </button>
             <a
               href={tweetIntent || "#"}
