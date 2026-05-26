@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { hashFile, readAnchor, type Anchor } from "@/lib/stacks";
+import {
+  explorerAddressUrl,
+  explorerTxUrl,
+  hashFile,
+  readAnchor,
+  type Anchor,
+} from "@/lib/stacks";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
@@ -22,9 +28,11 @@ export default function VerifyPage() {
 
   const [shareUrl, setShareUrl] = useState("");
   const [copiedShare, setCopiedShare] = useState(false);
+  const [txId, setTxId] = useState<string | null>(null);
 
   useEffect(() => {
     setShareUrl(window.location.href);
+    setTxId(new URLSearchParams(window.location.search).get("tx"));
   }, []);
 
   const copyShareUrl = async () => {
@@ -42,26 +50,38 @@ export default function VerifyPage() {
     )}&url=${encodeURIComponent(shareUrl)}`;
   })();
 
-  useEffect(() => {
-    if (!valid) {
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const loadAnchor = useCallback(
+    async (showLoading = true) => {
+      if (!valid) {
+        setLoading(false);
+        return;
+      }
+      if (showLoading) setLoading(true);
+      setError(null);
       try {
         const result = await readAnchor(hash);
-        if (!cancelled) setAnchor(result);
+        setAnchor(result);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Read failed.");
+        console.error(e);
+        setError(e instanceof Error ? e.message : "Read failed.");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (showLoading) setLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [hash, valid]);
+    },
+    [hash, valid],
+  );
+
+  useEffect(() => {
+    void loadAnchor();
+  }, [loadAnchor]);
+
+  // While a freshly submitted transaction is unconfirmed, poll until the
+  // anchor appears on chain, then stop.
+  useEffect(() => {
+    if (!valid || !txId || anchor || error) return;
+    const id = setInterval(() => void loadAnchor(false), 15000);
+    return () => clearInterval(id);
+  }, [valid, txId, anchor, error, loadAnchor]);
 
   const onVerifyFile = async (file: File | null) => {
     if (!file) return;
@@ -80,9 +100,6 @@ export default function VerifyPage() {
       setVerifying(false);
     }
   };
-
-  const explorerAddress = (principal: string) =>
-    `https://explorer.hiro.so/address/${principal}?chain=mainnet`;
 
   if (!valid) {
     return (
@@ -118,17 +135,34 @@ export default function VerifyPage() {
         ) : error ? (
           <p className="text-red-600">{error}</p>
         ) : !anchor ? (
-          <div className="mt-4 pt-4 border-t border-foreground/10">
-            <p className="text-foreground/80">
-              This hash has not been anchored.
-            </p>
-            <Link
-              href="/anchor"
-              className="inline-block mt-3 text-sm underline hover:no-underline"
-            >
-              Anchor a document
-            </Link>
-          </div>
+          txId ? (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="text-foreground/80">
+                Transaction submitted. Waiting for it to be confirmed on
+                chain. This can take a few minutes and updates automatically.
+              </p>
+              <a
+                href={explorerTxUrl(txId)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block mt-3 text-sm underline hover:no-underline"
+              >
+                View transaction in the explorer
+              </a>
+            </div>
+          ) : (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="text-foreground/80">
+                This hash has not been anchored.
+              </p>
+              <Link
+                href="/anchor"
+                className="inline-block mt-3 text-sm underline hover:no-underline"
+              >
+                Anchor a document
+              </Link>
+            </div>
+          )
         ) : (
           <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
@@ -136,7 +170,7 @@ export default function VerifyPage() {
                 Anchored by
               </div>
               <a
-                href={explorerAddress(anchor.anchoredBy)}
+                href={explorerAddressUrl(anchor.anchoredBy)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-mono text-xs md:text-sm break-all underline hover:no-underline"

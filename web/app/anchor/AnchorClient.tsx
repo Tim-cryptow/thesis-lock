@@ -95,8 +95,8 @@ export default function AnchorPage() {
     setSubmitError(null);
     setPending(true);
     submitAnchor(hash, label, {
-      onFinish: () => {
-        router.push(`/v/${hash}`);
+      onFinish: (txId) => {
+        router.push(`/v/${hash}?tx=${encodeURIComponent(txId)}`);
       },
       onCancel: () => setPending(false),
       onError: (message) => {

@@ -24,6 +24,17 @@ export function getNetwork(): StacksNetwork {
   return { ...STACKS_MAINNET, client: { baseUrl: API_URL } };
 }
 
+const EXPLORER_BASE = "https://explorer.hiro.so";
+
+export function explorerTxUrl(txId: string): string {
+  const id = txId.startsWith("0x") ? txId : `0x${txId}`;
+  return `${EXPLORER_BASE}/txid/${id}?chain=mainnet`;
+}
+
+export function explorerAddressUrl(principal: string): string {
+  return `${EXPLORER_BASE}/address/${principal}?chain=mainnet`;
+}
+
 export async function readAnchor(hash: string): Promise<Anchor | null> {
   const cleanHex = hash.startsWith("0x") ? hash.slice(2) : hash;
   const result: ClarityValue = await fetchCallReadOnlyFunction({
