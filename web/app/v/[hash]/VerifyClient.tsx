@@ -10,6 +10,7 @@ import {
   readAnchor,
   type Anchor,
 } from "@/lib/stacks";
+import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
@@ -245,14 +246,20 @@ export default function VerifyPage() {
         <p className="text-foreground/70 text-sm mb-4">
           Pick a file. The browser will hash it and compare to the anchored hash.
         </p>
-        <input
-          type="file"
-          onChange={(e) => void onVerifyFile(e.target.files?.[0] ?? null)}
-          className="block text-sm"
-        />
+        <FileDropZone
+          onFile={(f) => void onVerifyFile(f)}
+          ariaLabel="Choose a file to verify against this hash, or drop one here"
+        >
+          {verifyFile ? (
+            <p className="text-foreground/80 font-medium">{verifyFile.name}</p>
+          ) : (
+            <p className="text-foreground/60">
+              Drop a file here, or click to choose one
+            </p>
+          )}
+        </FileDropZone>
         {verifyFile && (
           <div className="mt-4 text-sm">
-            <div className="font-medium mb-1">{verifyFile.name}</div>
             {verifyError ? (
               <p className="text-red-600" role="alert">
                 {verifyError}
