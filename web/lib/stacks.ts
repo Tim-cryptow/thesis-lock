@@ -67,6 +67,12 @@ export function submitAnchor(
 }
 
 export async function hashFile(file: File): Promise<string> {
+  // crypto.subtle is only exposed in secure contexts (HTTPS or localhost).
+  if (typeof crypto === "undefined" || !crypto.subtle) {
+    throw new Error(
+      "Hashing requires a secure context. Open this page over HTTPS and try again.",
+    );
+  }
   const buffer = await file.arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", buffer);
   return Array.from(new Uint8Array(digest))

@@ -18,6 +18,7 @@ export default function VerifyPage() {
   const [verifyFile, setVerifyFile] = useState<File | null>(null);
   const [verifyHash, setVerifyHash] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const [shareUrl, setShareUrl] = useState("");
   const [copiedShare, setCopiedShare] = useState(false);
@@ -66,10 +67,15 @@ export default function VerifyPage() {
     if (!file) return;
     setVerifyFile(file);
     setVerifyHash(null);
+    setVerifyError(null);
     setVerifying(true);
     try {
       const h = await hashFile(file);
       setVerifyHash(h);
+    } catch (e) {
+      setVerifyError(
+        e instanceof Error ? e.message : "Could not hash this file.",
+      );
     } finally {
       setVerifying(false);
     }
@@ -203,7 +209,11 @@ export default function VerifyPage() {
         {verifyFile && (
           <div className="mt-4 text-sm">
             <div className="font-medium mb-1">{verifyFile.name}</div>
-            {verifying ? (
+            {verifyError ? (
+              <p className="text-red-600" role="alert">
+                {verifyError}
+              </p>
+            ) : verifying ? (
               <p className="text-foreground/60">Hashing...</p>
             ) : verifyHash ? (
               verifyHash === hash ? (

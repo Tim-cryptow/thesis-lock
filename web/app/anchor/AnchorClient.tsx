@@ -14,6 +14,7 @@ export default function AnchorPage() {
   const [file, setFile] = useState<File | null>(null);
   const [hash, setHash] = useState<string | null>(null);
   const [hashing, setHashing] = useState(false);
+  const [hashError, setHashError] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -35,10 +36,15 @@ export default function AnchorPage() {
     if (!selected) return;
     setFile(selected);
     setHash(null);
+    setHashError(null);
     setHashing(true);
     try {
       const h = await hashFile(selected);
       setHash(h);
+    } catch (e) {
+      setHashError(
+        e instanceof Error ? e.message : "Could not hash this file.",
+      );
     } finally {
       setHashing(false);
     }
@@ -154,7 +160,13 @@ export default function AnchorPage() {
         )}
       </div>
 
-      {(hashing || hash) && (
+      {hashError && (
+        <p className="mt-6 text-sm text-red-600" role="alert">
+          {hashError}
+        </p>
+      )}
+
+      {(hashing || hash) && !hashError && (
         <div className="mt-6">
           <label className="block text-sm text-foreground/60 mb-2">
             SHA-256
