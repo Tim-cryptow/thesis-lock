@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { hashFile, submitAnchor } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
+const LARGE_FILE_BYTES = 250 * 1024 * 1024;
 
 export default function AnchorPage() {
   const router = useRouter();
@@ -145,7 +147,7 @@ export default function AnchorPage() {
           <p className="text-foreground/80">
             <span className="font-medium">{file.name}</span>{" "}
             <span className="text-foreground/50 text-sm">
-              ({(file.size / 1024).toFixed(1)} KB)
+              ({formatBytes(file.size)})
             </span>
           </p>
         ) : (
@@ -154,6 +156,13 @@ export default function AnchorPage() {
           </p>
         )}
       </FileDropZone>
+
+      {file && file.size > LARGE_FILE_BYTES && (
+        <p className="mt-3 text-sm text-foreground/60">
+          This is a large file. Hashing runs entirely in your browser and may
+          take a while.
+        </p>
+      )}
 
       {hashError && (
         <p className="mt-6 text-sm text-red-600" role="alert">
