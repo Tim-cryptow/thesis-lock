@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { hashFile, submitAnchor } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import FileDropZone from "@/app/components/FileDropZone";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 
@@ -27,8 +28,6 @@ export default function AnchorPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInput = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!pending) return;
@@ -57,16 +56,6 @@ export default function AnchorPage() {
       setHashing(false);
     }
   }, []);
-
-  const onDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setDragOver(false);
-      const f = e.dataTransfer.files?.[0] ?? null;
-      void onFileSelect(f);
-    },
-    [onFileSelect],
-  );
 
   const onLabelChange = (next: string) => {
     if (!ASCII_REGEX.test(next)) {
@@ -148,26 +137,10 @@ export default function AnchorPage() {
         The file is hashed in your browser. Only the hash is submitted on chain.
       </p>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        onClick={() => fileInput.current?.click()}
-        className={`rounded-lg border-2 border-dashed p-12 text-center cursor-pointer transition ${
-          dragOver
-            ? "border-foreground/60 bg-foreground/5"
-            : "border-foreground/20 hover:border-foreground/40"
-        }`}
+      <FileDropZone
+        onFile={(f) => void onFileSelect(f)}
+        ariaLabel="Choose a document to anchor, or drop one here"
       >
-        <input
-          ref={fileInput}
-          type="file"
-          className="hidden"
-          onChange={(e) => void onFileSelect(e.target.files?.[0] ?? null)}
-        />
         {file ? (
           <p className="text-foreground/80">
             <span className="font-medium">{file.name}</span>{" "}
@@ -180,7 +153,7 @@ export default function AnchorPage() {
             Drop a file here, or click to choose one
           </p>
         )}
-      </div>
+      </FileDropZone>
 
       {hashError && (
         <p className="mt-6 text-sm text-red-600" role="alert">
