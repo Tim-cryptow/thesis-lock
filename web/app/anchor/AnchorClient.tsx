@@ -26,6 +26,7 @@ export default function AnchorPage() {
   const [hashError, setHashError] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
+  const [labelNotice, setLabelNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -67,10 +68,12 @@ export default function AnchorPage() {
     if (next.length > 64) {
       setLabel(next.slice(0, 64));
       setLabelError(null);
+      setLabelNotice("Label was trimmed to 64 characters.");
       return;
     }
     setLabel(next);
     setLabelError(null);
+    setLabelNotice(null);
   };
 
   const copyHash = async () => {
@@ -114,6 +117,7 @@ export default function AnchorPage() {
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             title="Disconnect"
+            aria-label="Disconnect wallet"
           >
             {truncateAddress(address)}
           </button>
@@ -184,6 +188,7 @@ export default function AnchorPage() {
               </code>
               <button
                 onClick={copyHash}
+                aria-label="Copy hash to clipboard"
                 className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
               >
                 {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
@@ -206,8 +211,16 @@ export default function AnchorPage() {
           className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50"
         />
         <div className="mt-1 flex items-center justify-between text-xs">
-          <span className={labelError ? "text-red-600" : "text-transparent"}>
-            {labelError ?? "."}
+          <span
+            className={
+              labelError
+                ? "text-red-600"
+                : labelNotice
+                  ? "text-foreground/60"
+                  : "text-transparent"
+            }
+          >
+            {labelError ?? labelNotice ?? "."}
           </span>
           <span className="text-foreground/50 font-mono">
             {label.length}/64
@@ -218,7 +231,7 @@ export default function AnchorPage() {
       <button
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+        className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition"
       >
         {pending ? "Awaiting wallet signature..." : "Anchor on Stacks"}
       </button>

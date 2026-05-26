@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -16,8 +16,8 @@ const HEX_64 = /^[0-9a-f]{64}$/;
 
 export default function VerifyPage() {
   const params = useParams<{ hash: string }>();
-  const hash = params.hash;
-  const [valid] = useState(() => HEX_64.test(hash));
+  const hash = (params.hash ?? "").toLowerCase();
+  const valid = useMemo(() => HEX_64.test(hash), [hash]);
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +133,7 @@ export default function VerifyPage() {
 
       <div className="rounded-lg border border-foreground/10 bg-white p-6">
         <div className="mb-4">
-          <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             Hash (SHA-256)
           </div>
           <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
@@ -185,7 +185,7 @@ export default function VerifyPage() {
         ) : (
           <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Anchored by
               </div>
               <a
@@ -198,7 +198,7 @@ export default function VerifyPage() {
               </a>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Label
               </div>
               <code className="font-mono text-xs md:text-sm">
@@ -206,13 +206,13 @@ export default function VerifyPage() {
               </code>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Stacks block
               </div>
               <code className="font-mono text-sm">{anchor.stacksBlock}</code>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Burn block
               </div>
               <code className="font-mono text-sm">{anchor.burnBlock}</code>
@@ -240,15 +240,23 @@ export default function VerifyPage() {
                   ? "Copy failed"
                   : "Copy verification link"}
             </button>
-            <a
-              href={tweetIntent || "#"}
-              target="_blank"
-              rel="noreferrer"
-              aria-disabled={!shareUrl}
-              className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
-            >
-              Share on X
-            </a>
+            {shareUrl ? (
+              <a
+                href={tweetIntent}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
+              >
+                Share on X
+              </a>
+            ) : (
+              <button
+                disabled
+                className="text-sm px-3 py-2 rounded-md bg-heading text-background opacity-50 cursor-not-allowed"
+              >
+                Share on X
+              </button>
+            )}
           </div>
         </div>
       )}
