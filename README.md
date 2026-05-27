@@ -5,12 +5,31 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 ## Live demo
 
 - App: [thesis-lock.vercel.app](https://thesis-lock.vercel.app/)
-- Contract: [`SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet)
-- Deploy transaction: [`0xd1bdda30...df8f5d8e`](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet) (Stacks block 7798720, burn block 947300)
+- Deployer: [`SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`](https://explorer.hiro.so/address/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM?chain=mainnet)
+
+## Features
+
+- Single file anchoring with optional ASCII label up to 64 characters.
+- Batch anchoring of up to ten files in a single transaction.
+- Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
+- Client-side SHA-256 hashing. The file never leaves your device.
+- Public verification at `/v/<hash>` with file re-upload check.
+
+## Protocol
+
+Three Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`:
+
+| Contract | Purpose |
+| --- | --- |
+| [`thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet) | Original single-hash anchor. Stores `(buff 32) -> { anchored-by, stacks-block, burn-block, label }`. One anchor per hash, ever. |
+| `thesislock-batch` | Anchors up to ten hashes per transaction, keyed by `{ hash, owner }`. Duplicates for the same owner are silently skipped so partial overlaps with prior batches still succeed. |
+| `thesislock-registry` | Per-principal append-only index of anchors. Powers the "My Anchors" page. |
+
+The original `thesislock` contract was first deployed at Stacks block 7798720, burn block 947300 ([deploy transaction](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet)).
 
 ## Stack
 
-- Clarity 3 smart contract on Stacks mainnet
+- Clarity 3 smart contracts on Stacks mainnet
 - Clarinet for project structure, testing, and deployment
 - Next.js 16 App Router with TypeScript and Tailwind
 - Stacks Connect for wallet integration (Leather, Xverse, Asigna)
@@ -20,7 +39,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 ## Local development
 
 ```bash
-# Contract
+# Contracts
 npm install
 clarinet check
 npm test
@@ -74,3 +93,43 @@ curl -sX POST \
   -H 'Content-Type: application/json' \
   --data "{\"sender\":\"SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
 ```
+
+### Batch anchors
+
+`thesislock-batch::get-batch-anchor` is keyed by both the hash and the owner principal, so you need to serialize the principal too. A standard mainnet principal is encoded as `0x05` (type byte for standard principal), followed by a one-byte version (`0x16` for mainnet), then the 20-byte hash160. The easiest path is to let `@stacks/transactions` do the encoding:
+
+```bash
+HASH=0000000000000000000000000000000000000000000000000000000000000000
+OWNER=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
+
+OWNER_HEX=$(node -e '
+const { principalCV, serializeCV } = require("@stacks/transactions");
+process.stdout.write("0x" + serializeCV(principalCV(process.argv[1])));
+' "$OWNER")
+
+curl -sX POST \
+  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock-batch/get-batch-anchor \
+  -H 'Content-Type: application/json' \
+  --data "{\"sender\":\"${OWNER}\",\"arguments\":[\"0x0200000020${HASH}\",\"${OWNER_HEX}\"]}"
+```
+
+The decoded shape is `(optional (tuple (label (string-ascii 64)) (stacks-block uint) (burn-block uint) (batch-id uint)))`.
+
+### Registry counts
+
+`thesislock-registry::get-anchor-count` returns the number of anchors a principal has registered. It takes a single principal argument:
+
+```bash
+OWNER=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
+OWNER_HEX=$(node -e '
+const { principalCV, serializeCV } = require("@stacks/transactions");
+process.stdout.write("0x" + serializeCV(principalCV(process.argv[1])));
+' "$OWNER")
+
+curl -sX POST \
+  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock-registry/get-anchor-count \
+  -H 'Content-Type: application/json' \
+  --data "{\"sender\":\"${OWNER}\",\"arguments\":[\"${OWNER_HEX}\"]}"
+```
+
+The response is a `uint`. Use `get-anchor-at` (principal + uint index) or `get-recent-anchors` (principal) to read individual entries.
