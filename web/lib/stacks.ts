@@ -43,6 +43,15 @@ export function getNetwork(): StacksNetwork {
   return { ...STACKS_MAINNET, client: { baseUrl: API_URL } };
 }
 
+export function explorerAddressUrl(principal: string): string {
+  return `https://explorer.hiro.so/address/${principal}?chain=mainnet`;
+}
+
+export function explorerTxUrl(txId: string): string {
+  const id = txId.startsWith("0x") ? txId : `0x${txId}`;
+  return `https://explorer.hiro.so/txid/${id}?chain=mainnet`;
+}
+
 function stripHex(hex: string): string {
   return hex.startsWith("0x") ? hex.slice(2) : hex;
 }
@@ -87,8 +96,8 @@ export function submitAnchor(
     functionName: "anchor-document",
     functionArgs: [bufferCV(hexToBytes(stripHex(hash))), stringAsciiCV(label)],
     network: getNetwork(),
-    onFinish: (data) => onFinish(data.txId),
-    onCancel: () => onCancel?.(),
+    onFinish: (data) => callbacks.onFinish(data.txId),
+    onCancel: () => callbacks.onCancel?.(),
   });
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -45,7 +45,13 @@ function truncateHashShort(h: string) {
 
 export default function AnchorPage() {
   const router = useRouter();
-  const { address, connecting, connectWallet, disconnectWallet } = useWallet();
+  const {
+    address,
+    connecting,
+    error: walletError,
+    connectWallet,
+    disconnectWallet,
+  } = useWallet();
 
   const [mode, setMode] = useState<Mode>("single");
 
@@ -64,6 +70,7 @@ export default function AnchorPage() {
   const batchInput = useRef<HTMLInputElement | null>(null);
 
   const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [registerProgress, setRegisterProgress] =
     useState<RegisterProgress | null>(null);
 
@@ -94,16 +101,6 @@ export default function AnchorPage() {
       setHashing(false);
     }
   }, []);
-
-  const onSingleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setDragOver(false);
-      const f = e.dataTransfer.files?.[0] ?? null;
-      void onFileSelect(f);
-    },
-    [onFileSelect],
-  );
 
   const onLabelChange = (next: string) => {
     const { value, error } = validateLabel(next);
@@ -215,10 +212,8 @@ export default function AnchorPage() {
     if (!hash || !address) return;
     setSubmitError(null);
     setPending(true);
-    submitAnchor(
-      hash,
-      label,
-      () => {
+    submitAnchor(hash, label, {
+      onFinish: () => {
         registerSequentially(
           [{ hash, label }],
           0,
@@ -232,8 +227,12 @@ export default function AnchorPage() {
           },
         );
       },
-      () => setPending(false),
-    );
+      onCancel: () => setPending(false),
+      onError: (message) => {
+        setPending(false);
+        setSubmitError(message);
+      },
+    });
   };
 
   const allRowsReady =
@@ -244,6 +243,7 @@ export default function AnchorPage() {
   const submitBatch = () => {
     if (!canSubmitBatch || !address) return;
     const entries = rows.map((r) => ({ hash: r.hash!, label: r.label }));
+    setSubmitError(null);
     setPending(true);
     submitBatchAnchor(
       entries,
@@ -261,7 +261,8 @@ export default function AnchorPage() {
           },
         );
       },
-    });
+      () => setPending(false),
+    );
   };
 
   return (
@@ -337,33 +338,15 @@ export default function AnchorPage() {
 
       {mode === "single" ? (
         <>
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onSingleDrop}
-            onClick={() => fileInput.current?.click()}
-            className={`rounded-lg border-2 border-dashed p-12 text-center cursor-pointer transition ${
-              dragOver
-                ? "border-foreground/60 bg-foreground/5"
-                : "border-foreground/20 hover:border-foreground/40"
-            }`}
+          <FileDropZone
+            onFile={(f) => void onFileSelect(f)}
+            disabled={pending}
           >
-            <input
-              ref={fileInput}
-              type="file"
-              className="hidden"
-              onChange={(e) =>
-                void onFileSelect(e.target.files?.[0] ?? null)
-              }
-            />
             {file ? (
               <p className="text-foreground/80">
                 <span className="font-medium">{file.name}</span>{" "}
                 <span className="text-foreground/50 text-sm">
-                  ({(file.size / 1024).toFixed(1)} KB)
+                  ({formatBytes(file.size)})
                 </span>
               </p>
             ) : (
@@ -371,7 +354,13 @@ export default function AnchorPage() {
                 Drop a file here, or click to choose one
               </p>
             )}
-          </div>
+          </FileDropZone>
+
+          {hashError && (
+            <p className="mt-3 text-sm text-red-600" role="alert">
+              {hashError}
+            </p>
+          )}
 
           {(hashing || hash) && (
             <div className="mt-6">
@@ -391,7 +380,7 @@ export default function AnchorPage() {
                     onClick={copyHash}
                     className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                   >
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
                   </button>
                 </div>
               )}
@@ -485,7 +474,7 @@ export default function AnchorPage() {
                         {idx + 1}. {row.file.name}
                       </div>
                       <div className="text-xs text-foreground/50 mt-0.5">
-                        {(row.file.size / 1024).toFixed(1)} KB
+                        {formatBytes(row.file.size)}
                       </div>
                     </div>
                     <button
