@@ -67,4 +67,9 @@ plan:
       emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
       path: contracts/thesislock.clar
       clarity-version: 3
+    - transaction-type: emulated-contract-publish
+      contract-name: thesislock-batch
+      emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+      path: contracts/thesislock-batch.clar
+      clarity-version: 3
     epoch: '3.1'
