@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { hashFile, readAnchor, type Anchor } from "@/lib/stacks";
+import {
+  explorerAddressUrl,
+  explorerTxUrl,
+  hashFile,
+  readAnchor,
+  type Anchor,
+} from "@/lib/stacks";
+import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
 export default function VerifyPage() {
   const params = useParams<{ hash: string }>();
-  const hash = params.hash;
-  const [valid] = useState(() => HEX_64.test(hash));
+  const hash = (params.hash ?? "").toLowerCase();
+  const valid = useMemo(() => HEX_64.test(hash), [hash]);
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,19 +25,28 @@ export default function VerifyPage() {
   const [verifyFile, setVerifyFile] = useState<File | null>(null);
   const [verifyHash, setVerifyHash] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const [shareUrl, setShareUrl] = useState("");
   const [copiedShare, setCopiedShare] = useState(false);
+  const [copyShareFailed, setCopyShareFailed] = useState(false);
+  const [txId, setTxId] = useState<string | null>(null);
 
   useEffect(() => {
     setShareUrl(window.location.href);
+    setTxId(new URLSearchParams(window.location.search).get("tx"));
   }, []);
 
   const copyShareUrl = async () => {
     if (!shareUrl) return;
-    await navigator.clipboard.writeText(shareUrl);
-    setCopiedShare(true);
-    setTimeout(() => setCopiedShare(false), 1500);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 1500);
+    } catch {
+      setCopyShareFailed(true);
+      setTimeout(() => setCopyShareFailed(false), 1500);
+    }
   };
 
   const tweetIntent = (() => {
@@ -41,42 +57,58 @@ export default function VerifyPage() {
     )}&url=${encodeURIComponent(shareUrl)}`;
   })();
 
-  useEffect(() => {
-    if (!valid) {
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
+  const loadAnchor = useCallback(
+    async (showLoading = true) => {
+      if (!valid) {
+        setLoading(false);
+        return;
+      }
+      if (showLoading) setLoading(true);
+      setError(null);
       try {
         const result = await readAnchor(hash);
-        if (!cancelled) setAnchor(result);
+        setAnchor(result);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Read failed.");
+        console.error(e);
+        setError(
+          "Could not look up this anchor. Check your connection and try again.",
+        );
       } finally {
-        if (!cancelled) setLoading(false);
+        if (showLoading) setLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [hash, valid]);
+    },
+    [hash, valid],
+  );
+
+  useEffect(() => {
+    void loadAnchor();
+  }, [loadAnchor]);
+
+  // While a freshly submitted transaction is unconfirmed, poll until the
+  // anchor appears on chain, then stop.
+  useEffect(() => {
+    if (!valid || !txId || anchor || error) return;
+    const id = setInterval(() => void loadAnchor(false), 15000);
+    return () => clearInterval(id);
+  }, [valid, txId, anchor, error, loadAnchor]);
 
   const onVerifyFile = async (file: File | null) => {
     if (!file) return;
     setVerifyFile(file);
     setVerifyHash(null);
+    setVerifyError(null);
     setVerifying(true);
     try {
       const h = await hashFile(file);
       setVerifyHash(h);
+    } catch (e) {
+      setVerifyError(
+        e instanceof Error ? e.message : "Could not hash this file.",
+      );
     } finally {
       setVerifying(false);
     }
   };
-
-  const explorerAddress = (principal: string) =>
-    `https://explorer.hiro.so/address/${principal}?chain=mainnet`;
 
   if (!valid) {
     return (
@@ -129,7 +161,7 @@ export default function VerifyPage() {
 
       <div className="rounded-lg border border-foreground/10 bg-white p-6">
         <div className="mb-4">
-          <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             Hash (SHA-256)
           </div>
           <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
@@ -138,27 +170,54 @@ export default function VerifyPage() {
         {loading ? (
           <p className="text-foreground/60">Looking up on chain...</p>
         ) : error ? (
-          <p className="text-red-600">{error}</p>
-        ) : !anchor ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
-            <p className="text-foreground/80">
-              This hash has not been anchored.
+            <p className="text-red-600" role="alert">
+              {error}
             </p>
-            <Link
-              href="/anchor"
-              className="inline-block mt-3 text-sm underline hover:no-underline"
+            <button
+              onClick={() => void loadAnchor()}
+              className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Anchor a document
-            </Link>
+              Try again
+            </button>
           </div>
+        ) : !anchor ? (
+          txId ? (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="text-foreground/80">
+                Transaction submitted. Waiting for it to be confirmed on
+                chain. This can take a few minutes and updates automatically.
+              </p>
+              <a
+                href={explorerTxUrl(txId)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block mt-3 text-sm underline hover:no-underline"
+              >
+                View transaction in the explorer
+              </a>
+            </div>
+          ) : (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="text-foreground/80">
+                This hash has not been anchored.
+              </p>
+              <Link
+                href="/anchor"
+                className="inline-block mt-3 text-sm underline hover:no-underline"
+              >
+                Anchor a document
+              </Link>
+            </div>
+          )
         ) : (
           <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Anchored by
               </div>
               <a
-                href={explorerAddress(anchor.anchoredBy)}
+                href={explorerAddressUrl(anchor.anchoredBy)}
                 target="_blank"
                 rel="noreferrer"
                 className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
@@ -167,7 +226,7 @@ export default function VerifyPage() {
               </a>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Label
               </div>
               <code className="font-mono text-xs md:text-sm">
@@ -175,13 +234,13 @@ export default function VerifyPage() {
               </code>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Stacks block
               </div>
               <code className="font-mono text-sm">{anchor.stacksBlock}</code>
             </div>
             <div>
-              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 Burn block
               </div>
               <code className="font-mono text-sm">{anchor.burnBlock}</code>
@@ -203,17 +262,29 @@ export default function VerifyPage() {
               disabled={!shareUrl}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
-              {copiedShare ? "Link copied" : "Copy verification link"}
+              {copiedShare
+                ? "Link copied"
+                : copyShareFailed
+                  ? "Copy failed"
+                  : "Copy verification link"}
             </button>
-            <a
-              href={tweetIntent || "#"}
-              target="_blank"
-              rel="noreferrer"
-              aria-disabled={!shareUrl}
-              className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
-            >
-              Share on X
-            </a>
+            {shareUrl ? (
+              <a
+                href={tweetIntent}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
+              >
+                Share on X
+              </a>
+            ) : (
+              <button
+                disabled
+                className="text-sm px-3 py-2 rounded-md bg-heading text-background opacity-50 cursor-not-allowed"
+              >
+                Share on X
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -223,15 +294,25 @@ export default function VerifyPage() {
         <p className="text-foreground/70 text-sm mb-4">
           Pick a file. The browser will hash it and compare to the anchored hash.
         </p>
-        <input
-          type="file"
-          onChange={(e) => void onVerifyFile(e.target.files?.[0] ?? null)}
-          className="block text-sm"
-        />
+        <FileDropZone
+          onFile={(f) => void onVerifyFile(f)}
+          ariaLabel="Choose a file to verify against this hash, or drop one here"
+        >
+          {verifyFile ? (
+            <p className="text-foreground/80 font-medium">{verifyFile.name}</p>
+          ) : (
+            <p className="text-foreground/60">
+              Drop a file here, or click to choose one
+            </p>
+          )}
+        </FileDropZone>
         {verifyFile && (
           <div className="mt-4 text-sm">
-            <div className="font-medium mb-1">{verifyFile.name}</div>
-            {verifying ? (
+            {verifyError ? (
+              <p className="text-red-600" role="alert">
+                {verifyError}
+              </p>
+            ) : verifying ? (
               <p className="text-foreground/60">Hashing...</p>
             ) : verifyHash ? (
               verifyHash === hash ? (

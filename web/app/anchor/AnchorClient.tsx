@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,6 +10,8 @@ import {
   submitBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { formatBytes } from "@/lib/format";
+import FileDropZone from "@/app/components/FileDropZone";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const MAX_BATCH = 10;
@@ -50,11 +52,11 @@ export default function AnchorPage() {
   const [file, setFile] = useState<File | null>(null);
   const [hash, setHash] = useState<string | null>(null);
   const [hashing, setHashing] = useState(false);
+  const [hashError, setHashError] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const fileInput = useRef<HTMLInputElement | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   const [rows, setRows] = useState<BatchRow[]>([]);
   const [batchDragOver, setBatchDragOver] = useState(false);
@@ -79,10 +81,15 @@ export default function AnchorPage() {
     if (!selected) return;
     setFile(selected);
     setHash(null);
+    setHashError(null);
     setHashing(true);
     try {
       const h = await hashFile(selected);
       setHash(h);
+    } catch (e) {
+      setHashError(
+        e instanceof Error ? e.message : "Could not hash this file.",
+      );
     } finally {
       setHashing(false);
     }
@@ -106,9 +113,14 @@ export default function AnchorPage() {
 
   const copyHash = async () => {
     if (!hash) return;
-    await navigator.clipboard.writeText(hash);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 1500);
+    }
   };
 
   const addBatchFiles = useCallback((incoming: FileList | File[] | null) => {
@@ -201,6 +213,7 @@ export default function AnchorPage() {
 
   const submitSingle = () => {
     if (!hash || !address) return;
+    setSubmitError(null);
     setPending(true);
     submitAnchor(
       hash,
@@ -248,8 +261,7 @@ export default function AnchorPage() {
           },
         );
       },
-      () => setPending(false),
-    );
+    });
   };
 
   return (
@@ -272,6 +284,7 @@ export default function AnchorPage() {
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             title="Disconnect"
+            aria-label="Disconnect wallet"
           >
             {truncateAddress(address)}
           </button>
@@ -285,6 +298,12 @@ export default function AnchorPage() {
           </button>
         )}
       </div>
+
+      {walletError && (
+        <p className="mb-6 text-sm text-red-600" role="alert">
+          {walletError}
+        </p>
+      )}
 
       <h1 className="text-3xl mb-2">Anchor a document</h1>
       <p className="text-foreground/70 mb-6">
@@ -541,6 +560,12 @@ export default function AnchorPage() {
       {pending && (
         <p className="mt-4 text-sm text-foreground/60 text-center">
           Do not navigate away while transactions are in your wallet.
+        </p>
+      )}
+
+      {submitError && (
+        <p className="mt-4 text-sm text-red-600 text-center" role="alert">
+          {submitError}
         </p>
       )}
     </main>

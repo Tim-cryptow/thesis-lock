@@ -70,11 +70,16 @@ export async function readAnchor(hash: string): Promise<Anchor | null> {
   };
 }
 
+export type SubmitAnchorCallbacks = {
+  onFinish: (txId: string) => void;
+  onCancel?: () => void;
+  onError?: (message: string) => void;
+};
+
 export function submitAnchor(
   hash: string,
   label: string,
-  onFinish: (txId: string) => void,
-  onCancel?: () => void,
+  callbacks: SubmitAnchorCallbacks,
 ): void {
   openContractCall({
     contractAddress: CONTRACT_ADDRESS,
@@ -211,6 +216,12 @@ export async function getRecentAnchors(
 }
 
 export async function hashFile(file: File): Promise<string> {
+  // crypto.subtle is only exposed in secure contexts (HTTPS or localhost).
+  if (typeof crypto === "undefined" || !crypto.subtle) {
+    throw new Error(
+      "Hashing requires a secure context. Open this page over HTTPS and try again.",
+    );
+  }
   const buffer = await file.arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", buffer);
   return Array.from(new Uint8Array(digest))
