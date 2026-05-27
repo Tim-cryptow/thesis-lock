@@ -8,8 +8,11 @@ import {
   explorerTxUrl,
   hashFile,
   readAnchor,
+  readBatchAnchor,
   type Anchor,
+  type BatchAnchor,
 } from "@/lib/stacks";
+import { useWallet } from "@/lib/wallet";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
@@ -18,8 +21,10 @@ export default function VerifyPage() {
   const params = useParams<{ hash: string }>();
   const hash = (params.hash ?? "").toLowerCase();
   const valid = useMemo(() => HEX_64.test(hash), [hash]);
+  const { address } = useWallet();
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [batchAnchor, setBatchAnchor] = useState<BatchAnchor | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [verifyFile, setVerifyFile] = useState<File | null>(null);
@@ -68,6 +73,16 @@ export default function VerifyPage() {
       try {
         const result = await readAnchor(hash);
         setAnchor(result);
+        if (!result && address) {
+          try {
+            const b = await readBatchAnchor(hash, address);
+            setBatchAnchor(b);
+          } catch {
+            setBatchAnchor(null);
+          }
+        } else {
+          setBatchAnchor(null);
+        }
       } catch (e) {
         console.error(e);
         setError(
@@ -77,7 +92,7 @@ export default function VerifyPage() {
         if (showLoading) setLoading(false);
       }
     },
-    [hash, valid],
+    [hash, valid, address],
   );
 
   useEffect(() => {
@@ -87,10 +102,10 @@ export default function VerifyPage() {
   // While a freshly submitted transaction is unconfirmed, poll until the
   // anchor appears on chain, then stop.
   useEffect(() => {
-    if (!valid || !txId || anchor || error) return;
+    if (!valid || !txId || anchor || batchAnchor || error) return;
     const id = setInterval(() => void loadAnchor(false), 15000);
     return () => clearInterval(id);
-  }, [valid, txId, anchor, error, loadAnchor]);
+  }, [valid, txId, anchor, batchAnchor, error, loadAnchor]);
 
   const onVerifyFile = async (file: File | null) => {
     if (!file) return;
@@ -113,9 +128,23 @@ export default function VerifyPage() {
   if (!valid) {
     return (
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-        <Link href="/" className="text-sm text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
-        </Link>
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/" className="text-foreground/60 hover:text-foreground">
+            &larr; ThesisLock
+          </Link>
+          <Link
+            href="/anchor"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Anchor
+          </Link>
+          <Link
+            href="/anchors"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            My Anchors
+          </Link>
+        </div>
         <h1 className="text-3xl mt-8 mb-2">Invalid hash format.</h1>
         <p className="text-foreground/70">
           A valid hash is 64 lowercase hex characters.
@@ -126,9 +155,23 @@ export default function VerifyPage() {
 
   return (
     <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-      <Link href="/" className="text-sm text-foreground/60 hover:text-foreground">
-        &larr; ThesisLock
-      </Link>
+      <div className="flex items-center gap-4 text-sm">
+        <Link href="/" className="text-foreground/60 hover:text-foreground">
+          &larr; ThesisLock
+        </Link>
+        <Link
+          href="/anchor"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Anchor
+        </Link>
+        <Link
+          href="/anchors"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          My Anchors
+        </Link>
+      </div>
       <h1 className="text-3xl mt-8 mb-6">Anchor record</h1>
 
       <div className="rounded-lg border border-foreground/10 bg-white p-6">
@@ -154,7 +197,60 @@ export default function VerifyPage() {
             </button>
           </div>
         ) : !anchor ? (
-          txId ? (
+          batchAnchor && address ? (
+            <div className="mt-4 pt-4 border-t border-foreground/10">
+              <p className="text-foreground/80 text-sm mb-3">
+                Anchored via batch transaction
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    Owner
+                  </div>
+                  <a
+                    href={explorerAddressUrl(address)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
+                  >
+                    {address}
+                  </a>
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    Label
+                  </div>
+                  <code className="font-mono text-xs md:text-sm">
+                    {batchAnchor.label || "(none)"}
+                  </code>
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    Stacks block
+                  </div>
+                  <code className="font-mono text-sm">
+                    {batchAnchor.stacksBlock}
+                  </code>
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    Burn block
+                  </div>
+                  <code className="font-mono text-sm">
+                    {batchAnchor.burnBlock}
+                  </code>
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    Batch ID
+                  </div>
+                  <code className="font-mono text-sm">
+                    #{batchAnchor.batchId}
+                  </code>
+                </div>
+              </div>
+            </div>
+          ) : txId ? (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
                 Transaction submitted. Waiting for it to be confirmed on
@@ -172,7 +268,14 @@ export default function VerifyPage() {
           ) : (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
-                This hash has not been anchored.
+                This hash has not been anchored
+                {!address && (
+                  <>
+                    {" "}— if you anchored it via a batch transaction, connect
+                    your wallet to look it up
+                  </>
+                )}
+                .
               </p>
               <Link
                 href="/anchor"
