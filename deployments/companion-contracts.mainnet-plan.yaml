@@ -1,0 +1,25 @@
+---
+id: 0
+name: Mainnet deployment - companion contracts (batch, registry)
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: thesislock-batch
+            expected-sender: SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
+            cost: 3406453
+            path: contracts/thesislock-batch.clar
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: thesislock-registry
+            expected-sender: SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
+            cost: 3406731
+            path: contracts/thesislock-registry.clar
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.1"
