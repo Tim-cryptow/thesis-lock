@@ -81,9 +81,23 @@ export default function VerifyPage() {
   if (!valid) {
     return (
       <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-        <Link href="/" className="text-sm text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
-        </Link>
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/" className="text-foreground/60 hover:text-foreground">
+            &larr; ThesisLock
+          </Link>
+          <Link
+            href="/anchor"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Anchor
+          </Link>
+          <Link
+            href="/anchors"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            My Anchors
+          </Link>
+        </div>
         <h1 className="text-3xl mt-8 mb-2">Invalid hash format.</h1>
         <p className="text-foreground/70">
           A valid hash is 64 lowercase hex characters.
@@ -94,9 +108,23 @@ export default function VerifyPage() {
 
   return (
     <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-      <Link href="/" className="text-sm text-foreground/60 hover:text-foreground">
-        &larr; ThesisLock
-      </Link>
+      <div className="flex items-center gap-4 text-sm">
+        <Link href="/" className="text-foreground/60 hover:text-foreground">
+          &larr; ThesisLock
+        </Link>
+        <Link
+          href="/anchor"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Anchor
+        </Link>
+        <Link
+          href="/anchors"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          My Anchors
+        </Link>
+      </div>
       <h1 className="text-3xl mt-8 mb-6">Anchor record</h1>
 
       <div className="rounded-lg border border-foreground/10 bg-white p-6">

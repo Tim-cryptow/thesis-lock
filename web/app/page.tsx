@@ -13,18 +13,24 @@ export default function Page() {
           Hash a document. Anchor the hash on Bitcoin via Stacks. Verify it
           forever, without ever sharing the file.
         </p>
-        <div className="mt-10">
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/anchor"
             className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
           >
             Anchor a document
           </Link>
+          <Link
+            href="/anchors"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            My anchors
+          </Link>
         </div>
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="rounded-lg border border-foreground/10 bg-white p-6">
             <h3 className="text-xl mb-2">Timestamp</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
@@ -44,6 +50,13 @@ export default function Page() {
             <p className="text-foreground/80 text-sm leading-relaxed">
               The file never leaves your device. Only its fingerprint is
               published on chain.
+            </p>
+          </div>
+          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+            <h3 className="text-xl mb-2">Batch &amp; history</h3>
+            <p className="text-foreground/80 text-sm leading-relaxed">
+              Anchor up to ten documents in a single transaction, then browse
+              everything anchored from your wallet.
             </p>
           </div>
         </div>
