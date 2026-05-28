@@ -67,22 +67,14 @@ export default function AnchorsPage() {
     setCertErrorHash(null);
     setCertBusyHash(entry.hash);
     try {
-      const single = await readAnchor(entry.hash);
       const origin =
         typeof window !== "undefined" ? window.location.origin : "";
-      if (single) {
-        downloadCertificate({
-          hash: entry.hash,
-          label: single.label || entry.label,
-          owner: single.anchoredBy,
-          stacksBlock: single.stacksBlock,
-          burnBlock: single.burnBlock,
-          timestamp: new Date().toISOString(),
-          contractName: SINGLE_CONTRACT_NAME,
-          verifyUrl: `${origin}/v/${entry.hash}`,
-        });
-        return;
-      }
+      // Check the wallet's batch entry first. thesislock-batch is keyed by
+      // {hash, owner}, while thesislock is global (one anchor per hash,
+      // anyone can claim). For a registry entry that belongs to this wallet
+      // via a batch anchor, the global single record may name a different
+      // anchorer for the same hash — falling through to it would generate a
+      // certificate for the wrong record.
       const batch = await readBatchAnchor(entry.hash, address);
       if (batch) {
         downloadCertificate({
@@ -94,6 +86,20 @@ export default function AnchorsPage() {
           timestamp: new Date().toISOString(),
           contractName: BATCH_CONTRACT_FULL_NAME,
           verifyUrl: `${origin}/v/${entry.hash}?owner=${encodeURIComponent(address)}`,
+        });
+        return;
+      }
+      const single = await readAnchor(entry.hash);
+      if (single) {
+        downloadCertificate({
+          hash: entry.hash,
+          label: single.label || entry.label,
+          owner: single.anchoredBy,
+          stacksBlock: single.stacksBlock,
+          burnBlock: single.burnBlock,
+          timestamp: new Date().toISOString(),
+          contractName: SINGLE_CONTRACT_NAME,
+          verifyUrl: `${origin}/v/${entry.hash}`,
         });
         return;
       }

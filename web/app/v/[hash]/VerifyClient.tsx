@@ -59,10 +59,29 @@ export default function VerifyPage() {
     setTxId(new URLSearchParams(window.location.search).get("tx"));
   }, []);
 
+  // When a batch anchor resolved via the connected wallet rather than the
+  // URL's ?owner=, the bare share URL points recipients to a page that can't
+  // look it up without their own wallet connected. Inject the owner so the
+  // share/cert link works publicly.
+  const publicVerifyUrl = useMemo(() => {
+    if (!shareUrl) return "";
+    if (anchor) return shareUrl;
+    if (batchAnchor && batchOwner && !ownerParam) {
+      try {
+        const u = new URL(shareUrl);
+        u.searchParams.set("owner", batchOwner);
+        return u.toString();
+      } catch {
+        return shareUrl;
+      }
+    }
+    return shareUrl;
+  }, [shareUrl, anchor, batchAnchor, batchOwner, ownerParam]);
+
   const copyShareUrl = async () => {
-    if (!shareUrl) return;
+    if (!publicVerifyUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(publicVerifyUrl);
       setCopiedShare(true);
       setTimeout(() => setCopiedShare(false), 1500);
     } catch {
@@ -72,11 +91,11 @@ export default function VerifyPage() {
   };
 
   const tweetIntent = (() => {
-    if (!shareUrl) return "";
+    if (!publicVerifyUrl) return "";
     const text = "Anchored on Stacks. Verifiable timestamp without sharing the file:";
     return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       text,
-    )}&url=${encodeURIComponent(shareUrl)}`;
+    )}&url=${encodeURIComponent(publicVerifyUrl)}`;
   })();
 
   const loadAnchor = useCallback(
@@ -351,7 +370,7 @@ export default function VerifyPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={copyShareUrl}
-              disabled={!shareUrl}
+              disabled={!publicVerifyUrl}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedShare
@@ -362,6 +381,7 @@ export default function VerifyPage() {
             </button>
             <button
               onClick={() => {
+                const verifyUrl = publicVerifyUrl || window.location.href;
                 if (anchor) {
                   downloadCertificate({
                     hash,
@@ -371,7 +391,7 @@ export default function VerifyPage() {
                     burnBlock: anchor.burnBlock,
                     timestamp: new Date().toISOString(),
                     contractName: SINGLE_CONTRACT_NAME,
-                    verifyUrl: shareUrl || window.location.href,
+                    verifyUrl,
                   });
                 } else if (batchAnchor && batchOwner) {
                   downloadCertificate({
@@ -382,7 +402,7 @@ export default function VerifyPage() {
                     burnBlock: batchAnchor.burnBlock,
                     timestamp: new Date().toISOString(),
                     contractName: BATCH_CONTRACT_FULL_NAME,
-                    verifyUrl: shareUrl || window.location.href,
+                    verifyUrl,
                   });
                 }
               }}
@@ -390,7 +410,7 @@ export default function VerifyPage() {
             >
               Download certificate
             </button>
-            {shareUrl ? (
+            {publicVerifyUrl ? (
               <a
                 href={tweetIntent}
                 target="_blank"
