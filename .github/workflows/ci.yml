@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    env:
+      CLARINET_VERSION: v3.18.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Clarinet
+        run: |
+          set -euo pipefail
+          curl -fSL -o clarinet.tar.gz \
+            "https://github.com/hirosystems/clarinet/releases/download/${CLARINET_VERSION}/clarinet-linux-x64-glibc.tar.gz"
+          tar -xzf clarinet.tar.gz
+          chmod +x clarinet
+          sudo mv clarinet /usr/local/bin/clarinet
+          clarinet --version
+
+      - name: clarinet check
+        run: clarinet check
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run contract tests
+        run: npm test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Seed env vars from .env.example
+        run: cp .env.example .env.local
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npx tsc --noEmit
