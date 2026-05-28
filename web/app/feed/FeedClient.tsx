@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerAddressUrl, explorerTxUrl } from "@/lib/stacks";
@@ -58,32 +58,41 @@ export default function FeedClient() {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   // Tick once a minute so relative timestamps update without refetching.
   const [, setTick] = useState(0);
-  const offsetRef = useRef(0);
+  // Total entries the feed currently asks the API for. Load more grows this
+  // and the next fetch returns everything from the top, deeper. Tracking a
+  // per-contract offset cursor on the client would skip events from quieter
+  // sources when the busy ones surge.
+  const [requestedLimit, setRequestedLimit] = useState(PAGE_SIZE);
 
-  const refresh = useCallback(async (silent = false) => {
-    if (silent) setRefreshing(true);
-    setError(null);
-    try {
-      const fresh = await fetchRecentAnchors(PAGE_SIZE, 0);
-      offsetRef.current = PAGE_SIZE;
-      setEntries(fresh);
-      setHasMore(fresh.length >= PAGE_SIZE);
-    } catch {
-      setError("Could not load the feed. Try again in a moment.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const refresh = useCallback(
+    async (n: number, silent = false) => {
+      if (silent) setRefreshing(true);
+      setError(null);
+      try {
+        const fresh = await fetchRecentAnchors(n);
+        setEntries(fresh);
+        setHasMore(fresh.length >= n);
+      } catch {
+        setError("Could not load the feed. Try again in a moment.");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void refresh(requestedLimit);
+  }, [refresh, requestedLimit]);
 
   useEffect(() => {
-    const id = setInterval(() => void refresh(true), REFRESH_MS);
+    const id = setInterval(
+      () => void refresh(requestedLimit, true),
+      REFRESH_MS,
+    );
     return () => clearInterval(id);
-  }, [refresh]);
+  }, [refresh, requestedLimit]);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), REFRESH_MS);
@@ -93,20 +102,16 @@ export default function FeedClient() {
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
+    setError(null);
+    const nextLimit = requestedLimit + PAGE_SIZE;
     try {
-      const next = await fetchRecentAnchors(PAGE_SIZE, offsetRef.current);
-      offsetRef.current += PAGE_SIZE;
-      if (next.length === 0) {
+      const grown = await fetchRecentAnchors(nextLimit);
+      if (grown.length <= entries.length) {
         setHasMore(false);
       } else {
-        setEntries((prev) => {
-          const seen = new Set(prev.map((e) => `${e.hash}|${e.owner}`));
-          const additions = next.filter(
-            (e) => !seen.has(`${e.hash}|${e.owner}`),
-          );
-          if (additions.length === 0) setHasMore(false);
-          return [...prev, ...additions];
-        });
+        setEntries(grown);
+        setRequestedLimit(nextLimit);
+        setHasMore(grown.length >= nextLimit);
       }
     } catch {
       setError("Could not load more entries. Try again in a moment.");

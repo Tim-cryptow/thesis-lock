@@ -1,4 +1,5 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
+import { readBatchAnchor, type BatchAnchor } from "./stacks";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -128,23 +129,44 @@ async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>> {
   return new Map(results);
 }
 
-export async function fetchRecentAnchors(
-  limit = 20,
-  offset = 0,
-): Promise<FeedEntry[]> {
-  try {
-    // Hiro caps per-page at 50 events. Overfetch (capped at 50) so the
-    // dedupe step still leaves room for `limit` distinct entries on a
-    // single page.
-    const rawLimit = Math.min(50, Math.max(20, limit * 3));
+// Hiro caps `limit` at 50 per call. Page through a contract's events until
+// we have at least `target` raw events or the source is exhausted. The
+// per-call cap is also why the public `fetchRecentAnchors` always starts
+// at offset 0 and refetches from scratch on Load more — a client offset
+// cursor over a merged stream would skip valid entries from the quieter
+// contract whenever the busier one paged past it.
+const HIRO_PAGE = 50;
+const PAGINATE_SAFETY_CAP = 500;
 
-    // thesislock-batch is fetched for spec parity, but its print events
-    // carry only per-batch metadata (no hashes). The per-hash batch rows
-    // are surfaced via the registry contract, which is called per entry.
+async function paginatedFetch(
+  contractName: string,
+  target: number,
+): Promise<RawEvent[]> {
+  const events: RawEvent[] = [];
+  let offset = 0;
+  while (events.length < target) {
+    const fetched = await fetchEvents(contractName, HIRO_PAGE, offset);
+    events.push(...fetched);
+    if (fetched.length < HIRO_PAGE) break;
+    offset += HIRO_PAGE;
+    if (offset >= PAGINATE_SAFETY_CAP) break;
+  }
+  return events;
+}
+
+export async function fetchRecentAnchors(limit = 20): Promise<FeedEntry[]> {
+  try {
+    // Overfetch raw events so dedupe + registry validation still leave
+    // enough material for `limit` distinct, on-chain-backed entries.
+    const target = Math.max(HIRO_PAGE, limit * 3);
+
+    // thesislock-batch is fetched for spec parity. Its print events carry
+    // only per-batch metadata (no hashes); per-hash batch rows are surfaced
+    // via the registry contract.
     const [singleEvents, , registryEvents] = await Promise.all([
-      fetchEvents(SINGLE_CONTRACT, rawLimit, offset),
-      fetchEvents(BATCH_CONTRACT, rawLimit, offset),
-      fetchEvents(REGISTRY_CONTRACT, rawLimit, offset),
+      paginatedFetch(SINGLE_CONTRACT, target),
+      paginatedFetch(BATCH_CONTRACT, target),
+      paginatedFetch(REGISTRY_CONTRACT, target),
     ]);
 
     const partials: FeedEntry[] = [];
@@ -170,13 +192,42 @@ export async function fetchRecentAnchors(
       }
     }
 
-    // A registry entry without a matching single record came from a batch
-    // anchor (the registry is the only contract that exposes per-hash data
-    // for batch entries). Promote those to source: "batch".
-    const merged = Array.from(dedup.values()).map((e) =>
-      e.source === "registry" ? { ...e, source: "batch" as FeedSource } : e,
+    const singleEntries: FeedEntry[] = [];
+    const registryOnly: FeedEntry[] = [];
+    for (const entry of dedup.values()) {
+      if (entry.source === "single") singleEntries.push(entry);
+      else registryOnly.push(entry);
+    }
+
+    // The registry contract doesn't validate that the hash actually exists
+    // in thesislock-batch — anyone can call register-anchor with arbitrary
+    // data. Confirm each registry-only entry against the batch map; drop
+    // entries that don't resolve, and use the batch record's authoritative
+    // stacks-block for the rest.
+    const validated = await Promise.all(
+      registryOnly.map(async (entry): Promise<FeedEntry | null> => {
+        try {
+          const batch: BatchAnchor | null = await readBatchAnchor(
+            entry.hash,
+            entry.owner,
+          );
+          if (!batch) return null;
+          return {
+            ...entry,
+            source: "batch",
+            stacksBlock: batch.stacksBlock,
+            label: batch.label || entry.label,
+          };
+        } catch {
+          return null;
+        }
+      }),
     );
 
+    const merged: FeedEntry[] = [
+      ...singleEntries,
+      ...validated.filter((e): e is FeedEntry => e !== null),
+    ];
     merged.sort((a, b) => b.stacksBlock - a.stacksBlock);
     const top = merged.slice(0, limit);
 
