@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
+  BATCH_CONTRACT_FULL_NAME,
+  SINGLE_CONTRACT_NAME,
   explorerAddressUrl,
   explorerTxUrl,
   hashFile,
@@ -13,6 +15,7 @@ import {
   type BatchAnchor,
 } from "@/lib/stacks";
 import { useWallet } from "@/lib/wallet";
+import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
@@ -56,10 +59,37 @@ export default function VerifyPage() {
     setTxId(new URLSearchParams(window.location.search).get("tx"));
   }, []);
 
+  // When ?owner= is explicit in the URL, the page is asking about a {hash,
+  // owner}-keyed batch record. Prefer it over a global single anchor with
+  // the same hash, which could be an unrelated entry by a different
+  // anchorer. Otherwise fall back to the historical "single first, batch as
+  // fallback" ordering.
+  const preferBatch = Boolean(
+    batchAnchor && batchOwner && (ownerParam || !anchor),
+  );
+
+  // When the batch path resolves via the connected wallet rather than the
+  // URL's ?owner=, the bare share URL points recipients to a page that
+  // can't look it up without their own wallet connected. Inject the owner
+  // so the share/cert link works publicly.
+  const publicVerifyUrl = useMemo(() => {
+    if (!shareUrl) return "";
+    if (preferBatch && batchOwner && !ownerParam) {
+      try {
+        const u = new URL(shareUrl);
+        u.searchParams.set("owner", batchOwner);
+        return u.toString();
+      } catch {
+        return shareUrl;
+      }
+    }
+    return shareUrl;
+  }, [shareUrl, preferBatch, batchOwner, ownerParam]);
+
   const copyShareUrl = async () => {
-    if (!shareUrl) return;
+    if (!publicVerifyUrl) return;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(publicVerifyUrl);
       setCopiedShare(true);
       setTimeout(() => setCopiedShare(false), 1500);
     } catch {
@@ -69,11 +99,11 @@ export default function VerifyPage() {
   };
 
   const tweetIntent = (() => {
-    if (!shareUrl) return "";
+    if (!publicVerifyUrl) return "";
     const text = "Anchored on Stacks. Verifiable timestamp without sharing the file:";
     return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       text,
-    )}&url=${encodeURIComponent(shareUrl)}`;
+    )}&url=${encodeURIComponent(publicVerifyUrl)}`;
   })();
 
   const loadAnchor = useCallback(
@@ -87,7 +117,12 @@ export default function VerifyPage() {
       try {
         const result = await readAnchor(hash);
         setAnchor(result);
-        if (!result && batchOwner) {
+        // Also fetch the batch record when ?owner= is explicit in the URL:
+        // the global single contract and the {hash, owner}-keyed batch
+        // contract can carry unrelated records for the same hash, and an
+        // explicit owner param means the URL is specifically asking about
+        // the batch record.
+        if (batchOwner && (!result || ownerParam)) {
           try {
             const b = await readBatchAnchor(hash, batchOwner);
             setBatchAnchor(b);
@@ -106,7 +141,7 @@ export default function VerifyPage() {
         if (showLoading) setLoading(false);
       }
     },
-    [hash, valid, batchOwner],
+    [hash, valid, batchOwner, ownerParam],
   );
 
   useEffect(() => {
@@ -210,61 +245,61 @@ export default function VerifyPage() {
               Try again
             </button>
           </div>
-        ) : !anchor ? (
-          batchAnchor && batchOwner ? (
-            <div className="mt-4 pt-4 border-t border-foreground/10">
-              <p className="text-foreground/80 text-sm mb-3">
-                Anchored via batch transaction
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                    Owner
-                  </div>
-                  <a
-                    href={explorerAddressUrl(batchOwner)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
-                  >
-                    {batchOwner}
-                  </a>
+        ) : preferBatch && batchAnchor && batchOwner ? (
+          <div className="mt-4 pt-4 border-t border-foreground/10">
+            <p className="text-foreground/80 text-sm mb-3">
+              Anchored via batch transaction
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Owner
                 </div>
-                <div>
-                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                    Label
-                  </div>
-                  <code className="font-mono text-xs md:text-sm">
-                    {batchAnchor.label || "(none)"}
-                  </code>
+                <a
+                  href={explorerAddressUrl(batchOwner)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
+                >
+                  {batchOwner}
+                </a>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Label
                 </div>
-                <div>
-                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                    Stacks block
-                  </div>
-                  <code className="font-mono text-sm">
-                    {batchAnchor.stacksBlock}
-                  </code>
+                <code className="font-mono text-xs md:text-sm">
+                  {batchAnchor.label || "(none)"}
+                </code>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Stacks block
                 </div>
-                <div>
-                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                    Burn block
-                  </div>
-                  <code className="font-mono text-sm">
-                    {batchAnchor.burnBlock}
-                  </code>
+                <code className="font-mono text-sm">
+                  {batchAnchor.stacksBlock}
+                </code>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Burn block
                 </div>
-                <div>
-                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                    Batch ID
-                  </div>
-                  <code className="font-mono text-sm">
-                    #{batchAnchor.batchId}
-                  </code>
+                <code className="font-mono text-sm">
+                  {batchAnchor.burnBlock}
+                </code>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Batch ID
                 </div>
+                <code className="font-mono text-sm">
+                  #{batchAnchor.batchId}
+                </code>
               </div>
             </div>
-          ) : txId ? (
+          </div>
+        ) : !anchor ? (
+          txId ? (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
                 Transaction submitted. Waiting for it to be confirmed on
@@ -338,7 +373,7 @@ export default function VerifyPage() {
         )}
       </div>
 
-      {anchor && (
+      {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
           <h2 className="text-xl mb-2">Share this verification</h2>
           <p className="text-foreground/70 text-sm mb-4">
@@ -348,7 +383,7 @@ export default function VerifyPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={copyShareUrl}
-              disabled={!shareUrl}
+              disabled={!publicVerifyUrl}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedShare
@@ -357,7 +392,49 @@ export default function VerifyPage() {
                   ? "Copy failed"
                   : "Copy verification link"}
             </button>
-            {shareUrl ? (
+            <button
+              onClick={() => {
+                const verifyUrl = publicVerifyUrl || window.location.href;
+                if (preferBatch && batchAnchor && batchOwner) {
+                  downloadCertificate({
+                    hash,
+                    label: batchAnchor.label,
+                    owner: batchOwner,
+                    stacksBlock: batchAnchor.stacksBlock,
+                    burnBlock: batchAnchor.burnBlock,
+                    timestamp: new Date().toISOString(),
+                    contractName: BATCH_CONTRACT_FULL_NAME,
+                    verifyUrl,
+                  });
+                } else if (anchor) {
+                  downloadCertificate({
+                    hash,
+                    label: anchor.label,
+                    owner: anchor.anchoredBy,
+                    stacksBlock: anchor.stacksBlock,
+                    burnBlock: anchor.burnBlock,
+                    timestamp: new Date().toISOString(),
+                    contractName: SINGLE_CONTRACT_NAME,
+                    verifyUrl,
+                  });
+                } else if (batchAnchor && batchOwner) {
+                  downloadCertificate({
+                    hash,
+                    label: batchAnchor.label,
+                    owner: batchOwner,
+                    stacksBlock: batchAnchor.stacksBlock,
+                    burnBlock: batchAnchor.burnBlock,
+                    timestamp: new Date().toISOString(),
+                    contractName: BATCH_CONTRACT_FULL_NAME,
+                    verifyUrl,
+                  });
+                }
+              }}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Download certificate
+            </button>
+            {publicVerifyUrl ? (
               <a
                 href={tweetIntent}
                 target="_blank"

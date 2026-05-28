@@ -1,15 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  BATCH_CONTRACT_FULL_NAME,
+  SINGLE_CONTRACT_NAME,
   hashFile,
+  readAnchor,
+  readBatchAnchor,
   registerAnchor,
   submitAnchor,
   submitBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { downloadCertificate } from "@/lib/downloadCertificate";
 import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
 
@@ -42,6 +46,13 @@ type BatchSuccess = {
   entries: BatchSuccessEntry[];
 };
 
+type SingleSuccess = {
+  hash: string;
+  label: string;
+  owner: string;
+  txId: string;
+};
+
 function validateLabel(next: string): {
   value: string;
   error: string | null;
@@ -57,7 +68,6 @@ function truncateHashShort(h: string) {
 }
 
 export default function AnchorPage() {
-  const router = useRouter();
   const {
     address,
     connecting,
@@ -88,10 +98,15 @@ export default function AnchorPage() {
     useState<RegisterProgress | null>(null);
 
   const [batchSuccess, setBatchSuccess] = useState<BatchSuccess | null>(null);
+  const [singleSuccess, setSingleSuccess] = useState<SingleSuccess | null>(
+    null,
+  );
   const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
   const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
     null,
   );
+  const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
+  const [certNoticeHash, setCertNoticeHash] = useState<string | null>(null);
 
   useEffect(() => {
     if (!pending) return;
@@ -244,20 +259,33 @@ export default function AnchorPage() {
 
   const submitSingle = () => {
     if (!hash || !address) return;
+    const submittingHash = hash;
+    const submittingLabel = label;
+    const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
     submitAnchor(hash, label, {
-      onFinish: () => {
+      onFinish: (txId) => {
         registerSequentially(
-          [{ hash, label }],
+          [{ hash: submittingHash, label: submittingLabel }],
           0,
           () => {
             setPending(false);
-            router.push(`/v/${hash}`);
+            setSingleSuccess({
+              hash: submittingHash,
+              label: submittingLabel,
+              owner: submittingOwner,
+              txId,
+            });
           },
           () => {
             setPending(false);
-            router.push(`/v/${hash}`);
+            setSingleSuccess({
+              hash: submittingHash,
+              label: submittingLabel,
+              owner: submittingOwner,
+              txId,
+            });
           },
         );
       },
@@ -320,6 +348,80 @@ export default function AnchorPage() {
     setSubmitError(null);
   };
 
+  const startAnotherSingle = () => {
+    setSingleSuccess(null);
+    setFile(null);
+    setHash(null);
+    setLabel("");
+    setSubmitError(null);
+  };
+
+  // Block heights for the cert only exist after the tx is mined. Read the
+  // live anchor at download time and surface a transient notice if it has
+  // not been confirmed yet.
+  const downloadSingleCert = async (
+    entryHash: string,
+    entryLabel: string,
+    owner: string,
+  ) => {
+    setCertNoticeHash(null);
+    setCertBusyHash(entryHash);
+    try {
+      const result = await readAnchor(entryHash);
+      if (!result) {
+        setCertNoticeHash(entryHash);
+        setTimeout(() => setCertNoticeHash(null), 4000);
+        return;
+      }
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      downloadCertificate({
+        hash: entryHash,
+        label: result.label || entryLabel,
+        owner: result.anchoredBy,
+        stacksBlock: result.stacksBlock,
+        burnBlock: result.burnBlock,
+        timestamp: new Date().toISOString(),
+        contractName: SINGLE_CONTRACT_NAME,
+        verifyUrl: `${origin}/v/${entryHash}`,
+      });
+    } finally {
+      setCertBusyHash(null);
+    }
+  };
+
+  const downloadBatchCert = async (
+    entryHash: string,
+    entryLabel: string,
+    owner: string,
+    txId: string,
+  ) => {
+    setCertNoticeHash(null);
+    setCertBusyHash(entryHash);
+    try {
+      const result = await readBatchAnchor(entryHash, owner);
+      if (!result) {
+        setCertNoticeHash(entryHash);
+        setTimeout(() => setCertNoticeHash(null), 4000);
+        return;
+      }
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      downloadCertificate({
+        hash: entryHash,
+        label: result.label || entryLabel,
+        owner,
+        stacksBlock: result.stacksBlock,
+        burnBlock: result.burnBlock,
+        timestamp: new Date().toISOString(),
+        contractName: BATCH_CONTRACT_FULL_NAME,
+        verifyUrl: `${origin}/v/${entryHash}?owner=${encodeURIComponent(owner)}&tx=${encodeURIComponent(txId)}`,
+      });
+    } finally {
+      setCertBusyHash(null);
+    }
+  };
+
   return (
     <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
@@ -361,7 +463,76 @@ export default function AnchorPage() {
         </p>
       )}
 
-      {batchSuccess ? (
+      {singleSuccess ? (
+        <>
+          <h1 className="text-3xl mb-2">Anchored</h1>
+          <p className="text-foreground/70 mb-6">
+            Your document is recorded on chain. Share the verification link or
+            keep the certificate as a permanent proof of timestamp.
+          </p>
+          <div className="rounded-lg border border-foreground/10 bg-white p-5">
+            <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+              Hash
+            </div>
+            <code className="font-mono text-xs break-all block mb-3">
+              {singleSuccess.hash}
+            </code>
+            {singleSuccess.label && (
+              <div className="mb-3">
+                <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                  Label
+                </div>
+                <code className="font-mono text-xs">
+                  {singleSuccess.label}
+                </code>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/v/${singleSuccess.hash}?tx=${encodeURIComponent(singleSuccess.txId)}`}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+              >
+                Open verify page
+              </Link>
+              <button
+                onClick={() =>
+                  void downloadSingleCert(
+                    singleSuccess.hash,
+                    singleSuccess.label,
+                    singleSuccess.owner,
+                  )
+                }
+                disabled={certBusyHash === singleSuccess.hash}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {certBusyHash === singleSuccess.hash
+                  ? "Preparing..."
+                  : "Download certificate"}
+              </button>
+            </div>
+            {certNoticeHash === singleSuccess.hash && (
+              <p className="mt-3 text-xs text-amber-700">
+                Not yet confirmed on chain. Try again in a moment, or open the
+                verify page which polls automatically.
+              </p>
+            )}
+          </div>
+          <div className="mt-8 flex gap-3 flex-wrap">
+            <Link
+              href="/anchors"
+              className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
+            >
+              View my anchors
+            </Link>
+            <button
+              onClick={startAnotherSingle}
+              className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Anchor another document
+            </button>
+          </div>
+        </>
+      ) : batchSuccess ? (
         <>
           <h1 className="text-3xl mb-2">Batch anchored</h1>
           <p className="text-foreground/70 mb-6">
@@ -411,7 +582,29 @@ export default function AnchorPage() {
                         ? "Copy failed"
                         : "Copy verify link"}
                   </button>
+                  <button
+                    onClick={() =>
+                      void downloadBatchCert(
+                        entry.hash,
+                        entry.label,
+                        batchSuccess.owner,
+                        batchSuccess.txId,
+                      )
+                    }
+                    disabled={certBusyHash === entry.hash}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                  >
+                    {certBusyHash === entry.hash
+                      ? "Preparing..."
+                      : "Download certificate"}
+                  </button>
                 </div>
+                {certNoticeHash === entry.hash && (
+                  <p className="mt-3 text-xs text-amber-700">
+                    Not yet confirmed on chain. Try again in a moment, or open
+                    the verify page which polls automatically.
+                  </p>
+                )}
               </div>
             ))}
           </div>

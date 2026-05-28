@@ -3,11 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  BATCH_CONTRACT_FULL_NAME,
+  SINGLE_CONTRACT_NAME,
   getAnchorCount,
   getRecentAnchors,
+  readAnchor,
+  readBatchAnchor,
   type RegistryEntry,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { downloadCertificate } from "@/lib/downloadCertificate";
 
 function truncateHash(hash: string): string {
   if (hash.length <= 14) return hash;
@@ -52,6 +57,60 @@ export default function AnchorsPage() {
     await navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
     setTimeout(() => setCopiedHash(null), 1500);
+  };
+
+  const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
+  const [certErrorHash, setCertErrorHash] = useState<string | null>(null);
+
+  const downloadEntryCertificate = async (entry: RegistryEntry) => {
+    if (!address) return;
+    setCertErrorHash(null);
+    setCertBusyHash(entry.hash);
+    try {
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+      // Check the wallet's batch entry first. thesislock-batch is keyed by
+      // {hash, owner}, while thesislock is global (one anchor per hash,
+      // anyone can claim). For a registry entry that belongs to this wallet
+      // via a batch anchor, the global single record may name a different
+      // anchorer for the same hash — falling through to it would generate a
+      // certificate for the wrong record.
+      const batch = await readBatchAnchor(entry.hash, address);
+      if (batch) {
+        downloadCertificate({
+          hash: entry.hash,
+          label: batch.label || entry.label,
+          owner: address,
+          stacksBlock: batch.stacksBlock,
+          burnBlock: batch.burnBlock,
+          timestamp: new Date().toISOString(),
+          contractName: BATCH_CONTRACT_FULL_NAME,
+          verifyUrl: `${origin}/v/${entry.hash}?owner=${encodeURIComponent(address)}`,
+        });
+        return;
+      }
+      const single = await readAnchor(entry.hash);
+      if (single) {
+        downloadCertificate({
+          hash: entry.hash,
+          label: single.label || entry.label,
+          owner: single.anchoredBy,
+          stacksBlock: single.stacksBlock,
+          burnBlock: single.burnBlock,
+          timestamp: new Date().toISOString(),
+          contractName: SINGLE_CONTRACT_NAME,
+          verifyUrl: `${origin}/v/${entry.hash}`,
+        });
+        return;
+      }
+      setCertErrorHash(entry.hash);
+      setTimeout(() => setCertErrorHash(null), 4000);
+    } catch {
+      setCertErrorHash(entry.hash);
+      setTimeout(() => setCertErrorHash(null), 4000);
+    } finally {
+      setCertBusyHash(null);
+    }
   };
 
   return (
@@ -145,12 +204,22 @@ export default function AnchorsPage() {
                     </button>
                   </div>
                 </div>
-                <Link
-                  href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
-                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
-                >
-                  Verify &rarr;
-                </Link>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => void downloadEntryCertificate(entry)}
+                    disabled={certBusyHash === entry.hash}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                    title="Download certificate"
+                  >
+                    {certBusyHash === entry.hash ? "Preparing..." : "Download"}
+                  </button>
+                  <Link
+                    href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    Verify &rarr;
+                  </Link>
+                </div>
               </div>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
@@ -168,6 +237,11 @@ export default function AnchorsPage() {
                   <code className="font-mono text-xs">{entry.anchoredAt}</code>
                 </div>
               </div>
+              {certErrorHash === entry.hash && (
+                <p className="mt-3 text-xs text-amber-700">
+                  Could not load on-chain anchor data. Try again in a moment.
+                </p>
+              )}
             </div>
           ))}
           {count !== null && count > entries.length && (
