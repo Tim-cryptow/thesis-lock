@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
+  BATCH_CONTRACT_FULL_NAME,
+  SINGLE_CONTRACT_NAME,
   explorerAddressUrl,
   explorerTxUrl,
   hashFile,
@@ -13,6 +15,7 @@ import {
   type BatchAnchor,
 } from "@/lib/stacks";
 import { useWallet } from "@/lib/wallet";
+import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
@@ -338,7 +341,7 @@ export default function VerifyPage() {
         )}
       </div>
 
-      {anchor && (
+      {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
           <h2 className="text-xl mb-2">Share this verification</h2>
           <p className="text-foreground/70 text-sm mb-4">
@@ -356,6 +359,36 @@ export default function VerifyPage() {
                 : copyShareFailed
                   ? "Copy failed"
                   : "Copy verification link"}
+            </button>
+            <button
+              onClick={() => {
+                if (anchor) {
+                  downloadCertificate({
+                    hash,
+                    label: anchor.label,
+                    owner: anchor.anchoredBy,
+                    stacksBlock: anchor.stacksBlock,
+                    burnBlock: anchor.burnBlock,
+                    timestamp: new Date().toISOString(),
+                    contractName: SINGLE_CONTRACT_NAME,
+                    verifyUrl: shareUrl || window.location.href,
+                  });
+                } else if (batchAnchor && batchOwner) {
+                  downloadCertificate({
+                    hash,
+                    label: batchAnchor.label,
+                    owner: batchOwner,
+                    stacksBlock: batchAnchor.stacksBlock,
+                    burnBlock: batchAnchor.burnBlock,
+                    timestamp: new Date().toISOString(),
+                    contractName: BATCH_CONTRACT_FULL_NAME,
+                    verifyUrl: shareUrl || window.location.href,
+                  });
+                }
+              }}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Download certificate
             </button>
             {shareUrl ? (
               <a

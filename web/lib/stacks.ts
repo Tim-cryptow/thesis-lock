@@ -17,6 +17,9 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME!;
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 const REGISTRY_CONTRACT_NAME = "thesislock-registry";
+
+export const SINGLE_CONTRACT_NAME = CONTRACT_NAME;
+export const BATCH_CONTRACT_FULL_NAME = BATCH_CONTRACT_NAME;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export type Anchor = {
