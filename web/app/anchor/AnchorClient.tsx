@@ -30,6 +30,10 @@ type BatchRow = {
 type RegisterProgress = { current: number; total: number };
 
 type BatchSuccessEntry = { hash: string; label: string };
+// thesislock-batch keys entries by tx-sender, so we freeze the submitting
+// owner at submit time. Reading live `address` later would break the link
+// if the user disconnects or switches accounts before clicking.
+type BatchSuccess = { owner: string; entries: BatchSuccessEntry[] };
 
 function validateLabel(next: string): {
   value: string;
@@ -76,9 +80,7 @@ export default function AnchorPage() {
   const [registerProgress, setRegisterProgress] =
     useState<RegisterProgress | null>(null);
 
-  const [batchSuccess, setBatchSuccess] = useState<BatchSuccessEntry[] | null>(
-    null,
-  );
+  const [batchSuccess, setBatchSuccess] = useState<BatchSuccess | null>(null);
   const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
   const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
     null,
@@ -253,6 +255,7 @@ export default function AnchorPage() {
   const submitBatch = () => {
     if (!canSubmitBatch || !address) return;
     const entries = rows.map((r) => ({ hash: r.hash!, label: r.label }));
+    const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
     submitBatchAnchor(
@@ -263,11 +266,11 @@ export default function AnchorPage() {
           0,
           () => {
             setPending(false);
-            setBatchSuccess(entries);
+            setBatchSuccess({ owner: submittingOwner, entries });
           },
           () => {
             setPending(false);
-            setBatchSuccess(entries);
+            setBatchSuccess({ owner: submittingOwner, entries });
           },
         );
       },
@@ -275,16 +278,10 @@ export default function AnchorPage() {
     );
   };
 
-  const verifyLinkFor = (hash: string) => {
-    if (!address) return "";
+  const copyVerifyLink = async (hash: string, owner: string) => {
     const origin =
       typeof window !== "undefined" ? window.location.origin : "";
-    return `${origin}/v/${hash}?owner=${encodeURIComponent(address)}`;
-  };
-
-  const copyVerifyLink = async (hash: string) => {
-    const url = verifyLinkFor(hash);
-    if (!url) return;
+    const url = `${origin}/v/${hash}?owner=${encodeURIComponent(owner)}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLinkHash(hash);
@@ -342,7 +339,7 @@ export default function AnchorPage() {
         </p>
       )}
 
-      {batchSuccess && address ? (
+      {batchSuccess ? (
         <>
           <h1 className="text-3xl mb-2">Batch anchored</h1>
           <p className="text-foreground/70 mb-6">
@@ -350,7 +347,7 @@ export default function AnchorPage() {
             links so anyone can confirm them without connecting a wallet.
           </p>
           <div className="space-y-3">
-            {batchSuccess.map((entry, idx) => (
+            {batchSuccess.entries.map((entry, idx) => (
               <div
                 key={`${entry.hash}-${idx}`}
                 className="rounded-lg border border-foreground/10 bg-white p-5"
@@ -371,13 +368,15 @@ export default function AnchorPage() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
+                    href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}`}
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     Open verify page
                   </Link>
                   <button
-                    onClick={() => void copyVerifyLink(entry.hash)}
+                    onClick={() =>
+                      void copyVerifyLink(entry.hash, batchSuccess.owner)
+                    }
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     {copiedLinkHash === entry.hash
