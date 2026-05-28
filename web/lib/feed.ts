@@ -155,94 +155,92 @@ async function paginatedFetch(
 }
 
 export async function fetchRecentAnchors(limit = 20): Promise<FeedEntry[]> {
-  try {
-    // Overfetch raw events so dedupe + registry validation still leave
-    // enough material for `limit` distinct, on-chain-backed entries.
-    const target = Math.max(HIRO_PAGE, limit * 3);
+  // Errors propagate. The client distinguishes "no anchors yet" (empty
+  // array from a successful fetch) from "fetch failed" so a transient
+  // Hiro 5xx during the auto-refresh doesn't wipe the displayed list.
+  // Overfetch raw events so dedupe + registry validation still leave
+  // enough material for `limit` distinct, on-chain-backed entries.
+  const target = Math.max(HIRO_PAGE, limit * 3);
 
-    // thesislock-batch is fetched for spec parity. Its print events carry
-    // only per-batch metadata (no hashes); per-hash batch rows are surfaced
-    // via the registry contract.
-    const [singleEvents, , registryEvents] = await Promise.all([
-      paginatedFetch(SINGLE_CONTRACT, target),
-      paginatedFetch(BATCH_CONTRACT, target),
-      paginatedFetch(REGISTRY_CONTRACT, target),
-    ]);
+  // thesislock-batch is fetched for spec parity. Its print events carry
+  // only per-batch metadata (no hashes); per-hash batch rows are surfaced
+  // via the registry contract.
+  const [singleEvents, , registryEvents] = await Promise.all([
+    paginatedFetch(SINGLE_CONTRACT, target),
+    paginatedFetch(BATCH_CONTRACT, target),
+    paginatedFetch(REGISTRY_CONTRACT, target),
+  ]);
 
-    const partials: FeedEntry[] = [];
-    for (const ev of singleEvents) {
-      const p = parseSingleEvent(ev);
-      if (p) partials.push(p);
-    }
-    for (const ev of registryEvents) {
-      const p = parseRegistryEvent(ev);
-      if (p) partials.push(p);
-    }
-
-    // Dedupe by (hash, owner). Single contract wins over registry: it is
-    // authoritative for single-anchor flows and identifies them by source.
-    const dedup = new Map<string, FeedEntry>();
-    for (const p of partials) {
-      const key = `${p.hash}|${p.owner}`;
-      const existing = dedup.get(key);
-      if (!existing) {
-        dedup.set(key, p);
-      } else if (p.source === "single" && existing.source !== "single") {
-        dedup.set(key, p);
-      }
-    }
-
-    const singleEntries: FeedEntry[] = [];
-    const registryOnly: FeedEntry[] = [];
-    for (const entry of dedup.values()) {
-      if (entry.source === "single") singleEntries.push(entry);
-      else registryOnly.push(entry);
-    }
-
-    // The registry contract doesn't validate that the hash actually exists
-    // in thesislock-batch — anyone can call register-anchor with arbitrary
-    // data. Confirm each registry-only entry against the batch map; drop
-    // entries that don't resolve, and use the batch record's authoritative
-    // stacks-block for the rest.
-    const validated = await Promise.all(
-      registryOnly.map(async (entry): Promise<FeedEntry | null> => {
-        try {
-          const batch: BatchAnchor | null = await readBatchAnchor(
-            entry.hash,
-            entry.owner,
-          );
-          if (!batch) return null;
-          return {
-            ...entry,
-            source: "batch",
-            stacksBlock: batch.stacksBlock,
-            label: batch.label || entry.label,
-          };
-        } catch {
-          return null;
-        }
-      }),
-    );
-
-    const merged: FeedEntry[] = [
-      ...singleEntries,
-      ...validated.filter((e): e is FeedEntry => e !== null),
-    ];
-    merged.sort((a, b) => b.stacksBlock - a.stacksBlock);
-    const top = merged.slice(0, limit);
-
-    if (top.length === 0) return [];
-
-    const txTimes = await fetchTxTimes(top.map((e) => e.txId));
-    return top.map((e) => {
-      const t = txTimes.get(e.txId) ?? 0;
-      return {
-        ...e,
-        timestamp: t ? new Date(t * 1000).toISOString() : "",
-      };
-    });
-  } catch (e) {
-    console.error("fetchRecentAnchors failed", e);
-    return [];
+  const partials: FeedEntry[] = [];
+  for (const ev of singleEvents) {
+    const p = parseSingleEvent(ev);
+    if (p) partials.push(p);
   }
+  for (const ev of registryEvents) {
+    const p = parseRegistryEvent(ev);
+    if (p) partials.push(p);
+  }
+
+  // Dedupe by (hash, owner). Single contract wins over registry: it is
+  // authoritative for single-anchor flows and identifies them by source.
+  const dedup = new Map<string, FeedEntry>();
+  for (const p of partials) {
+    const key = `${p.hash}|${p.owner}`;
+    const existing = dedup.get(key);
+    if (!existing) {
+      dedup.set(key, p);
+    } else if (p.source === "single" && existing.source !== "single") {
+      dedup.set(key, p);
+    }
+  }
+
+  const singleEntries: FeedEntry[] = [];
+  const registryOnly: FeedEntry[] = [];
+  for (const entry of dedup.values()) {
+    if (entry.source === "single") singleEntries.push(entry);
+    else registryOnly.push(entry);
+  }
+
+  // The registry contract doesn't validate that the hash actually exists
+  // in thesislock-batch — anyone can call register-anchor with arbitrary
+  // data. Confirm each registry-only entry against the batch map; drop
+  // entries that don't resolve, and use the batch record's authoritative
+  // stacks-block for the rest.
+  const validated = await Promise.all(
+    registryOnly.map(async (entry): Promise<FeedEntry | null> => {
+      try {
+        const batch: BatchAnchor | null = await readBatchAnchor(
+          entry.hash,
+          entry.owner,
+        );
+        if (!batch) return null;
+        return {
+          ...entry,
+          source: "batch",
+          stacksBlock: batch.stacksBlock,
+          label: batch.label || entry.label,
+        };
+      } catch {
+        return null;
+      }
+    }),
+  );
+
+  const merged: FeedEntry[] = [
+    ...singleEntries,
+    ...validated.filter((e): e is FeedEntry => e !== null),
+  ];
+  merged.sort((a, b) => b.stacksBlock - a.stacksBlock);
+  const top = merged.slice(0, limit);
+
+  if (top.length === 0) return [];
+
+  const txTimes = await fetchTxTimes(top.map((e) => e.txId));
+  return top.map((e) => {
+    const t = txTimes.get(e.txId) ?? 0;
+    return {
+      ...e,
+      timestamp: t ? new Date(t * 1000).toISOString() : "",
+    };
+  });
 }
