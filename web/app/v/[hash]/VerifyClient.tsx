@@ -16,7 +16,10 @@ import { useWallet } from "@/lib/wallet";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
-const STX_PRINCIPAL = /^S[PMNT][A-Z0-9]{39}$/;
+// c32-encoded Stacks principals are variable length: hash160 leading zero
+// bytes are stripped during encoding, so addresses like the burn principal
+// SP000000000000000000002Q6VF78 are well under the typical 41 chars.
+const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 export default function VerifyPage() {
   const params = useParams<{ hash: string }>();
