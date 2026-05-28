@@ -23,11 +23,24 @@ type BatchRow = {
   file: File;
   hash: string | null;
   hashing: boolean;
+  hashError: string | null;
   label: string;
   labelError: string | null;
 };
 
 type RegisterProgress = { current: number; total: number };
+
+type BatchSuccessEntry = { hash: string; label: string };
+// thesislock-batch keys entries by tx-sender, so we freeze the submitting
+// owner at submit time. Reading live `address` later would break the link
+// if the user disconnects or switches accounts before clicking. We also
+// thread the batch txId through so the verify page can poll for the pending
+// transaction instead of reporting a false-negative "not anchored".
+type BatchSuccess = {
+  owner: string;
+  txId: string;
+  entries: BatchSuccessEntry[];
+};
 
 function validateLabel(next: string): {
   value: string;
@@ -73,6 +86,12 @@ export default function AnchorPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registerProgress, setRegisterProgress] =
     useState<RegisterProgress | null>(null);
+
+  const [batchSuccess, setBatchSuccess] = useState<BatchSuccess | null>(null);
+  const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
+  const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!pending) return;
@@ -141,17 +160,32 @@ export default function AnchorPage() {
         file: f,
         hash: null,
         hashing: true,
+        hashError: null,
         label: "",
         labelError: null,
       }));
       newRows.forEach((row) => {
-        void hashFile(row.file).then((h) => {
-          setRows((current) =>
-            current.map((r) =>
-              r.id === row.id ? { ...r, hash: h, hashing: false } : r,
-            ),
-          );
-        });
+        hashFile(row.file)
+          .then((h) => {
+            setRows((current) =>
+              current.map((r) =>
+                r.id === row.id
+                  ? { ...r, hash: h, hashing: false, hashError: null }
+                  : r,
+              ),
+            );
+          })
+          .catch((e: unknown) => {
+            const message =
+              e instanceof Error ? e.message : "Could not hash this file.";
+            setRows((current) =>
+              current.map((r) =>
+                r.id === row.id
+                  ? { ...r, hash: null, hashing: false, hashError: message }
+                  : r,
+              ),
+            );
+          });
       });
       return [...prev, ...newRows];
     });
@@ -243,26 +277,47 @@ export default function AnchorPage() {
   const submitBatch = () => {
     if (!canSubmitBatch || !address) return;
     const entries = rows.map((r) => ({ hash: r.hash!, label: r.label }));
+    const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
     submitBatchAnchor(
       entries,
-      () => {
+      (txId) => {
         registerSequentially(
           entries,
           0,
           () => {
             setPending(false);
-            router.push("/anchors");
+            setBatchSuccess({ owner: submittingOwner, txId, entries });
           },
           () => {
             setPending(false);
-            router.push("/anchors");
+            setBatchSuccess({ owner: submittingOwner, txId, entries });
           },
         );
       },
       () => setPending(false),
     );
+  };
+
+  const copyVerifyLink = async (hash: string, owner: string, txId: string) => {
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    const url = `${origin}/v/${hash}?owner=${encodeURIComponent(owner)}&tx=${encodeURIComponent(txId)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLinkHash(hash);
+      setTimeout(() => setCopiedLinkHash(null), 1500);
+    } catch {
+      setCopyLinkFailedHash(hash);
+      setTimeout(() => setCopyLinkFailedHash(null), 1500);
+    }
+  };
+
+  const startAnotherBatch = () => {
+    setBatchSuccess(null);
+    setRows([]);
+    setSubmitError(null);
   };
 
   return (
@@ -306,6 +361,77 @@ export default function AnchorPage() {
         </p>
       )}
 
+      {batchSuccess ? (
+        <>
+          <h1 className="text-3xl mb-2">Batch anchored</h1>
+          <p className="text-foreground/70 mb-6">
+            Each document below is recorded on chain. Share the verification
+            links so anyone can confirm them without connecting a wallet.
+          </p>
+          <div className="space-y-3">
+            {batchSuccess.entries.map((entry, idx) => (
+              <div
+                key={`${entry.hash}-${idx}`}
+                className="rounded-lg border border-foreground/10 bg-white p-5"
+              >
+                <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                  Hash
+                </div>
+                <code className="font-mono text-xs break-all block mb-3">
+                  {entry.hash}
+                </code>
+                {entry.label && (
+                  <div className="mb-3">
+                    <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                      Label
+                    </div>
+                    <code className="font-mono text-xs">{entry.label}</code>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}&tx=${encodeURIComponent(batchSuccess.txId)}`}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    Open verify page
+                  </Link>
+                  <button
+                    onClick={() =>
+                      void copyVerifyLink(
+                        entry.hash,
+                        batchSuccess.owner,
+                        batchSuccess.txId,
+                      )
+                    }
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    {copiedLinkHash === entry.hash
+                      ? "Link copied"
+                      : copyLinkFailedHash === entry.hash
+                        ? "Copy failed"
+                        : "Copy verify link"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex gap-3 flex-wrap">
+            <Link
+              href="/anchors"
+              className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
+            >
+              View my anchors
+            </Link>
+            <button
+              onClick={startAnotherBatch}
+              className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Anchor another batch
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
       <h1 className="text-3xl mb-2">Anchor a document</h1>
       <p className="text-foreground/70 mb-6">
         Files are hashed in your browser. Only the hash is submitted on chain.
@@ -494,6 +620,10 @@ export default function AnchorPage() {
                       <p className="font-mono text-xs text-foreground/50">
                         Hashing...
                       </p>
+                    ) : row.hashError ? (
+                      <p className="text-xs text-red-600" role="alert">
+                        {row.hashError}
+                      </p>
                     ) : (
                       <code className="font-mono text-xs">
                         {row.hash ? truncateHashShort(row.hash) : "-"}
@@ -556,6 +686,8 @@ export default function AnchorPage() {
         <p className="mt-4 text-sm text-red-600 text-center" role="alert">
           {submitError}
         </p>
+      )}
+        </>
       )}
     </main>
   );

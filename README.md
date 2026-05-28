@@ -51,6 +51,16 @@ cp .env.example .env.local
 npm run dev
 ```
 
+## Verify in the browser
+
+The web UI has a verification page at `/v/<hash>`. Single anchors resolve automatically. Batch anchors are keyed by both hash and owner principal, so append `?owner=<principal>` to the URL when sharing a batch-anchored hash. Without the owner param the batch entry is only visible when the original anchoring wallet is connected, which defeats public verification:
+
+```
+https://thesis-lock.vercel.app/v/<hash>?owner=<principal>
+```
+
+Links generated from the "My Anchors" page and the batch success screen already include the owner.
+
 ## Verify on chain
 
 You do not need the frontend to verify an anchor. Any SHA-256 hash can be looked up directly against the Hiro mainnet API.

@@ -146,7 +146,7 @@ export default function AnchorsPage() {
                   </div>
                 </div>
                 <Link
-                  href={`/v/${entry.hash}`}
+                  href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                 >
                   Verify &rarr;
