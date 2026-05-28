@@ -1,3 +1,5 @@
+![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg)
+
 # ThesisLock
 
 ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, giving you a permanent, verifiable timestamp without ever exposing the file. Drop a document into the page, the browser hashes it locally, you sign a transaction with your Stacks wallet, and anyone can later visit a verification URL to confirm when it was anchored, by which wallet, and what label was attached.
