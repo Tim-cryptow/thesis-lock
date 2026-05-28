@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   explorerAddressUrl,
@@ -16,12 +16,23 @@ import { useWallet } from "@/lib/wallet";
 import FileDropZone from "@/app/components/FileDropZone";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+const STX_PRINCIPAL = /^S[PMNT][A-Z0-9]{39}$/;
 
 export default function VerifyPage() {
   const params = useParams<{ hash: string }>();
+  const searchParams = useSearchParams();
   const hash = (params.hash ?? "").toLowerCase();
   const valid = useMemo(() => HEX_64.test(hash), [hash]);
   const { address } = useWallet();
+
+  const rawOwnerParam = searchParams.get("owner");
+  const ownerParam = useMemo(() => {
+    if (!rawOwnerParam) return null;
+    const upper = rawOwnerParam.toUpperCase();
+    return STX_PRINCIPAL.test(upper) ? upper : null;
+  }, [rawOwnerParam]);
+  const batchOwner = ownerParam ?? address ?? null;
+
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [batchAnchor, setBatchAnchor] = useState<BatchAnchor | null>(null);
@@ -73,9 +84,9 @@ export default function VerifyPage() {
       try {
         const result = await readAnchor(hash);
         setAnchor(result);
-        if (!result && address) {
+        if (!result && batchOwner) {
           try {
-            const b = await readBatchAnchor(hash, address);
+            const b = await readBatchAnchor(hash, batchOwner);
             setBatchAnchor(b);
           } catch {
             setBatchAnchor(null);
@@ -92,7 +103,7 @@ export default function VerifyPage() {
         if (showLoading) setLoading(false);
       }
     },
-    [hash, valid, address],
+    [hash, valid, batchOwner],
   );
 
   useEffect(() => {
@@ -197,7 +208,7 @@ export default function VerifyPage() {
             </button>
           </div>
         ) : !anchor ? (
-          batchAnchor && address ? (
+          batchAnchor && batchOwner ? (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80 text-sm mb-3">
                 Anchored via batch transaction
@@ -208,12 +219,12 @@ export default function VerifyPage() {
                     Owner
                   </div>
                   <a
-                    href={explorerAddressUrl(address)}
+                    href={explorerAddressUrl(batchOwner)}
                     target="_blank"
                     rel="noreferrer"
                     className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
                   >
-                    {address}
+                    {batchOwner}
                   </a>
                 </div>
                 <div>
@@ -268,15 +279,15 @@ export default function VerifyPage() {
           ) : (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
-                This hash has not been anchored
-                {!address && (
-                  <>
-                    {" "}— if you anchored it via a batch transaction, connect
-                    your wallet to look it up
-                  </>
-                )}
-                .
+                This hash has not been anchored.
               </p>
+              {!batchOwner && (
+                <p className="mt-3 text-sm text-foreground/70">
+                  If this was batch-anchored, add{" "}
+                  <code className="font-mono">?owner=&lt;principal&gt;</code>{" "}
+                  to the URL or connect the anchoring wallet to verify.
+                </p>
+              )}
               <Link
                 href="/anchor"
                 className="inline-block mt-3 text-sm underline hover:no-underline"
