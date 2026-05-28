@@ -204,25 +204,23 @@ export async function fetchRecentAnchors(limit = 20): Promise<FeedEntry[]> {
   // The registry contract doesn't validate that the hash actually exists
   // in thesislock-batch — anyone can call register-anchor with arbitrary
   // data. Confirm each registry-only entry against the batch map; drop
-  // entries that don't resolve, and use the batch record's authoritative
-  // stacks-block for the rest.
+  // entries that resolve to (none), and use the batch record's
+  // authoritative stacks-block for the rest. Errors are not caught here:
+  // a transient Hiro failure would otherwise silently drop every batch
+  // row instead of surfacing as a feed-level error in the client.
   const validated = await Promise.all(
     registryOnly.map(async (entry): Promise<FeedEntry | null> => {
-      try {
-        const batch: BatchAnchor | null = await readBatchAnchor(
-          entry.hash,
-          entry.owner,
-        );
-        if (!batch) return null;
-        return {
-          ...entry,
-          source: "batch",
-          stacksBlock: batch.stacksBlock,
-          label: batch.label || entry.label,
-        };
-      } catch {
-        return null;
-      }
+      const batch: BatchAnchor | null = await readBatchAnchor(
+        entry.hash,
+        entry.owner,
+      );
+      if (!batch) return null;
+      return {
+        ...entry,
+        source: "batch",
+        stacksBlock: batch.stacksBlock,
+        label: batch.label || entry.label,
+      };
     }),
   );
 
