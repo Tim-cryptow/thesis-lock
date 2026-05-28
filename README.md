@@ -16,6 +16,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
 - Client-side SHA-256 hashing. The file never leaves your device.
 - Public verification at `/v/<hash>` with file re-upload check.
+- Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
 
 ## Protocol
 

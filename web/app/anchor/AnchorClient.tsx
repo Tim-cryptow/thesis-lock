@@ -436,6 +436,12 @@ export default function AnchorPage() {
           >
             My Anchors
           </Link>
+          <Link
+            href="/feed"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Feed
+          </Link>
         </div>
         {address ? (
           <button

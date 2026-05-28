@@ -127,6 +127,12 @@ export default function AnchorsPage() {
             Anchor
           </Link>
           <span className="text-foreground font-medium">My Anchors</span>
+          <Link
+            href="/feed"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Feed
+          </Link>
         </div>
         {address ? (
           <button
