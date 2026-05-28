@@ -32,8 +32,14 @@ type RegisterProgress = { current: number; total: number };
 type BatchSuccessEntry = { hash: string; label: string };
 // thesislock-batch keys entries by tx-sender, so we freeze the submitting
 // owner at submit time. Reading live `address` later would break the link
-// if the user disconnects or switches accounts before clicking.
-type BatchSuccess = { owner: string; entries: BatchSuccessEntry[] };
+// if the user disconnects or switches accounts before clicking. We also
+// thread the batch txId through so the verify page can poll for the pending
+// transaction instead of reporting a false-negative "not anchored".
+type BatchSuccess = {
+  owner: string;
+  txId: string;
+  entries: BatchSuccessEntry[];
+};
 
 function validateLabel(next: string): {
   value: string;
@@ -260,17 +266,17 @@ export default function AnchorPage() {
     setPending(true);
     submitBatchAnchor(
       entries,
-      () => {
+      (txId) => {
         registerSequentially(
           entries,
           0,
           () => {
             setPending(false);
-            setBatchSuccess({ owner: submittingOwner, entries });
+            setBatchSuccess({ owner: submittingOwner, txId, entries });
           },
           () => {
             setPending(false);
-            setBatchSuccess({ owner: submittingOwner, entries });
+            setBatchSuccess({ owner: submittingOwner, txId, entries });
           },
         );
       },
@@ -278,10 +284,10 @@ export default function AnchorPage() {
     );
   };
 
-  const copyVerifyLink = async (hash: string, owner: string) => {
+  const copyVerifyLink = async (hash: string, owner: string, txId: string) => {
     const origin =
       typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${origin}/v/${hash}?owner=${encodeURIComponent(owner)}`;
+    const url = `${origin}/v/${hash}?owner=${encodeURIComponent(owner)}&tx=${encodeURIComponent(txId)}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopiedLinkHash(hash);
@@ -368,14 +374,18 @@ export default function AnchorPage() {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Link
-                    href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}`}
+                    href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}&tx=${encodeURIComponent(batchSuccess.txId)}`}
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     Open verify page
                   </Link>
                   <button
                     onClick={() =>
-                      void copyVerifyLink(entry.hash, batchSuccess.owner)
+                      void copyVerifyLink(
+                        entry.hash,
+                        batchSuccess.owner,
+                        batchSuccess.txId,
+                      )
                     }
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
