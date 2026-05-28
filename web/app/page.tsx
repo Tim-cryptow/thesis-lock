@@ -26,6 +26,12 @@ export default function Page() {
           >
             My anchors
           </Link>
+          <Link
+            href="/feed"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            Recent anchors
+          </Link>
         </div>
       </section>
 
