@@ -29,6 +29,8 @@ type BatchRow = {
 
 type RegisterProgress = { current: number; total: number };
 
+type BatchSuccessEntry = { hash: string; label: string };
+
 function validateLabel(next: string): {
   value: string;
   error: string | null;
@@ -73,6 +75,14 @@ export default function AnchorPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registerProgress, setRegisterProgress] =
     useState<RegisterProgress | null>(null);
+
+  const [batchSuccess, setBatchSuccess] = useState<BatchSuccessEntry[] | null>(
+    null,
+  );
+  const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
+  const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!pending) return;
@@ -253,16 +263,42 @@ export default function AnchorPage() {
           0,
           () => {
             setPending(false);
-            router.push("/anchors");
+            setBatchSuccess(entries);
           },
           () => {
             setPending(false);
-            router.push("/anchors");
+            setBatchSuccess(entries);
           },
         );
       },
       () => setPending(false),
     );
+  };
+
+  const verifyLinkFor = (hash: string) => {
+    if (!address) return "";
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    return `${origin}/v/${hash}?owner=${encodeURIComponent(address)}`;
+  };
+
+  const copyVerifyLink = async (hash: string) => {
+    const url = verifyLinkFor(hash);
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedLinkHash(hash);
+      setTimeout(() => setCopiedLinkHash(null), 1500);
+    } catch {
+      setCopyLinkFailedHash(hash);
+      setTimeout(() => setCopyLinkFailedHash(null), 1500);
+    }
+  };
+
+  const startAnotherBatch = () => {
+    setBatchSuccess(null);
+    setRows([]);
+    setSubmitError(null);
   };
 
   return (
@@ -306,6 +342,71 @@ export default function AnchorPage() {
         </p>
       )}
 
+      {batchSuccess && address ? (
+        <>
+          <h1 className="text-3xl mb-2">Batch anchored</h1>
+          <p className="text-foreground/70 mb-6">
+            Each document below is recorded on chain. Share the verification
+            links so anyone can confirm them without connecting a wallet.
+          </p>
+          <div className="space-y-3">
+            {batchSuccess.map((entry, idx) => (
+              <div
+                key={`${entry.hash}-${idx}`}
+                className="rounded-lg border border-foreground/10 bg-white p-5"
+              >
+                <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                  Hash
+                </div>
+                <code className="font-mono text-xs break-all block mb-3">
+                  {entry.hash}
+                </code>
+                {entry.label && (
+                  <div className="mb-3">
+                    <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                      Label
+                    </div>
+                    <code className="font-mono text-xs">{entry.label}</code>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    Open verify page
+                  </Link>
+                  <button
+                    onClick={() => void copyVerifyLink(entry.hash)}
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    {copiedLinkHash === entry.hash
+                      ? "Link copied"
+                      : copyLinkFailedHash === entry.hash
+                        ? "Copy failed"
+                        : "Copy verify link"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex gap-3 flex-wrap">
+            <Link
+              href="/anchors"
+              className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
+            >
+              View my anchors
+            </Link>
+            <button
+              onClick={startAnotherBatch}
+              className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Anchor another batch
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
       <h1 className="text-3xl mb-2">Anchor a document</h1>
       <p className="text-foreground/70 mb-6">
         Files are hashed in your browser. Only the hash is submitted on chain.
@@ -556,6 +657,8 @@ export default function AnchorPage() {
         <p className="mt-4 text-sm text-red-600 text-center" role="alert">
           {submitError}
         </p>
+      )}
+        </>
       )}
     </main>
   );
