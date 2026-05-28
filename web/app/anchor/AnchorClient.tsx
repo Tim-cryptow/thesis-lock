@@ -23,6 +23,7 @@ type BatchRow = {
   file: File;
   hash: string | null;
   hashing: boolean;
+  hashError: string | null;
   label: string;
   labelError: string | null;
 };
@@ -159,17 +160,32 @@ export default function AnchorPage() {
         file: f,
         hash: null,
         hashing: true,
+        hashError: null,
         label: "",
         labelError: null,
       }));
       newRows.forEach((row) => {
-        void hashFile(row.file).then((h) => {
-          setRows((current) =>
-            current.map((r) =>
-              r.id === row.id ? { ...r, hash: h, hashing: false } : r,
-            ),
-          );
-        });
+        hashFile(row.file)
+          .then((h) => {
+            setRows((current) =>
+              current.map((r) =>
+                r.id === row.id
+                  ? { ...r, hash: h, hashing: false, hashError: null }
+                  : r,
+              ),
+            );
+          })
+          .catch((e: unknown) => {
+            const message =
+              e instanceof Error ? e.message : "Could not hash this file.";
+            setRows((current) =>
+              current.map((r) =>
+                r.id === row.id
+                  ? { ...r, hash: null, hashing: false, hashError: message }
+                  : r,
+              ),
+            );
+          });
       });
       return [...prev, ...newRows];
     });
@@ -603,6 +619,10 @@ export default function AnchorPage() {
                     {row.hashing ? (
                       <p className="font-mono text-xs text-foreground/50">
                         Hashing...
+                      </p>
+                    ) : row.hashError ? (
+                      <p className="text-xs text-red-600" role="alert">
+                        {row.hashError}
                       </p>
                     ) : (
                       <code className="font-mono text-xs">
