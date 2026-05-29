@@ -80,6 +80,16 @@ function txTimestamp(tx: AddressTx): number {
   return tx.burn_block_time ?? tx.block_time ?? 0;
 }
 
+// cvToValue returns either a plain tuple ({ hash: "0x.." }) or the verbose
+// Clarity form ({ value: { hash: { value: "0x.." } } }) depending on the
+// @stacks/transactions version, so peel a `value` wrapper when present.
+function unwrap(v: unknown): unknown {
+  if (v && typeof v === "object" && "value" in v) {
+    return (v as { value: unknown }).value;
+  }
+  return v;
+}
+
 // The document hashes submitted in an anchor-batch call, in list order.
 function batchEntryHashes(tx: AddressTx): string[] {
   const arg = tx.contract_call?.function_args?.find((a) => a.name === "entries");
@@ -90,9 +100,10 @@ function batchEntryHashes(tx: AddressTx): string[] {
     if (!Array.isArray(value)) return [];
     const hashes: string[] = [];
     for (const entry of value) {
-      const tuple = entry as { value?: { hash?: { value?: unknown } } };
-      const raw = tuple?.value?.hash?.value;
-      if (typeof raw === "string" && raw) hashes.push(raw.toLowerCase());
+      const tuple = unwrap(entry);
+      if (!tuple || typeof tuple !== "object") continue;
+      const hash = unwrap((tuple as Record<string, unknown>).hash);
+      if (typeof hash === "string" && hash) hashes.push(hash.toLowerCase());
     }
     return hashes;
   } catch {
