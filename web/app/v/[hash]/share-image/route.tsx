@@ -1,31 +1,50 @@
 import { ImageResponse } from "next/og";
-import { fetchAnchor } from "@/lib/hiroAnchor";
-
-export const alt = "ThesisLock verification";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+import { fetchAnchor, fetchBatchAnchor } from "@/lib/hiroAnchor";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
-export default async function Image({
-  params,
-}: {
+export const dynamic = "force-dynamic";
+
+type RouteContext = {
   params: Promise<{ hash: string }>;
-}) {
+};
+
+export async function GET(req: Request, { params }: RouteContext) {
   const { hash: raw } = await params;
   const hash = (raw ?? "").toLowerCase();
   const valid = HEX_64.test(hash);
 
-  let anchor: Awaited<ReturnType<typeof fetchAnchor>> = null;
+  const url = new URL(req.url);
+  const ownerRaw = url.searchParams.get("owner") ?? "";
+  const owner = STX_PRINCIPAL.test(ownerRaw.toUpperCase())
+    ? ownerRaw.toUpperCase()
+    : null;
+
+  let verified = false;
+  let stacksBlock: number | null = null;
+  let burnBlock: number | null = null;
+
   if (valid) {
     try {
-      anchor = await fetchAnchor(hash);
+      const single = await fetchAnchor(hash);
+      if (single) {
+        verified = true;
+        stacksBlock = single.stacksBlock;
+        burnBlock = single.burnBlock;
+      } else if (owner) {
+        const batch = await fetchBatchAnchor(hash, owner);
+        if (batch) {
+          verified = true;
+          stacksBlock = batch.stacksBlock;
+          burnBlock = batch.burnBlock;
+        }
+      }
     } catch {
-      anchor = null;
+      verified = false;
     }
   }
 
-  const verified = Boolean(anchor);
   const statusLabel = verified ? "Verified" : "Not Found";
   const statusColor = verified ? "#22C55E" : "#9CA3AF";
   const hashTop = hash.slice(0, 32);
@@ -106,7 +125,7 @@ export default async function Image({
             <span>{hashTop}</span>
             <span>{hashBottom}</span>
           </div>
-          {verified && anchor ? (
+          {verified && stacksBlock !== null ? (
             <div
               style={{
                 marginTop: 28,
@@ -120,17 +139,13 @@ export default async function Image({
                 <span style={{ color: "#71717A", fontSize: 18 }}>
                   Stacks block
                 </span>
-                <span style={{ fontFamily: "monospace" }}>
-                  {anchor.stacksBlock}
-                </span>
+                <span style={{ fontFamily: "monospace" }}>{stacksBlock}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <span style={{ color: "#71717A", fontSize: 18 }}>
                   Burn block
                 </span>
-                <span style={{ fontFamily: "monospace" }}>
-                  {anchor.burnBlock}
-                </span>
+                <span style={{ fontFamily: "monospace" }}>{burnBlock}</span>
               </div>
             </div>
           ) : (
@@ -163,6 +178,6 @@ export default async function Image({
         </div>
       </div>
     ),
-    size,
+    { width: 1200, height: 630 },
   );
 }

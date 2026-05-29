@@ -1,9 +1,148 @@
-"use client";
+import type { Metadata } from "next";
+import VerifyClientLoader from "./VerifyClientLoader";
+import { fetchAnchor, fetchBatchAnchor } from "@/lib/hiroAnchor";
 
-import dynamic from "next/dynamic";
+type Props = {
+  params: Promise<{ hash: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
-const VerifyClient = dynamic(() => import("./VerifyClient"), { ssr: false });
+const HEX_64 = /^[0-9a-f]{64}$/;
+const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
+
+function pickOwner(value: string | string[] | undefined): string | null {
+  if (!value || Array.isArray(value)) return null;
+  const upper = value.toUpperCase();
+  return STX_PRINCIPAL.test(upper) ? upper : null;
+}
+
+function shareImageUrl(hash: string, owner: string | null): string {
+  const base = `/v/${hash}/share-image`;
+  return owner ? `${base}?owner=${owner}` : base;
+}
+
+function canonicalUrl(hash: string, owner: string | null): string {
+  return owner ? `/v/${hash}?owner=${owner}` : `/v/${hash}`;
+}
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
+  const [{ hash: raw }, sp] = await Promise.all([params, searchParams]);
+  const hash = (raw ?? "").toLowerCase();
+  const owner = pickOwner(sp.owner);
+
+  const notFoundTitle = "Verify Document";
+  const notFoundDescription =
+    "Check if a document hash has been anchored on the Stacks blockchain.";
+
+  if (!HEX_64.test(hash)) {
+    return {
+      title: notFoundTitle,
+      description: notFoundDescription,
+      openGraph: {
+        type: "website",
+        siteName: "ThesisLock",
+        title: notFoundTitle,
+        description: notFoundDescription,
+        url: `/v/${hash}`,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: notFoundTitle,
+        description: notFoundDescription,
+      },
+    };
+  }
+
+  let single: Awaited<ReturnType<typeof fetchAnchor>> = null;
+  try {
+    single = await fetchAnchor(hash);
+  } catch {
+    single = null;
+  }
+
+  let batch: Awaited<ReturnType<typeof fetchBatchAnchor>> = null;
+  if (!single && owner) {
+    try {
+      batch = await fetchBatchAnchor(hash, owner);
+    } catch {
+      batch = null;
+    }
+  }
+
+  const ogImage = shareImageUrl(hash, owner);
+  const canonical = canonicalUrl(hash, owner);
+
+  if (single) {
+    const short = `${hash.slice(0, 12)}...`;
+    const title = `Verified: ${short}`;
+    const description = `Document hash ${hash} was anchored on Stacks block ${single.stacksBlock} by ${single.anchoredBy}. Verified on-chain.`;
+    return {
+      title,
+      description,
+      openGraph: {
+        type: "website",
+        siteName: "ThesisLock",
+        title: `${title} | ThesisLock`,
+        description,
+        url: canonical,
+        images: [{ url: ogImage, width: 1200, height: 630 }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} | ThesisLock`,
+        description,
+        images: [ogImage],
+      },
+    };
+  }
+
+  if (batch && owner) {
+    const short = `${hash.slice(0, 12)}...`;
+    const title = `Verified: ${short}`;
+    const description = `Document hash ${hash} was anchored on Stacks block ${batch.stacksBlock} by ${owner} via batch ${batch.batchId}. Verified on-chain.`;
+    return {
+      title,
+      description,
+      openGraph: {
+        type: "website",
+        siteName: "ThesisLock",
+        title: `${title} | ThesisLock`,
+        description,
+        url: canonical,
+        images: [{ url: ogImage, width: 1200, height: 630 }],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} | ThesisLock`,
+        description,
+        images: [ogImage],
+      },
+    };
+  }
+
+  return {
+    title: notFoundTitle,
+    description: notFoundDescription,
+    openGraph: {
+      type: "website",
+      siteName: "ThesisLock",
+      title: `${notFoundTitle} | ThesisLock`,
+      description: notFoundDescription,
+      url: canonical,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${notFoundTitle} | ThesisLock`,
+      description: notFoundDescription,
+      images: [ogImage],
+    },
+  };
+}
 
 export default function Page() {
-  return <VerifyClient />;
+  return <VerifyClientLoader />;
 }
