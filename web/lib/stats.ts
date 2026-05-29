@@ -29,6 +29,7 @@ type AddressTx = {
   tx_status?: string;
   sender_address?: string;
   block_height?: number;
+  tx_index?: number;
   burn_block_time?: number;
   block_time?: number;
   contract_call?: {
@@ -79,29 +80,30 @@ function txTimestamp(tx: AddressTx): number {
   return tx.burn_block_time ?? tx.block_time ?? 0;
 }
 
-// A successful anchor-batch call writes one row per item in its `entries`
-// list (up to ten), so one batch tx can represent many anchors. Count the
-// list length from the call args; fall back to 1 if the args can't decode.
-function batchEntryCount(tx: AddressTx): number {
+// The document hashes submitted in an anchor-batch call, in list order.
+function batchEntryHashes(tx: AddressTx): string[] {
   const arg = tx.contract_call?.function_args?.find((a) => a.name === "entries");
-  if (!arg?.hex) return 1;
+  if (!arg?.hex) return [];
   try {
     const hex = arg.hex.startsWith("0x") ? arg.hex.slice(2) : arg.hex;
     const value = cvToValue(deserializeCV(hex), true);
-    return Array.isArray(value) && value.length > 0 ? value.length : 1;
+    if (!Array.isArray(value)) return [];
+    const hashes: string[] = [];
+    for (const entry of value) {
+      const tuple = entry as { value?: { hash?: { value?: unknown } } };
+      const raw = tuple?.value?.hash?.value;
+      if (typeof raw === "string" && raw) hashes.push(raw.toLowerCase());
+    }
+    return hashes;
   } catch {
-    return 1;
+    return [];
   }
 }
 
-// Document anchors a tx represents: a batch tx counts each of its entries,
-// everything else counts as one, matching the totalAnchors aggregation.
-function anchorWeight(tx: AddressTx): number {
-  const id = tx.contract_call?.contract_id ?? "";
-  if (id === `${CONTRACT_ADDRESS}.${BATCH_CONTRACT}`) {
-    return batchEntryCount(tx);
-  }
-  return 1;
+function txDay(tx: AddressTx): string | null {
+  const ts = txTimestamp(tx);
+  if (!ts) return null;
+  return new Date(ts * 1000).toISOString().slice(0, 10);
 }
 
 async function computeStats(): Promise<ProtocolStats> {
@@ -112,8 +114,6 @@ async function computeStats(): Promise<ProtocolStats> {
   ]);
 
   const everyCall = [...single, ...batch, ...registry];
-
-  const batchEntries = batch.reduce((sum, tx) => sum + batchEntryCount(tx), 0);
 
   const wallets = new Set<string>();
   for (const tx of everyCall) {
@@ -127,19 +127,46 @@ async function computeStats(): Promise<ProtocolStats> {
   const latestAnchorBlock = anchorBlocks.length ? Math.max(...anchorBlocks) : 0;
 
   const byDay = new Map<string, number>();
-  for (const tx of everyCall) {
-    const ts = txTimestamp(tx);
-    if (!ts) continue;
-    const date = new Date(ts * 1000).toISOString().slice(0, 10);
-    byDay.set(date, (byDay.get(date) ?? 0) + anchorWeight(tx));
+  const addDay = (date: string | null, weight: number) => {
+    if (!date || weight <= 0) return;
+    byDay.set(date, (byDay.get(date) ?? 0) + weight);
+  };
+
+  for (const tx of single) addDay(txDay(tx), 1);
+  for (const tx of registry) addDay(txDay(tx), 1);
+
+  // The batch contract keys rows by {hash, owner} and inserts with map-insert,
+  // which silently skips a pair the owner already anchored in this or an
+  // earlier batch. Replay batches in chain order, count each {hash, owner}
+  // once on the day it was first written, so totals and the chart reflect rows
+  // actually written rather than entries submitted.
+  const writtenPairs = new Set<string>();
+  const orderedBatch = [...batch].sort(
+    (a, b) =>
+      (a.block_height ?? 0) - (b.block_height ?? 0) ||
+      (a.tx_index ?? 0) - (b.tx_index ?? 0),
+  );
+  let batchAnchors = 0;
+  for (const tx of orderedBatch) {
+    const owner = tx.sender_address ?? "";
+    let newRows = 0;
+    for (const hash of batchEntryHashes(tx)) {
+      const key = `${hash}|${owner}`;
+      if (writtenPairs.has(key)) continue;
+      writtenPairs.add(key);
+      newRows += 1;
+    }
+    batchAnchors += newRows;
+    addDay(txDay(tx), newRows);
   }
+
   const anchorsByDay = Array.from(byDay.entries())
     .map(([date, count]) => ({ date, count }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
   return {
-    totalAnchors: single.length + batchEntries,
-    totalBatchAnchors: batchEntries,
+    totalAnchors: single.length + batchAnchors,
+    totalBatchAnchors: batchAnchors,
     totalRegistrations: registry.length,
     uniqueWallets: wallets.size,
     contractsDeployed: 3,
