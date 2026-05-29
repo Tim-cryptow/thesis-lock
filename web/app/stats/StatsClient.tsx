@@ -9,8 +9,11 @@ const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
   "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
+const SINGLE_CONTRACT_NAME =
+  process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
+
 const CONTRACTS = [
-  { name: "thesislock", label: "Single anchor" },
+  { name: SINGLE_CONTRACT_NAME, label: "Single anchor" },
   { name: "thesislock-batch", label: "Batch anchor" },
   { name: "thesislock-registry", label: "Registry" },
 ];

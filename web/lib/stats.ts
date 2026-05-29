@@ -143,8 +143,11 @@ async function computeStats(): Promise<ProtocolStats> {
     byDay.set(date, (byDay.get(date) ?? 0) + weight);
   };
 
+  // The chart counts anchored documents, so it tracks single and batch
+  // anchors only. Registry calls re-index an already-anchored file (the UI
+  // anchors then registers), so counting them here would double the per-day
+  // total against totalAnchors.
   for (const tx of single) addDay(txDay(tx), 1);
-  for (const tx of registry) addDay(txDay(tx), 1);
 
   // The batch contract keys rows by {hash, owner} and inserts with map-insert,
   // which silently skips a pair the owner already anchored in this or an
