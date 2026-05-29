@@ -5,7 +5,7 @@ const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
   "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
-const SINGLE_CONTRACT = "thesislock";
+const SINGLE_CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT = "thesislock-batch";
 const REGISTRY_CONTRACT = "thesislock-registry";
 
