@@ -10,7 +10,7 @@
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@stacks/clarinet-sdk": "^3.17.0",
     "@stacks/transactions": "^7.0.6",
