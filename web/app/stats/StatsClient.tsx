@@ -108,7 +108,7 @@ export default function StatsClient() {
 
       {loading ? (
         <div aria-busy="true">
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
@@ -125,7 +125,7 @@ export default function StatsClient() {
         </div>
       ) : stats ? (
         <>
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label="Total anchors"
               value={formatNumber(stats.totalAnchors)}
@@ -223,7 +223,7 @@ export default function StatsClient() {
                 </li>
               ))}
             </ul>
-            <div className="mt-4 text-xs text-foreground/50 grid grid-cols-2 gap-2">
+            <div className="mt-4 text-xs text-foreground/50 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <span>
                 Single anchors:{" "}
                 {formatNumber(stats.totalAnchors - stats.totalBatchAnchors)}

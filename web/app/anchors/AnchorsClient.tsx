@@ -218,12 +218,12 @@ export default function AnchorsPage() {
                     </button>
                   </div>
                 </div>
-                <div className="flex gap-2 shrink-0">
+                <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">
                   <button
                     onClick={() => void downloadEntryCertificate(entry)}
                     disabled={certBusyHash === entry.hash}
                     aria-label="Download certificate"
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                    className="flex-1 sm:flex-none text-center text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
                     title="Download certificate"
                   >
                     {certBusyHash === entry.hash ? "Preparing..." : "Download"}
@@ -231,7 +231,7 @@ export default function AnchorsPage() {
                   <Link
                     href={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
                     aria-label={`Verify anchor for ${truncateHash(entry.hash)}`}
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                    className="flex-1 sm:flex-none text-center text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     Verify &rarr;
                   </Link>
