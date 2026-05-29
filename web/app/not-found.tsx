@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <Link
         href="/"
         className="text-sm text-foreground/60 hover:text-foreground"
@@ -13,6 +13,6 @@ export default function NotFound() {
       <p className="text-foreground/70">
         The page you are looking for does not exist.
       </p>
-    </main>
+    </div>
   );
 }

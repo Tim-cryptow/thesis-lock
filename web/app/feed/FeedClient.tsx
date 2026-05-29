@@ -131,7 +131,7 @@ export default function FeedClient() {
   };
 
   return (
-    <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
@@ -292,6 +292,6 @@ export default function FeedClient() {
           </div>
         </>
       )}
-    </main>
+    </div>
   );
 }

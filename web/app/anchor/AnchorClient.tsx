@@ -423,7 +423,7 @@ export default function AnchorPage() {
   };
 
   return (
-    <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-foreground/60 hover:text-foreground">
@@ -894,6 +894,6 @@ export default function AnchorPage() {
       )}
         </>
       )}
-    </main>
+    </div>
   );
 }
