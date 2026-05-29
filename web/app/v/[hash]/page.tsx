@@ -63,8 +63,12 @@ export async function generateMetadata({
     single = null;
   }
 
+  // An explicit ?owner= means the link is asking about that owner-keyed batch
+  // record, so prefer it over a global single anchor with the same hash (the
+  // two contracts can carry unrelated records for the same hash). This mirrors
+  // the client's preferBatch ordering in VerifyClient.tsx.
   let batch: Awaited<ReturnType<typeof fetchBatchAnchor>> = null;
-  if (!single && owner) {
+  if (owner) {
     try {
       batch = await fetchBatchAnchor(hash, owner);
     } catch {
@@ -75,10 +79,10 @@ export async function generateMetadata({
   const ogImage = shareImageUrl(hash, owner);
   const canonical = canonicalUrl(hash, owner);
 
-  if (single) {
+  if (batch && owner) {
     const short = `${hash.slice(0, 12)}...`;
     const title = `Verified: ${short}`;
-    const description = `Document hash ${hash} was anchored on Stacks block ${single.stacksBlock} by ${single.anchoredBy}. Verified on-chain.`;
+    const description = `Document hash ${hash} was anchored on Stacks block ${batch.stacksBlock} by ${owner} via batch ${batch.batchId}. Verified on-chain.`;
     return {
       title,
       description,
@@ -99,10 +103,10 @@ export async function generateMetadata({
     };
   }
 
-  if (batch && owner) {
+  if (single) {
     const short = `${hash.slice(0, 12)}...`;
     const title = `Verified: ${short}`;
-    const description = `Document hash ${hash} was anchored on Stacks block ${batch.stacksBlock} by ${owner} via batch ${batch.batchId}. Verified on-chain.`;
+    const description = `Document hash ${hash} was anchored on Stacks block ${single.stacksBlock} by ${single.anchoredBy}. Verified on-chain.`;
     return {
       title,
       description,

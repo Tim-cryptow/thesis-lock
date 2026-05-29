@@ -27,17 +27,19 @@ export async function GET(req: Request, { params }: RouteContext) {
 
   if (valid) {
     try {
-      const single = await fetchAnchor(hash);
-      if (single) {
+      // An explicit ?owner= prefers the owner-keyed batch record over a global
+      // single anchor with the same hash, matching the verification page.
+      const batch = owner ? await fetchBatchAnchor(hash, owner) : null;
+      if (batch) {
         verified = true;
-        stacksBlock = single.stacksBlock;
-        burnBlock = single.burnBlock;
-      } else if (owner) {
-        const batch = await fetchBatchAnchor(hash, owner);
-        if (batch) {
+        stacksBlock = batch.stacksBlock;
+        burnBlock = batch.burnBlock;
+      } else {
+        const single = await fetchAnchor(hash);
+        if (single) {
           verified = true;
-          stacksBlock = batch.stacksBlock;
-          burnBlock = batch.burnBlock;
+          stacksBlock = single.stacksBlock;
+          burnBlock = single.burnBlock;
         }
       }
     } catch {
