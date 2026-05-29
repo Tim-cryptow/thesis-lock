@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and Discussions
+    url: https://github.com/Tim-cryptow/thesis-lock/discussions
+    about: Ask a question or share an idea before opening an issue.
