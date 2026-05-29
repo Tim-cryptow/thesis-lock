@@ -1,3 +1,4 @@
+import { validateStacksAddress } from "@stacks/transactions";
 import { fetchAnchor, fetchBatchAnchor } from "./hiroAnchor";
 
 const CONTRACT_ADDRESS =
@@ -7,7 +8,6 @@ const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 
 export const HEX_64 = /^[0-9a-f]{64}$/;
-const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 export type VerificationResult =
   | {
@@ -63,10 +63,8 @@ export async function verifyHash(
   ownerInput: string | undefined,
   origin: string,
 ): Promise<VerificationResult> {
-  const owner =
-    ownerInput && STX_PRINCIPAL.test(ownerInput.toUpperCase())
-      ? ownerInput.toUpperCase()
-      : null;
+  const ownerCandidate = ownerInput?.toUpperCase() ?? "";
+  const owner = validateStacksAddress(ownerCandidate) ? ownerCandidate : null;
 
   const single = await fetchAnchor(hash);
   if (single) {

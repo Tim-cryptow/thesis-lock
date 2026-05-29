@@ -4,6 +4,7 @@ import {
   deserializeCV,
   principalCV,
   serializeCV,
+  validateStacksAddress,
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
 
@@ -16,7 +17,6 @@ const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
-const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 export type FetchedAnchor = {
   anchoredBy: string;
@@ -105,7 +105,7 @@ export async function fetchBatchAnchor(
   owner: string,
 ): Promise<FetchedBatchAnchor | null> {
   if (!HEX_64.test(hash)) return null;
-  if (!STX_PRINCIPAL.test(owner)) return null;
+  if (!validateStacksAddress(owner)) return null;
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const ownerArg = serializeCV(principalCV(owner));
   const value = await callReadOnly(BATCH_CONTRACT_NAME, "get-batch-anchor", [
