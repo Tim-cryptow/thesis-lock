@@ -9,7 +9,6 @@ const REGISTRY_CONTRACT = "thesislock-registry";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const HIRO_PAGE = 50;
-const MAX_PAGES = 10;
 
 export type ProtocolStats = {
   totalAnchors: number;
@@ -25,6 +24,7 @@ export type ProtocolStats = {
 type AddressTx = {
   tx_id: string;
   tx_type: string;
+  tx_status?: string;
   sender_address?: string;
   block_height?: number;
   burn_block_time?: number;
@@ -54,8 +54,9 @@ async function fetchContractCalls(contractName: string): Promise<AddressTx[]> {
   const contractId = `${CONTRACT_ADDRESS}.${contractName}`;
   const all: AddressTx[] = [];
   let offset = 0;
+  let total = Infinity;
 
-  for (let page = 0; page < MAX_PAGES; page += 1) {
+  while (offset < total) {
     const url = `${API_URL}/extended/v1/address/${contractId}/transactions?limit=${HIRO_PAGE}&offset=${offset}`;
     const res = await fetch(url);
     if (!res.ok) {
@@ -64,14 +65,17 @@ async function fetchContractCalls(contractName: string): Promise<AddressTx[]> {
     const data = (await res.json()) as AddressTxResponse;
     const results = Array.isArray(data.results) ? data.results : [];
     all.push(...results);
+    if (typeof data.total === "number") total = data.total;
     if (results.length < HIRO_PAGE) break;
     offset += HIRO_PAGE;
-    if (typeof data.total === "number" && offset >= data.total) break;
   }
 
+  // A reverted call (e.g. ERR-ALREADY-ANCHORED on a duplicate) is still listed
+  // as a contract_call but wrote nothing on chain, so only successful txs count.
   return all.filter(
     (tx) =>
       tx.tx_type === "contract_call" &&
+      tx.tx_status === "success" &&
       tx.contract_call?.contract_id === contractId,
   );
 }
@@ -94,7 +98,7 @@ async function computeStats(): Promise<ProtocolStats> {
     if (tx.sender_address) wallets.add(tx.sender_address);
   }
 
-  const anchorBlocks = single
+  const anchorBlocks = everyCall
     .map((tx) => tx.block_height ?? 0)
     .filter((block) => block > 0);
   const firstAnchorBlock = anchorBlocks.length ? Math.min(...anchorBlocks) : 0;
