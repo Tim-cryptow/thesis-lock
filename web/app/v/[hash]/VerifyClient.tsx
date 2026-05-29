@@ -199,6 +199,12 @@ export default function VerifyPage() {
           >
             Feed
           </Link>
+          <Link
+            href="/stats"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Stats
+          </Link>
         </div>
         <h1 className="text-3xl mt-8 mb-2">Invalid hash format.</h1>
         <p className="text-foreground/70">
@@ -231,6 +237,12 @@ export default function VerifyPage() {
           className="text-foreground/60 hover:text-foreground"
         >
           Feed
+        </Link>
+        <Link
+          href="/stats"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Stats
         </Link>
       </div>
       <h1 className="text-3xl mt-8 mb-6">Anchor record</h1>
