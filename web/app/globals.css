@@ -31,3 +31,24 @@ h1, h2, h3, h4, h5, h6 {
 code, pre, .mono {
   font-family: var(--font-mono);
 }
+
+/* Consistent keyboard focus indicator (ring-2 + ring-offset-2 pattern) for
+   every interactive element. Utilities that set their own focus-visible ring
+   still win, since base-layer rules have lower priority. tabindex="-1"
+   targets (e.g. the skip-link landmark) are excluded so programmatic focus
+   does not draw a ring around the whole page. */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--heading);
+  }
+}

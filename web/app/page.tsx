@@ -4,7 +4,7 @@ const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
 
 export default function Page() {
   return (
-    <main className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col">
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-16 w-full">
         <h1 className="text-5xl md:text-6xl leading-tight">
           Permanent, verifiable timestamps for your work.
@@ -92,6 +92,6 @@ export default function Page() {
           </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

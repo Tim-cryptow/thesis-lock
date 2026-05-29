@@ -423,7 +423,7 @@ export default function AnchorPage() {
   };
 
   return (
-    <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-foreground/60 hover:text-foreground">
@@ -642,10 +642,16 @@ export default function AnchorPage() {
         Files are hashed in your browser. Only the hash is submitted on chain.
       </p>
 
-      <div className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-white">
+      <div
+        role="group"
+        aria-label="Anchor mode"
+        className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-white"
+      >
         <button
           onClick={() => setMode("single")}
           disabled={pending}
+          aria-label="Anchor a single file"
+          aria-pressed={mode === "single"}
           className={`text-sm px-4 py-2 rounded transition ${
             mode === "single"
               ? "bg-heading text-background"
@@ -657,6 +663,8 @@ export default function AnchorPage() {
         <button
           onClick={() => setMode("batch")}
           disabled={pending}
+          aria-label={`Anchor a batch of up to ${MAX_BATCH} files`}
+          aria-pressed={mode === "batch"}
           className={`text-sm px-4 py-2 rounded transition ${
             mode === "batch"
               ? "bg-heading text-background"
@@ -672,6 +680,7 @@ export default function AnchorPage() {
           <FileDropZone
             onFile={(f) => void onFileSelect(f)}
             disabled={pending}
+            ariaLabel="Drop a file here to hash it, or click to choose one"
           >
             {file ? (
               <p className="text-foreground/80">
@@ -694,10 +703,16 @@ export default function AnchorPage() {
           )}
 
           {(hashing || hash) && (
-            <div className="mt-6">
-              <label className="block text-sm text-foreground/60 mb-2">
+            <div
+              className="mt-6"
+              role="region"
+              aria-label="Document hash"
+              aria-live="polite"
+              aria-busy={hashing}
+            >
+              <div className="block text-sm text-foreground/60 mb-2">
                 SHA-256
-              </label>
+              </div>
               {hashing ? (
                 <p className="font-mono text-sm text-foreground/50">
                   Hashing...
@@ -709,6 +724,7 @@ export default function AnchorPage() {
                   </code>
                   <button
                     onClick={copyHash}
+                    aria-label="Copy document hash to clipboard"
                     className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                   >
                     {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
@@ -731,10 +747,18 @@ export default function AnchorPage() {
               onChange={(e) => onLabelChange(e.target.value)}
               placeholder="e.g. thesis-chapter-3-draft-v2"
               maxLength={64}
+              aria-describedby="label-status"
+              aria-invalid={labelError ? true : undefined}
               className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50"
             />
-            <div className="mt-1 flex items-center justify-between text-xs">
-              <span className={labelError ? "text-red-600" : "text-transparent"}>
+            <div
+              id="label-status"
+              className="mt-1 flex items-center justify-between text-xs"
+            >
+              <span
+                className={labelError ? "text-red-600" : "text-transparent"}
+                role={labelError ? "alert" : undefined}
+              >
                 {labelError ?? "."}
               </span>
               <span className="text-foreground/50 font-mono">
@@ -762,6 +786,15 @@ export default function AnchorPage() {
       ) : (
         <>
           <div
+            role="button"
+            tabIndex={pending ? -1 : 0}
+            aria-label={`Drop up to ${MAX_BATCH} files here to hash them, or click to choose`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                batchInput.current?.click();
+              }
+            }}
             onDragOver={(e) => {
               e.preventDefault();
               setBatchDragOver(true);
@@ -769,7 +802,7 @@ export default function AnchorPage() {
             onDragLeave={() => setBatchDragOver(false)}
             onDrop={onBatchDrop}
             onClick={() => batchInput.current?.click()}
-            className={`rounded-lg border-2 border-dashed p-10 text-center cursor-pointer transition ${
+            className={`rounded-lg border-2 border-dashed p-10 text-center cursor-pointer transition outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 ${
               batchDragOver
                 ? "border-foreground/60 bg-foreground/5"
                 : "border-foreground/20 hover:border-foreground/40"
@@ -811,6 +844,7 @@ export default function AnchorPage() {
                     <button
                       onClick={() => removeRow(row.id)}
                       disabled={pending}
+                      aria-label={`Remove file ${row.file.name}`}
                       className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
                     >
                       Remove
@@ -843,6 +877,8 @@ export default function AnchorPage() {
                       placeholder="Label (optional, ASCII, up to 64 chars)"
                       maxLength={64}
                       disabled={pending}
+                      aria-label={`Label for ${row.file.name}`}
+                      aria-invalid={row.labelError ? true : undefined}
                       className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
                     />
                     <div className="mt-1 flex items-center justify-between text-xs">
@@ -894,6 +930,6 @@ export default function AnchorPage() {
       )}
         </>
       )}
-    </main>
+    </div>
   );
 }

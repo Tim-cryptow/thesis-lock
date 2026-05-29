@@ -15,7 +15,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
+    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <Link
         href="/"
         className="text-sm text-foreground/60 hover:text-foreground"
@@ -32,6 +32,6 @@ export default function Error({
       >
         Try again
       </button>
-    </main>
+    </div>
   );
 }
