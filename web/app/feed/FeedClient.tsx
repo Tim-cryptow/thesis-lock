@@ -149,6 +149,9 @@ export default function FeedClient() {
           My Anchors
         </Link>
         <span className="text-foreground font-medium">Feed</span>
+        <Link href="/stats" className="text-foreground/60 hover:text-foreground">
+          Stats
+        </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">

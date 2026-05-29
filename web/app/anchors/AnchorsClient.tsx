@@ -133,6 +133,12 @@ export default function AnchorsPage() {
           >
             Feed
           </Link>
+          <Link
+            href="/stats"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Stats
+          </Link>
         </div>
         {address ? (
           <button

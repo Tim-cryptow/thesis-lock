@@ -32,6 +32,12 @@ export default function Page() {
           >
             Recent anchors
           </Link>
+          <Link
+            href="/stats"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            Protocol stats
+          </Link>
         </div>
       </section>
 
@@ -71,14 +77,19 @@ export default function Page() {
       <footer className="mt-auto border-t border-foreground/10 py-6 px-6 text-sm text-foreground/60">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <span>ThesisLock</span>
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground transition"
-          >
-            GitHub
-          </a>
+          <div className="flex items-center gap-4">
+            <Link href="/stats" className="hover:text-foreground transition">
+              Stats
+            </Link>
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-foreground transition"
+            >
+              GitHub
+            </a>
+          </div>
         </div>
       </footer>
     </main>
