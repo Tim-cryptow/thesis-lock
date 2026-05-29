@@ -221,7 +221,10 @@ export default function StatsClient() {
               ))}
             </ul>
             <div className="mt-4 text-xs text-foreground/50 grid grid-cols-2 gap-2">
-              <span>Single anchors: {formatNumber(stats.totalAnchors)}</span>
+              <span>
+                Single anchors:{" "}
+                {formatNumber(stats.totalAnchors - stats.totalBatchAnchors)}
+              </span>
               <span>
                 Batch anchors: {formatNumber(stats.totalBatchAnchors)}
               </span>
