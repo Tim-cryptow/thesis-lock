@@ -36,6 +36,28 @@ function stripHex(hex: string): string {
   return hex.startsWith("0x") ? hex.slice(2) : hex;
 }
 
+// cvToValue may return a plain tuple ({ "stacks-block": 123 }) or the verbose
+// Clarity form ({ value: { "stacks-block": { value: "123" } } }) depending on
+// the @stacks/transactions version. These helpers read either shape.
+function tupleFields(value: unknown): Record<string, unknown> {
+  if (
+    value &&
+    typeof value === "object" &&
+    "value" in value &&
+    typeof (value as { value: unknown }).value === "object"
+  ) {
+    return (value as { value: Record<string, unknown> }).value;
+  }
+  return value as Record<string, unknown>;
+}
+
+function fieldValue(field: unknown): unknown {
+  if (field && typeof field === "object" && "value" in field) {
+    return (field as { value: unknown }).value;
+  }
+  return field;
+}
+
 function withHexPrefix(hex: string): string {
   return hex.startsWith("0x") ? hex : `0x${hex}`;
 }
@@ -69,12 +91,12 @@ export async function fetchAnchor(
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const value = await callReadOnly(CONTRACT_NAME, "get-anchor", [hashArg]);
   if (value === null || value === undefined) return null;
-  const v = value as Record<string, unknown>;
+  const v = tupleFields(value);
   return {
-    anchoredBy: String(v["anchored-by"]),
-    stacksBlock: Number(v["stacks-block"]),
-    burnBlock: Number(v["burn-block"]),
-    label: String(v["label"] ?? ""),
+    anchoredBy: String(fieldValue(v["anchored-by"]) ?? ""),
+    stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
+    burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
+    label: String(fieldValue(v["label"]) ?? ""),
   };
 }
 
@@ -91,11 +113,11 @@ export async function fetchBatchAnchor(
     ownerArg,
   ]);
   if (value === null || value === undefined) return null;
-  const v = value as Record<string, unknown>;
+  const v = tupleFields(value);
   return {
-    label: String(v["label"] ?? ""),
-    stacksBlock: Number(v["stacks-block"]),
-    burnBlock: Number(v["burn-block"]),
-    batchId: Number(v["batch-id"]),
+    label: String(fieldValue(v["label"]) ?? ""),
+    stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
+    burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
+    batchId: Number(fieldValue(v["batch-id"]) ?? 0),
   };
 }
