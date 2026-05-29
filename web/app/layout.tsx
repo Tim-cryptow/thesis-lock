@@ -14,29 +14,33 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const SITE_TITLE = "ThesisLock - Document Timestamping on Stacks";
 const SITE_DESCRIPTION =
-  "Permanent, verifiable timestamps for your work. Anchor a SHA-256 hash on Bitcoin via Stacks without ever sharing the file.";
+  "Anchor document hashes on the Stacks blockchain. Permanent, verifiable, private.";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
+    : "https://thesis-lock.vercel.app");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "ThesisLock",
+  title: {
+    default: SITE_TITLE,
+    template: "%s | ThesisLock",
+  },
   description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
     siteName: "ThesisLock",
-    title: "ThesisLock",
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ThesisLock",
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
   other: {
