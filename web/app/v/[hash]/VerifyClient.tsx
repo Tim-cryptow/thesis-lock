@@ -255,6 +255,7 @@ export default function VerifyPage() {
           <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
         </div>
 
+        <div role="status" aria-live="polite" aria-busy={loading || undefined}>
         {loading ? (
           <p className="text-foreground/60">Looking up on chain...</p>
         ) : error ? (
@@ -395,6 +396,7 @@ export default function VerifyPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {(anchor || (batchAnchor && batchOwner)) && (
@@ -408,6 +410,7 @@ export default function VerifyPage() {
             <button
               onClick={copyShareUrl}
               disabled={!publicVerifyUrl}
+              aria-label="Copy verification link to clipboard"
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedShare
@@ -454,6 +457,7 @@ export default function VerifyPage() {
                   });
                 }
               }}
+              aria-label="Download verification certificate"
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
               Download certificate
