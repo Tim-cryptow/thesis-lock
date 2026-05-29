@@ -43,17 +43,6 @@ type AddressTxResponse = {
   results?: AddressTx[];
 };
 
-const ZEROED_STATS: ProtocolStats = {
-  totalAnchors: 0,
-  totalBatchAnchors: 0,
-  totalRegistrations: 0,
-  uniqueWallets: 0,
-  contractsDeployed: 3,
-  firstAnchorBlock: 0,
-  latestAnchorBlock: 0,
-  anchorsByDay: [],
-};
-
 let cache: { data: ProtocolStats; expires: number } | null = null;
 
 async function fetchContractCalls(contractName: string): Promise<AddressTx[]> {
@@ -105,6 +94,16 @@ function batchEntryCount(tx: AddressTx): number {
   }
 }
 
+// Document anchors a tx represents: a batch tx counts each of its entries,
+// everything else counts as one, matching the totalAnchors aggregation.
+function anchorWeight(tx: AddressTx): number {
+  const id = tx.contract_call?.contract_id ?? "";
+  if (id === `${CONTRACT_ADDRESS}.${BATCH_CONTRACT}`) {
+    return batchEntryCount(tx);
+  }
+  return 1;
+}
+
 async function computeStats(): Promise<ProtocolStats> {
   const [single, batch, registry] = await Promise.all([
     fetchContractCalls(SINGLE_CONTRACT),
@@ -132,7 +131,7 @@ async function computeStats(): Promise<ProtocolStats> {
     const ts = txTimestamp(tx);
     if (!ts) continue;
     const date = new Date(ts * 1000).toISOString().slice(0, 10);
-    byDay.set(date, (byDay.get(date) ?? 0) + 1);
+    byDay.set(date, (byDay.get(date) ?? 0) + anchorWeight(tx));
   }
   const anchorsByDay = Array.from(byDay.entries())
     .map(([date, count]) => ({ date, count }))
@@ -152,11 +151,9 @@ async function computeStats(): Promise<ProtocolStats> {
 
 export async function fetchProtocolStats(): Promise<ProtocolStats> {
   if (cache && Date.now() < cache.expires) return cache.data;
-  try {
-    const data = await computeStats();
-    cache = { data, expires: Date.now() + CACHE_TTL_MS };
-    return data;
-  } catch {
-    return ZEROED_STATS;
-  }
+  // Errors propagate so the route can return a failure status and the client
+  // shows its error state instead of zeroed stats that read as "no activity".
+  const data = await computeStats();
+  cache = { data, expires: Date.now() + CACHE_TTL_MS };
+  return data;
 }
