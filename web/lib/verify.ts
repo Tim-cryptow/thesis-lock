@@ -55,9 +55,10 @@ function verifyUrl(origin: string, hash: string, owner: string | null): string {
   return owner ? `${base}?owner=${owner}` : base;
 }
 
-// Resolves an anchor for an already-validated 64-hex hash. Single anchors take
-// precedence; the batch contract is keyed by hash and owner, so it is only
-// consulted when an owner principal is supplied and no single anchor exists.
+// Resolves an anchor for an already-validated 64-hex hash. An explicit owner
+// means the caller is asking about that owner-keyed batch record, so it takes
+// precedence over a global single anchor with the same hash (the two contracts
+// can carry unrelated records for one hash). This mirrors the verification UI.
 export async function verifyHash(
   hash: string,
   ownerInput: string | undefined,
@@ -65,21 +66,6 @@ export async function verifyHash(
 ): Promise<VerificationResult> {
   const ownerCandidate = ownerInput?.toUpperCase() ?? "";
   const owner = validateStacksAddress(ownerCandidate) ? ownerCandidate : null;
-
-  const single = await fetchAnchor(hash);
-  if (single) {
-    return {
-      verified: true,
-      source: "single",
-      hash,
-      label: single.label,
-      owner: single.anchoredBy,
-      stacksBlock: single.stacksBlock,
-      burnBlock: single.burnBlock,
-      contract: `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`,
-      verifyUrl: verifyUrl(origin, hash, null),
-    };
-  }
 
   if (owner) {
     const batch = await fetchBatchAnchor(hash, owner);
@@ -97,6 +83,21 @@ export async function verifyHash(
         verifyUrl: verifyUrl(origin, hash, owner),
       };
     }
+  }
+
+  const single = await fetchAnchor(hash);
+  if (single) {
+    return {
+      verified: true,
+      source: "single",
+      hash,
+      label: single.label,
+      owner: single.anchoredBy,
+      stacksBlock: single.stacksBlock,
+      burnBlock: single.burnBlock,
+      contract: `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`,
+      verifyUrl: verifyUrl(origin, hash, null),
+    };
   }
 
   return {
