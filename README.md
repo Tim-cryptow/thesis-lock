@@ -146,3 +146,90 @@ curl -sX POST \
 ```
 
 The response is a `uint`. Use `get-anchor-at` (principal + uint index) or `get-recent-anchors` (principal) to read individual entries.
+
+## REST API
+
+For integrating ThesisLock verification into your own tools, CI pipelines, or submission systems, the app exposes a small JSON API that wraps the Clarity reads above. No Clarity serialization knowledge required. All endpoints send `Access-Control-Allow-Origin: *`, so they can be called directly from browser-based integrations.
+
+Base URL: `https://thesis-lock.vercel.app`
+
+### GET /api/verify/&lt;hash&gt;
+
+Verify a single 64-character hex hash. Append `?owner=<principal>` to also check batch anchors, which are keyed by hash and owner.
+
+```bash
+curl -s https://thesis-lock.vercel.app/api/verify/9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06
+
+# Batch anchor (include the owner principal)
+curl -s "https://thesis-lock.vercel.app/api/verify/<hash>?owner=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM"
+```
+
+### POST /api/verify
+
+Same lookup over POST, taking a JSON body:
+
+```bash
+curl -s -X POST https://thesis-lock.vercel.app/api/verify \
+  -H 'Content-Type: application/json' \
+  -d '{"hash":"9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06"}'
+```
+
+Or upload a file and let the server compute its SHA-256 and verify it. The response includes the computed hash:
+
+```bash
+curl -s -X POST https://thesis-lock.vercel.app/api/verify \
+  -F 'file=@thesis.pdf' \
+  -F 'owner=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM'
+```
+
+The file is hashed in memory and never stored.
+
+### Response schema
+
+A found anchor returns `verified: true`:
+
+```json
+{
+  "verified": true,
+  "source": "single",
+  "hash": "9afe6f57...",
+  "label": "project",
+  "owner": "SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX",
+  "stacksBlock": 8104143,
+  "burnBlock": 951262,
+  "contract": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock",
+  "verifyUrl": "https://thesis-lock.vercel.app/v/9afe6f57..."
+}
+```
+
+Batch anchors set `"source": "batch"` and add a `batchId`. File uploads add the computed `hash` under `computedHash`. A miss returns `200` with `verified: false`:
+
+```json
+{
+  "verified": false,
+  "hash": "0000...0000",
+  "message": "Hash not found. For batch anchors, include ?owner=<principal>."
+}
+```
+
+An invalid hash (not 64 hex characters) returns `400`.
+
+### GET /api/health
+
+Uptime probe. Returns the deployed contract identifiers and API version:
+
+```bash
+curl -s https://thesis-lock.vercel.app/api/health
+```
+
+```json
+{
+  "status": "ok",
+  "contracts": {
+    "thesislock": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock",
+    "batch": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock-batch",
+    "registry": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock-registry"
+  },
+  "version": "1.0.0"
+}
+```
