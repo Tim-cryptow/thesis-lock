@@ -8,11 +8,13 @@ import {
   SINGLE_CONTRACT_NAME,
   explorerAddressUrl,
   explorerTxUrl,
+  getProofByHash,
   hashFile,
   readAnchor,
   readBatchAnchor,
   type Anchor,
   type BatchAnchor,
+  type ProofWithId,
 } from "@/lib/stacks";
 import { useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
@@ -42,6 +44,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [batchAnchor, setBatchAnchor] = useState<BatchAnchor | null>(null);
+  const [proof, setProof] = useState<ProofWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [verifyFile, setVerifyFile] = useState<File | null>(null);
@@ -147,6 +150,23 @@ export default function VerifyPage() {
   useEffect(() => {
     void loadAnchor();
   }, [loadAnchor]);
+
+  // A proof NFT is optional and keyed only by hash, so look it up
+  // independently. A miss or read error just means no NFT to show.
+  useEffect(() => {
+    if (!valid) return;
+    let cancelled = false;
+    getProofByHash(hash)
+      .then((p) => {
+        if (!cancelled) setProof(p);
+      })
+      .catch(() => {
+        if (!cancelled) setProof(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hash, valid]);
 
   // While a freshly submitted transaction is unconfirmed, poll until the
   // anchor appears on chain, then stop.
@@ -398,6 +418,25 @@ export default function VerifyPage() {
         )}
         </div>
       </div>
+
+      {proof && (
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+            Proof NFT
+          </div>
+          <p className="text-sm text-foreground/80">
+            Proof NFT #{proof.tokenId} minted by{" "}
+            <a
+              href={explorerAddressUrl(proof.anchoredBy)}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
+            >
+              {proof.anchoredBy}
+            </a>
+          </p>
+        </div>
+      )}
 
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
