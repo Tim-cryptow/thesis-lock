@@ -17,16 +17,18 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Client-side SHA-256 hashing. The file never leaves your device.
 - Public verification at `/v/<hash>` with file re-upload check.
 - Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
+- Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
 
 ## Protocol
 
-Three Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`:
+Four Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`:
 
 | Contract | Purpose |
 | --- | --- |
 | [`thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet) | Original single-hash anchor. Stores `(buff 32) -> { anchored-by, stacks-block, burn-block, label }`. One anchor per hash, ever. |
 | `thesislock-batch` | Anchors up to ten hashes per transaction, keyed by `{ hash, owner }`. Duplicates for the same owner are silently skipped so partial overlaps with prior batches still succeed. |
 | `thesislock-registry` | Per-principal append-only index of anchors. Powers the "My Anchors" page. |
+| `thesislock-proof` | SIP-009 NFT issuing soulbound proof tokens. `mint-proof` anchors a hash and mints a non-transferable token to the caller; `transfer` always fails with `u401`. One proof per unique hash (`u409` on duplicates). Look up by token id (`get-proof`) or hash (`get-proof-by-hash`). |
 
 The original `thesislock` contract was first deployed at Stacks block 7798720, burn block 947300 ([deploy transaction](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet)).
 

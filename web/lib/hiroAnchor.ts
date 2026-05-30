@@ -4,6 +4,7 @@ import {
   deserializeCV,
   principalCV,
   serializeCV,
+  uintCV,
   validateStacksAddress,
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
@@ -15,6 +16,7 @@ const CONTRACT_ADDRESS =
   "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT_NAME = "thesislock-batch";
+const PROOF_CONTRACT_NAME = "thesislock-proof";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
@@ -30,6 +32,14 @@ export type FetchedBatchAnchor = {
   stacksBlock: number;
   burnBlock: number;
   batchId: number;
+};
+
+export type FetchedProof = {
+  hash: string;
+  label: string;
+  anchoredBy: string;
+  stacksBlock: number;
+  burnBlock: number;
 };
 
 function stripHex(hex: string): string {
@@ -119,5 +129,22 @@ export async function fetchBatchAnchor(
     stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
     burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
     batchId: Number(fieldValue(v["batch-id"]) ?? 0),
+  };
+}
+
+export async function fetchProof(
+  tokenId: number,
+): Promise<FetchedProof | null> {
+  if (!Number.isInteger(tokenId) || tokenId < 0) return null;
+  const idArg = serializeCV(uintCV(tokenId));
+  const value = await callReadOnly(PROOF_CONTRACT_NAME, "get-proof", [idArg]);
+  if (value === null || value === undefined) return null;
+  const v = tupleFields(value);
+  return {
+    hash: stripHex(String(fieldValue(v["hash"]) ?? "")),
+    label: String(fieldValue(v["label"]) ?? ""),
+    anchoredBy: String(fieldValue(v["anchored-by"]) ?? ""),
+    stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
+    burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
   };
 }

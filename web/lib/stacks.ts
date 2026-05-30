@@ -17,9 +17,11 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME!;
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 const REGISTRY_CONTRACT_NAME = "thesislock-registry";
+const PROOF_CONTRACT_NAME = "thesislock-proof";
 
 export const SINGLE_CONTRACT_NAME = CONTRACT_NAME;
 export const BATCH_CONTRACT_FULL_NAME = BATCH_CONTRACT_NAME;
+export const PROOF_CONTRACT_FULL_NAME = PROOF_CONTRACT_NAME;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export type Anchor = {
@@ -41,6 +43,16 @@ export type RegistryEntry = {
   label: string;
   anchoredAt: number;
 };
+
+export type Proof = {
+  hash: string;
+  label: string;
+  anchoredBy: string;
+  stacksBlock: number;
+  burnBlock: number;
+};
+
+export type ProofWithId = Proof & { tokenId: number };
 
 export function getNetwork(): StacksNetwork {
   return { ...STACKS_MAINNET, client: { baseUrl: API_URL } };
@@ -225,6 +237,84 @@ export async function getRecentAnchors(
   const value = cvToValue(result, true);
   if (!Array.isArray(value)) return [];
   return value.map((entry) => decodeRegistryEntry(entry));
+}
+
+export function mintProof(
+  hash: string,
+  label: string,
+  onFinish: (txId: string) => void,
+  onCancel?: () => void,
+): void {
+  openContractCall({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: PROOF_CONTRACT_NAME,
+    functionName: "mint-proof",
+    functionArgs: [bufferCV(hexToBytes(stripHex(hash))), stringAsciiCV(label)],
+    network: getNetwork(),
+    onFinish: (data) => onFinish(data.txId),
+    onCancel: () => onCancel?.(),
+  });
+}
+
+function decodeProof(value: unknown): Proof | null {
+  if (value === null || value === undefined) return null;
+  const v = value as Record<string, unknown>;
+  return {
+    hash: stripHex(String(v["hash"] ?? "")),
+    label: String(v["label"] ?? ""),
+    anchoredBy: String(v["anchored-by"] ?? ""),
+    stacksBlock: Number(v["stacks-block"]),
+    burnBlock: Number(v["burn-block"]),
+  };
+}
+
+export async function getProof(tokenId: number): Promise<Proof | null> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: PROOF_CONTRACT_NAME,
+    functionName: "get-proof",
+    functionArgs: [uintCV(tokenId)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  return decodeProof(cvToValue(result, true));
+}
+
+export async function getProofByHash(
+  hash: string,
+): Promise<ProofWithId | null> {
+  const idResult: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: PROOF_CONTRACT_NAME,
+    functionName: "get-token-id-by-hash",
+    functionArgs: [bufferCV(hexToBytes(stripHex(hash)))],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  const idValue = cvToValue(idResult, true);
+  if (idValue === null || idValue === undefined) return null;
+  const tokenId = Number(idValue);
+  const proof = await getProof(tokenId);
+  if (!proof) return null;
+  return { tokenId, ...proof };
+}
+
+// get-last-token-id returns a (response uint uint); cvToValue wraps an ok
+// response as { type: "ok", value }, so unwrap before coercing.
+export async function getLastTokenId(): Promise<number> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: PROOF_CONTRACT_NAME,
+    functionName: "get-last-token-id",
+    functionArgs: [],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  const value = cvToValue(result, true);
+  if (value && typeof value === "object" && "value" in value) {
+    return Number((value as { value: unknown }).value);
+  }
+  return Number(value);
 }
 
 export async function hashFile(file: File): Promise<string> {
