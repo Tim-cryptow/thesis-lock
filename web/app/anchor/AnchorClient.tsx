@@ -5,7 +5,9 @@ import Link from "next/link";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
+  explorerTxUrl,
   hashFile,
+  mintProof,
   readAnchor,
   readBatchAnchor,
   registerAnchor,
@@ -107,6 +109,12 @@ export default function AnchorPage() {
   );
   const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
   const [certNoticeHash, setCertNoticeHash] = useState<string | null>(null);
+
+  const [minting, setMinting] = useState(false);
+  const [mintProgress, setMintProgress] = useState<RegisterProgress | null>(
+    null,
+  );
+  const [mintTxId, setMintTxId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!pending) return;
@@ -346,6 +354,8 @@ export default function AnchorPage() {
     setBatchSuccess(null);
     setRows([]);
     setSubmitError(null);
+    setMintTxId(null);
+    setMintProgress(null);
   };
 
   const startAnotherSingle = () => {
@@ -354,6 +364,53 @@ export default function AnchorPage() {
     setHash(null);
     setLabel("");
     setSubmitError(null);
+    setMintTxId(null);
+    setMintProgress(null);
+  };
+
+  // Proof minting is an optional, separate wallet signature after the anchor
+  // already landed. Duplicate hashes are rejected on chain (err u409), so the
+  // wallet surfaces the failure; we just report it without blocking the flow.
+  const mintSingleProof = (entryHash: string, entryLabel: string) => {
+    setMinting(true);
+    mintProof(
+      entryHash,
+      entryLabel,
+      (txId) => {
+        setMinting(false);
+        setMintTxId(txId);
+      },
+      () => setMinting(false),
+    );
+  };
+
+  const mintProofsSequentially = useCallback(
+    (list: { hash: string; label: string }[], idx: number) => {
+      if (idx >= list.length) {
+        setMintProgress(null);
+        setMinting(false);
+        return;
+      }
+      setMintProgress({ current: idx + 1, total: list.length });
+      mintProof(
+        list[idx].hash,
+        list[idx].label,
+        (txId) => {
+          setMintTxId(txId);
+          mintProofsSequentially(list, idx + 1);
+        },
+        () => {
+          setMintProgress(null);
+          setMinting(false);
+        },
+      );
+    },
+    [],
+  );
+
+  const mintBatchProofs = (entries: BatchSuccessEntry[]) => {
+    setMinting(true);
+    mintProofsSequentially(entries, 0);
   };
 
   // Block heights for the cert only exist after the tx is mined. Read the
@@ -529,6 +586,35 @@ export default function AnchorPage() {
               </p>
             )}
           </div>
+          <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-5">
+            <h2 className="text-lg mb-1">Proof NFT</h2>
+            <p className="text-foreground/70 text-sm mb-4">
+              Mint a soulbound NFT as permanent proof in your wallet (optional).
+            </p>
+            {mintTxId ? (
+              <p className="text-sm text-green-700">
+                Proof NFT minting submitted.{" "}
+                <a
+                  href={explorerTxUrl(mintTxId)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:no-underline"
+                >
+                  View transaction
+                </a>
+              </p>
+            ) : (
+              <button
+                onClick={() =>
+                  mintSingleProof(singleSuccess.hash, singleSuccess.label)
+                }
+                disabled={minting || !address}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {minting ? "Awaiting wallet signature..." : "Mint Proof NFT"}
+              </button>
+            )}
+          </div>
           <div className="mt-8 flex gap-3 flex-wrap">
             <Link
               href="/anchors"
@@ -619,6 +705,33 @@ export default function AnchorPage() {
                 )}
               </div>
             ))}
+          </div>
+          <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-5">
+            <h2 className="text-lg mb-1">Proof NFTs</h2>
+            <p className="text-foreground/70 text-sm mb-4">
+              Mint a soulbound NFT per document as permanent proof in your
+              wallet (optional). Each one is a separate wallet signature.
+            </p>
+            {mintProgress ? (
+              <p className="text-sm text-foreground/70">
+                Minting {mintProgress.current} of {mintProgress.total}...
+              </p>
+            ) : mintTxId ? (
+              <p className="text-sm text-green-700">
+                Proof NFT minting submitted for {batchSuccess.entries.length}{" "}
+                document{batchSuccess.entries.length === 1 ? "" : "s"}.
+              </p>
+            ) : (
+              <button
+                onClick={() => mintBatchProofs(batchSuccess.entries)}
+                disabled={minting || !address}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {minting
+                  ? "Awaiting wallet signature..."
+                  : `Mint ${batchSuccess.entries.length} Proof NFT${batchSuccess.entries.length === 1 ? "" : "s"}`}
+              </button>
+            )}
           </div>
           <div className="mt-8 flex gap-3 flex-wrap">
             <Link
