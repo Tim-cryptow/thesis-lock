@@ -235,3 +235,24 @@ curl -s https://thesis-lock.vercel.app/api/health
   "version": "1.0.0"
 }
 ```
+
+## SDK
+
+For programmatic verification in JavaScript or TypeScript projects, the `thesislock-sdk` package wraps the Clarity serialization and Hiro reads above. It verifies single and batch anchors, reads per-wallet history, and looks up proof NFTs, with no Clarity encoding knowledge required.
+
+```bash
+npm install thesislock-sdk
+```
+
+```ts
+import { createClient } from 'thesislock-sdk';
+
+const client = createClient();
+const result = await client.verify('9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06');
+
+if (result.verified) {
+  console.log('Anchored by', result.data.anchoredBy);
+}
+```
+
+The package lives in [`sdk/`](sdk/README.md), which has the full API reference, utility functions, and configuration options.

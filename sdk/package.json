@@ -1,0 +1,31 @@
+{
+  "name": "thesislock-sdk",
+  "version": "0.1.0",
+  "description": "JavaScript SDK for verifying ThesisLock document anchors on Stacks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "stacks",
+    "clarity",
+    "thesislock",
+    "proof-of-existence",
+    "sha-256"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@stacks/transactions": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "typescript": "^5.4.0",
+    "vitest": "^3.1.3"
+  }
+}
