@@ -35,11 +35,26 @@ export interface ProofNFT {
 
 export type VerifySource = "single" | "batch" | "proof";
 
-export interface VerifyResult {
-  verified: boolean;
-  source: VerifySource | null;
-  data: AnchorResult | BatchAnchorResult | null;
+export interface UnverifiedResult {
+  verified: false;
+  source: null;
+  data: null;
 }
+
+export type SingleVerifyResult =
+  | { verified: true; source: "single"; data: AnchorResult }
+  | UnverifiedResult;
+
+export type BatchVerifyResult =
+  | { verified: true; source: "batch"; data: BatchAnchorResult }
+  | UnverifiedResult;
+
+// Discriminated on `verified` and `source` so consumers can narrow `data`
+// after checking `result.verified`.
+export type VerifyResult =
+  | { verified: true; source: "single"; data: AnchorResult }
+  | { verified: true; source: "batch"; data: BatchAnchorResult }
+  | UnverifiedResult;
 
 export interface ThesisLockConfig {
   apiUrl?: string;

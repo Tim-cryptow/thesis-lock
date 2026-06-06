@@ -161,11 +161,17 @@ truncateHash('9afe6f57...585d06', 4); // '9afe...5d06'
 
 `AnchorResult`, `BatchAnchorResult`, `RegistryEntry`, `ProofNFT`, and `VerifyResult` are all exported for use in TypeScript projects.
 
+`VerifyResult` is a discriminated union, so checking `result.verified` narrows `data` to the matching record with no casts. `verify()` returns a single-anchor result, `verifyBatch()` a batch result, and `verifyAny()` the combined `VerifyResult`.
+
 ```ts
-interface VerifyResult {
-  verified: boolean;
-  source: 'single' | 'batch' | 'proof' | null;
-  data: AnchorResult | BatchAnchorResult | null;
+type VerifyResult =
+  | { verified: true; source: 'single'; data: AnchorResult }
+  | { verified: true; source: 'batch'; data: BatchAnchorResult }
+  | { verified: false; source: null; data: null };
+
+const result = await client.verify(hash);
+if (result.verified) {
+  result.data.anchoredBy; // narrowed to AnchorResult
 }
 ```
 

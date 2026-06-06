@@ -10,8 +10,10 @@ import { serializeHash } from "./utils";
 import type {
   AnchorResult,
   BatchAnchorResult,
+  BatchVerifyResult,
   ProofNFT,
   RegistryEntry,
+  SingleVerifyResult,
   ThesisLockConfig,
   VerifyResult,
 } from "./types";
@@ -90,7 +92,7 @@ export class ThesisLockClient {
   }
 
   /** Look up a single anchor in the thesislock contract. */
-  async verify(hash: string): Promise<VerifyResult> {
+  async verify(hash: string): Promise<SingleVerifyResult> {
     const value = await this.callReadOnly(SINGLE_CONTRACT, "get-anchor", [
       serializeHash(hash),
     ]);
@@ -109,7 +111,7 @@ export class ThesisLockClient {
   }
 
   /** Look up an owner-keyed batch anchor in the thesislock-batch contract. */
-  async verifyBatch(hash: string, owner: string): Promise<VerifyResult> {
+  async verifyBatch(hash: string, owner: string): Promise<BatchVerifyResult> {
     if (!validateStacksAddress(owner)) {
       throw new Error(`Invalid Stacks principal: ${owner}`);
     }
