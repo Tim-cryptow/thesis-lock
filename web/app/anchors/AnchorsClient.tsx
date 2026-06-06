@@ -13,6 +13,12 @@ import {
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
+import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
+import {
+  downloadExport,
+  formatAnchorsCSV,
+  formatAnchorsJSON,
+} from "@/lib/export";
 
 function truncateHash(hash: string): string {
   if (hash.length <= 14) return hash;
@@ -61,6 +67,37 @@ export default function AnchorsPage() {
 
   const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
   const [certErrorHash, setCertErrorHash] = useState<string | null>(null);
+
+  const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const handleExport = async (format: "csv" | "json") => {
+    if (!address) return;
+    setExportError(null);
+    setExporting(format);
+    try {
+      const all = await fetchAllAnchors(address);
+      const stamp = address.slice(0, 8);
+      if (format === "csv") {
+        downloadExport(
+          formatAnchorsCSV(all, address),
+          `thesislock-anchors-${stamp}.csv`,
+          "text/csv;charset=utf-8",
+        );
+      } else {
+        downloadExport(
+          formatAnchorsJSON(all, address),
+          `thesislock-anchors-${stamp}.json`,
+          "application/json",
+        );
+      }
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Export failed.");
+      setTimeout(() => setExportError(null), 4000);
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const downloadEntryCertificate = async (entry: RegistryEntry) => {
     if (!address) return;
@@ -260,11 +297,32 @@ export default function AnchorsPage() {
               )}
             </div>
           ))}
-          {count !== null && count > entries.length && (
-            <p className="text-xs text-foreground/50 text-center pt-2">
-              Showing the 10 most recent of {count} anchors.
-            </p>
-          )}
+          <div className="flex flex-col items-center gap-3 pt-4">
+            {count !== null && count > entries.length && (
+              <p className="text-xs text-foreground/50 text-center">
+                Showing 10 most recent of {count} anchors. Export all.
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => void handleExport("csv")}
+                disabled={!count || exporting !== null}
+                className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {exporting === "csv" ? "Exporting..." : "Export CSV"}
+              </button>
+              <button
+                onClick={() => void handleExport("json")}
+                disabled={!count || exporting !== null}
+                className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {exporting === "json" ? "Exporting..." : "Export JSON"}
+              </button>
+            </div>
+            {exportError && (
+              <p className="text-xs text-amber-700">{exportError}</p>
+            )}
+          </div>
         </div>
       )}
     </div>

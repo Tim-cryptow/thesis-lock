@@ -18,6 +18,14 @@ export async function GET(req: Request, { params }: RouteContext) {
   }
 
   const url = new URL(req.url);
+  const format = (url.searchParams.get("format") ?? "json").toLowerCase();
+  if (format !== "json") {
+    return Response.json(
+      { verified: false, error: "Unsupported format. Only 'json' is supported." },
+      { status: 400, headers: corsHeaders() },
+    );
+  }
+
   const owner = url.searchParams.get("owner") ?? undefined;
   const result = await verifyHash(hash, owner, url.origin);
 
