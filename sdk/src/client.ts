@@ -18,7 +18,10 @@ import type {
   VerifyResult,
 } from "./types";
 
-const DEFAULT_API_URL = "https://api.mainnet.hiro.so";
+const DEFAULT_API_URLS = {
+  mainnet: "https://api.mainnet.hiro.so",
+  testnet: "https://api.testnet.hiro.so",
+} as const;
 const DEFAULT_CONTRACT_ADDRESS = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const SINGLE_CONTRACT = "thesislock";
@@ -62,9 +65,12 @@ export class ThesisLockClient {
   readonly network: "mainnet" | "testnet";
 
   constructor(config: ThesisLockConfig = {}) {
-    this.apiUrl = (config.apiUrl ?? DEFAULT_API_URL).replace(/\/$/, "");
-    this.contractAddress = config.contractAddress ?? DEFAULT_CONTRACT_ADDRESS;
     this.network = config.network ?? "mainnet";
+    this.apiUrl = (config.apiUrl ?? DEFAULT_API_URLS[this.network]).replace(
+      /\/$/,
+      "",
+    );
+    this.contractAddress = config.contractAddress ?? DEFAULT_CONTRACT_ADDRESS;
   }
 
   private async callReadOnly(

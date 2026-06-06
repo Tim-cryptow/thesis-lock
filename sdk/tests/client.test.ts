@@ -85,6 +85,23 @@ describe("truncateHash", () => {
   });
 });
 
+describe("client configuration", () => {
+  it("defaults to the mainnet API URL", () => {
+    expect(createClient().apiUrl).toBe("https://api.mainnet.hiro.so");
+  });
+
+  it("derives the testnet API URL from the network option", () => {
+    const client = createClient({ network: "testnet" });
+    expect(client.network).toBe("testnet");
+    expect(client.apiUrl).toBe("https://api.testnet.hiro.so");
+  });
+
+  it("lets an explicit apiUrl override the network default", () => {
+    const client = createClient({ network: "testnet", apiUrl: "https://example.test/" });
+    expect(client.apiUrl).toBe("https://example.test");
+  });
+});
+
 const runIntegration = process.env.SDK_INTEGRATION === "1";
 
 describe.skipIf(!runIntegration)("ThesisLockClient (mainnet)", () => {
