@@ -138,13 +138,11 @@ export default function VerifyPage() {
         setBatchAnchor(batch);
         // Last resort: a hash anchored only through a group is invisible to the
         // single and batch contracts, so fall back to the groups contract's
-        // print events when neither resolved.
+        // print events when neither resolved. Let a lookup failure propagate to
+        // the error state below rather than swallowing it, so a transient API
+        // error does not masquerade as "not anchored" for group-only hashes.
         if (!result && !batch) {
-          try {
-            setGroupAnchor(await findGroupAnchorByHash(hash));
-          } catch {
-            setGroupAnchor(null);
-          }
+          setGroupAnchor(await findGroupAnchorByHash(hash));
         } else {
           setGroupAnchor(null);
         }
