@@ -10,6 +10,16 @@ export type GroupSummary = Group & {
   anchorCount: number;
 };
 
+export type GroupAnchorMatch = {
+  groupId: number;
+  index: number;
+  hash: string;
+  label: string;
+  anchoredBy: string;
+  stacksBlock: number;
+  groupName?: string;
+};
+
 type RawEvent = {
   tx_id: string;
   event_type: string;
@@ -112,6 +122,49 @@ function reconstructMembership(events: RawEvent[]): Map<string, boolean> {
     latest.set(key, action.kind !== "removed");
   }
   return latest;
+}
+
+function parseGroupAnchorEvent(ev: RawEvent): GroupAnchorMatch | null {
+  const hex = ev.contract_log?.value?.hex ?? "";
+  if (!hex) return null;
+  let tuple: Record<string, unknown>;
+  try {
+    const value = cvToValue(deserializeCV(stripHex(hex)), true);
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    tuple = value as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  if (String(tuple["event"] ?? "") !== "group-anchor-added") return null;
+  return {
+    groupId: asNumber(tuple["group-id"]),
+    index: asNumber(tuple["index"]),
+    hash: stripHex(String(tuple["hash"] ?? "")).toLowerCase(),
+    label: String(tuple["label"] ?? ""),
+    anchoredBy: String(tuple["anchored-by"] ?? ""),
+    stacksBlock: asNumber(tuple["stacks-block"]),
+  };
+}
+
+// Look up a hash among recent group-anchor print events. The verify page uses
+// this as a last resort after the single and batch contracts miss, since a hash
+// anchored only through a group lives in thesislock-groups, keyed by group and
+// index, with no per-hash on-chain lookup. We scan one page of recent events;
+// the group name is fetched separately because the print event carries only the
+// group id.
+export async function findGroupAnchorByHash(
+  hash: string,
+): Promise<GroupAnchorMatch | null> {
+  const target = stripHex(hash).toLowerCase();
+  const events = await fetchEvents(HIRO_PAGE, 0);
+  for (const ev of events) {
+    const anchor = parseGroupAnchorEvent(ev);
+    if (anchor && anchor.hash === target) {
+      const group = await getGroup(anchor.groupId);
+      return { ...anchor, groupName: group?.name };
+    }
+  }
+  return null;
 }
 
 export async function fetchGroupMembers(groupId: number): Promise<string[]> {
