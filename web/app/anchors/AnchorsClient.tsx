@@ -176,6 +176,12 @@ export default function AnchorsPage() {
           >
             Stats
           </Link>
+          <Link
+            href="/verify-bulk"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Bulk Verify
+          </Link>
         </div>
         {address ? (
           <button

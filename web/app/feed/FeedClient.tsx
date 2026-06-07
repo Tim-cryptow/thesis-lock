@@ -152,6 +152,12 @@ export default function FeedClient() {
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           Stats
         </Link>
+        <Link
+          href="/verify-bulk"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Bulk Verify
+        </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
