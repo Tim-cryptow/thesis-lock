@@ -71,6 +71,13 @@ export default function Page() {
               everything anchored from your wallet.
             </p>
           </div>
+          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+            <h3 className="text-xl mb-2">Bulk verify</h3>
+            <p className="text-foreground/80 text-sm leading-relaxed">
+              Drop many documents at once to check them all against the chain in
+              one pass, then export the results.
+            </p>
+          </div>
         </div>
       </section>
 

@@ -225,6 +225,12 @@ export default function VerifyPage() {
           >
             Stats
           </Link>
+          <Link
+            href="/verify-bulk"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Bulk Verify
+          </Link>
         </div>
         <h1 className="text-3xl mt-8 mb-2">Invalid hash format.</h1>
         <p className="text-foreground/70">
