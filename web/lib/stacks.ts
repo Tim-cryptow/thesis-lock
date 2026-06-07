@@ -18,10 +18,12 @@ const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME!;
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 const REGISTRY_CONTRACT_NAME = "thesislock-registry";
 const PROOF_CONTRACT_NAME = "thesislock-proof";
+const GROUPS_CONTRACT_NAME = "thesislock-groups";
 
 export const SINGLE_CONTRACT_NAME = CONTRACT_NAME;
 export const BATCH_CONTRACT_FULL_NAME = BATCH_CONTRACT_NAME;
 export const PROOF_CONTRACT_FULL_NAME = PROOF_CONTRACT_NAME;
+export const GROUPS_CONTRACT_FULL_NAME = GROUPS_CONTRACT_NAME;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 export type Anchor = {
@@ -53,6 +55,19 @@ export type Proof = {
 };
 
 export type ProofWithId = Proof & { tokenId: number };
+
+export type Group = {
+  name: string;
+  admin: string;
+  createdAt: number;
+};
+
+export type GroupAnchor = {
+  hash: string;
+  label: string;
+  anchoredBy: string;
+  stacksBlock: number;
+};
 
 export function getNetwork(): StacksNetwork {
   return { ...STACKS_MAINNET, client: { baseUrl: API_URL } };
@@ -315,6 +330,166 @@ export async function getLastTokenId(): Promise<number> {
     return Number((value as { value: unknown }).value);
   }
   return Number(value);
+}
+
+export function createGroup(
+  name: string,
+  onFinish: (txId: string) => void,
+  onCancel?: () => void,
+): void {
+  openContractCall({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "create-group",
+    functionArgs: [stringAsciiCV(name)],
+    network: getNetwork(),
+    onFinish: (data) => onFinish(data.txId),
+    onCancel: () => onCancel?.(),
+  });
+}
+
+export function addMember(
+  groupId: number,
+  member: string,
+  onFinish: (txId: string) => void,
+  onCancel?: () => void,
+): void {
+  openContractCall({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "add-member",
+    functionArgs: [uintCV(groupId), principalCV(member)],
+    network: getNetwork(),
+    onFinish: (data) => onFinish(data.txId),
+    onCancel: () => onCancel?.(),
+  });
+}
+
+export function removeMember(
+  groupId: number,
+  member: string,
+  onFinish: (txId: string) => void,
+  onCancel?: () => void,
+): void {
+  openContractCall({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "remove-member",
+    functionArgs: [uintCV(groupId), principalCV(member)],
+    network: getNetwork(),
+    onFinish: (data) => onFinish(data.txId),
+    onCancel: () => onCancel?.(),
+  });
+}
+
+export function anchorToGroup(
+  groupId: number,
+  hash: string,
+  label: string,
+  onFinish: (txId: string) => void,
+  onCancel?: () => void,
+): void {
+  openContractCall({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "anchor-to-group",
+    functionArgs: [
+      uintCV(groupId),
+      bufferCV(hexToBytes(stripHex(hash))),
+      stringAsciiCV(label),
+    ],
+    network: getNetwork(),
+    onFinish: (data) => onFinish(data.txId),
+    onCancel: () => onCancel?.(),
+  });
+}
+
+export async function getGroup(groupId: number): Promise<Group | null> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "get-group",
+    functionArgs: [uintCV(groupId)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  const value = cvToValue(result, true);
+  if (value === null || value === undefined) return null;
+  const v = value as Record<string, unknown>;
+  return {
+    name: String(v["name"] ?? ""),
+    admin: String(v["admin"] ?? ""),
+    createdAt: Number(v["created-at"]),
+  };
+}
+
+export async function isMember(
+  groupId: number,
+  who: string,
+): Promise<boolean> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "is-member",
+    functionArgs: [uintCV(groupId), principalCV(who)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  return Boolean(cvToValue(result, true));
+}
+
+export async function getGroupAnchorCount(groupId: number): Promise<number> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "get-group-anchor-count",
+    functionArgs: [uintCV(groupId)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  return Number(cvToValue(result, true));
+}
+
+function decodeGroupAnchor(value: unknown): GroupAnchor | null {
+  if (value === null || value === undefined) return null;
+  const v = value as Record<string, unknown>;
+  return {
+    hash: stripHex(String(v["hash"] ?? "")),
+    label: String(v["label"] ?? ""),
+    anchoredBy: String(v["anchored-by"] ?? ""),
+    stacksBlock: Number(v["stacks-block"]),
+  };
+}
+
+export async function getGroupAnchorAt(
+  groupId: number,
+  index: number,
+): Promise<GroupAnchor | null> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "get-group-anchor-at",
+    functionArgs: [uintCV(groupId), uintCV(index)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  return decodeGroupAnchor(cvToValue(result, true));
+}
+
+export async function getRecentGroupAnchors(
+  groupId: number,
+): Promise<Array<GroupAnchor | null>> {
+  const result: ClarityValue = await fetchCallReadOnlyFunction({
+    contractAddress: CONTRACT_ADDRESS,
+    contractName: GROUPS_CONTRACT_NAME,
+    functionName: "get-recent-group-anchors",
+    functionArgs: [uintCV(groupId)],
+    senderAddress: CONTRACT_ADDRESS,
+    network: getNetwork(),
+  });
+  const value = cvToValue(result, true);
+  if (!Array.isArray(value)) return [];
+  return value.map((entry) => decodeGroupAnchor(entry));
 }
 
 export async function hashFile(file: File): Promise<string> {

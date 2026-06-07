@@ -14,6 +14,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Single file anchoring with optional ASCII label up to 64 characters.
 - Batch anchoring of up to ten files in a single transaction.
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
+- Anchor groups at `/groups`: create a named group, add members, and anchor documents under a shared, on-chain history. Useful for thesis committees, legal teams, or research labs collecting submissions.
 - Client-side SHA-256 hashing. The file never leaves your device.
 - Public verification at `/v/<hash>` with file re-upload check.
 - Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
@@ -22,7 +23,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 
 ## Protocol
 
-Four Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`:
+Five Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`:
 
 | Contract | Purpose |
 | --- | --- |
@@ -30,6 +31,7 @@ Four Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3Q
 | `thesislock-batch` | Anchors up to ten hashes per transaction, keyed by `{ hash, owner }`. Duplicates for the same owner are silently skipped so partial overlaps with prior batches still succeed. |
 | `thesislock-registry` | Per-principal append-only index of anchors. Powers the "My Anchors" page. |
 | `thesislock-proof` | SIP-009 NFT issuing soulbound proof tokens. `mint-proof` anchors a hash and mints a non-transferable token to the caller; `transfer` always fails with `u401`. One proof per unique hash (`u409` on duplicates). Look up by token id (`get-proof`) or hash (`get-proof-by-hash`). |
+| `thesislock-groups` | Named groups for collaborative anchoring. An admin creates a group (`create-group`) and manages members (`add-member`, `remove-member`, non-admin calls fail with `u403`). Any member can `anchor-to-group`, appending to a shared history keyed by `{ group-id, index }`. Read membership with `is-member` and history with `get-group-anchor-at` or `get-recent-group-anchors`. |
 
 The original `thesislock` contract was first deployed at Stacks block 7798720, burn block 947300 ([deploy transaction](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet)).
 

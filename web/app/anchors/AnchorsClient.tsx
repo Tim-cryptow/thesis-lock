@@ -165,6 +165,12 @@ export default function AnchorsPage() {
           </Link>
           <span className="text-foreground font-medium">My Anchors</span>
           <Link
+            href="/groups"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Groups
+          </Link>
+          <Link
             href="/feed"
             className="text-foreground/60 hover:text-foreground"
           >

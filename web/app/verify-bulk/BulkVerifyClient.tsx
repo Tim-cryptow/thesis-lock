@@ -296,6 +296,12 @@ export default function BulkVerifyClient() {
             My Anchors
           </Link>
           <Link
+            href="/groups"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Groups
+          </Link>
+          <Link
             href="/feed"
             className="text-foreground/60 hover:text-foreground"
           >

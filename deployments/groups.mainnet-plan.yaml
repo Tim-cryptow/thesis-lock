@@ -1,0 +1,18 @@
+---
+id: 0
+name: Mainnet deployment - anchor groups (thesislock-groups)
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: thesislock-groups
+            expected-sender: SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
+            cost: 150000
+            path: contracts/thesislock-groups.clar
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.1"
