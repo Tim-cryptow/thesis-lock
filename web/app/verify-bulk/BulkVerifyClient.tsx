@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   getProofByHash,
@@ -22,6 +22,9 @@ type Row = {
   status: RowStatus;
   source: Source | null;
   block: number | null;
+  // Owner principal used for a successful batch lookup. Frozen here so the
+  // verify link stays correct even if the wallet later disconnects or switches.
+  owner: string | null;
   message: string | null;
 };
 
@@ -55,6 +58,9 @@ export default function BulkVerifyClient() {
   const [dragOver, setDragOver] = useState(false);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // Latest rows without forcing the re-resolution effect to depend on `rows`.
+  const rowsRef = useRef<Row[]>(rows);
+  rowsRef.current = rows;
 
   // Resolve one already-hashed file against the contracts. Single anchors are
   // global and public, so they come first. The batch contract is keyed by
@@ -73,6 +79,7 @@ export default function BulkVerifyClient() {
                     status: "verified",
                     source: "single",
                     block: single.stacksBlock,
+                    owner: null,
                   }
                 : r,
             ),
@@ -91,6 +98,7 @@ export default function BulkVerifyClient() {
                       status: "verified",
                       source: "batch",
                       block: batch.stacksBlock,
+                      owner,
                     }
                   : r,
               ),
@@ -109,6 +117,7 @@ export default function BulkVerifyClient() {
                     status: "verified",
                     source: "proof",
                     block: proof.stacksBlock,
+                    owner: null,
                   }
                 : r,
             ),
@@ -118,7 +127,9 @@ export default function BulkVerifyClient() {
 
         setRows((cur) =>
           cur.map((r) =>
-            r.id === id ? { ...r, status: "notfound" } : r,
+            r.id === id
+              ? { ...r, status: "notfound", source: null, block: null, owner: null }
+              : r,
           ),
         );
       } catch (e) {
@@ -134,6 +145,25 @@ export default function BulkVerifyClient() {
     [],
   );
 
+  // Files added while disconnected settle as "not found" because the
+  // owner-keyed batch contract cannot be queried without a wallet. Once a
+  // wallet connects, re-check those rows so batch anchors resolve.
+  useEffect(() => {
+    if (!address) return;
+    const pending = rowsRef.current.filter(
+      (r) => r.status === "notfound" && r.hash,
+    );
+    if (pending.length === 0) return;
+    setRows((cur) =>
+      cur.map((r) =>
+        r.status === "notfound" && r.hash
+          ? { ...r, status: "checking" }
+          : r,
+      ),
+    );
+    pending.forEach((r) => void resolve(r.id, r.hash!, address));
+  }, [address, resolve]);
+
   const addFiles = useCallback(
     (incoming: FileList | File[] | null) => {
       if (!incoming) return;
@@ -147,6 +177,7 @@ export default function BulkVerifyClient() {
         status: "checking",
         source: null,
         block: null,
+        owner: null,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
@@ -425,8 +456,8 @@ export default function BulkVerifyClient() {
                       {row.status === "verified" && row.hash && (
                         <Link
                           href={
-                            row.source === "batch" && address
-                              ? `/v/${row.hash}?owner=${encodeURIComponent(address)}`
+                            row.source === "batch" && row.owner
+                              ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
                               : `/v/${row.hash}`
                           }
                           aria-label={`Open verify page for ${row.file.name}`}
