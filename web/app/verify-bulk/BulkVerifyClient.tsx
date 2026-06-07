@@ -75,40 +75,28 @@ export default function BulkVerifyClient() {
   // global and public, so they come first. The batch contract is keyed by
   // {hash, owner}, so it can only be checked when a wallet is connected.
   // Proof NFTs are global and looked up by hash regardless of wallet.
+  //
+  // The loop absorbs a wallet change that lands while the reads are in flight:
+  // if no match is found and the connected owner changed during the awaits,
+  // retry against the new owner before settling. The final notfound write
+  // happens synchronously right after confirming the owner is stable, so
+  // `checkedOwner` always matches the wallet in effect at settle time.
   const resolve = useCallback(async (id: string, hash: string) => {
     try {
-      const single = await readAnchor(hash);
-      if (single) {
-        setRows((cur) =>
-          cur.map((r) =>
-            r.id === id
-              ? {
-                  ...r,
-                  status: "verified",
-                  source: "single",
-                  block: single.stacksBlock,
-                  owner: null,
-                  checkedOwner: addressRef.current,
-                }
-              : r,
-          ),
-        );
-        return;
-      }
+      for (;;) {
+        const owner = addressRef.current;
 
-      const owner = addressRef.current;
-      if (owner) {
-        const batch = await readBatchAnchor(hash, owner);
-        if (batch) {
+        const single = await readAnchor(hash);
+        if (single) {
           setRows((cur) =>
             cur.map((r) =>
               r.id === id
                 ? {
                     ...r,
                     status: "verified",
-                    source: "batch",
-                    block: batch.stacksBlock,
-                    owner,
+                    source: "single",
+                    block: single.stacksBlock,
+                    owner: null,
                     checkedOwner: owner,
                   }
                 : r,
@@ -116,18 +104,59 @@ export default function BulkVerifyClient() {
           );
           return;
         }
-      }
 
-      const proof = await getProofByHash(hash);
-      if (proof) {
+        if (owner) {
+          const batch = await readBatchAnchor(hash, owner);
+          if (batch) {
+            setRows((cur) =>
+              cur.map((r) =>
+                r.id === id
+                  ? {
+                      ...r,
+                      status: "verified",
+                      source: "batch",
+                      block: batch.stacksBlock,
+                      owner,
+                      checkedOwner: owner,
+                    }
+                  : r,
+              ),
+            );
+            return;
+          }
+        }
+
+        const proof = await getProofByHash(hash);
+        if (proof) {
+          setRows((cur) =>
+            cur.map((r) =>
+              r.id === id
+                ? {
+                    ...r,
+                    status: "verified",
+                    source: "proof",
+                    block: proof.stacksBlock,
+                    owner: null,
+                    checkedOwner: owner,
+                  }
+                : r,
+            ),
+          );
+          return;
+        }
+
+        // The wallet changed mid-lookup; retry against the current owner so a
+        // batch anchor owned by the new wallet is not missed.
+        if (addressRef.current !== owner) continue;
+
         setRows((cur) =>
           cur.map((r) =>
             r.id === id
               ? {
                   ...r,
-                  status: "verified",
-                  source: "proof",
-                  block: proof.stacksBlock,
+                  status: "notfound",
+                  source: null,
+                  block: null,
                   owner: null,
                   checkedOwner: owner,
                 }
@@ -136,21 +165,6 @@ export default function BulkVerifyClient() {
         );
         return;
       }
-
-      setRows((cur) =>
-        cur.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                status: "notfound",
-                source: null,
-                block: null,
-                owner: null,
-                checkedOwner: owner,
-              }
-            : r,
-        ),
-      );
     } catch (e) {
       const message =
         e instanceof Error ? e.message : "Could not check this hash.";
