@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { createGroup, type GroupSummary } from "@/lib/stacks";
-import { fetchMyGroups } from "@/lib/groups";
-import { explorerTxUrl } from "@/lib/stacks";
+import { createGroup, explorerTxUrl } from "@/lib/stacks";
+import { fetchMyGroups, type GroupSummary } from "@/lib/groups";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
