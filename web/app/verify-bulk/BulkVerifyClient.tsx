@@ -25,10 +25,10 @@ type Row = {
   // Owner principal used for a successful batch lookup. Frozen here so the
   // verify link stays correct even if the wallet later disconnects or switches.
   owner: string | null;
-  // True when the last resolution ran without a connected wallet, so the
-  // owner-keyed batch contract was never queried. Such rows are re-checked
-  // once a wallet connects.
-  checkedWithoutOwner: boolean;
+  // The wallet principal used when this row was last resolved (null if none was
+  // connected). A "not found" row is re-checked whenever the connected wallet
+  // differs from this, since batch records are keyed by {hash, owner}.
+  checkedOwner: string | null;
   message: string | null;
 };
 
@@ -88,7 +88,7 @@ export default function BulkVerifyClient() {
                   source: "single",
                   block: single.stacksBlock,
                   owner: null,
-                  checkedWithoutOwner: false,
+                  checkedOwner: addressRef.current,
                 }
               : r,
           ),
@@ -109,7 +109,7 @@ export default function BulkVerifyClient() {
                     source: "batch",
                     block: batch.stacksBlock,
                     owner,
-                    checkedWithoutOwner: false,
+                    checkedOwner: owner,
                   }
                 : r,
             ),
@@ -129,7 +129,7 @@ export default function BulkVerifyClient() {
                   source: "proof",
                   block: proof.stacksBlock,
                   owner: null,
-                  checkedWithoutOwner: !owner,
+                  checkedOwner: owner,
                 }
               : r,
           ),
@@ -146,7 +146,7 @@ export default function BulkVerifyClient() {
                 source: null,
                 block: null,
                 owner: null,
-                checkedWithoutOwner: !owner,
+                checkedOwner: owner,
               }
             : r,
         ),
@@ -162,23 +162,19 @@ export default function BulkVerifyClient() {
     }
   }, []);
 
-  // Files added while disconnected settle as "not found" because the
-  // owner-keyed batch contract cannot be queried without a wallet. Once a
-  // wallet connects, re-check the rows that were resolved without an owner so
-  // batch anchors resolve. (Rows still mid-flight are handled by addressRef,
-  // which lets their in-flight resolve pick up the new owner.)
+  // Batch records are keyed by {hash, owner}, so a "not found" row only reflects
+  // the wallet it was checked against. When the connected wallet changes (first
+  // connect, or switching to the wallet that actually owns the record), re-check
+  // those rows against the new principal. (Rows still mid-flight are handled by
+  // addressRef, which lets their in-flight resolve pick up the new owner.)
   useEffect(() => {
     if (!address) return;
-    const pending = rowsRef.current.filter(
-      (r) => r.status === "notfound" && r.checkedWithoutOwner && r.hash,
-    );
+    const needsRecheck = (r: Row) =>
+      r.status === "notfound" && !!r.hash && r.checkedOwner !== address;
+    const pending = rowsRef.current.filter(needsRecheck);
     if (pending.length === 0) return;
     setRows((cur) =>
-      cur.map((r) =>
-        r.status === "notfound" && r.checkedWithoutOwner && r.hash
-          ? { ...r, status: "checking" }
-          : r,
-      ),
+      cur.map((r) => (needsRecheck(r) ? { ...r, status: "checking" } : r)),
     );
     pending.forEach((r) => void resolve(r.id, r.hash!));
   }, [address, resolve]);
@@ -196,7 +192,7 @@ export default function BulkVerifyClient() {
         source: null,
         block: null,
         owner: null,
-        checkedWithoutOwner: false,
+        checkedOwner: null,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
