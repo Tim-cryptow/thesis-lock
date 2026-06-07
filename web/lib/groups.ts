@@ -146,17 +146,19 @@ function parseGroupAnchorEvent(ev: RawEvent): GroupAnchorMatch | null {
   };
 }
 
-// Look up a hash among recent group-anchor print events. The verify page uses
-// this as a last resort after the single and batch contracts miss, since a hash
+// Look up a hash among group-anchor print events. The verify page uses this as
+// a last resort after the single and batch contracts miss, since a hash
 // anchored only through a group lives in thesislock-groups, keyed by group and
-// index, with no per-hash on-chain lookup. We scan one page of recent events;
-// the group name is fetched separately because the print event carries only the
-// group id.
+// index, with no per-hash on-chain lookup. We must page through every event:
+// the stream mixes group creations, membership changes, and anchors, so newer
+// prints can push an older group-anchor record past any fixed page and make a
+// real anchor read as not found. The group name is fetched separately because
+// the print event carries only the group id.
 export async function findGroupAnchorByHash(
   hash: string,
 ): Promise<GroupAnchorMatch | null> {
   const target = stripHex(hash).toLowerCase();
-  const events = await fetchEvents(HIRO_PAGE, 0);
+  const events = await fetchAllEvents();
   for (const ev of events) {
     const anchor = parseGroupAnchorEvent(ev);
     if (anchor && anchor.hash === target) {
