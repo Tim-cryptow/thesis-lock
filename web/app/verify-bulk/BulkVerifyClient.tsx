@@ -25,6 +25,10 @@ type Row = {
   // Owner principal used for a successful batch lookup. Frozen here so the
   // verify link stays correct even if the wallet later disconnects or switches.
   owner: string | null;
+  // True when the last resolution ran without a connected wallet, so the
+  // owner-keyed batch contract was never queried. Such rows are re-checked
+  // once a wallet connects.
+  checkedWithoutOwner: boolean;
   message: string | null;
 };
 
@@ -61,107 +65,122 @@ export default function BulkVerifyClient() {
   // Latest rows without forcing the re-resolution effect to depend on `rows`.
   const rowsRef = useRef<Row[]>(rows);
   rowsRef.current = rows;
+  // Latest connected owner, read at the moment of the batch lookup so an
+  // in-flight resolve that started before the wallet connected still queries
+  // the owner-keyed batch contract with the now-current principal.
+  const addressRef = useRef<string | null>(address);
+  addressRef.current = address;
 
   // Resolve one already-hashed file against the contracts. Single anchors are
   // global and public, so they come first. The batch contract is keyed by
   // {hash, owner}, so it can only be checked when a wallet is connected.
   // Proof NFTs are global and looked up by hash regardless of wallet.
-  const resolve = useCallback(
-    async (id: string, hash: string, owner: string | null) => {
-      try {
-        const single = await readAnchor(hash);
-        if (single) {
-          setRows((cur) =>
-            cur.map((r) =>
-              r.id === id
-                ? {
-                    ...r,
-                    status: "verified",
-                    source: "single",
-                    block: single.stacksBlock,
-                    owner: null,
-                  }
-                : r,
-            ),
-          );
-          return;
-        }
-
-        if (owner) {
-          const batch = await readBatchAnchor(hash, owner);
-          if (batch) {
-            setRows((cur) =>
-              cur.map((r) =>
-                r.id === id
-                  ? {
-                      ...r,
-                      status: "verified",
-                      source: "batch",
-                      block: batch.stacksBlock,
-                      owner,
-                    }
-                  : r,
-              ),
-            );
-            return;
-          }
-        }
-
-        const proof = await getProofByHash(hash);
-        if (proof) {
-          setRows((cur) =>
-            cur.map((r) =>
-              r.id === id
-                ? {
-                    ...r,
-                    status: "verified",
-                    source: "proof",
-                    block: proof.stacksBlock,
-                    owner: null,
-                  }
-                : r,
-            ),
-          );
-          return;
-        }
-
+  const resolve = useCallback(async (id: string, hash: string) => {
+    try {
+      const single = await readAnchor(hash);
+      if (single) {
         setRows((cur) =>
           cur.map((r) =>
             r.id === id
-              ? { ...r, status: "notfound", source: null, block: null, owner: null }
+              ? {
+                  ...r,
+                  status: "verified",
+                  source: "single",
+                  block: single.stacksBlock,
+                  owner: null,
+                  checkedWithoutOwner: false,
+                }
               : r,
           ),
         );
-      } catch (e) {
-        const message =
-          e instanceof Error ? e.message : "Could not check this hash.";
+        return;
+      }
+
+      const owner = addressRef.current;
+      if (owner) {
+        const batch = await readBatchAnchor(hash, owner);
+        if (batch) {
+          setRows((cur) =>
+            cur.map((r) =>
+              r.id === id
+                ? {
+                    ...r,
+                    status: "verified",
+                    source: "batch",
+                    block: batch.stacksBlock,
+                    owner,
+                    checkedWithoutOwner: false,
+                  }
+                : r,
+            ),
+          );
+          return;
+        }
+      }
+
+      const proof = await getProofByHash(hash);
+      if (proof) {
         setRows((cur) =>
           cur.map((r) =>
-            r.id === id ? { ...r, status: "error", message } : r,
+            r.id === id
+              ? {
+                  ...r,
+                  status: "verified",
+                  source: "proof",
+                  block: proof.stacksBlock,
+                  owner: null,
+                  checkedWithoutOwner: !owner,
+                }
+              : r,
           ),
         );
+        return;
       }
-    },
-    [],
-  );
+
+      setRows((cur) =>
+        cur.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status: "notfound",
+                source: null,
+                block: null,
+                owner: null,
+                checkedWithoutOwner: !owner,
+              }
+            : r,
+        ),
+      );
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Could not check this hash.";
+      setRows((cur) =>
+        cur.map((r) =>
+          r.id === id ? { ...r, status: "error", message } : r,
+        ),
+      );
+    }
+  }, []);
 
   // Files added while disconnected settle as "not found" because the
   // owner-keyed batch contract cannot be queried without a wallet. Once a
-  // wallet connects, re-check those rows so batch anchors resolve.
+  // wallet connects, re-check the rows that were resolved without an owner so
+  // batch anchors resolve. (Rows still mid-flight are handled by addressRef,
+  // which lets their in-flight resolve pick up the new owner.)
   useEffect(() => {
     if (!address) return;
     const pending = rowsRef.current.filter(
-      (r) => r.status === "notfound" && r.hash,
+      (r) => r.status === "notfound" && r.checkedWithoutOwner && r.hash,
     );
     if (pending.length === 0) return;
     setRows((cur) =>
       cur.map((r) =>
-        r.status === "notfound" && r.hash
+        r.status === "notfound" && r.checkedWithoutOwner && r.hash
           ? { ...r, status: "checking" }
           : r,
       ),
     );
-    pending.forEach((r) => void resolve(r.id, r.hash!, address));
+    pending.forEach((r) => void resolve(r.id, r.hash!));
   }, [address, resolve]);
 
   const addFiles = useCallback(
@@ -169,7 +188,6 @@ export default function BulkVerifyClient() {
       if (!incoming) return;
       const files = Array.from(incoming);
       if (files.length === 0) return;
-      const owner = address;
       const newRows: Row[] = files.map((file) => ({
         id: newId(file),
         file,
@@ -178,6 +196,7 @@ export default function BulkVerifyClient() {
         source: null,
         block: null,
         owner: null,
+        checkedWithoutOwner: false,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
@@ -187,7 +206,7 @@ export default function BulkVerifyClient() {
             setRows((cur) =>
               cur.map((r) => (r.id === row.id ? { ...r, hash } : r)),
             );
-            void resolve(row.id, hash, owner);
+            void resolve(row.id, hash);
           })
           .catch((e: unknown) => {
             const message =
@@ -200,7 +219,7 @@ export default function BulkVerifyClient() {
           });
       });
     },
-    [address, resolve],
+    [resolve],
   );
 
   const onDrop = useCallback(
