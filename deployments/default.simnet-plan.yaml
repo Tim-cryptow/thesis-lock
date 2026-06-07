@@ -73,6 +73,11 @@ plan:
       path: contracts/thesislock-batch.clar
       clarity-version: 3
     - transaction-type: emulated-contract-publish
+      contract-name: thesislock-groups
+      emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+      path: contracts/thesislock-groups.clar
+      clarity-version: 3
+    - transaction-type: emulated-contract-publish
       contract-name: thesislock-proof
       emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
       path: contracts/thesislock-proof.clar
