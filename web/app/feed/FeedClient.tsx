@@ -148,6 +148,12 @@ export default function FeedClient() {
         >
           My Anchors
         </Link>
+        <Link
+          href="/groups"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Groups
+        </Link>
         <span className="text-foreground font-medium">Feed</span>
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           Stats
