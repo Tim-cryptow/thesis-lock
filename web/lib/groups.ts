@@ -28,7 +28,6 @@ type GroupAction =
   | { kind: "removed"; groupId: number; member: string };
 
 const HIRO_PAGE = 50;
-const PAGINATE_SAFETY_CAP = 500;
 
 async function fetchEvents(limit: number, offset: number): Promise<RawEvent[]> {
   const url = `${API_URL}/extended/v1/contract/${CONTRACT_ADDRESS}.${GROUPS_CONTRACT}/events?limit=${limit}&offset=${offset}`;
@@ -45,6 +44,13 @@ async function fetchEvents(limit: number, offset: number): Promise<RawEvent[]> {
 // every membership change. The contract has no on-chain member enumeration, so
 // reconstructing membership from these print events is the only way to list a
 // group's current members or the groups a wallet belongs to.
+//
+// We must page through every event, not stop at a fixed offset: membership
+// events share the stream with every group-anchor-added print, so a fixed cap
+// would let anchor volume push still-current group-created / member-added
+// records off the end, making members and groups vanish from the UI even
+// though the on-chain map is unchanged. The loop terminates naturally when a
+// short page signals the source is exhausted.
 async function fetchAllEvents(): Promise<RawEvent[]> {
   const events: RawEvent[] = [];
   let offset = 0;
@@ -53,7 +59,6 @@ async function fetchAllEvents(): Promise<RawEvent[]> {
     events.push(...fetched);
     if (fetched.length < HIRO_PAGE) break;
     offset += HIRO_PAGE;
-    if (offset >= PAGINATE_SAFETY_CAP) break;
   }
   return events;
 }

@@ -49,6 +49,17 @@ export default function GroupDetailPage() {
   const [member, setMemberState] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const copyHash = async (hash: string) => {
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopiedHash(hash);
+      setTimeout(() => setCopiedHash(null), 1500);
+    } catch {
+      // Clipboard can be unavailable in non-secure contexts; ignore.
+    }
+  };
 
   const isAdmin = !!address && !!group && group.admin === address;
 
@@ -435,7 +446,7 @@ export default function GroupDetailPage() {
             )}
           </div>
 
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <h2 className="text-lg">Recent anchors</h2>
             <button
               onClick={() => void load()}
@@ -444,6 +455,11 @@ export default function GroupDetailPage() {
               Refresh
             </button>
           </div>
+          <p className="text-foreground/60 text-sm mb-4">
+            Group anchors live in the thesislock-groups contract, keyed by group
+            and index. Copy a hash to confirm it on chain against this
+            group&apos;s history.
+          </p>
 
           {anchors.length === 0 ? (
             <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
@@ -468,12 +484,13 @@ export default function GroupDetailPage() {
                         {truncateHash(anchor.hash)}
                       </code>
                     </div>
-                    <Link
-                      href={`/v/${anchor.hash}`}
+                    <button
+                      onClick={() => void copyHash(anchor.hash)}
+                      aria-label="Copy hash"
                       className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                     >
-                      Verify &rarr;
-                    </Link>
+                      {copiedHash === anchor.hash ? "Copied" : "Copy hash"}
+                    </button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                     <div>
