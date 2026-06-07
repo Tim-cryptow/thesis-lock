@@ -16,6 +16,7 @@ import {
   type BatchAnchor,
   type ProofWithId,
 } from "@/lib/stacks";
+import { findGroupAnchorByHash, type GroupAnchorMatch } from "@/lib/groups";
 import { useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -44,6 +45,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const [batchAnchor, setBatchAnchor] = useState<BatchAnchor | null>(null);
+  const [groupAnchor, setGroupAnchor] = useState<GroupAnchorMatch | null>(null);
   const [proof, setProof] = useState<ProofWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,15 +127,24 @@ export default function VerifyPage() {
         // contract can carry unrelated records for the same hash, and an
         // explicit owner param means the URL is specifically asking about
         // the batch record.
+        let batch: BatchAnchor | null = null;
         if (batchOwner && (!result || ownerParam)) {
           try {
-            const b = await readBatchAnchor(hash, batchOwner);
-            setBatchAnchor(b);
+            batch = await readBatchAnchor(hash, batchOwner);
           } catch {
-            setBatchAnchor(null);
+            batch = null;
           }
+        }
+        setBatchAnchor(batch);
+        // Last resort: a hash anchored only through a group is invisible to the
+        // single and batch contracts, so fall back to the groups contract's
+        // print events when neither resolved. Let a lookup failure propagate to
+        // the error state below rather than swallowing it, so a transient API
+        // error does not masquerade as "not anchored" for group-only hashes.
+        if (!result && !batch) {
+          setGroupAnchor(await findGroupAnchorByHash(hash));
         } else {
-          setBatchAnchor(null);
+          setGroupAnchor(null);
         }
       } catch (e) {
         console.error(e);
@@ -171,10 +182,10 @@ export default function VerifyPage() {
   // While a freshly submitted transaction is unconfirmed, poll until the
   // anchor appears on chain, then stop.
   useEffect(() => {
-    if (!valid || !txId || anchor || batchAnchor || error) return;
+    if (!valid || !txId || anchor || batchAnchor || groupAnchor || error) return;
     const id = setInterval(() => void loadAnchor(false), 15000);
     return () => clearInterval(id);
-  }, [valid, txId, anchor, batchAnchor, error, loadAnchor]);
+  }, [valid, txId, anchor, batchAnchor, groupAnchor, error, loadAnchor]);
 
   const onVerifyFile = async (file: File | null) => {
     if (!file) return;
@@ -358,6 +369,60 @@ export default function VerifyPage() {
                 <code className="font-mono text-sm">
                   #{batchAnchor.batchId}
                 </code>
+              </div>
+            </div>
+          </div>
+        ) : !anchor && groupAnchor ? (
+          <div className="mt-4 pt-4 border-t border-foreground/10">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-foreground/20 text-foreground/70 uppercase tracking-wide">
+                Group anchor
+              </span>
+              <p className="text-foreground/80 text-sm">
+                Anchored in Group #{groupAnchor.groupId}
+                {groupAnchor.groupName ? ` (${groupAnchor.groupName})` : ""}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Anchored by
+                </div>
+                <a
+                  href={explorerAddressUrl(groupAnchor.anchoredBy)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
+                >
+                  {groupAnchor.anchoredBy}
+                </a>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Label
+                </div>
+                <code className="font-mono text-xs md:text-sm">
+                  {groupAnchor.label || "(none)"}
+                </code>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Stacks block
+                </div>
+                <code className="font-mono text-sm">
+                  {groupAnchor.stacksBlock}
+                </code>
+              </div>
+              <div>
+                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                  Group
+                </div>
+                <Link
+                  href={`/groups/${groupAnchor.groupId}`}
+                  className="text-sm underline hover:no-underline"
+                >
+                  View group history
+                </Link>
               </div>
             </div>
           </div>
