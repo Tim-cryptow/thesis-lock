@@ -9,6 +9,7 @@ import {
   readBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { downloadExport, formatBulkVerifyCSV } from "@/lib/export";
 
 type Source = "single" | "batch" | "proof";
 
@@ -27,6 +28,19 @@ type Row = {
 function truncateHash(hash: string): string {
   if (hash.length <= 14) return hash;
   return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+}
+
+function statusLabel(status: RowStatus): string {
+  switch (status) {
+    case "verified":
+      return "Verified";
+    case "notfound":
+      return "Not found";
+    case "error":
+      return "Error";
+    default:
+      return "Checking";
+  }
 }
 
 function newId(file: File): string {
@@ -179,6 +193,29 @@ export default function BulkVerifyClient() {
 
   const clearAll = () => setRows([]);
 
+  const exportResults = () => {
+    if (rows.length === 0) return;
+    const csv = formatBulkVerifyCSV(
+      rows.map((r) => ({
+        filename: r.file.name,
+        hash: r.hash,
+        status: statusLabel(r.status),
+        source: r.source,
+        block: r.block,
+      })),
+    );
+    downloadExport(
+      csv,
+      `thesislock-bulk-verify-${Date.now()}.csv`,
+      "text/csv;charset=utf-8",
+    );
+  };
+
+  const total = rows.length;
+  const verifiedCount = rows.filter((r) => r.status === "verified").length;
+  const settledCount = rows.filter((r) => r.status !== "checking").length;
+  const progress = total === 0 ? 0 : Math.round((settledCount / total) * 100);
+
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
@@ -279,15 +316,44 @@ export default function BulkVerifyClient() {
 
       {rows.length > 0 && (
         <div className="mt-8">
-          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-            <h2 className="text-lg">Results</h2>
-            <button
-              onClick={clearAll}
-              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          <div className="rounded-lg border border-foreground/10 bg-white p-4 mb-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm font-medium" aria-live="polite">
+                {verifiedCount} of {total} file{total === 1 ? "" : "s"} verified
+                {settledCount < total
+                  ? ` (${total - settledCount} checking)`
+                  : ""}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={exportResults}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  Export results
+                </button>
+                <button
+                  onClick={clearAll}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+            <div
+              className="mt-3 h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
             >
-              Clear all
-            </button>
+              <div
+                className="h-full bg-heading transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
+
+          <h2 className="text-lg mb-4">Results</h2>
 
           <div className="space-y-3" role="list">
             {rows.map((row) => (

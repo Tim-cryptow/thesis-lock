@@ -44,6 +44,30 @@ export function formatAnchorsJSON(
   return JSON.stringify(items, null, 2);
 }
 
+export type BulkVerifyRow = {
+  filename: string;
+  hash: string | null;
+  status: string;
+  source: string | null;
+  block: number | null;
+};
+
+export function formatBulkVerifyCSV(rows: BulkVerifyRow[]): string {
+  const header = ["Filename", "Full Hash", "Status", "Source", "Block"];
+  const lines = rows.map((r) =>
+    [
+      r.filename,
+      r.hash ?? "",
+      r.status,
+      r.source ?? "",
+      r.block !== null ? String(r.block) : "",
+    ]
+      .map(escapeCsv)
+      .join(","),
+  );
+  return [header.join(","), ...lines].join("\r\n");
+}
+
 export function downloadExport(
   content: string,
   filename: string,
