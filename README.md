@@ -16,6 +16,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
 - Client-side SHA-256 hashing. The file never leaves your device.
 - Public verification at `/v/<hash>` with file re-upload check.
+- Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
 - Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
 - Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
 
