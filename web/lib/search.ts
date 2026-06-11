@@ -1,5 +1,7 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
 import {
+  getLastTokenId,
+  getProof,
   getProofByHash,
   getRecentAnchors,
   readAnchor,
@@ -381,24 +383,60 @@ export async function searchByPrincipal(
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
 }
 
+// Read every minted proof. Token ids run 1..last-token-id, and the proof-minted
+// event omits the label, so labels are only recoverable by reading proof-data
+// per token. Without this, proof-only anchors are invisible to label search.
+async function fetchAllProofs(): Promise<SearchResult[]> {
+  const lastId = await getLastTokenId();
+  if (!Number.isFinite(lastId) || lastId < 1) return [];
+
+  const ids = Array.from({ length: lastId }, (_, i) => i + 1);
+  const proofs = await Promise.all(
+    ids.map((id) => getProof(id).catch(() => null)),
+  );
+
+  const results: SearchResult[] = [];
+  for (const proof of proofs) {
+    if (!proof) continue;
+    const hash = stripHex(proof.hash).toLowerCase();
+    results.push({
+      hash,
+      label: proof.label,
+      owner: proof.anchoredBy,
+      stacksBlock: proof.stacksBlock,
+      source: "proof",
+      verifyUrl: buildVerifyUrl(hash, "proof", proof.anchoredBy),
+    });
+  }
+  return results;
+}
+
 // Substring match on anchor labels. Batch print events carry no per-hash label,
 // so batch hits come from the registry contract's anchor-registered events,
-// mirroring how the public feed surfaces batch rows.
+// mirroring how the public feed surfaces batch rows. Proof labels live only in
+// proof-data (not the event), so proofs are enumerated by token id.
 export async function searchByLabel(label: string): Promise<SearchResult[]> {
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
 
-  const [singleEvents, registryEvents, groupEvents] = await Promise.all([
-    fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
-    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
-    fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
-  ]);
+  const [singleEvents, registryEvents, groupEvents, proofResults] =
+    await Promise.all([
+      fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
+      fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
+      fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
+      fetchAllProofs().catch(() => [] as SearchResult[]),
+    ]);
 
   const results: SearchResult[] = [];
   for (const ev of [...singleEvents, ...registryEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.label.toLowerCase().includes(needle)) {
       results.push(toResult(parsed));
+    }
+  }
+  for (const proof of proofResults) {
+    if (proof.label.toLowerCase().includes(needle)) {
+      results.push(proof);
     }
   }
 
