@@ -4,6 +4,7 @@
 // for an MVP/demo; do not rely on it for guaranteed delivery.
 
 import { lookup } from "node:dns/promises";
+import https from "node:https";
 
 const HIRO_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
@@ -11,6 +12,12 @@ const HIRO_BASE =
 const HEX_TXID = /^(0x)?[0-9a-f]{64}$/i;
 const MAX_PENDING = 200;
 const POST_TIMEOUT_MS = 5_000;
+// Drop registrations that never reach a terminal tx state, so a flood of
+// never-confirming ids cannot wedge the registry at MAX_PENDING. Matches the
+// client tx-monitor timeout.
+const STALE_MS = 30 * 60_000;
+
+type ResolvedAddress = { address: string; family: number };
 
 type PendingWebhook = {
   url: string;
@@ -66,8 +73,8 @@ function isBlockedIpLiteral(host: string): boolean {
 
 // Reject anything that could let a caller make the server reach internal
 // infrastructure (SSRF). Only public https endpoints are accepted. This is a
-// syntactic check; DNS names are also re-resolved at delivery time, see
-// hostResolvesToBlocked.
+// syntactic check; DNS names are also re-resolved and the connection is pinned
+// at delivery time, see resolveSafeAddresses and deliverWebhook.
 export function isSafeWebhookUrl(raw: string): boolean {
   let url: URL;
   try {
@@ -90,19 +97,89 @@ export function isSafeWebhookUrl(raw: string): boolean {
   return !isBlockedIpLiteral(host);
 }
 
-// Delivery-time guard against DNS rebinding: a hostname that passed the
-// syntactic check at registration could resolve to an internal address. Resolve
-// it now and block if any returned record is in a private/loopback/metadata
-// range. Fails closed when the name cannot be resolved.
-async function hostResolvesToBlocked(host: string): Promise<boolean> {
-  if (isBlockedIpLiteral(host)) return true;
-  // Already a public IP literal, nothing to resolve.
-  if (host.includes(":") || /^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false;
+// Delivery-time guard against DNS rebinding. Resolve the host now and return the
+// validated addresses to pin the outbound connection to; returns null (skip
+// delivery) if it is internal or unresolvable. Pinning the exact addresses we
+// checked closes the TOCTOU gap where a re-resolve at connect time could hand
+// back a private address.
+async function resolveSafeAddresses(
+  host: string,
+): Promise<ResolvedAddress[] | null> {
+  if (isBlockedIpLiteral(host)) return null;
+  // Public IP literal: connect directly, nothing to resolve.
+  if (host.includes(":")) return [{ address: host, family: 6 }];
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    return [{ address: host, family: 4 }];
+  }
   try {
     const records = await lookup(host, { all: true });
-    return records.some((r) => isBlockedIpLiteral(r.address.toLowerCase()));
+    if (records.length === 0) return null;
+    if (records.some((r) => isBlockedIpLiteral(r.address.toLowerCase()))) {
+      return null;
+    }
+    return records.map((r) => ({ address: r.address, family: r.family }));
   } catch {
-    return true;
+    return null;
+  }
+}
+
+// POST the payload, pinning the TCP connection to addresses we already vetted.
+// The original hostname is kept for TLS SNI and the Host header. https.request
+// does not auto-follow redirects, so a 3xx Location is never fetched. Delivery
+// is best-effort: any error resolves quietly without a retry.
+function deliverWebhook(
+  rawUrl: string,
+  payload: string,
+  addresses: ResolvedAddress[],
+): Promise<void> {
+  return new Promise((resolve) => {
+    let target: URL;
+    try {
+      target = new URL(rawUrl);
+    } catch {
+      resolve();
+      return;
+    }
+    const req = https.request(
+      target,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+        timeout: POST_TIMEOUT_MS,
+        lookup: ((_hostname, options, callback) => {
+          if (options && (options as { all?: boolean }).all) {
+            (callback as (e: null, a: ResolvedAddress[]) => void)(
+              null,
+              addresses,
+            );
+          } else {
+            callback(null, addresses[0].address, addresses[0].family);
+          }
+        }) as Parameters<typeof https.request>[1]["lookup"],
+      },
+      (res) => {
+        res.resume();
+        res.on("end", resolve);
+        res.on("error", () => resolve());
+      },
+    );
+    req.on("error", () => resolve());
+    req.on("timeout", () => {
+      req.destroy();
+      resolve();
+    });
+    req.write(payload);
+    req.end();
+  });
+}
+
+function evictStale(): void {
+  const cutoff = Date.now() - STALE_MS;
+  for (const [mapKey, hook] of registry) {
+    if (hook.createdAt < cutoff) registry.delete(mapKey);
   }
 }
 
@@ -112,6 +189,7 @@ export function isValidTxId(txId: string): boolean {
 
 export function registerWebhook(url: string, txId: string): boolean {
   if (!isValidTxId(txId) || !isSafeWebhookUrl(url)) return false;
+  evictStale();
   if (registry.size >= MAX_PENDING) return false;
   registry.set(key(txId, url), { url, txId, createdAt: Date.now() });
   return true;
@@ -131,6 +209,7 @@ export async function processPendingWebhooks(): Promise<void> {
   if (processing || registry.size === 0) return;
   processing = true;
   try {
+    evictStale();
     const entries = Array.from(registry.entries());
     await Promise.allSettled(
       entries.map(async ([mapKey, hook]) => {
@@ -159,28 +238,18 @@ export async function processPendingWebhooks(): Promise<void> {
         registry.delete(mapKey);
 
         // Re-validate the target at delivery time, since the host may now
-        // resolve to an internal address.
+        // resolve to an internal address. The returned addresses pin the POST.
         if (!isSafeWebhookUrl(hook.url)) return;
         const host = unbracket(new URL(hook.url).hostname.toLowerCase());
-        if (await hostResolvesToBlocked(host)) return;
+        const addresses = await resolveSafeAddresses(host);
+        if (!addresses) return;
 
-        try {
-          await fetch(hook.url, {
-            method: "POST",
-            // Do not follow redirects: a 3xx Location could point at an
-            // internal address that bypasses the checks above.
-            redirect: "manual",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              txId: withHexPrefix(hook.txId),
-              status,
-              blockHeight,
-            }),
-            signal: AbortSignal.timeout(POST_TIMEOUT_MS),
-          });
-        } catch {
-          // Delivery is best-effort; a failed POST is not retried.
-        }
+        const payload = JSON.stringify({
+          txId: withHexPrefix(hook.txId),
+          status,
+          blockHeight,
+        });
+        await deliverWebhook(hook.url, payload, addresses);
       }),
     );
   } finally {
