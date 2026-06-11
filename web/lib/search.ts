@@ -83,7 +83,10 @@ type EventsResponse = {
 };
 
 const HIRO_PAGE = 50;
-const PAGINATE_SAFETY_CAP = 500;
+// Hard guard against a runaway loop only. It is set far above any realistic
+// per-contract event count so searches page to true exhaustion rather than
+// silently dropping anchors older than a fixed window.
+const HARD_OFFSET_CAP = 50_000;
 
 async function fetchEventsPage(
   contractName: string,
@@ -98,12 +101,14 @@ async function fetchEventsPage(
   return Array.isArray(data.results) ? data.results : [];
 }
 
-// Page through a contract's print events. Hiro caps `limit` at 50 per call, so
-// walk offsets until the source is exhausted or the safety cap is hit.
+// Page through all of a contract's print events. Hiro returns events
+// newest-first and caps `limit` at 50 per call, so we follow offsets until a
+// short page signals exhaustion. Stopping early would hide older anchors from
+// label, principal, and group-hash searches.
 async function fetchAllEvents(contractName: string): Promise<RawEvent[]> {
   const events: RawEvent[] = [];
   let offset = 0;
-  while (offset < PAGINATE_SAFETY_CAP) {
+  while (offset < HARD_OFFSET_CAP) {
     const page = await fetchEventsPage(contractName, offset);
     events.push(...page);
     if (page.length < HIRO_PAGE) break;
@@ -237,7 +242,9 @@ function dedupe(results: SearchResult[]): SearchResult[] {
 }
 
 // Look up an exact 64-hex hash across every contract. The batch contract is
-// keyed by { hash, owner }, so it can only be checked when an owner is supplied.
+// keyed by { hash, owner }, so its owners are discovered from the registry's
+// anchor-registered events (every batch entry is also registered there) and
+// then confirmed against the batch map. An explicit owner is always checked too.
 export async function searchByHash(
   hash: string,
   owner?: string,
@@ -247,13 +254,11 @@ export async function searchByHash(
 
   const results: SearchResult[] = [];
 
-  const [single, proof, groupEvents, batch] = await Promise.all([
+  const [single, proof, groupEvents, registryEvents] = await Promise.all([
     readAnchor(normalized).catch(() => null),
     getProofByHash(normalized).catch(() => null),
     fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
-    owner && STX_PRINCIPAL.test(owner.toUpperCase())
-      ? readBatchAnchor(normalized, owner.toUpperCase()).catch(() => null)
-      : Promise.resolve(null),
+    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
   ]);
 
   if (single) {
@@ -278,15 +283,43 @@ export async function searchByHash(
     });
   }
 
-  if (batch && owner) {
-    const ownerUpper = owner.toUpperCase();
+  // Candidate batch owners: anyone who registered this hash, plus an explicit
+  // owner from the caller. The registry is unvalidated (anyone can register an
+  // arbitrary hash), so confirm each candidate against the batch map and only
+  // surface anchors that actually exist there.
+  const candidateOwners = new Set<string>();
+  if (owner && STX_PRINCIPAL.test(owner.toUpperCase())) {
+    candidateOwners.add(owner.toUpperCase());
+  }
+  for (const ev of registryEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "anchor-registered" &&
+      parsed.hash === normalized &&
+      STX_PRINCIPAL.test(parsed.owner.toUpperCase())
+    ) {
+      candidateOwners.add(parsed.owner.toUpperCase());
+    }
+  }
+
+  const batches = await Promise.all(
+    Array.from(candidateOwners).map(async (candidate) => {
+      const batch = await readBatchAnchor(normalized, candidate).catch(
+        () => null,
+      );
+      return batch ? { candidate, batch } : null;
+    }),
+  );
+  for (const entry of batches) {
+    if (!entry) continue;
     results.push({
       hash: normalized,
-      label: batch.label,
-      owner: ownerUpper,
-      stacksBlock: batch.stacksBlock,
+      label: entry.batch.label,
+      owner: entry.candidate,
+      stacksBlock: entry.batch.stacksBlock,
       source: "batch",
-      verifyUrl: buildVerifyUrl(normalized, "batch", ownerUpper),
+      verifyUrl: buildVerifyUrl(normalized, "batch", entry.candidate),
     });
   }
 
@@ -300,19 +333,21 @@ export async function searchByHash(
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
 }
 
-// Find everything a principal has anchored. The registry read gives an
-// authoritative per-principal index (covering single and batch flows); print
-// events across the other contracts surface proof mints and group anchors.
+// Find everything a principal has anchored. The registry read supplies its most
+// recent entries fast; scanning registry print events by owner covers the full
+// history (the read returns only the last ten), and the other contracts' events
+// surface single anchors, proof mints, and group anchors.
 export async function searchByPrincipal(
   principal: string,
 ): Promise<SearchResult[]> {
   const owner = principal.trim().toUpperCase();
   if (!STX_PRINCIPAL.test(owner)) return [];
 
-  const [registryEntries, singleEvents, proofEvents, groupEvents] =
+  const [registryEntries, singleEvents, registryEvents, proofEvents, groupEvents] =
     await Promise.all([
       getRecentAnchors(owner).catch(() => []),
       fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
+      fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllEvents(PROOF_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
     ]);
@@ -331,7 +366,12 @@ export async function searchByPrincipal(
     });
   }
 
-  for (const ev of [...singleEvents, ...proofEvents, ...groupEvents]) {
+  for (const ev of [
+    ...singleEvents,
+    ...registryEvents,
+    ...proofEvents,
+    ...groupEvents,
+  ]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.owner.toUpperCase() === owner) {
       results.push(toResult(parsed));
