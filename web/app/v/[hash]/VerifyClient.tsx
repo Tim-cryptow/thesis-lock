@@ -214,6 +214,9 @@ export default function VerifyPage() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
+          <Link href="/search" className="text-foreground/60 hover:text-foreground">
+            Search
+          </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
@@ -265,6 +268,9 @@ export default function VerifyPage() {
         <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
+        </Link>
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
+          Search
         </Link>
         <Link
           href="/anchor"
