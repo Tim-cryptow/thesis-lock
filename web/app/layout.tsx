@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "./components/SkipToContent";
+import { TxProvider } from "./components/TxProvider";
+import TxToast from "./components/TxToast";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -65,10 +67,13 @@ export default function RootLayout({
       className={`${lora.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SkipToContent />
-        <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col">
-          {children}
-        </main>
+        <TxProvider>
+          <SkipToContent />
+          <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col">
+            {children}
+          </main>
+          <TxToast />
+        </TxProvider>
       </body>
     </html>
   );

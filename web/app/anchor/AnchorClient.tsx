@@ -18,6 +18,7 @@ import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
+import { useTx } from "@/app/components/TxProvider";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const MAX_BATCH = 10;
@@ -77,6 +78,8 @@ export default function AnchorPage() {
     connectWallet,
     disconnectWallet,
   } = useWallet();
+
+  const { trackTx, pendingCount } = useTx();
 
   const [mode, setMode] = useState<Mode>("single");
 
@@ -274,6 +277,7 @@ export default function AnchorPage() {
     setPending(true);
     submitAnchor(hash, label, {
       onFinish: (txId) => {
+        trackTx(txId, { hash: submittingHash, label: submittingLabel });
         registerSequentially(
           [{ hash: submittingHash, label: submittingLabel }],
           0,
@@ -319,6 +323,7 @@ export default function AnchorPage() {
     submitBatchAnchor(
       entries,
       (txId) => {
+        trackTx(txId, { hash: entries[0]?.hash, label: entries[0]?.label });
         registerSequentially(
           entries,
           0,
@@ -518,6 +523,16 @@ export default function AnchorPage() {
             Bulk Verify
           </Link>
         </div>
+        <div className="flex items-center gap-3">
+        {pendingCount > 0 && (
+          <span
+            className="text-xs font-mono px-2.5 py-1 rounded-full border border-foreground/15 text-foreground/60"
+            aria-live="polite"
+            title="Transactions waiting to confirm on chain"
+          >
+            Pending ({pendingCount})
+          </span>
+        )}
         {address ? (
           <button
             onClick={disconnectWallet}
@@ -536,6 +551,7 @@ export default function AnchorPage() {
             {connecting ? "Opening wallet..." : "Connect wallet"}
           </button>
         )}
+        </div>
       </div>
 
       {walletError && (
