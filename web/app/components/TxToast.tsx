@@ -52,7 +52,11 @@ function Toast({
               </p>
               {notification.hash && (
                 <Link
-                  href={`/v/${notification.hash}`}
+                  href={
+                    notification.owner
+                      ? `/v/${notification.hash}?owner=${encodeURIComponent(notification.owner)}`
+                      : `/v/${notification.hash}`
+                  }
                   className="mt-2 inline-block text-xs underline hover:no-underline"
                   onClick={() => onDismiss(notification.id)}
                 >

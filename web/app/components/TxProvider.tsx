@@ -14,6 +14,7 @@ import { TxMonitor, type TxResult } from "@/lib/txMonitor";
 export type TxMetadata = {
   hash?: string;
   label?: string;
+  owner?: string;
 };
 
 export type TxNotification = {
@@ -21,6 +22,7 @@ export type TxNotification = {
   kind: "confirmed" | "failed";
   hash: string | null;
   label: string | null;
+  owner: string | null;
   blockHeight: number | null;
 };
 
@@ -93,6 +95,7 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
               kind: "confirmed",
               hash: tx.hash ?? null,
               label: tx.label ?? null,
+              owner: tx.owner ?? null,
               blockHeight: result.blockHeight,
             },
           ]);
@@ -106,6 +109,7 @@ export function TxProvider({ children }: { children: React.ReactNode }) {
               kind: "failed",
               hash: tx.hash ?? null,
               label: tx.label ?? null,
+              owner: tx.owner ?? null,
               blockHeight: null,
             },
           ]);

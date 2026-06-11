@@ -277,7 +277,11 @@ export default function AnchorPage() {
     setPending(true);
     submitAnchor(hash, label, {
       onFinish: (txId) => {
-        trackTx(txId, { hash: submittingHash, label: submittingLabel });
+        trackTx(txId, {
+          hash: submittingHash,
+          label: submittingLabel,
+          owner: submittingOwner,
+        });
         registerSequentially(
           [{ hash: submittingHash, label: submittingLabel }],
           0,
@@ -323,7 +327,11 @@ export default function AnchorPage() {
     submitBatchAnchor(
       entries,
       (txId) => {
-        trackTx(txId, { hash: entries[0]?.hash, label: entries[0]?.label });
+        trackTx(txId, {
+          hash: entries[0]?.hash,
+          label: entries[0]?.label,
+          owner: submittingOwner,
+        });
         registerSequentially(
           entries,
           0,
