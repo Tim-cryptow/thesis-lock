@@ -34,7 +34,13 @@ export function isSafeWebhookUrl(raw: string): boolean {
   }
   if (url.protocol !== "https:") return false;
 
-  const host = url.hostname.toLowerCase();
+  // IPv6 literals keep their surrounding brackets in URL.hostname (for example
+  // "[::1]"), so strip them before any host comparison.
+  const rawHost = url.hostname.toLowerCase();
+  const host =
+    rawHost.startsWith("[") && rawHost.endsWith("]")
+      ? rawHost.slice(1, -1)
+      : rawHost;
   if (
     host === "localhost" ||
     host.endsWith(".localhost") ||
@@ -57,7 +63,14 @@ export function isSafeWebhookUrl(raw: string): boolean {
     if (a === 172 && b >= 16 && b <= 31) return false;
     if (a === 192 && b === 168) return false;
   }
-  if (host === "::1" || host.startsWith("fe80:") || host.startsWith("fc")) {
+  // Loopback (::1), link-local (fe80::/10), and unique-local (fc00::/7, i.e. fc
+  // and fd prefixes) IPv6 ranges.
+  if (
+    host === "::1" ||
+    host.startsWith("fe80:") ||
+    host.startsWith("fc") ||
+    host.startsWith("fd")
+  ) {
     return false;
   }
 
@@ -76,7 +89,10 @@ export function registerWebhook(url: string, txId: string): boolean {
 }
 
 function withHexPrefix(txId: string): string {
-  return txId.startsWith("0x") ? txId : `0x${txId}`;
+  // isValidTxId accepts a case-insensitive "0x"/"0X" prefix, so normalize to a
+  // single lowercase "0x" before building the Hiro lookup URL.
+  const lower = txId.toLowerCase();
+  return lower.startsWith("0x") ? lower : `0x${lower}`;
 }
 
 // Opportunistically called from other routes. Polls each pending tx once and
