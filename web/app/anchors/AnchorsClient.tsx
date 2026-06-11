@@ -215,7 +215,7 @@ export default function AnchorsPage() {
       </p>
 
       {!address ? (
-        <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
             Connect your Stacks wallet to view your anchor history.
           </p>
@@ -230,9 +230,9 @@ export default function AnchorsPage() {
       ) : loading ? (
         <p className="text-foreground/60">Loading history...</p>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <p className="text-red-600 dark:text-red-400">{error}</p>
       ) : count === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">No anchors yet.</p>
           <Link
             href="/anchor"
@@ -247,7 +247,7 @@ export default function AnchorsPage() {
             <div
               key={`${entry.hash}-${idx}`}
               role="listitem"
-              className="rounded-lg border border-foreground/10 bg-white p-5"
+              className="rounded-lg border border-foreground/10 bg-card p-5"
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="min-w-0 flex-1">
@@ -303,7 +303,7 @@ export default function AnchorsPage() {
                 </div>
               </div>
               {certErrorHash === entry.hash && (
-                <p className="mt-3 text-xs text-amber-700">
+                <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
                   Could not load on-chain anchor data. Try again in a moment.
                 </p>
               )}
@@ -332,7 +332,7 @@ export default function AnchorsPage() {
               </button>
             </div>
             {exportError && (
-              <p className="text-xs text-amber-700">{exportError}</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">{exportError}</p>
             )}
           </div>
         </div>

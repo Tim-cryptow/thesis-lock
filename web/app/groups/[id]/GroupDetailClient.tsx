@@ -235,7 +235,7 @@ export default function GroupDetailPage() {
       </div>
 
       {walletError && (
-        <p className="mb-6 text-sm text-red-600" role="alert">
+        <p className="mb-6 text-sm text-red-600 dark:text-red-400" role="alert">
           {walletError}
         </p>
       )}
@@ -243,9 +243,9 @@ export default function GroupDetailPage() {
       {loading ? (
         <p className="text-foreground/60">Loading group...</p>
       ) : loadError ? (
-        <p className="text-red-600">{loadError}</p>
+        <p className="text-red-600 dark:text-red-400">{loadError}</p>
       ) : !group ? (
-        <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
             Group #{params.id} does not exist.
           </p>
@@ -267,7 +267,7 @@ export default function GroupDetailPage() {
           </div>
 
           {isAdmin && (
-            <div className="rounded-lg border border-foreground/10 bg-white p-6 mb-8">
+            <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
               <h2 className="text-lg mb-3">Members</h2>
               <label
                 htmlFor="new-member"
@@ -283,7 +283,7 @@ export default function GroupDetailPage() {
                   placeholder="SP..."
                   disabled={addPending}
                   aria-invalid={memberError ? true : undefined}
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md border border-foreground/15 bg-white font-mono text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+                  className="flex-1 min-w-0 px-3 py-2 rounded-md border border-foreground/15 bg-card font-mono text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
                 />
                 <button
                   onClick={submitAddMember}
@@ -294,7 +294,7 @@ export default function GroupDetailPage() {
                 </button>
               </div>
               {memberError && (
-                <p className="mt-2 text-xs text-red-600" role="alert">
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
                   {memberError}
                 </p>
               )}
@@ -327,14 +327,14 @@ export default function GroupDetailPage() {
             </div>
           )}
 
-          <div className="rounded-lg border border-foreground/10 bg-white p-6 mb-8">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-lg mb-1">Anchor a document to this group</h2>
             <p className="text-foreground/70 text-sm mb-4">
               The file is hashed in your browser. Only the hash is recorded on
               chain.
             </p>
             {!member ? (
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
                 Only group members can anchor documents here. Ask the admin to
                 add your wallet.
               </p>
@@ -360,7 +360,7 @@ export default function GroupDetailPage() {
                 </FileDropZone>
 
                 {hashError && (
-                  <p className="mt-3 text-sm text-red-600" role="alert">
+                  <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
                     {hashError}
                   </p>
                 )}
@@ -397,11 +397,11 @@ export default function GroupDetailPage() {
                     maxLength={64}
                     disabled={anchorPending}
                     aria-invalid={labelError ? true : undefined}
-                    className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+                    className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50 disabled:opacity-60"
                   />
                   <div className="mt-1 flex items-center justify-between text-xs">
                     <span
-                      className={labelError ? "text-red-600" : "text-transparent"}
+                      className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
                       role={labelError ? "alert" : undefined}
                     >
                       {labelError ?? "."}
@@ -423,7 +423,7 @@ export default function GroupDetailPage() {
                 </button>
 
                 {anchorTxId && (
-                  <p className="mt-4 text-sm text-green-700">
+                  <p className="mt-4 text-sm text-green-700 dark:text-green-400">
                     Anchor submitted.{" "}
                     <a
                       href={explorerTxUrl(anchorTxId)}
@@ -462,7 +462,7 @@ export default function GroupDetailPage() {
           </p>
 
           {anchors.length === 0 ? (
-            <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+            <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
               <p className="text-foreground/70">
                 No documents anchored to this group yet.
               </p>
@@ -473,7 +473,7 @@ export default function GroupDetailPage() {
                 <div
                   key={`${anchor.hash}-${idx}`}
                   role="listitem"
-                  className="rounded-lg border border-foreground/10 bg-white p-5"
+                  className="rounded-lg border border-foreground/10 bg-card p-5"
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="min-w-0 flex-1">

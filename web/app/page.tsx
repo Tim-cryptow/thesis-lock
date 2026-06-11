@@ -49,35 +49,35 @@ export default function Page() {
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <h3 className="text-xl mb-2">Timestamp</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
               The Bitcoin block height at the moment you anchored proves when
               the document existed.
             </p>
           </div>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <h3 className="text-xl mb-2">Signature</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
               Your Stacks wallet signs the anchor, so anyone can verify which
               key claimed authorship.
             </p>
           </div>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <h3 className="text-xl mb-2">Privacy</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
               The file never leaves your device. Only its fingerprint is
               published on chain.
             </p>
           </div>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <h3 className="text-xl mb-2">Batch &amp; history</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
               Anchor up to ten documents in a single transaction, then browse
               everything anchored from your wallet.
             </p>
           </div>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <h3 className="text-xl mb-2">Bulk verify</h3>
             <p className="text-foreground/80 text-sm leading-relaxed">
               Drop many documents at once to check them all against the chain in

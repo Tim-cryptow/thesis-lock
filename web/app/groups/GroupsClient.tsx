@@ -129,13 +129,13 @@ export default function GroupsPage() {
       </p>
 
       {walletError && (
-        <p className="mb-6 text-sm text-red-600" role="alert">
+        <p className="mb-6 text-sm text-red-600 dark:text-red-400" role="alert">
           {walletError}
         </p>
       )}
 
       {!address ? (
-        <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
             Connect your Stacks wallet to create and manage groups.
           </p>
@@ -149,7 +149,7 @@ export default function GroupsPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6 mb-10">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-10">
             <h2 className="text-lg mb-3">Create a group</h2>
             <label
               htmlFor="group-name"
@@ -165,11 +165,11 @@ export default function GroupsPage() {
               maxLength={64}
               disabled={pending}
               aria-invalid={nameError ? true : undefined}
-              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50 disabled:opacity-60"
             />
             <div className="mt-1 flex items-center justify-between text-xs">
               <span
-                className={nameError ? "text-red-600" : "text-transparent"}
+                className={nameError ? "text-red-600 dark:text-red-400" : "text-transparent"}
                 role={nameError ? "alert" : undefined}
               >
                 {nameError ?? "."}
@@ -186,7 +186,7 @@ export default function GroupsPage() {
               {pending ? "Awaiting wallet signature..." : "Create group"}
             </button>
             {createTxId && (
-              <p className="mt-4 text-sm text-green-700">
+              <p className="mt-4 text-sm text-green-700 dark:text-green-400">
                 Group creation submitted.{" "}
                 <a
                   href={explorerTxUrl(createTxId)}
@@ -219,11 +219,11 @@ export default function GroupsPage() {
           </div>
 
           {loadError ? (
-            <p className="text-red-600">{loadError}</p>
+            <p className="text-red-600 dark:text-red-400">{loadError}</p>
           ) : loading && groups.length === 0 ? (
             <p className="text-foreground/60">Loading groups...</p>
           ) : groups.length === 0 ? (
-            <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+            <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
               <p className="text-foreground/70">
                 You are not a member of any group yet. Create one above to get
                 started.
@@ -235,7 +235,7 @@ export default function GroupsPage() {
                 <div
                   key={group.id}
                   role="listitem"
-                  className="rounded-lg border border-foreground/10 bg-white p-5 flex items-start justify-between gap-4 flex-wrap"
+                  className="rounded-lg border border-foreground/10 bg-card p-5 flex items-start justify-between gap-4 flex-wrap"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-lg font-medium truncate">
