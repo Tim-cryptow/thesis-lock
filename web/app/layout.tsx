@@ -2,8 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "./components/SkipToContent";
+import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
 import TxToast from "./components/TxToast";
+
+// Runs before first paint to apply the saved (or system) theme, avoiding a
+// flash of the wrong theme before React hydrates. Inlined as a string so it
+// executes synchronously in <head>.
+const THEME_INIT_SCRIPT = `(function(){try{var m=localStorage.getItem("thesislock.theme");var d=m==="dark"||((m==="system"||!m)&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
 
 const lora = Lora({
   variable: "--font-lora",
@@ -53,7 +59,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAFAF7",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAFAF7" },
+    { media: "(prefers-color-scheme: dark)", color: "#121212" },
+  ],
 };
 
 export default function RootLayout({
@@ -64,16 +73,26 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${lora.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
-        <TxProvider>
-          <SkipToContent />
-          <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col">
-            {children}
-          </main>
-          <TxToast />
-        </TxProvider>
+        <ThemeProvider>
+          <TxProvider>
+            <SkipToContent />
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className="flex-1 flex flex-col"
+            >
+              {children}
+            </main>
+            <TxToast />
+          </TxProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
