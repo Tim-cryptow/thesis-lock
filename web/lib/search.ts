@@ -26,6 +26,7 @@ export type SearchResult = {
   stacksBlock: number;
   source: SearchSource;
   groupId?: number;
+  groupIndex?: number;
   verifyUrl: string;
 };
 
@@ -45,17 +46,25 @@ function asNumber(v: unknown): number {
   return 0;
 }
 
-// Owner-keyed sources (batch, group) are only publicly resolvable on the verify
-// page when the owner principal travels with the link; single and proof anchors
-// are keyed by hash alone.
+// Owner-keyed sources (batch, registry) are only publicly resolvable on the
+// verify page when the owner principal travels with the link; single and proof
+// anchors are keyed by hash alone. Group anchors are keyed on chain by
+// { group-id, index }, so a hash anchored in several groups (or re-anchored in
+// one) needs both to point at the exact row the search result represents;
+// without them the verify page resolves the newest group anchor for the hash
+// and can show a different anchor than the one clicked.
 function buildVerifyUrl(
   hash: string,
   source: SearchSource,
   owner: string,
+  groupId?: number,
+  groupIndex?: number,
 ): string {
   const base = `/v/${hash}`;
-  const ownerKeyed =
-    source === "batch" || source === "group" || source === "registry";
+  if (source === "group" && groupId !== undefined && groupIndex !== undefined) {
+    return `${base}?group=${groupId}&gi=${groupIndex}`;
+  }
+  const ownerKeyed = source === "batch" || source === "registry";
   if (ownerKeyed && STX_PRINCIPAL.test(owner)) {
     return `${base}?owner=${owner}`;
   }
@@ -140,6 +149,7 @@ type ParsedEvent = {
   owner: string;
   stacksBlock: number;
   groupId?: number;
+  groupIndex?: number;
 };
 
 // Normalize a single-contract, registry, or groups print event into a common
@@ -184,6 +194,7 @@ function parseEvent(ev: RawEvent): ParsedEvent | null {
       owner: String(tuple["anchored-by"] ?? ""),
       stacksBlock: asNumber(tuple["stacks-block"]),
       groupId: asNumber(tuple["group-id"]),
+      groupIndex: asNumber(tuple["index"]),
     };
   }
 
@@ -226,12 +237,19 @@ function toResult(parsed: ParsedEvent): SearchResult {
     stacksBlock: parsed.stacksBlock,
     source,
     ...(parsed.groupId !== undefined ? { groupId: parsed.groupId } : {}),
-    verifyUrl: buildVerifyUrl(parsed.hash, source, parsed.owner),
+    ...(parsed.groupIndex !== undefined ? { groupIndex: parsed.groupIndex } : {}),
+    verifyUrl: buildVerifyUrl(
+      parsed.hash,
+      source,
+      parsed.owner,
+      parsed.groupId,
+      parsed.groupIndex,
+    ),
   };
 }
 
 function dedupeKey(r: SearchResult): string {
-  return `${r.source}|${r.hash}|${r.owner}|${r.groupId ?? ""}`;
+  return `${r.source}|${r.hash}|${r.owner}|${r.groupId ?? ""}|${r.groupIndex ?? ""}`;
 }
 
 function dedupe(results: SearchResult[]): SearchResult[] {

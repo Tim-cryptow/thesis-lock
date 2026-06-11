@@ -312,7 +312,7 @@ export default function SearchClient() {
               <ul className="space-y-3">
                 {group.rows.map((row) => (
                   <li
-                    key={`${row.source}|${row.hash}|${row.owner}|${row.groupId ?? ""}`}
+                    key={`${row.source}|${row.hash}|${row.owner}|${row.groupId ?? ""}|${row.groupIndex ?? ""}`}
                     className="rounded-lg border border-foreground/10 bg-card p-5"
                   >
                     <div className="flex items-start justify-between gap-4 flex-wrap">
