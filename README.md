@@ -19,6 +19,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Public verification at `/v/<hash>` with file re-upload check.
 - Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
 - Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
+- Search at `/search`: find anchored documents across every contract by hash, wallet address, or label, with auto-detection of the query type and quick recent-search recall.
 - Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
 - Transaction monitoring: after you anchor, the app polls Hiro for confirmation and slides in a toast when the transaction lands on chain, with a link to its verify page. Pending counts survive in-page navigation via `sessionStorage`. An experimental webhook endpoint can also notify developer integrations on confirmation.
 
@@ -219,6 +220,42 @@ Batch anchors set `"source": "batch"` and add a `batchId`. File uploads add the 
 ```
 
 An invalid hash (not 64 hex characters) returns `400`.
+
+### GET /api/search
+
+Search anchored documents across all five contracts. Returns a JSON array of results.
+
+Query parameters:
+
+- `q` (required): the search term.
+- `type` (optional): `auto` (default), `hash`, `principal`, or `label`. `auto` treats a 64-character hex string as a hash, an `SP`/`ST` string as a principal, and anything else as a label substring.
+- `owner` (optional): a principal to also check owner-keyed batch anchors when searching by hash.
+
+```bash
+# Auto-detect (label substring search)
+curl -s "https://thesis-lock.vercel.app/api/search?q=thesis"
+
+# By hash
+curl -s "https://thesis-lock.vercel.app/api/search?q=9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06&type=hash"
+
+# By wallet address
+curl -s "https://thesis-lock.vercel.app/api/search?q=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM&type=principal"
+```
+
+Each result has the shape:
+
+```json
+{
+  "hash": "9afe6f57...",
+  "label": "thesis",
+  "owner": "SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX",
+  "stacksBlock": 8104143,
+  "source": "single",
+  "verifyUrl": "/v/9afe6f57..."
+}
+```
+
+`source` is one of `single`, `batch`, `registry`, `proof`, or `group`; group results also include a `groupId`. Responses are cached at the edge for 30 seconds (`Cache-Control: public, s-maxage=30`). A request with no `q` returns `400`.
 
 ### GET /api/health
 
