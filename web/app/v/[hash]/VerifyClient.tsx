@@ -17,7 +17,11 @@ import {
   type BatchAnchor,
   type ProofWithId,
 } from "@/lib/stacks";
-import { findGroupAnchorByHash, type GroupAnchorMatch } from "@/lib/groups";
+import {
+  findGroupAnchorByHash,
+  getGroupAnchorByLocation,
+  type GroupAnchorMatch,
+} from "@/lib/groups";
 import { useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -42,6 +46,20 @@ export default function VerifyPage() {
     return STX_PRINCIPAL.test(upper) ? upper : null;
   }, [rawOwnerParam]);
   const batchOwner = ownerParam ?? address ?? null;
+
+  // A group link from search carries the exact on-chain location
+  // { group-id, index } of the anchor it represents, so the verify page can
+  // resolve that precise row rather than the newest group anchor for the hash.
+  const rawGroupParam = searchParams.get("group");
+  const rawGroupIndexParam = searchParams.get("gi");
+  const groupLocation = useMemo(() => {
+    if (rawGroupParam === null || rawGroupIndexParam === null) return null;
+    const groupId = Number(rawGroupParam);
+    const index = Number(rawGroupIndexParam);
+    if (!Number.isInteger(groupId) || groupId < 0) return null;
+    if (!Number.isInteger(index) || index < 0) return null;
+    return { groupId, index };
+  }, [rawGroupParam, rawGroupIndexParam]);
 
   const [loading, setLoading] = useState(true);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
@@ -73,6 +91,10 @@ export default function VerifyPage() {
   const preferBatch = Boolean(
     batchAnchor && batchOwner && (ownerParam || !anchor),
   );
+
+  // An explicit group link asks about one specific group anchor, so show it
+  // even when the same hash also has a single or batch anchor by someone else.
+  const preferGroup = Boolean(groupLocation && groupAnchor);
 
   // When the batch path resolves via the connected wallet rather than the
   // URL's ?owner=, the bare share URL points recipients to a page that
@@ -137,12 +159,24 @@ export default function VerifyPage() {
           }
         }
         setBatchAnchor(batch);
-        // Last resort: a hash anchored only through a group is invisible to the
-        // single and batch contracts, so fall back to the groups contract's
-        // print events when neither resolved. Let a lookup failure propagate to
-        // the error state below rather than swallowing it, so a transient API
-        // error does not masquerade as "not anchored" for group-only hashes.
-        if (!result && !batch) {
+        // When the link carries an explicit group location, resolve that exact
+        // { group-id, index } anchor so re-anchored or multi-group hashes show
+        // the row that was clicked. Confirm its hash matches the URL before
+        // trusting it, so tampered or stale params fall through to the
+        // hash-based lookup instead of displaying an unrelated anchor.
+        if (groupLocation) {
+          const located = await getGroupAnchorByLocation(
+            groupLocation.groupId,
+            groupLocation.index,
+          );
+          setGroupAnchor(located && located.hash === hash ? located : null);
+        } else if (!result && !batch) {
+          // Last resort: a hash anchored only through a group is invisible to
+          // the single and batch contracts, so fall back to the groups
+          // contract's print events when neither resolved. Let a lookup failure
+          // propagate to the error state below rather than swallowing it, so a
+          // transient API error does not masquerade as "not anchored" for
+          // group-only hashes.
           setGroupAnchor(await findGroupAnchorByHash(hash));
         } else {
           setGroupAnchor(null);
@@ -156,7 +190,7 @@ export default function VerifyPage() {
         if (showLoading) setLoading(false);
       }
     },
-    [hash, valid, batchOwner, ownerParam],
+    [hash, valid, batchOwner, ownerParam, groupLocation],
   );
 
   useEffect(() => {
@@ -214,6 +248,9 @@ export default function VerifyPage() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
+          <Link href="/search" className="text-foreground/60 hover:text-foreground">
+            Search
+          </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
@@ -265,6 +302,9 @@ export default function VerifyPage() {
         <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
+        </Link>
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
+          Search
         </Link>
         <Link
           href="/anchor"
@@ -322,7 +362,7 @@ export default function VerifyPage() {
               Try again
             </button>
           </div>
-        ) : preferBatch && batchAnchor && batchOwner ? (
+        ) : !preferGroup && preferBatch && batchAnchor && batchOwner ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <p className="text-foreground/80 text-sm mb-3">
               Anchored via batch transaction
@@ -375,7 +415,7 @@ export default function VerifyPage() {
               </div>
             </div>
           </div>
-        ) : !anchor && groupAnchor ? (
+        ) : (preferGroup || !anchor) && groupAnchor ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-foreground/20 text-foreground/70 uppercase tracking-wide">

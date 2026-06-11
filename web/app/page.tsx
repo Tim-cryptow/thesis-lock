@@ -28,6 +28,12 @@ export default function Page() {
             My anchors
           </Link>
           <Link
+            href="/search"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            Search anchors
+          </Link>
+          <Link
             href="/groups"
             className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
           >

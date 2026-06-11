@@ -1,5 +1,10 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
-import { getGroup, getGroupAnchorCount, type Group } from "./stacks";
+import {
+  getGroup,
+  getGroupAnchorAt,
+  getGroupAnchorCount,
+  type Group,
+} from "./stacks";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -167,6 +172,32 @@ export async function findGroupAnchorByHash(
     }
   }
   return null;
+}
+
+// Resolve the exact group anchor at { groupId, index } directly from the
+// on-chain map. A hash anchored in several groups (or re-anchored in one) maps
+// to multiple { group-id, index } rows, so search results link with both and
+// the verify page resolves the precise one here instead of falling back to the
+// newest event for the hash. The hash is returned so the caller can confirm it
+// matches the URL and ignore tampered or stale group/index params.
+export async function getGroupAnchorByLocation(
+  groupId: number,
+  index: number,
+): Promise<GroupAnchorMatch | null> {
+  const [anchor, group] = await Promise.all([
+    getGroupAnchorAt(groupId, index),
+    getGroup(groupId),
+  ]);
+  if (!anchor) return null;
+  return {
+    groupId,
+    index,
+    hash: stripHex(anchor.hash).toLowerCase(),
+    label: anchor.label,
+    anchoredBy: anchor.anchoredBy,
+    stacksBlock: anchor.stacksBlock,
+    groupName: group?.name,
+  };
 }
 
 export async function fetchGroupMembers(groupId: number): Promise<string[]> {

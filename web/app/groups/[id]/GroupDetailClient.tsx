@@ -200,6 +200,9 @@ export default function GroupDetailPage() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
+          <Link href="/search" className="text-foreground/60 hover:text-foreground">
+            Search
+          </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"

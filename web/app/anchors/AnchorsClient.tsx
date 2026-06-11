@@ -159,6 +159,9 @@ export default function AnchorsPage() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
+          <Link href="/search" className="text-foreground/60 hover:text-foreground">
+            Search
+          </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
