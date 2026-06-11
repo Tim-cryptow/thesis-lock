@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
 
@@ -102,6 +103,7 @@ export default function Page() {
             >
               GitHub
             </a>
+            <ThemeToggle />
           </div>
         </div>
       </footer>

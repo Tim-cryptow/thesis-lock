@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -209,6 +210,7 @@ export default function VerifyPage() {
     return (
       <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
         <div className="flex items-center gap-4 text-sm flex-wrap">
+          <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
@@ -260,6 +262,7 @@ export default function VerifyPage() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm flex-wrap">
+        <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
         </Link>
