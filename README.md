@@ -20,6 +20,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
 - Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
 - Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
+- Transaction monitoring: after you anchor, the app polls Hiro for confirmation and slides in a toast when the transaction lands on chain, with a link to its verify page. Pending counts survive in-page navigation via `sessionStorage`. An experimental webhook endpoint can also notify developer integrations on confirmation.
 
 ## Protocol
 
@@ -238,6 +239,36 @@ curl -s https://thesis-lock.vercel.app/api/health
   "version": "1.0.0"
 }
 ```
+
+### POST /api/webhook (experimental)
+
+> Beta. Best-effort, in-memory delivery for demo purposes. State lives in a per-instance map, so registrations do **not** survive a serverless cold start or scale-out, and delivery is not retried. Do not depend on this for guaranteed notifications.
+
+Register an `https` URL to be called once when a transaction confirms. Useful for developer integrations that want a server-side ping instead of polling.
+
+```bash
+curl -s -X POST https://thesis-lock.vercel.app/api/webhook \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://example.com/hooks/thesislock","txId":"0x<64-hex-tx-id>"}'
+```
+
+On success it returns:
+
+```json
+{ "registered": true, "txId": "0x<64-hex-tx-id>" }
+```
+
+When the transaction reaches a terminal state, ThesisLock POSTs a JSON body to your URL:
+
+```json
+{ "txId": "0x<64-hex-tx-id>", "status": "success", "blockHeight": 8104143 }
+```
+
+Notes:
+
+- The `url` must be a public `https` endpoint. Loopback, private, link-local, and cloud metadata addresses are rejected.
+- `txId` must be a 32-byte (64-character) hex transaction id.
+- Confirmation checks run opportunistically when the API receives other traffic (for example `GET /api/stats`), so delivery latency depends on usage.
 
 ## SDK
 
