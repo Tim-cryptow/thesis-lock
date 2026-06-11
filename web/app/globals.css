@@ -1,15 +1,30 @@
 @import "tailwindcss";
 
+/* Class-based dark mode. Tailwind v4 has no JS config; this is the v4
+   equivalent of darkMode: "class". The "dark" class is set on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #FAFAF7;
   --foreground: #1A1A1A;
   --heading: #0F0F0F;
+  --card: #FFFFFF;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #121212;
+  --foreground: #E6E6E6;
+  --heading: #FAFAFA;
+  --card: #1C1C1C;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-heading: var(--heading);
+  --color-card: var(--card);
   --font-serif: var(--font-lora);
   --font-mono: var(--font-jetbrains-mono);
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;

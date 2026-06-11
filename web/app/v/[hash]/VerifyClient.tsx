@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -209,6 +210,7 @@ export default function VerifyPage() {
     return (
       <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
         <div className="flex items-center gap-4 text-sm flex-wrap">
+          <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
@@ -260,6 +262,7 @@ export default function VerifyPage() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm flex-wrap">
+        <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
         </Link>
@@ -296,7 +299,7 @@ export default function VerifyPage() {
       </div>
       <h1 className="text-3xl mt-8 mb-6">Anchor record</h1>
 
-      <div className="rounded-lg border border-foreground/10 bg-white p-6">
+      <div className="rounded-lg border border-foreground/10 bg-card p-6">
         <div className="mb-4">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             Hash (SHA-256)
@@ -309,7 +312,7 @@ export default function VerifyPage() {
           <p className="text-foreground/60">Looking up on chain...</p>
         ) : error ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
-            <p className="text-red-600" role="alert">
+            <p className="text-red-600 dark:text-red-400" role="alert">
               {error}
             </p>
             <button
@@ -503,7 +506,7 @@ export default function VerifyPage() {
       </div>
 
       {proof && (
-        <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             Proof NFT
           </div>
@@ -522,7 +525,7 @@ export default function VerifyPage() {
       )}
 
       {(anchor || (batchAnchor && batchOwner)) && (
-        <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-6">
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <h2 className="text-xl mb-2">Share this verification</h2>
           <p className="text-foreground/70 text-sm mb-4">
             Anyone with this link can confirm the timestamp without you ever
@@ -605,7 +608,7 @@ export default function VerifyPage() {
         </div>
       )}
 
-      <div className="mt-10 rounded-lg border border-foreground/10 bg-white p-6">
+      <div className="mt-10 rounded-lg border border-foreground/10 bg-card p-6">
         <h2 className="text-xl mb-2">Verify a file</h2>
         <p className="text-foreground/70 text-sm mb-4">
           Pick a file. The browser will hash it and compare to the anchored hash.
@@ -625,18 +628,18 @@ export default function VerifyPage() {
         {verifyFile && (
           <div className="mt-4 text-sm">
             {verifyError ? (
-              <p className="text-red-600" role="alert">
+              <p className="text-red-600 dark:text-red-400" role="alert">
                 {verifyError}
               </p>
             ) : verifying ? (
               <p className="text-foreground/60">Hashing...</p>
             ) : verifyHash ? (
               verifyHash === hash ? (
-                <p className="text-green-700">
+                <p className="text-green-700 dark:text-green-400">
                   Match. This file is the anchored document.
                 </p>
               ) : (
-                <p className="text-red-600">
+                <p className="text-red-600 dark:text-red-400">
                   No match. This is a different file.
                 </p>
               )

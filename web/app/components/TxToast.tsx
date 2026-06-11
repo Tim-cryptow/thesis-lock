@@ -27,7 +27,7 @@ function Toast({
   return (
     <div
       role="status"
-      className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-foreground/10 bg-white p-4 shadow-lg animate-[tx-toast-in_220ms_ease-out]"
+      className="pointer-events-auto w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-foreground/10 bg-card p-4 shadow-lg animate-[tx-toast-in_220ms_ease-out]"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -66,7 +66,7 @@ function Toast({
             </>
           ) : (
             <>
-              <p className="text-sm font-medium text-red-700">
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">
                 Anchor failed to confirm
               </p>
               <p className="mt-1 text-xs text-foreground/70">

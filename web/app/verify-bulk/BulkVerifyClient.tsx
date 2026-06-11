@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import {
   getProofByHash,
   hashFile,
@@ -280,6 +281,7 @@ export default function BulkVerifyClient() {
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
+          <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
@@ -382,7 +384,7 @@ export default function BulkVerifyClient() {
 
       {rows.length > 0 && (
         <div className="mt-8">
-          <div className="rounded-lg border border-foreground/10 bg-white p-4 mb-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-4 mb-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <p className="text-sm font-medium" aria-live="polite">
                 {verifiedCount} of {total} file{total === 1 ? "" : "s"} verified
@@ -426,7 +428,7 @@ export default function BulkVerifyClient() {
               <div
                 key={row.id}
                 role="listitem"
-                className="rounded-lg border border-foreground/10 bg-white p-4"
+                className="rounded-lg border border-foreground/10 bg-card p-4"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
@@ -456,17 +458,17 @@ export default function BulkVerifyClient() {
                     {row.status === "checking" ? (
                       <span className="text-foreground/50">Checking...</span>
                     ) : row.status === "verified" ? (
-                      <span className="text-green-700">Verified &#10003;</span>
+                      <span className="text-green-700 dark:text-green-400">Verified &#10003;</span>
                     ) : row.status === "notfound" ? (
-                      <span className="text-red-600">Not found &#10007;</span>
+                      <span className="text-red-600 dark:text-red-400">Not found &#10007;</span>
                     ) : (
-                      <span className="text-amber-700">Error</span>
+                      <span className="text-amber-700 dark:text-amber-400">Error</span>
                     )}
                   </div>
                 </div>
 
                 {row.status === "error" && row.message && (
-                  <p className="mt-2 text-xs text-amber-700">{row.message}</p>
+                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{row.message}</p>
                 )}
 
                 {(row.source || row.block !== null || row.hash) && (

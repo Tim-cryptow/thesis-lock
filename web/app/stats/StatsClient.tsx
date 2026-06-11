@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
@@ -34,7 +35,7 @@ function formatDateLabel(iso: string): string {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-foreground/10 bg-white p-6">
+    <div className="rounded-lg border border-foreground/10 bg-card p-6">
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
       </div>
@@ -74,6 +75,7 @@ export default function StatsClient() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
+        <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
         </Link>
@@ -113,7 +115,7 @@ export default function StatsClient() {
       </p>
 
       {error && (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -124,14 +126,14 @@ export default function StatsClient() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-lg border border-foreground/10 bg-white p-6"
+                className="rounded-lg border border-foreground/10 bg-card p-6"
               >
                 <div className="h-3 w-20 rounded bg-foreground/10 animate-pulse mb-3" />
                 <div className="h-8 w-24 rounded bg-foreground/10 animate-pulse" />
               </div>
             ))}
           </div>
-          <div className="rounded-lg border border-foreground/10 bg-white p-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6">
             <div className="h-40 w-full rounded bg-foreground/10 animate-pulse" />
           </div>
         </div>
@@ -160,7 +162,7 @@ export default function StatsClient() {
             />
           </div>
 
-          <section className="rounded-lg border border-foreground/10 bg-white p-6 mb-8">
+          <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
               Activity per day
             </h2>
@@ -208,7 +210,7 @@ export default function StatsClient() {
             )}
           </section>
 
-          <section className="rounded-lg border border-foreground/10 bg-white p-6">
+          <section className="rounded-lg border border-foreground/10 bg-card p-6">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
               Deployed contracts
             </h2>

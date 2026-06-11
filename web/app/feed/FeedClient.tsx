@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerAddressUrl, explorerTxUrl } from "@/lib/stacks";
 import { truncateAddress } from "@/lib/wallet";
@@ -40,7 +41,7 @@ function verifyLinkFor(entry: FeedEntry): string {
 
 function sourceBadgeClass(source: FeedEntry["source"]): string {
   if (source === "single") {
-    return "bg-emerald-50 text-emerald-800 border-emerald-200";
+    return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900";
   }
   if (source === "batch") {
     return "bg-sky-50 text-sky-800 border-sky-200";
@@ -133,6 +134,7 @@ export default function FeedClient() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
+        <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
         </Link>
@@ -178,7 +180,7 @@ export default function FeedClient() {
       </p>
 
       {error && (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -188,7 +190,7 @@ export default function FeedClient() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-lg border border-foreground/10 bg-white p-5"
+              className="rounded-lg border border-foreground/10 bg-card p-5"
             >
               <div className="h-3 w-32 rounded bg-foreground/10 animate-pulse mb-3" />
               <div className="h-3 w-3/4 rounded bg-foreground/10 animate-pulse mb-2" />
@@ -197,7 +199,7 @@ export default function FeedClient() {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-white p-10 text-center">
+        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
             No anchors found yet. Be the first &mdash; anchor a document.
           </p>
@@ -214,7 +216,7 @@ export default function FeedClient() {
             {entries.map((entry) => (
               <li
                 key={`${entry.hash}|${entry.owner}|${entry.txId}`}
-                className="rounded-lg border border-foreground/10 bg-white p-5"
+                className="rounded-lg border border-foreground/10 bg-card p-5"
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">

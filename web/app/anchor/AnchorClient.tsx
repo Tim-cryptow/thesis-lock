@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -496,6 +497,7 @@ export default function AnchorPage() {
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
+          <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             &larr; ThesisLock
           </Link>
@@ -563,7 +565,7 @@ export default function AnchorPage() {
       </div>
 
       {walletError && (
-        <p className="mb-6 text-sm text-red-600" role="alert">
+        <p className="mb-6 text-sm text-red-600 dark:text-red-400" role="alert">
           {walletError}
         </p>
       )}
@@ -575,7 +577,7 @@ export default function AnchorPage() {
             Your document is recorded on chain. Share the verification link or
             keep the certificate as a permanent proof of timestamp.
           </p>
-          <div className="rounded-lg border border-foreground/10 bg-white p-5">
+          <div className="rounded-lg border border-foreground/10 bg-card p-5">
             <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
               Hash
             </div>
@@ -616,19 +618,19 @@ export default function AnchorPage() {
               </button>
             </div>
             {certNoticeHash === singleSuccess.hash && (
-              <p className="mt-3 text-xs text-amber-700">
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
                 Not yet confirmed on chain. Try again in a moment, or open the
                 verify page which polls automatically.
               </p>
             )}
           </div>
-          <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-5">
+          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
             <h2 className="text-lg mb-1">Proof NFT</h2>
             <p className="text-foreground/70 text-sm mb-4">
               Mint a soulbound NFT as permanent proof in your wallet (optional).
             </p>
             {mintTxId ? (
-              <p className="text-sm text-green-700">
+              <p className="text-sm text-green-700 dark:text-green-400">
                 Proof NFT minting submitted.{" "}
                 <a
                   href={explorerTxUrl(mintTxId)}
@@ -677,7 +679,7 @@ export default function AnchorPage() {
             {batchSuccess.entries.map((entry, idx) => (
               <div
                 key={`${entry.hash}-${idx}`}
-                className="rounded-lg border border-foreground/10 bg-white p-5"
+                className="rounded-lg border border-foreground/10 bg-card p-5"
               >
                 <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                   Hash
@@ -734,7 +736,7 @@ export default function AnchorPage() {
                   </button>
                 </div>
                 {certNoticeHash === entry.hash && (
-                  <p className="mt-3 text-xs text-amber-700">
+                  <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
                     Not yet confirmed on chain. Try again in a moment, or open
                     the verify page which polls automatically.
                   </p>
@@ -742,7 +744,7 @@ export default function AnchorPage() {
               </div>
             ))}
           </div>
-          <div className="mt-6 rounded-lg border border-foreground/10 bg-white p-5">
+          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
             <h2 className="text-lg mb-1">Proof NFTs</h2>
             <p className="text-foreground/70 text-sm mb-4">
               Mint a soulbound NFT per document as permanent proof in your
@@ -753,7 +755,7 @@ export default function AnchorPage() {
                 Minting {mintProgress.current} of {mintProgress.total}...
               </p>
             ) : mintTxId ? (
-              <p className="text-sm text-green-700">
+              <p className="text-sm text-green-700 dark:text-green-400">
                 Proof NFT minting submitted for {batchSuccess.entries.length}{" "}
                 document{batchSuccess.entries.length === 1 ? "" : "s"}.
               </p>
@@ -794,7 +796,7 @@ export default function AnchorPage() {
       <div
         role="group"
         aria-label="Anchor mode"
-        className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-white"
+        className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-card"
       >
         <button
           onClick={() => setMode("single")}
@@ -846,7 +848,7 @@ export default function AnchorPage() {
           </FileDropZone>
 
           {hashError && (
-            <p className="mt-3 text-sm text-red-600" role="alert">
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
               {hashError}
             </p>
           )}
@@ -898,14 +900,14 @@ export default function AnchorPage() {
               maxLength={64}
               aria-describedby="label-status"
               aria-invalid={labelError ? true : undefined}
-              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white focus:outline-none focus:border-foreground/50"
+              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
             />
             <div
               id="label-status"
               className="mt-1 flex items-center justify-between text-xs"
             >
               <span
-                className={labelError ? "text-red-600" : "text-transparent"}
+                className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
                 role={labelError ? "alert" : undefined}
               >
                 {labelError ?? "."}
@@ -971,7 +973,7 @@ export default function AnchorPage() {
           </div>
 
           {batchLimitNotice && (
-            <p className="mt-3 text-xs text-amber-700">{batchLimitNotice}</p>
+            <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">{batchLimitNotice}</p>
           )}
 
           {rows.length > 0 && (
@@ -979,7 +981,7 @@ export default function AnchorPage() {
               {rows.map((row, idx) => (
                 <div
                   key={row.id}
-                  className="rounded-lg border border-foreground/10 bg-white p-4"
+                  className="rounded-lg border border-foreground/10 bg-card p-4"
                 >
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
@@ -1009,7 +1011,7 @@ export default function AnchorPage() {
                         Hashing...
                       </p>
                     ) : row.hashError ? (
-                      <p className="text-xs text-red-600" role="alert">
+                      <p className="text-xs text-red-600 dark:text-red-400" role="alert">
                         {row.hashError}
                       </p>
                     ) : (
@@ -1028,12 +1030,12 @@ export default function AnchorPage() {
                       disabled={pending}
                       aria-label={`Label for ${row.file.name}`}
                       aria-invalid={row.labelError ? true : undefined}
-                      className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-white text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+                      className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
                     />
                     <div className="mt-1 flex items-center justify-between text-xs">
                       <span
                         className={
-                          row.labelError ? "text-red-600" : "text-transparent"
+                          row.labelError ? "text-red-600 dark:text-red-400" : "text-transparent"
                         }
                       >
                         {row.labelError ?? "."}
@@ -1073,7 +1075,7 @@ export default function AnchorPage() {
       )}
 
       {submitError && (
-        <p className="mt-4 text-sm text-red-600 text-center" role="alert">
+        <p className="mt-4 text-sm text-red-600 dark:text-red-400 text-center" role="alert">
           {submitError}
         </p>
       )}
