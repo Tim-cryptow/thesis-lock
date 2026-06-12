@@ -95,3 +95,36 @@ jobs:
 
       - name: Test
         run: npm test
+
+  cli:
+    name: CLI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            cli/package-lock.json
+            sdk/package-lock.json
+
+      # The CLI links thesislock-sdk via file:../sdk, and sdk/dist is not
+      # committed, so the SDK must be built before the CLI compiles.
+      - name: Build SDK dependency
+        working-directory: sdk
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
