@@ -455,13 +455,17 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     }
   }
 
+  // Registry labels are untrusted and not constrained to match the batch
+  // map's stored label, so they cannot prefilter candidates in either
+  // direction: every unique { hash, owner } pair from anchor-registered events
+  // is confirmed against the batch map, and the match runs on the batch map's
+  // authoritative label, which is also what gets displayed.
   const registryHits = new Map<string, ParsedEvent>();
   for (const ev of registryEvents) {
     const parsed = parseEvent(ev);
     if (
       parsed &&
       parsed.event === "anchor-registered" &&
-      parsed.label.toLowerCase().includes(needle) &&
       STX_PRINCIPAL.test(parsed.owner.toUpperCase())
     ) {
       registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
@@ -475,8 +479,6 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
       return batch ? { hit, batch } : null;
     }),
   );
-  // The registry label is not constrained to match the batch map's stored
-  // label, so match on the label that will actually be displayed.
   for (const entry of confirmed) {
     if (!entry) continue;
     if (!entry.batch.label.toLowerCase().includes(needle)) continue;

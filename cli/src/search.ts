@@ -489,18 +489,19 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
   }
 
   // The registry is unvalidated (anyone can register an arbitrary hash with
-  // any label), so a registry label hit is only surfaced once the batch map
-  // confirms an anchor exists for { hash, owner }. Real single, proof, and
-  // group anchors already enter results through their own contracts above, so
-  // unconfirmed registry rows are pure false positives that verify would
-  // report as not found.
+  // any label), so registry labels cannot prefilter candidates in either
+  // direction: every unique { hash, owner } pair from anchor-registered events
+  // is confirmed against the batch map, and the match runs on the batch map's
+  // authoritative label, which is also what gets displayed. Real single,
+  // proof, and group anchors already enter results through their own
+  // contracts above, so unconfirmed registry rows are pure false positives
+  // that verify would report as not found.
   const registryHits = new Map<string, ParsedEvent>();
   for (const ev of registryEvents) {
     const parsed = parseEvent(ev);
     if (
       parsed &&
       parsed.event === "anchor-registered" &&
-      parsed.label.toLowerCase().includes(needle) &&
       STX_PRINCIPAL.test(parsed.owner.toUpperCase())
     ) {
       registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
@@ -512,8 +513,6 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
       return batch && batch.verified ? { hit, batch: batch.data } : null;
     }),
   );
-  // The registry label is not constrained to match the batch map's stored
-  // label, so match on the label that will actually be displayed.
   for (const entry of confirmed) {
     if (!entry) continue;
     if (!entry.batch.label.toLowerCase().includes(needle)) continue;
