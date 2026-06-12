@@ -35,6 +35,15 @@ function asNumber(v: unknown): number {
   return 0;
 }
 
+// cvToValue may return a tuple field as a plain value or as the verbose
+// { type, value } form depending on the @stacks/transactions version.
+function fieldValue(field: unknown): unknown {
+  if (field && typeof field === "object" && "value" in field) {
+    return (field as { value: unknown }).value;
+  }
+  return field;
+}
+
 // Owner-keyed sources (batch, registry) are only publicly resolvable on the
 // verify page when the owner principal travels with the link; group anchors
 // are keyed on chain by { group-id, index }, so both ride along to point at
@@ -141,55 +150,55 @@ type ParsedEvent = {
 function parseEvent(ev: RawEvent): ParsedEvent | null {
   const tuple = decodePrintTuple(ev.contract_log?.value?.hex ?? "");
   if (!tuple) return null;
-  const event = String(tuple["event"] ?? "");
+  const event = String(fieldValue(tuple["event"]) ?? "");
 
   if (event === "anchor-created") {
-    const hash = stripHex(String(tuple["hash"] ?? "")).toLowerCase();
+    const hash = stripHex(String(fieldValue(tuple["hash"]) ?? "")).toLowerCase();
     if (!hash) return null;
     return {
       event,
       hash,
-      label: String(tuple["label"] ?? ""),
-      owner: String(tuple["anchored-by"] ?? ""),
-      stacksBlock: asNumber(tuple["stacks-block"]),
+      label: String(fieldValue(tuple["label"]) ?? ""),
+      owner: String(fieldValue(tuple["anchored-by"]) ?? ""),
+      stacksBlock: asNumber(fieldValue(tuple["stacks-block"])),
     };
   }
 
   if (event === "anchor-registered") {
-    const hash = stripHex(String(tuple["hash"] ?? "")).toLowerCase();
+    const hash = stripHex(String(fieldValue(tuple["hash"]) ?? "")).toLowerCase();
     if (!hash) return null;
     return {
       event,
       hash,
-      label: String(tuple["label"] ?? ""),
-      owner: String(tuple["owner"] ?? ""),
-      stacksBlock: asNumber(tuple["anchored-at"]),
+      label: String(fieldValue(tuple["label"]) ?? ""),
+      owner: String(fieldValue(tuple["owner"]) ?? ""),
+      stacksBlock: asNumber(fieldValue(tuple["anchored-at"])),
     };
   }
 
   if (event === "group-anchor-added") {
-    const hash = stripHex(String(tuple["hash"] ?? "")).toLowerCase();
+    const hash = stripHex(String(fieldValue(tuple["hash"]) ?? "")).toLowerCase();
     if (!hash) return null;
     return {
       event,
       hash,
-      label: String(tuple["label"] ?? ""),
-      owner: String(tuple["anchored-by"] ?? ""),
-      stacksBlock: asNumber(tuple["stacks-block"]),
-      groupId: asNumber(tuple["group-id"]),
-      groupIndex: asNumber(tuple["index"]),
+      label: String(fieldValue(tuple["label"]) ?? ""),
+      owner: String(fieldValue(tuple["anchored-by"]) ?? ""),
+      stacksBlock: asNumber(fieldValue(tuple["stacks-block"])),
+      groupId: asNumber(fieldValue(tuple["group-id"])),
+      groupIndex: asNumber(fieldValue(tuple["index"])),
     };
   }
 
   if (event === "proof-minted") {
-    const hash = stripHex(String(tuple["hash"] ?? "")).toLowerCase();
+    const hash = stripHex(String(fieldValue(tuple["hash"]) ?? "")).toLowerCase();
     if (!hash) return null;
     return {
       event,
       hash,
       label: "",
-      owner: String(tuple["anchored-by"] ?? ""),
-      stacksBlock: asNumber(tuple["stacks-block"]),
+      owner: String(fieldValue(tuple["anchored-by"]) ?? ""),
+      stacksBlock: asNumber(fieldValue(tuple["stacks-block"])),
     };
   }
 
@@ -388,8 +397,10 @@ export async function searchByPrincipal(
 
   const results: SearchResult[] = [];
 
+  // Registry events below cover the same history, so malformed reads (the
+  // verbose cvToValue shape leaves the hash empty) are safe to skip.
   for (const entry of registryEntries) {
-    if (!entry) continue;
+    if (!entry || !HEX_64.test(entry.hash.toLowerCase())) continue;
     results.push({
       hash: entry.hash.toLowerCase(),
       label: entry.label,

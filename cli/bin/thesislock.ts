@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { hashCommand } from "../src/commands/hash";
+import { searchCommand } from "../src/commands/search";
+import { statusCommand } from "../src/commands/status";
 import { verifyCommand } from "../src/commands/verify";
 
 const program = new Command();
@@ -28,6 +30,21 @@ program
   .argument("<filepaths...>", "paths of files to hash")
   .option("--verify", "also check whether each hash is anchored on Stacks")
   .action(hashCommand);
+
+program
+  .command("status")
+  .description(
+    "Show protocol status, or anchor stats for a wallet when a principal is given",
+  )
+  .argument("[principal]", "Stacks principal to look up")
+  .action(statusCommand);
+
+program
+  .command("search")
+  .description("Search anchors by hash, wallet principal, or label substring")
+  .argument("<query>", "64-hex hash, Stacks principal, or label text")
+  .option("--json", "print machine-readable JSON output")
+  .action(searchCommand);
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   const message = err instanceof Error ? err.message : String(err);
