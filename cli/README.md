@@ -6,17 +6,24 @@ All reads go through the public Hiro API. The CLI never uploads files anywhere: 
 
 ## Installation
 
+Build from the monorepo (the CLI depends on the sibling `sdk/` package, so build that first):
+
 ```bash
-npm install -g thesislock-cli
+cd sdk && npm install && npm run build
+cd ../cli && npm install && npm run build
+node dist/bin/thesislock.js --help
 ```
 
-Or run it from the monorepo:
+To put the `thesislock` command on your PATH, link the built package:
 
 ```bash
-cd cli
-npm install
-npm run build
-node dist/bin/thesislock.js --help
+cd cli && npm link
+```
+
+Once the package is published to the npm registry, a global install will also work:
+
+```bash
+npm install -g thesislock-cli
 ```
 
 ## Commands
@@ -95,7 +102,7 @@ thesislock search "thesis draft" --json
 
 ## CI integration
 
-Use `verify` (or `hash --verify`) as a pipeline step that fails when a document is not anchored. GitHub Actions example:
+Use `verify` (or `hash --verify`) as a pipeline step that fails when a document is not anchored. GitHub Actions example (uses the registry install, so it applies once the package is published; until then, build from the repo as shown above):
 
 ```yaml
 jobs:

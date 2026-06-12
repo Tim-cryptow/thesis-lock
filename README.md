@@ -330,11 +330,9 @@ The package lives in [`sdk/`](sdk/README.md), which has the full API reference, 
 
 ## CLI
 
-The `thesislock-cli` package verifies anchors from the terminal or a CI pipeline, with no browser or wallet required. It hashes files locally, checks all five contracts, searches by hash, wallet, or label, and exits non-zero when a document is not anchored.
+The `thesislock-cli` package verifies anchors from the terminal or a CI pipeline, with no browser or wallet required. It hashes files locally, checks all five contracts, searches by hash, wallet, or label, and exits non-zero when a document is not anchored. Build it from [`cli/`](cli/README.md) (a global `npm install -g thesislock-cli` will also work once the package is published to the registry).
 
 ```bash
-npm install -g thesislock-cli
-
 thesislock hash thesis.pdf --verify
 thesislock verify 9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06
 thesislock search "thesis draft"
