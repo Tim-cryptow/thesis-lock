@@ -1,0 +1,35 @@
+{
+  "name": "thesislock-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for verifying ThesisLock document anchors on Stacks",
+  "license": "MIT",
+  "bin": {
+    "thesislock": "./dist/bin/thesislock.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/bin/thesislock.js"
+  },
+  "keywords": [
+    "stacks",
+    "clarity",
+    "thesislock",
+    "proof-of-existence",
+    "sha-256",
+    "cli"
+  ],
+  "dependencies": {
+    "@stacks/transactions": "^7.4.0",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "ora": "^5.4.1",
+    "thesislock-sdk": "file:../sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "typescript": "^5.4.0"
+  }
+}
