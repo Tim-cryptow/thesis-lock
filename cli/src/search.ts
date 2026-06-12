@@ -339,13 +339,14 @@ export async function searchByHash(
     }
   }
 
-  const batches = await Promise.all(
-    Array.from(candidateOwners).map(async (candidate) => {
+  const batches = await mapWithConcurrency(
+    Array.from(candidateOwners),
+    async (candidate) => {
       const batch = await client
         .verifyBatch(normalized, candidate)
         .catch(() => null);
       return batch && batch.verified ? { candidate, batch: batch.data } : null;
-    }),
+    },
   );
   for (const entry of batches) {
     if (!entry) continue;
@@ -426,6 +427,32 @@ export async function searchByPrincipal(
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
 }
 
+// Cap on concurrent Hiro read-only calls. An unbounded Promise.all over every
+// registry row or proof id can fan out thousands of simultaneous requests;
+// rate-limited or timed-out calls are swallowed by per-call catches and
+// silently drop real matches.
+const READ_CONCURRENCY = 8;
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const workers = Array.from(
+    { length: Math.min(READ_CONCURRENCY, items.length) },
+    async () => {
+      while (next < items.length) {
+        const i = next;
+        next += 1;
+        results[i] = await fn(items[i]);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
+}
+
 // Read every minted proof. Token ids run 1..last-token-id, and the proof-minted
 // event omits the label, so labels are only recoverable by reading proof-data
 // per token. Without this, proof-only anchors are invisible to label search.
@@ -435,8 +462,8 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
   if (!Number.isFinite(lastId) || lastId < 1) return [];
 
   const ids = Array.from({ length: lastId }, (_, i) => i + 1);
-  const proofs = await Promise.all(
-    ids.map((id) => client.getProof(id).catch(() => null)),
+  const proofs = await mapWithConcurrency(ids, (id) =>
+    client.getProof(id).catch(() => null),
   );
 
   const results: SearchResult[] = [];
@@ -458,10 +485,12 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
 /**
  * Substring match on anchor labels. Batch print events carry no per-hash
  * label, so batch hits come from the registry contract's anchor-registered
- * events. Proof labels live only in proof-data (not the event), so proofs are
- * enumerated by token id.
+ * events, confirmed against the batch map before they are surfaced. Proof
+ * labels live only in proof-data (not the event), so proofs are enumerated by
+ * token id.
  */
 export async function searchByLabel(label: string): Promise<SearchResult[]> {
+  const client = getClient();
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
 
@@ -474,7 +503,7 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     ]);
 
   const results: SearchResult[] = [];
-  for (const ev of [...singleEvents, ...registryEvents, ...groupEvents]) {
+  for (const ev of [...singleEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.label.toLowerCase().includes(needle)) {
       results.push(toResult(parsed));
@@ -484,6 +513,45 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     if (proof.label.toLowerCase().includes(needle)) {
       results.push(proof);
     }
+  }
+
+  // The registry is unvalidated (anyone can register an arbitrary hash with
+  // any label), so registry labels cannot prefilter candidates in either
+  // direction: every unique { hash, owner } pair from anchor-registered events
+  // is confirmed against the batch map, and the match runs on the batch map's
+  // authoritative label, which is also what gets displayed. Real single,
+  // proof, and group anchors already enter results through their own
+  // contracts above, so unconfirmed registry rows are pure false positives
+  // that verify would report as not found.
+  const registryHits = new Map<string, ParsedEvent>();
+  for (const ev of registryEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "anchor-registered" &&
+      STX_PRINCIPAL.test(parsed.owner.toUpperCase())
+    ) {
+      registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
+    }
+  }
+  const confirmed = await mapWithConcurrency(
+    Array.from(registryHits.values()),
+    async (hit) => {
+      const batch = await client.verifyBatch(hit.hash, hit.owner).catch(() => null);
+      return batch && batch.verified ? { hit, batch: batch.data } : null;
+    },
+  );
+  for (const entry of confirmed) {
+    if (!entry) continue;
+    if (!entry.batch.label.toLowerCase().includes(needle)) continue;
+    results.push({
+      hash: entry.hit.hash,
+      label: entry.batch.label,
+      owner: entry.hit.owner,
+      stacksBlock: entry.batch.stacksBlock,
+      source: "batch",
+      verifyPath: buildVerifyPath(entry.hit.hash, "batch", entry.hit.owner),
+    });
   }
 
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
