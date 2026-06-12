@@ -458,10 +458,12 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
 /**
  * Substring match on anchor labels. Batch print events carry no per-hash
  * label, so batch hits come from the registry contract's anchor-registered
- * events. Proof labels live only in proof-data (not the event), so proofs are
- * enumerated by token id.
+ * events, confirmed against the batch map before they are surfaced. Proof
+ * labels live only in proof-data (not the event), so proofs are enumerated by
+ * token id.
  */
 export async function searchByLabel(label: string): Promise<SearchResult[]> {
+  const client = getClient();
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
 
@@ -474,7 +476,7 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     ]);
 
   const results: SearchResult[] = [];
-  for (const ev of [...singleEvents, ...registryEvents, ...groupEvents]) {
+  for (const ev of [...singleEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.label.toLowerCase().includes(needle)) {
       results.push(toResult(parsed));
@@ -484,6 +486,42 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     if (proof.label.toLowerCase().includes(needle)) {
       results.push(proof);
     }
+  }
+
+  // The registry is unvalidated (anyone can register an arbitrary hash with
+  // any label), so a registry label hit is only surfaced once the batch map
+  // confirms an anchor exists for { hash, owner }. Real single, proof, and
+  // group anchors already enter results through their own contracts above, so
+  // unconfirmed registry rows are pure false positives that verify would
+  // report as not found.
+  const registryHits = new Map<string, ParsedEvent>();
+  for (const ev of registryEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "anchor-registered" &&
+      parsed.label.toLowerCase().includes(needle) &&
+      STX_PRINCIPAL.test(parsed.owner.toUpperCase())
+    ) {
+      registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
+    }
+  }
+  const confirmed = await Promise.all(
+    Array.from(registryHits.values()).map(async (hit) => {
+      const batch = await client.verifyBatch(hit.hash, hit.owner).catch(() => null);
+      return batch && batch.verified ? { hit, batch: batch.data } : null;
+    }),
+  );
+  for (const entry of confirmed) {
+    if (!entry) continue;
+    results.push({
+      hash: entry.hit.hash,
+      label: entry.batch.label,
+      owner: entry.hit.owner,
+      stacksBlock: entry.batch.stacksBlock,
+      source: "batch",
+      verifyPath: buildVerifyPath(entry.hit.hash, "batch", entry.hit.owner),
+    });
   }
 
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);

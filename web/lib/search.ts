@@ -430,9 +430,11 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
 }
 
 // Substring match on anchor labels. Batch print events carry no per-hash label,
-// so batch hits come from the registry contract's anchor-registered events,
-// mirroring how the public feed surfaces batch rows. Proof labels live only in
-// proof-data (not the event), so proofs are enumerated by token id.
+// so batch hits come from the registry contract's anchor-registered events. The
+// registry is unvalidated (anyone can register an arbitrary hash), so each
+// registry hit is confirmed against the batch map before it is surfaced. Proof
+// labels live only in proof-data (not the event), so proofs are enumerated by
+// token id.
 export async function searchByLabel(label: string): Promise<SearchResult[]> {
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
@@ -446,12 +448,45 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
     ]);
 
   const results: SearchResult[] = [];
-  for (const ev of [...singleEvents, ...registryEvents, ...groupEvents]) {
+  for (const ev of [...singleEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.label.toLowerCase().includes(needle)) {
       results.push(toResult(parsed));
     }
   }
+
+  const registryHits = new Map<string, ParsedEvent>();
+  for (const ev of registryEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "anchor-registered" &&
+      parsed.label.toLowerCase().includes(needle) &&
+      STX_PRINCIPAL.test(parsed.owner.toUpperCase())
+    ) {
+      registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
+    }
+  }
+  const confirmed = await Promise.all(
+    Array.from(registryHits.values()).map(async (hit) => {
+      const batch = await readBatchAnchor(hit.hash, hit.owner).catch(
+        () => null,
+      );
+      return batch ? { hit, batch } : null;
+    }),
+  );
+  for (const entry of confirmed) {
+    if (!entry) continue;
+    results.push({
+      hash: entry.hit.hash,
+      label: entry.batch.label,
+      owner: entry.hit.owner,
+      stacksBlock: entry.batch.stacksBlock,
+      source: "batch",
+      verifyUrl: buildVerifyUrl(entry.hit.hash, "batch", entry.hit.owner),
+    });
+  }
+
   for (const proof of proofResults) {
     if (proof.label.toLowerCase().includes(needle)) {
       results.push(proof);
