@@ -323,13 +323,14 @@ export async function searchByHash(
     }
   }
 
-  const batches = await Promise.all(
-    Array.from(candidateOwners).map(async (candidate) => {
+  const batches = await mapWithConcurrency(
+    Array.from(candidateOwners),
+    async (candidate) => {
       const batch = await readBatchAnchor(normalized, candidate).catch(
         () => null,
       );
       return batch ? { candidate, batch } : null;
-    }),
+    },
   );
   for (const entry of batches) {
     if (!entry) continue;
@@ -401,6 +402,32 @@ export async function searchByPrincipal(
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
 }
 
+// Cap on concurrent Hiro read-only calls. An unbounded Promise.all over every
+// registry row or proof id can fan out thousands of simultaneous requests;
+// rate-limited or timed-out calls are swallowed by per-call catches and
+// silently drop real matches.
+const READ_CONCURRENCY = 8;
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const workers = Array.from(
+    { length: Math.min(READ_CONCURRENCY, items.length) },
+    async () => {
+      while (next < items.length) {
+        const i = next;
+        next += 1;
+        results[i] = await fn(items[i]);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
+}
+
 // Read every minted proof. Token ids run 1..last-token-id, and the proof-minted
 // event omits the label, so labels are only recoverable by reading proof-data
 // per token. Without this, proof-only anchors are invisible to label search.
@@ -409,8 +436,8 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
   if (!Number.isFinite(lastId) || lastId < 1) return [];
 
   const ids = Array.from({ length: lastId }, (_, i) => i + 1);
-  const proofs = await Promise.all(
-    ids.map((id) => getProof(id).catch(() => null)),
+  const proofs = await mapWithConcurrency(ids, (id) =>
+    getProof(id).catch(() => null),
   );
 
   const results: SearchResult[] = [];
@@ -471,13 +498,14 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
       registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
     }
   }
-  const confirmed = await Promise.all(
-    Array.from(registryHits.values()).map(async (hit) => {
+  const confirmed = await mapWithConcurrency(
+    Array.from(registryHits.values()),
+    async (hit) => {
       const batch = await readBatchAnchor(hit.hash, hit.owner).catch(
         () => null,
       );
       return batch ? { hit, batch } : null;
-    }),
+    },
   );
   for (const entry of confirmed) {
     if (!entry) continue;
