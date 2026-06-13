@@ -101,6 +101,9 @@ export default function Page() {
             <Link href="/stats" className="hover:text-foreground transition">
               Stats
             </Link>
+            <Link href="/embed" className="hover:text-foreground transition">
+              Embed
+            </Link>
             <a
               href={REPO_URL}
               target="_blank"

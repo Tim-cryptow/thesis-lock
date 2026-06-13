@@ -77,9 +77,15 @@ export default function VerifyPage() {
   const [copiedShare, setCopiedShare] = useState(false);
   const [copyShareFailed, setCopyShareFailed] = useState(false);
   const [txId, setTxId] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [copiedEmbed, setCopiedEmbed] = useState<"markdown" | "html" | null>(
+    null,
+  );
+  const [copyEmbedFailed, setCopyEmbedFailed] = useState(false);
 
   useEffect(() => {
     setShareUrl(window.location.href);
+    setOrigin(window.location.origin);
     setTxId(new URLSearchParams(window.location.search).get("tx"));
   }, []);
 
@@ -133,6 +139,34 @@ export default function VerifyPage() {
       text,
     )}&url=${encodeURIComponent(publicVerifyUrl)}`;
   })();
+
+  // The badge endpoint resolves single anchors by hash alone, but a batch
+  // record is keyed by {hash, owner}, so pass the owner when the page is
+  // showing a batch anchor.
+  const badgeOwner = preferBatch && batchOwner ? batchOwner : null;
+  const badgeSrc = origin
+    ? `${origin}/api/badge/${hash}${badgeOwner ? `?owner=${badgeOwner}` : ""}`
+    : "";
+  const embedMarkdown = badgeSrc
+    ? `[![ThesisLock](${badgeSrc})](${publicVerifyUrl || `${origin}/v/${hash}`})`
+    : "";
+  const embedHtml = badgeSrc
+    ? `<a href="${publicVerifyUrl || `${origin}/v/${hash}`}"><img src="${badgeSrc}" alt="ThesisLock Verified" /></a>`
+    : "";
+
+  const copyEmbed = async (kind: "markdown" | "html") => {
+    const text = kind === "markdown" ? embedMarkdown : embedHtml;
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedEmbed(kind);
+      setCopyEmbedFailed(false);
+      setTimeout(() => setCopiedEmbed(null), 1500);
+    } catch {
+      setCopyEmbedFailed(true);
+      setTimeout(() => setCopyEmbedFailed(false), 1500);
+    }
+  };
 
   const loadAnchor = useCallback(
     async (showLoading = true) => {
@@ -644,6 +678,55 @@ export default function VerifyPage() {
                 Share on X
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {(anchor || (batchAnchor && batchOwner)) && (
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
+          <h2 className="text-xl mb-2">Embed a badge</h2>
+          <p className="text-foreground/70 text-sm mb-4">
+            Drop this badge into a README, website, or submission to show the
+            anchor is live on Stacks.
+          </p>
+          {badgeSrc && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={badgeSrc}
+              alt="ThesisLock verification badge"
+              height={20}
+              className="mb-4"
+            />
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => void copyEmbed("markdown")}
+              disabled={!embedMarkdown}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+            >
+              {copiedEmbed === "markdown"
+                ? "Markdown copied"
+                : copyEmbedFailed
+                  ? "Copy failed"
+                  : "Copy Markdown"}
+            </button>
+            <button
+              onClick={() => void copyEmbed("html")}
+              disabled={!embedHtml}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+            >
+              {copiedEmbed === "html"
+                ? "HTML copied"
+                : copyEmbedFailed
+                  ? "Copy failed"
+                  : "Copy HTML"}
+            </button>
+            <Link
+              href="/embed"
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              Customize
+            </Link>
           </div>
         </div>
       )}
