@@ -13,6 +13,7 @@ const DEFAULT_CONTRACT_ADDRESS = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 const SINGLE_CONTRACT = "thesislock";
 const BATCH_CONTRACT = "thesislock-batch";
 const PROOF_CONTRACT = "thesislock-proof";
+const GROUPS_CONTRACT = "thesislock-groups";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
@@ -169,6 +170,59 @@ async function verifyProof(
   };
 }
 
+// Group anchors are keyed on chain by { group-id, index }, not by hash, so the
+// only way to resolve one from a hash is to scan the contract's print events.
+// This mirrors cli/src/search.ts.
+type RawEvent = {
+  contract_log?: { value?: { hex?: string } };
+};
+
+const GROUPS_PAGE = 50;
+// Hard guard against a runaway loop, set far above any realistic event count.
+const GROUPS_OFFSET_CAP = 50_000;
+
+async function verifyGroup(
+  hash: string,
+  apiUrl: string,
+  contractAddress: string,
+): Promise<VerifyResult | null> {
+  let offset = 0;
+  while (offset < GROUPS_OFFSET_CAP) {
+    const url = `${apiUrl}/extended/v1/contract/${contractAddress}.${GROUPS_CONTRACT}/events?limit=${GROUPS_PAGE}&offset=${offset}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { results?: RawEvent[] };
+    const events = Array.isArray(data.results) ? data.results : [];
+
+    for (const ev of events) {
+      const tupleHex = ev.contract_log?.value?.hex;
+      if (!tupleHex) continue;
+      let tuple: Record<string, unknown>;
+      try {
+        const decoded = cvToValue(deserializeCV(stripHex(tupleHex)), true);
+        if (!decoded || typeof decoded !== "object" || Array.isArray(decoded)) continue;
+        tuple = decoded as Record<string, unknown>;
+      } catch {
+        continue;
+      }
+      if (String(fieldValue(tuple["event"]) ?? "") !== "group-anchor-added") continue;
+      const eventHash = stripHex(String(fieldValue(tuple["hash"]) ?? "")).toLowerCase();
+      if (eventHash !== hash) continue;
+      return {
+        verified: true,
+        source: "group",
+        block: Number(fieldValue(tuple["stacks-block"]) ?? 0),
+        label: String(fieldValue(tuple["label"]) ?? ""),
+        owner: String(fieldValue(tuple["anchored-by"]) ?? ""),
+      };
+    }
+
+    if (events.length < GROUPS_PAGE) break;
+    offset += GROUPS_PAGE;
+  }
+  return null;
+}
+
 const NOT_VERIFIED: VerifyResult = {
   verified: false,
   source: null,
@@ -178,9 +232,12 @@ const NOT_VERIFIED: VerifyResult = {
 };
 
 /**
- * Resolve a 64-hex hash against the ThesisLock contracts. Checks the single
- * anchor, then the owner-keyed batch anchor when an owner is supplied, then the
- * proof NFT. Returns the first match, or an unverified result.
+ * Resolve a 64-hex hash against the ThesisLock contracts. When an owner is
+ * supplied, the owner-keyed batch anchor is checked first: an explicit owner
+ * selects that batch record, and the same hash can exist independently in the
+ * single contract under a different wallet. Otherwise it falls through to the
+ * single anchor, the proof NFT, and finally group anchors. Returns the first
+ * match, or an unverified result.
  */
 export async function verifyHash(
   hash: string,
@@ -195,9 +252,6 @@ export async function verifyHash(
   const apiUrl = (options.apiUrl ?? DEFAULT_API_URL).replace(/\/$/, "");
   const contractAddress = options.contractAddress ?? DEFAULT_CONTRACT_ADDRESS;
 
-  const single = await verifySingle(normalized, apiUrl, contractAddress);
-  if (single) return single;
-
   if (owner) {
     const ownerNormalized = owner.trim().toUpperCase();
     if (!validateStacksAddress(ownerNormalized)) {
@@ -207,8 +261,14 @@ export async function verifyHash(
     if (batch) return batch;
   }
 
+  const single = await verifySingle(normalized, apiUrl, contractAddress);
+  if (single) return single;
+
   const proof = await verifyProof(normalized, apiUrl, contractAddress);
   if (proof) return proof;
+
+  const group = await verifyGroup(normalized, apiUrl, contractAddress);
+  if (group) return group;
 
   return NOT_VERIFIED;
 }
