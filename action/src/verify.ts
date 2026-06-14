@@ -190,7 +190,11 @@ async function verifyGroup(
   while (offset < GROUPS_OFFSET_CAP) {
     const url = `${apiUrl}/extended/v1/contract/${contractAddress}.${GROUPS_CONTRACT}/events?limit=${GROUPS_PAGE}&offset=${offset}`;
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Surface a transient API failure instead of reporting the hash as
+      // absent: a rate-limited or 5xx response is not proof of non-existence.
+      throw new Error(`Hiro events fetch failed: ${res.status} ${res.statusText}`);
+    }
     const data = (await res.json()) as { results?: RawEvent[] };
     const events = Array.isArray(data.results) ? data.results : [];
 
