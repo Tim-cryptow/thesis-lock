@@ -42,6 +42,9 @@ export async function GET(req: Request, { params }: RouteContext) {
   let verified = false;
   let stacksBlock: number | null = null;
   let label = "";
+  // Default to the document's own verify page on this origin. When the hash
+  // resolves, prefer the result's verifyUrl so batch anchors carry ?owner=.
+  let verifyHref = `${url.origin}/v/${hash}${owner ? `?owner=${owner}` : ""}`;
 
   if (valid) {
     try {
@@ -50,6 +53,7 @@ export async function GET(req: Request, { params }: RouteContext) {
         verified = true;
         stacksBlock = result.stacksBlock;
         label = result.label;
+        verifyHref = result.verifyUrl;
       }
     } catch {
       verified = false;
@@ -64,7 +68,7 @@ export async function GET(req: Request, { params }: RouteContext) {
   const statusLabel = verified ? "Verified" : "Not Verified";
   const statusColor = verified ? "#22C55E" : "#9CA3AF";
   const hashShort = `${hash.slice(0, 10)}...${hash.slice(-8)}`;
-  const verifyPath = `thesis-lock.vercel.app/v/${hashShort}`;
+  const verifyDisplay = verifyHref.replace(/^https?:\/\//, "");
 
   return new ImageResponse(
     (
@@ -177,13 +181,21 @@ export async function GET(req: Request, { params }: RouteContext) {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            fontSize: 16,
+            flexDirection: "column",
+            gap: 6,
+            fontSize: 14,
             color: "#71717A",
           }}
         >
-          <div style={{ display: "flex" }}>Verify at {verifyPath}</div>
+          <div
+            style={{
+              display: "flex",
+              fontFamily: "monospace",
+              wordBreak: "break-all",
+            }}
+          >
+            Verify at {verifyDisplay}
+          </div>
           <div style={{ display: "flex" }}>Anchored on Stacks</div>
         </div>
       </div>
