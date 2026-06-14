@@ -6,19 +6,15 @@ test.describe("landing page and navigation", () => {
     await expect(page).toHaveTitle(/ThesisLock/);
     await expect(
       page.getByRole("heading", {
-        name: "Permanent, verifiable timestamps for your work.",
+        name: "Prove any document existed. On Bitcoin.",
       }),
     ).toBeVisible();
   });
 
   test("hero links navigate to their pages", async ({ page }) => {
     const links: { name: string; path: string }[] = [
-      { name: "Anchor a document", path: "/anchor" },
-      { name: "My anchors", path: "/anchors" },
-      { name: "Search anchors", path: "/search" },
-      { name: "Groups", path: "/groups" },
-      { name: "Recent anchors", path: "/feed" },
-      { name: "Protocol stats", path: "/stats" },
+      { name: "Anchor a Document", path: "/anchor" },
+      { name: "Verify a Hash", path: "/search" },
     ];
 
     for (const { name, path } of links) {
@@ -28,11 +24,11 @@ test.describe("landing page and navigation", () => {
     }
   });
 
-  test("footer exposes stats and embed links", async ({ page }) => {
+  test("footer exposes docs and api links", async ({ page }) => {
     await page.goto("/");
     const footer = page.locator("footer");
-    await expect(footer.getByRole("link", { name: "Stats" })).toBeVisible();
-    await expect(footer.getByRole("link", { name: "Embed" })).toBeVisible();
+    await expect(footer.getByRole("link", { name: "Docs" })).toBeVisible();
+    await expect(footer.getByRole("link", { name: "API" })).toBeVisible();
   });
 
   test("back to home link returns to the landing page from a sub page", async ({
@@ -43,7 +39,7 @@ test.describe("landing page and navigation", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(
       page.getByRole("heading", {
-        name: "Permanent, verifiable timestamps for your work.",
+        name: "Prove any document existed. On Bitcoin.",
       }),
     ).toBeVisible();
   });
