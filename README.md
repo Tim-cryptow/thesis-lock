@@ -7,6 +7,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 ## Live demo
 
 - App: [thesis-lock.vercel.app](https://thesis-lock.vercel.app/)
+- Docs: [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs)
 - Deployer: [`SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM`](https://explorer.hiro.so/address/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM?chain=mainnet)
 
 ## Features
@@ -14,25 +15,12 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Single file anchoring with optional ASCII label up to 64 characters.
 - Batch anchoring of up to ten files in a single transaction.
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
-- Anchor groups at `/groups`: create a named group, add members, and anchor documents under a shared, on-chain history. Useful for thesis committees, legal teams, or research labs collecting submissions.
+- Anchor groups at `/groups`: create a named group, add members, and anchor documents under a shared, on-chain history.
 - Client-side SHA-256 hashing. The file never leaves your device.
-- Public verification at `/v/<hash>` with file re-upload check.
-- Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
-- Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
-- Search at `/search`: find anchored documents across every contract by hash, wallet address, or label, with auto-detection of the query type and quick recent-search recall.
-- Embeddable badges at `/embed`: generate a shields-style "Verified on Stacks" SVG badge (`/api/badge/<hash>`) and a social sharing card (`/api/card/<hash>`) for any anchored hash, with copy-paste Markdown and HTML snippets. Paste them into a README, website, or academic submission to prove a document is anchored on chain.
-- Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
-- Transaction monitoring: after you anchor, the app polls Hiro for confirmation and slides in a toast when the transaction lands on chain, with a link to its verify page. Pending counts survive in-page navigation via `sessionStorage`. An experimental webhook endpoint can also notify developer integrations on confirmation.
-
-### Embeddable badges
-
-Once a document is anchored, embed a live verification badge anywhere Markdown or HTML is supported:
-
-```markdown
-[![ThesisLock](https://thesis-lock.vercel.app/api/badge/<hash>)](https://thesis-lock.vercel.app/v/<hash>)
-```
-
-The badge turns green with the Stacks block number once the hash is found on chain, and stays gray otherwise. Use `?style=rounded` for a pill shape or `?label=Your+Text` for a custom left label. The `/api/card/<hash>` endpoint returns a larger social sharing card. Visit `/embed` to generate snippets for any hash or file.
+- Public verification at `/v/<hash>` with file re-upload check, plus bulk verification at `/verify-bulk`.
+- Public feed at `/feed` and cross-contract search at `/search`.
+- Embeddable badges at `/embed`: a shields-style "Verified on Stacks" SVG badge (`/api/badge/<hash>`) and a social sharing card (`/api/card/<hash>`) for any anchored hash.
+- Optional soulbound proof NFTs (SIP-009) as permanent in-wallet evidence of an anchor.
 
 ## Protocol
 
@@ -40,11 +28,11 @@ Five Clarity 3 contracts deployed to Stacks mainnet at the same principal, `SP3Q
 
 | Contract | Purpose |
 | --- | --- |
-| [`thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet) | Original single-hash anchor. Stores `(buff 32) -> { anchored-by, stacks-block, burn-block, label }`. One anchor per hash, ever. |
-| `thesislock-batch` | Anchors up to ten hashes per transaction, keyed by `{ hash, owner }`. Duplicates for the same owner are silently skipped so partial overlaps with prior batches still succeed. |
-| `thesislock-registry` | Per-principal append-only index of anchors. Powers the "My Anchors" page. |
-| `thesislock-proof` | SIP-009 NFT issuing soulbound proof tokens. `mint-proof` anchors a hash and mints a non-transferable token to the caller; `transfer` always fails with `u401`. One proof per unique hash (`u409` on duplicates). Look up by token id (`get-proof`) or hash (`get-proof-by-hash`). |
-| [`thesislock-groups`](https://explorer.hiro.so/txid/0x4a698fca849d4c0ea7e28d020ab45ef1846c0e9fea39e128f3b48632473cd89a?chain=mainnet) | Named groups for collaborative anchoring. An admin creates a group (`create-group`) and manages members (`add-member`, `remove-member`, non-admin calls fail with `u403`). Any member can `anchor-to-group`, appending to a shared history keyed by `{ group-id, index }`. Read membership with `is-member` and history with `get-group-anchor-at` or `get-recent-group-anchors`. |
+| [`thesislock`](https://explorer.hiro.so/txid/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock?chain=mainnet) | Original single-hash anchor. One immutable record per hash. |
+| `thesislock-batch` | Anchors up to ten hashes per transaction, keyed by `{ hash, owner }`. |
+| `thesislock-registry` | Per-principal append-only index of anchors. Powers "My Anchors". |
+| `thesislock-proof` | SIP-009 NFT issuing soulbound proof tokens. |
+| [`thesislock-groups`](https://explorer.hiro.so/txid/0x4a698fca849d4c0ea7e28d020ab45ef1846c0e9fea39e128f3b48632473cd89a?chain=mainnet) | Named groups for collaborative anchoring under a shared history. |
 
 The original `thesislock` contract was first deployed at Stacks block 7798720, burn block 947300 ([deploy transaction](https://explorer.hiro.so/txid/0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e?chain=mainnet)).
 
@@ -72,296 +60,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Verify in the browser
-
-The web UI has a verification page at `/v/<hash>`. Single anchors resolve automatically. Batch anchors are keyed by both hash and owner principal, so append `?owner=<principal>` to the URL when sharing a batch-anchored hash. Without the owner param the batch entry is only visible when the original anchoring wallet is connected, which defeats public verification:
-
-```
-https://thesis-lock.vercel.app/v/<hash>?owner=<principal>
-```
-
-Links generated from the "My Anchors" page and the batch success screen already include the owner.
-
-## Verify on chain
-
-You do not need the frontend to verify an anchor. Any SHA-256 hash can be looked up directly against the Hiro mainnet API.
-
-Encode the 32-byte hash as a Clarity buffer by prefixing it with `0x0200000020` (type byte `02`, big-endian length `00000020`), then post it as a `get-anchor` argument:
-
-```bash
-HASH=0000000000000000000000000000000000000000000000000000000000000000
-
-curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock/get-anchor \
-  -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
-```
-
-The response is a serialized Clarity value:
-
-| Result hex prefix | Meaning |
-| --- | --- |
-| `"result":"0x09"` | `none` — that hash has never been anchored |
-| `"result":"0x0a0c..."` | `(some (tuple ...))` — anchored, fields follow |
-
-To decode a `some` payload into JSON, deserialize with `@stacks/transactions`:
-
-```bash
-node -e '
-const { deserializeCV, cvToJSON } = require("@stacks/transactions");
-const hex = "0a0c0000000..."; // strip 0x, paste from API response
-console.log(JSON.stringify(cvToJSON(deserializeCV(hex)), null, 2));
-'
-```
-
-The decoded shape is `(optional (tuple (anchored-by principal) (stacks-block uint) (burn-block uint) (label (string-ascii 64))))`.
-
-For a quick boolean check use `is-anchored` instead, which returns `0x03` for `true` and `0x04` for `false`:
-
-```bash
-curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock/is-anchored \
-  -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM\",\"arguments\":[\"0x0200000020${HASH}\"]}"
-```
-
-### Batch anchors
-
-`thesislock-batch::get-batch-anchor` is keyed by both the hash and the owner principal, so you need to serialize the principal too. A standard mainnet principal is encoded as `0x05` (type byte for standard principal), followed by a one-byte version (`0x16` for mainnet), then the 20-byte hash160. The easiest path is to let `@stacks/transactions` do the encoding:
-
-```bash
-HASH=0000000000000000000000000000000000000000000000000000000000000000
-OWNER=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
-
-OWNER_HEX=$(node -e '
-const { principalCV, serializeCV } = require("@stacks/transactions");
-process.stdout.write("0x" + serializeCV(principalCV(process.argv[1])));
-' "$OWNER")
-
-curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock-batch/get-batch-anchor \
-  -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"${OWNER}\",\"arguments\":[\"0x0200000020${HASH}\",\"${OWNER_HEX}\"]}"
-```
-
-The decoded shape is `(optional (tuple (label (string-ascii 64)) (stacks-block uint) (burn-block uint) (batch-id uint)))`.
-
-### Registry counts
-
-`thesislock-registry::get-anchor-count` returns the number of anchors a principal has registered. It takes a single principal argument:
-
-```bash
-OWNER=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM
-OWNER_HEX=$(node -e '
-const { principalCV, serializeCV } = require("@stacks/transactions");
-process.stdout.write("0x" + serializeCV(principalCV(process.argv[1])));
-' "$OWNER")
-
-curl -sX POST \
-  https://api.mainnet.hiro.so/v2/contracts/call-read/SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM/thesislock-registry/get-anchor-count \
-  -H 'Content-Type: application/json' \
-  --data "{\"sender\":\"${OWNER}\",\"arguments\":[\"${OWNER_HEX}\"]}"
-```
-
-The response is a `uint`. Use `get-anchor-at` (principal + uint index) or `get-recent-anchors` (principal) to read individual entries.
-
-## REST API
-
-For integrating ThesisLock verification into your own tools, CI pipelines, or submission systems, the app exposes a small JSON API that wraps the Clarity reads above. No Clarity serialization knowledge required. All endpoints send `Access-Control-Allow-Origin: *`, so they can be called directly from browser-based integrations.
-
-Base URL: `https://thesis-lock.vercel.app`
-
-### GET /api/verify/&lt;hash&gt;
-
-Verify a single 64-character hex hash. Append `?owner=<principal>` to also check batch anchors, which are keyed by hash and owner.
-
-```bash
-curl -s https://thesis-lock.vercel.app/api/verify/9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06
-
-# Batch anchor (include the owner principal)
-curl -s "https://thesis-lock.vercel.app/api/verify/<hash>?owner=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM"
-```
-
-### POST /api/verify
-
-Same lookup over POST, taking a JSON body:
-
-```bash
-curl -s -X POST https://thesis-lock.vercel.app/api/verify \
-  -H 'Content-Type: application/json' \
-  -d '{"hash":"9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06"}'
-```
-
-Or upload a file and let the server compute its SHA-256 and verify it. The response includes the computed hash:
-
-```bash
-curl -s -X POST https://thesis-lock.vercel.app/api/verify \
-  -F 'file=@thesis.pdf' \
-  -F 'owner=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM'
-```
-
-The file is hashed in memory and never stored.
-
-### Response schema
-
-A found anchor returns `verified: true`:
-
-```json
-{
-  "verified": true,
-  "source": "single",
-  "hash": "9afe6f57...",
-  "label": "project",
-  "owner": "SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX",
-  "stacksBlock": 8104143,
-  "burnBlock": 951262,
-  "contract": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock",
-  "verifyUrl": "https://thesis-lock.vercel.app/v/9afe6f57..."
-}
-```
-
-Batch anchors set `"source": "batch"` and add a `batchId`. File uploads add the computed `hash` under `computedHash`. A miss returns `200` with `verified: false`:
-
-```json
-{
-  "verified": false,
-  "hash": "0000...0000",
-  "message": "Hash not found. For batch anchors, include ?owner=<principal>."
-}
-```
-
-An invalid hash (not 64 hex characters) returns `400`.
-
-### GET /api/search
-
-Search anchored documents across all five contracts. Returns a JSON array of results.
-
-Query parameters:
-
-- `q` (required): the search term.
-- `type` (optional): `auto` (default), `hash`, `principal`, or `label`. `auto` treats a 64-character hex string as a hash, an `SP`/`ST` string as a principal, and anything else as a label substring.
-- `owner` (optional): a principal to also check owner-keyed batch anchors when searching by hash.
-
-```bash
-# Auto-detect (label substring search)
-curl -s "https://thesis-lock.vercel.app/api/search?q=thesis"
-
-# By hash
-curl -s "https://thesis-lock.vercel.app/api/search?q=9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06&type=hash"
-
-# By wallet address
-curl -s "https://thesis-lock.vercel.app/api/search?q=SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM&type=principal"
-```
-
-Each result has the shape:
-
-```json
-{
-  "hash": "9afe6f57...",
-  "label": "thesis",
-  "owner": "SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX",
-  "stacksBlock": 8104143,
-  "source": "single",
-  "verifyUrl": "/v/9afe6f57..."
-}
-```
-
-`source` is one of `single`, `batch`, `registry`, `proof`, or `group`; group results also include a `groupId`. Responses are cached at the edge for 30 seconds (`Cache-Control: public, s-maxage=30`). A request with no `q` returns `400`.
-
-### GET /api/health
-
-Uptime probe. Returns the deployed contract identifiers and API version:
-
-```bash
-curl -s https://thesis-lock.vercel.app/api/health
-```
-
-```json
-{
-  "status": "ok",
-  "contracts": {
-    "thesislock": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock",
-    "batch": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock-batch",
-    "registry": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock-registry"
-  },
-  "version": "1.0.0"
-}
-```
-
-### POST /api/webhook (experimental)
-
-> Beta. Best-effort, in-memory delivery for demo purposes. State lives in a per-instance map, so registrations do **not** survive a serverless cold start or scale-out, and delivery is not retried. Do not depend on this for guaranteed notifications.
-
-Register an `https` URL to be called once when a transaction confirms. Useful for developer integrations that want a server-side ping instead of polling.
-
-```bash
-curl -s -X POST https://thesis-lock.vercel.app/api/webhook \
-  -H 'Content-Type: application/json' \
-  -d '{"url":"https://example.com/hooks/thesislock","txId":"0x<64-hex-tx-id>"}'
-```
-
-On success it returns:
-
-```json
-{ "registered": true, "txId": "0x<64-hex-tx-id>" }
-```
-
-When the transaction reaches a terminal state, ThesisLock POSTs a JSON body to your URL:
-
-```json
-{ "txId": "0x<64-hex-tx-id>", "status": "success", "blockHeight": 8104143 }
-```
-
-Notes:
-
-- The `url` must be a public `https` endpoint. Loopback, private, link-local, and cloud metadata addresses are rejected.
-- `txId` must be a 32-byte (64-character) hex transaction id.
-- Confirmation checks run opportunistically when the API receives other traffic (for example `GET /api/stats`), so delivery latency depends on usage.
-
-## SDK
-
-For programmatic verification in JavaScript or TypeScript projects, the `thesislock-sdk` package wraps the Clarity serialization and Hiro reads above. It verifies single and batch anchors, reads per-wallet history, and looks up proof NFTs, with no Clarity encoding knowledge required.
-
-```bash
-npm install thesislock-sdk
-```
-
-```ts
-import { createClient } from 'thesislock-sdk';
-
-const client = createClient();
-const result = await client.verify('9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06');
-
-if (result.verified) {
-  console.log('Anchored by', result.data.anchoredBy);
-}
-```
-
-The package lives in [`sdk/`](sdk/README.md), which has the full API reference, utility functions, and configuration options.
-
-## CLI
-
-The `thesislock-cli` package verifies anchors from the terminal or a CI pipeline, with no browser or wallet required. It hashes files locally, checks all five contracts, searches by hash, wallet, or label, and exits non-zero when a document is not anchored. Build it from [`cli/`](cli/README.md) (a global `npm install -g thesislock-cli` will also work once the package is published to the registry).
-
-```bash
-thesislock hash thesis.pdf --verify
-thesislock verify 9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06
-thesislock search "thesis draft"
-thesislock status
-```
-
-The tool lives in [`cli/`](cli/README.md), which documents every command, the `THESISLOCK_API_URL` configuration variable, and a GitHub Actions example that gates a pipeline on a document being anchored.
-
-## GitHub Action
-
-The reusable [`action/`](action/README.md) verifies a document hash is anchored on Stacks from inside any CI pipeline. A research lab can anchor a dataset hash once, then confirm on every release that the artifact is still backed by an on-chain proof. It hashes a file locally (or takes a hash directly), reads the public Hiro API with no wallet or secret, and fails the step when the document is not anchored.
-
-```yaml
-- name: Verify dataset hash
-  uses: Tim-cryptow/thesis-lock/action@main
-  with:
-    file: ./data/dataset.csv
-    fail-on-unverified: "true"
-```
-
-It exposes `verified`, `source`, `block`, and `label` outputs for later steps. See [`action/README.md`](action/README.md) for the full inputs and outputs reference.
+## Documentation
+
+Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):
+
+- [Getting Started](https://thesis-lock.vercel.app/docs/getting-started): what ThesisLock is and how to anchor your first document.
+- [Contracts](https://thesis-lock.vercel.app/docs/contracts): all five contracts, function signatures, and direct Hiro API calls.
+- [Web App Guide](https://thesis-lock.vercel.app/docs/web-app): anchoring, batches, groups, verification, and proof NFTs.
+- [API Reference](https://thesis-lock.vercel.app/docs/api): the JSON REST API for verification, search, stats, badges, and cards.
+- [SDK Guide](https://thesis-lock.vercel.app/docs/sdk): the `thesislock-sdk` TypeScript package ([`sdk/`](sdk/README.md)).
+- [CLI Guide](https://thesis-lock.vercel.app/docs/cli): the `thesislock-cli` terminal tool ([`cli/`](cli/README.md)).
+- [GitHub Action](https://thesis-lock.vercel.app/docs/github-action): gate a CI pipeline on an on-chain anchor ([`action/`](action/README.md)).
