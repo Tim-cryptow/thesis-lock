@@ -1,0 +1,32 @@
+name: "ThesisLock Verify"
+description: "Verify a document hash is anchored on the Stacks blockchain via ThesisLock"
+author: "Tim-cryptow"
+branding:
+  icon: "check-circle"
+  color: "green"
+inputs:
+  hash:
+    description: "SHA-256 hash to verify (64 hex chars)"
+    required: false
+  file:
+    description: "Path to file to hash and verify"
+    required: false
+  owner:
+    description: "Stacks principal for batch anchor lookup"
+    required: false
+  fail-on-unverified:
+    description: "Fail the step if hash is not verified"
+    required: false
+    default: "true"
+outputs:
+  verified:
+    description: "Whether the hash is verified on-chain"
+  source:
+    description: "Anchor source (single, batch, proof, group)"
+  block:
+    description: "Stacks block number where anchored"
+  label:
+    description: "Label attached to the anchor"
+runs:
+  using: "node20"
+  main: "dist/index.js"
