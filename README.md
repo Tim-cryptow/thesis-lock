@@ -351,3 +351,17 @@ thesislock status
 ```
 
 The tool lives in [`cli/`](cli/README.md), which documents every command, the `THESISLOCK_API_URL` configuration variable, and a GitHub Actions example that gates a pipeline on a document being anchored.
+
+## GitHub Action
+
+The reusable [`action/`](action/README.md) verifies a document hash is anchored on Stacks from inside any CI pipeline. A research lab can anchor a dataset hash once, then confirm on every release that the artifact is still backed by an on-chain proof. It hashes a file locally (or takes a hash directly), reads the public Hiro API with no wallet or secret, and fails the step when the document is not anchored.
+
+```yaml
+- name: Verify dataset hash
+  uses: Tim-cryptow/thesis-lock/action@main
+  with:
+    file: ./data/dataset.csv
+    fail-on-unverified: "true"
+```
+
+It exposes `verified`, `source`, `block`, and `label` outputs for later steps. See [`action/README.md`](action/README.md) for the full inputs and outputs reference.
