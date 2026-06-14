@@ -2,6 +2,7 @@ import Link from "next/link";
 import HeroStats from "@/app/components/HeroStats";
 import StatsBar from "@/app/components/StatsBar";
 import Footer from "@/app/components/Footer";
+import FeatureCard from "@/app/components/FeatureCard";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -214,30 +215,13 @@ export default function Page() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((feature) => (
-            <Link
+            <FeatureCard
               key={feature.title}
+              title={feature.title}
+              body={feature.body}
               href={feature.href}
-              className="group rounded-lg border border-foreground/10 bg-card p-6 flex flex-col hover:border-foreground/40 transition"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-6 h-6 text-foreground/70 mb-4"
-                aria-hidden="true"
-              >
-                {feature.icon}
-              </svg>
-              <h3 className="text-xl mb-2 group-hover:text-foreground transition">
-                {feature.title}
-              </h3>
-              <p className="text-foreground/80 text-sm leading-relaxed">
-                {feature.body}
-              </p>
-            </Link>
+              icon={feature.icon}
+            />
           ))}
         </div>
       </section>
