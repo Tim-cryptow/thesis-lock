@@ -1,0 +1,31 @@
+name: Verify example
+
+# Demonstrates the ThesisLock Verify action against a hash that is anchored on
+# Stacks mainnet. Triggered manually so it does not run on every push.
+on:
+  workflow_dispatch:
+    inputs:
+      hash:
+        description: "Hash to verify (defaults to a known anchored hash)"
+        required: false
+        default: "8dba13fc33a9d347ccd790f48408adfb9777930fc51089803ba9fa52633941b3"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify a known anchored hash
+        id: verify
+        uses: ./action
+        with:
+          hash: ${{ github.event.inputs.hash }}
+          fail-on-unverified: "true"
+
+      - name: Print verification result
+        run: |
+          echo "verified: ${{ steps.verify.outputs.verified }}"
+          echo "source:   ${{ steps.verify.outputs.source }}"
+          echo "block:    ${{ steps.verify.outputs.block }}"
+          echo "label:    ${{ steps.verify.outputs.label }}"
