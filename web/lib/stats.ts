@@ -16,6 +16,7 @@ export type ProtocolStats = {
   totalAnchors: number;
   totalBatchAnchors: number;
   totalRegistrations: number;
+  totalTransactions: number;
   uniqueWallets: number;
   contractsDeployed: number;
   firstAnchorBlock: number;
@@ -182,6 +183,7 @@ async function computeStats(): Promise<ProtocolStats> {
     totalAnchors: single.length + batchAnchors,
     totalBatchAnchors: batchAnchors,
     totalRegistrations: registry.length,
+    totalTransactions: single.length + batch.length + registry.length,
     uniqueWallets: wallets.size,
     contractsDeployed: 3,
     firstAnchorBlock,
