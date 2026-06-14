@@ -37,7 +37,12 @@ test.describe("docs site", () => {
       await page.goto("/docs");
       await nav.getByRole("link", { name: title }).click();
       await expect(page).toHaveURL(new RegExp(`/docs/${slug}$`));
-      await expect(page.getByRole("heading", { name: title })).toBeVisible();
+      // Match the page's main heading by level so a section whose title is a
+      // substring of a subheading (e.g. "Contracts" vs "The five contracts")
+      // does not trip strict mode.
+      await expect(
+        page.getByRole("heading", { name: title, level: 1 }),
+      ).toBeVisible();
     }
   });
 });
