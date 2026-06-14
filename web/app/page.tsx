@@ -4,6 +4,112 @@ import HeroStats from "@/app/components/HeroStats";
 
 const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
 
+const CONTRACT_ADDRESS =
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
+  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+
+function contractUrl(name: string): string {
+  return `https://explorer.hiro.so/txid/${CONTRACT_ADDRESS}.${name}?chain=mainnet`;
+}
+
+const FEATURES = [
+  {
+    title: "Single & Batch Anchoring",
+    body: "Anchor one document or up to ten in a single transaction, each with its own label.",
+    href: "/anchor",
+    icon: (
+      <>
+        <path d="M4 5h16" />
+        <path d="M4 12h16" />
+        <path d="M4 19h10" />
+      </>
+    ),
+  },
+  {
+    title: "Groups",
+    body: "Create shared spaces where invited wallets anchor documents under one roof.",
+    href: "/groups",
+    icon: (
+      <>
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 20a6 6 0 0 1 12 0" />
+        <path d="M16 6a3 3 0 0 1 0 6" />
+        <path d="M18 20a6 6 0 0 0-3-5.2" />
+      </>
+    ),
+  },
+  {
+    title: "Proof NFTs",
+    body: "Mint a soulbound SIP-009 token that carries the anchor record on chain.",
+    href: "/docs/contracts",
+    icon: (
+      <>
+        <path d="M12 2 3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7z" />
+        <path d="m9 12 2 2 4-4" />
+      </>
+    ),
+  },
+  {
+    title: "Verification Badges",
+    body: "Embed a live SVG badge that shows a document's anchored status anywhere.",
+    href: "/embed",
+    icon: (
+      <>
+        <circle cx="12" cy="9" r="6" />
+        <path d="m9 14-2 7 5-3 5 3-2-7" />
+      </>
+    ),
+  },
+  {
+    title: "Export & Certificates",
+    body: "Download an HTML certificate or export bulk verification results as CSV.",
+    href: "/verify-bulk",
+    icon: (
+      <>
+        <path d="M6 2h9l5 5v15H6z" />
+        <path d="M15 2v5h5" />
+        <path d="M9 13h6" />
+        <path d="M9 17h6" />
+      </>
+    ),
+  },
+  {
+    title: "Developer Tools",
+    body: "Integrate with the TypeScript SDK, CLI, GitHub Action, and REST API.",
+    href: "/docs",
+    icon: (
+      <>
+        <path d="m8 9-3 3 3 3" />
+        <path d="m16 9 3 3-3 3" />
+        <path d="m13 7-2 10" />
+      </>
+    ),
+  },
+];
+
+const CONTRACTS = [
+  {
+    name: "thesislock",
+    label: "Anchors a single document hash with a timestamp and label.",
+  },
+  {
+    name: "thesislock-batch",
+    label: "Anchors up to ten document hashes in one transaction.",
+  },
+  {
+    name: "thesislock-registry",
+    label: "Indexes every anchor per wallet for fast history lookups.",
+  },
+  {
+    name: "thesislock-proof",
+    label: "Issues soulbound SIP-009 proof NFTs for anchored documents.",
+  },
+  {
+    name: "thesislock-groups",
+    label: "Manages group membership and shared, multi-wallet anchoring.",
+  },
+];
+
 const STEPS = [
   {
     title: "Drop your file",
@@ -99,6 +205,91 @@ export default function Page() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+        <h2 className="text-3xl mb-3">Everything in one protocol</h2>
+        <p className="text-foreground/70 mb-10 max-w-2xl">
+          From a one-click timestamp to programmable proofs, ThesisLock covers
+          the full lifecycle of document provenance.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {FEATURES.map((feature) => (
+            <Link
+              key={feature.title}
+              href={feature.href}
+              className="group rounded-lg border border-foreground/10 bg-card p-6 flex flex-col hover:border-foreground/40 transition"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-6 h-6 text-foreground/70 mb-4"
+                aria-hidden="true"
+              >
+                {feature.icon}
+              </svg>
+              <h3 className="text-xl mb-2 group-hover:text-foreground transition">
+                {feature.title}
+              </h3>
+              <p className="text-foreground/80 text-sm leading-relaxed">
+                {feature.body}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+        <h2 className="text-3xl mb-3">
+          Built on 5 smart contracts on Stacks mainnet
+        </h2>
+        <p className="text-foreground/70 mb-10 max-w-2xl">
+          Each contract owns one responsibility and is verifiable on the Stacks
+          explorer. Together they form the ThesisLock protocol.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+          <ul className="flex flex-col gap-3">
+            {CONTRACTS.map((contract) => (
+              <li
+                key={contract.name}
+                className="rounded-lg border border-foreground/10 bg-card p-4"
+              >
+                <a
+                  href={contractUrl(contract.name)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-sm text-foreground hover:underline"
+                >
+                  {contract.name}
+                </a>
+                <p className="text-foreground/70 text-sm mt-1">
+                  {contract.label}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 font-mono text-xs text-foreground/70 leading-relaxed">
+            <pre className="whitespace-pre overflow-x-auto">{`  your file
+     |
+     v  SHA-256 (in browser)
+  document hash
+     |
+     +--> thesislock            single anchor
+     +--> thesislock-batch      up to 10 at once
+     |          |
+     |          v
+     +--> thesislock-registry   per-wallet history
+     +--> thesislock-proof      soulbound NFT
+     +--> thesislock-groups     shared anchoring
+     |
+     v
+  Stacks  ->  Bitcoin (settled)`}</pre>
+          </div>
+        </div>
       </section>
 
       <footer className="mt-auto border-t border-foreground/10 py-6 px-6 text-sm text-foreground/60">
