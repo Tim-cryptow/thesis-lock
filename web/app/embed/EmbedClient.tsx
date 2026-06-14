@@ -7,6 +7,7 @@ import FileDropZone from "@/app/components/FileDropZone";
 import { hashFile } from "@/lib/stacks";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 const SITE_FALLBACK = "https://thesis-lock.vercel.app";
 
 type BadgeStyle = "flat" | "rounded";
@@ -22,6 +23,7 @@ const TABS: { id: SnippetTab; label: string }[] = [
 export default function EmbedClient() {
   const [origin, setOrigin] = useState(SITE_FALLBACK);
   const [hashInput, setHashInput] = useState("");
+  const [ownerInput, setOwnerInput] = useState("");
   const [style, setStyle] = useState<BadgeStyle>("flat");
   const [customLabel, setCustomLabel] = useState("");
   const [hashing, setHashing] = useState(false);
@@ -38,17 +40,25 @@ export default function EmbedClient() {
   const hash = hashInput.trim().toLowerCase();
   const valid = HEX_64.test(hash);
 
+  const owner = useMemo(() => {
+    const upper = ownerInput.trim().toUpperCase();
+    return STX_PRINCIPAL.test(upper) ? upper : "";
+  }, [ownerInput]);
+
   const badgeQuery = useMemo(() => {
     const params = new URLSearchParams();
     if (style === "rounded") params.set("style", "rounded");
     if (customLabel.trim()) params.set("label", customLabel.trim());
+    if (owner) params.set("owner", owner);
     const qs = params.toString();
     return qs ? `?${qs}` : "";
-  }, [style, customLabel]);
+  }, [style, customLabel, owner]);
+
+  const ownerQuery = owner ? `?owner=${owner}` : "";
 
   const badgeUrl = valid ? `${origin}/api/badge/${hash}${badgeQuery}` : "";
-  const cardUrl = valid ? `${origin}/api/card/${hash}` : "";
-  const verifyUrl = valid ? `${origin}/v/${hash}` : "";
+  const cardUrl = valid ? `${origin}/api/card/${hash}${ownerQuery}` : "";
+  const verifyUrl = valid ? `${origin}/v/${hash}${ownerQuery}` : "";
 
   const snippets: Record<SnippetTab, string> = useMemo(
     () => ({
@@ -141,6 +151,32 @@ export default function EmbedClient() {
         {hashInput && !valid && (
           <p className="mt-2 text-sm text-foreground/60">
             Enter a valid 64-character hex hash, or drop a file below.
+          </p>
+        )}
+
+        <label
+          htmlFor="owner-input"
+          className="block text-xs text-foreground/60 uppercase tracking-wide mb-1 mt-4"
+        >
+          Owner principal (optional)
+        </label>
+        <input
+          id="owner-input"
+          value={ownerInput}
+          onChange={(e) => setOwnerInput(e.target.value)}
+          placeholder="SP... (required for batch anchors)"
+          spellCheck={false}
+          autoComplete="off"
+          className="w-full font-mono text-sm rounded-md border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-foreground/40"
+        />
+        {ownerInput.trim() && !owner ? (
+          <p className="mt-2 text-sm text-foreground/60">
+            Enter a valid Stacks principal, or leave blank for single anchors.
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-foreground/60">
+            Batch anchors are keyed by owner. Add it so the badge resolves the
+            right record.
           </p>
         )}
 
