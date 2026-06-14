@@ -292,6 +292,49 @@ export default function Page() {
         </div>
       </section>
 
+      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+        <h2 className="text-3xl mb-3">Integrate ThesisLock in your workflow</h2>
+        <p className="text-foreground/70 mb-10 max-w-2xl">
+          Anchor and verify documents from your own code, terminal, or CI
+          pipeline.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+            <h3 className="text-xl mb-3">SDK</h3>
+            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+              A typed TypeScript client for Node and the browser.
+            </p>
+            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npm install thesislock-sdk
+
+import { createClient } from 'thesislock-sdk';
+const client = createClient();
+const result = await client.verify(hash);`}</pre>
+          </div>
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+            <h3 className="text-xl mb-3">CLI</h3>
+            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+              Hash, anchor, and verify documents straight from the terminal.
+            </p>
+            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npx thesislock-cli verify <hash>`}</pre>
+          </div>
+          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+            <h3 className="text-xl mb-3">GitHub Action</h3>
+            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+              Verify an anchor as a step in any GitHub workflow.
+            </p>
+            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`- uses: Tim-cryptow/thesis-lock/action@main
+  with:
+    hash: "abc123..."`}</pre>
+          </div>
+        </div>
+        <Link
+          href="/docs"
+          className="inline-flex items-center mt-8 px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+        >
+          Read the docs
+        </Link>
+      </section>
+
       <footer className="mt-auto border-t border-foreground/10 py-6 px-6 text-sm text-foreground/60">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <span>ThesisLock</span>
