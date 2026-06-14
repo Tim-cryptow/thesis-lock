@@ -1,8 +1,7 @@
 import Link from "next/link";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import HeroStats from "@/app/components/HeroStats";
-
-const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
+import StatsBar from "@/app/components/StatsBar";
+import Footer from "@/app/components/Footer";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -335,31 +334,12 @@ const result = await client.verify(hash);`}</pre>
         </Link>
       </section>
 
-      <footer className="mt-auto border-t border-foreground/10 py-6 px-6 text-sm text-foreground/60">
-        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <span>ThesisLock</span>
-          <div className="flex items-center gap-4">
-            <Link href="/docs" className="hover:text-foreground transition">
-              Docs
-            </Link>
-            <Link href="/stats" className="hover:text-foreground transition">
-              Stats
-            </Link>
-            <Link href="/embed" className="hover:text-foreground transition">
-              Embed
-            </Link>
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-foreground transition"
-            >
-              GitHub
-            </a>
-            <ThemeToggle />
-          </div>
-        </div>
-      </footer>
+      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+        <h2 className="text-3xl mb-10">Live on Stacks mainnet</h2>
+        <StatsBar />
+      </section>
+
+      <Footer />
     </div>
   );
 }
