@@ -20,8 +20,19 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Bulk verification at `/verify-bulk`: drop multiple files to check them all against the chain in one pass, with CSV export of results.
 - Public feed at `/feed` showing recent on-chain anchor activity across all wallets, auto-refreshing every minute.
 - Search at `/search`: find anchored documents across every contract by hash, wallet address, or label, with auto-detection of the query type and quick recent-search recall.
+- Embeddable badges at `/embed`: generate a shields-style "Verified on Stacks" SVG badge (`/api/badge/<hash>`) and a social sharing card (`/api/card/<hash>`) for any anchored hash, with copy-paste Markdown and HTML snippets. Paste them into a README, website, or academic submission to prove a document is anchored on chain.
 - Optional soulbound proof NFTs (SIP-009): mint a non-transferable token that stays in your wallet as permanent evidence of an anchor.
 - Transaction monitoring: after you anchor, the app polls Hiro for confirmation and slides in a toast when the transaction lands on chain, with a link to its verify page. Pending counts survive in-page navigation via `sessionStorage`. An experimental webhook endpoint can also notify developer integrations on confirmation.
+
+### Embeddable badges
+
+Once a document is anchored, embed a live verification badge anywhere Markdown or HTML is supported:
+
+```markdown
+[![ThesisLock](https://thesis-lock.vercel.app/api/badge/<hash>)](https://thesis-lock.vercel.app/v/<hash>)
+```
+
+The badge turns green with the Stacks block number once the hash is found on chain, and stays gray otherwise. Use `?style=rounded` for a pill shape or `?label=Your+Text` for a custom left label. The `/api/card/<hash>` endpoint returns a larger social sharing card. Visit `/embed` to generate snippets for any hash or file.
 
 ## Protocol
 
