@@ -51,6 +51,12 @@ export default function Page() {
           >
             Protocol stats
           </Link>
+          <Link
+            href="/docs"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            Documentation
+          </Link>
         </div>
       </section>
 
@@ -98,6 +104,9 @@ export default function Page() {
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <span>ThesisLock</span>
           <div className="flex items-center gap-4">
+            <Link href="/docs" className="hover:text-foreground transition">
+              Docs
+            </Link>
             <Link href="/stats" className="hover:text-foreground transition">
               Stats
             </Link>
