@@ -3,13 +3,37 @@ import type { NextRequest } from "next/server";
 
 // Security headers applied to every response. Next.js 16 renamed the
 // `middleware` file convention to `proxy`; this is the same request-time hook.
-// connect-src is limited to self and the Hiro mainnet API, the only origins the
-// app talks to (reads route through Hiro; everything else is same-origin).
+
+// connect-src lists the origins the browser may read from: same-origin, the
+// Hiro mainnet hosts, and whatever NEXT_PUBLIC_API_URL is configured to (a
+// deployment may point reads at a custom Hiro proxy). Wallet connection runs
+// through injected extension providers, not page fetches, so it is unaffected.
+function configuredApiOrigin(): string | null {
+  const raw = process.env.NEXT_PUBLIC_API_URL;
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
+const CONNECT_SRC = Array.from(
+  new Set(
+    [
+      "'self'",
+      "https://api.hiro.so",
+      "https://api.mainnet.hiro.so",
+      configuredApiOrigin(),
+    ].filter((s): s is string => Boolean(s)),
+  ),
+).join(" ");
+
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "connect-src 'self' https://api.hiro.so https://api.mainnet.hiro.so",
+  `connect-src ${CONNECT_SRC}`,
   "img-src 'self' data: blob:",
 ].join("; ");
 
