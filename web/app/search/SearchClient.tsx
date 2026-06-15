@@ -223,6 +223,12 @@ export default function SearchClient() {
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           Stats
         </Link>
+        <Link
+          href="/dashboard"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Dashboard
+        </Link>
       </div>
 
       <h1 className="text-3xl mb-2">Search anchors</h1>

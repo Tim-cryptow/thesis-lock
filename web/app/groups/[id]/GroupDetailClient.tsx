@@ -218,6 +218,12 @@ export default function GroupDetailPage() {
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             Feed
           </Link>
+          <Link
+            href="/dashboard"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Dashboard
+          </Link>
         </div>
         {address ? (
           <button

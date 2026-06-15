@@ -170,6 +170,12 @@ export default function FeedClient() {
         >
           Bulk Verify
         </Link>
+        <Link
+          href="/dashboard"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Dashboard
+        </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
