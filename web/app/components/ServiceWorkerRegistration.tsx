@@ -11,6 +11,12 @@ export default function ServiceWorkerRegistration() {
         // Registration failures are non-fatal; the app still works online.
       });
     };
+    // When hydration happens after "load" has already fired, the event never
+    // arrives again, so register straight away in that case.
+    if (document.readyState === "complete") {
+      register();
+      return;
+    }
     window.addEventListener("load", register);
     return () => window.removeEventListener("load", register);
   }, []);
