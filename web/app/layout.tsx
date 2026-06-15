@@ -8,6 +8,7 @@ import TxToast from "./components/TxToast";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration";
 import InstallPrompt from "./components/InstallPrompt";
+import OfflineIndicator from "./components/OfflineIndicator";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -99,6 +100,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <TxProvider>
+            <OfflineIndicator />
             <SkipToContent />
             <ServiceWorkerRegistration />
             <KeyboardShortcuts />
