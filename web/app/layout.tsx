@@ -41,6 +41,19 @@ export const metadata: Metadata = {
     template: "%s | ThesisLock",
   },
   description: SITE_DESCRIPTION,
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "ThesisLock",
+    statusBarStyle: "black-translucent",
+  },
   openGraph: {
     type: "website",
     siteName: "ThesisLock",
@@ -56,6 +69,7 @@ export const metadata: Metadata = {
   other: {
     "talentapp:project_verification":
       "20612ea82236e7d5496a497d1a0b8365db5f52e3f165bdddee934452fbd947eb23f319049f11231ba4059180e440ea794710df90c355964ab98385391d6a461e",
+    "apple-mobile-web-app-capable": "yes",
   },
 };
 
