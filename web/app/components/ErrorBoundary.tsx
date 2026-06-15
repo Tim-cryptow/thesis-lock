@@ -2,17 +2,22 @@
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import ErrorFallback from "./ErrorFallback";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
+  // Changes whenever the route changes. The class boundary clears its captured
+  // error when this differs, so navigating away (e.g. via "Go home") recovers
+  // instead of leaving the fallback stuck across route changes.
+  pathname: string;
 };
 
 type ErrorBoundaryState = {
   error: Error | null;
 };
 
-export default class ErrorBoundary extends Component<
+class ErrorBoundaryInner extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
@@ -24,6 +29,12 @@ export default class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, info.componentStack);
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (this.state.error && prevProps.pathname !== this.props.pathname) {
+      this.setState({ error: null });
+    }
   }
 
   reset = () => {
@@ -56,4 +67,13 @@ export default class ErrorBoundary extends Component<
       </div>
     );
   }
+}
+
+export default function ErrorBoundary({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const pathname = usePathname();
+  return <ErrorBoundaryInner pathname={pathname}>{children}</ErrorBoundaryInner>;
 }
