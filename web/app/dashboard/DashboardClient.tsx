@@ -29,6 +29,28 @@ function formatDateLabel(iso: string): string {
   });
 }
 
+function truncateHash(hash: string): string {
+  if (hash.length <= 14) return hash;
+  return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+}
+
+function formatRelativeTime(iso: string): string {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const seconds = Math.round((Date.now() - then) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.round(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.round(months / 12)}y ago`;
+}
+
 type ChartDay = {
   date: string;
   single: number;
@@ -326,6 +348,96 @@ export default function DashboardClient() {
                   {formatDateLabel(chartDays[chartDays.length - 1].date)}
                 </span>
               </div>
+            )}
+          </section>
+
+          <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
+            <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
+              Anchors by source
+            </h2>
+            {analytics.totalAnchors === 0 ? (
+              <p className="text-sm text-foreground/60">No anchors yet.</p>
+            ) : (
+              <>
+                <div className="flex h-4 w-full overflow-hidden rounded-full bg-foreground/10">
+                  {SOURCE_META.map((s) => {
+                    const v = analytics.anchorsBySource[s.key];
+                    if (v <= 0) return null;
+                    const pct = (v / analytics.totalAnchors) * 100;
+                    return (
+                      <div
+                        key={s.key}
+                        className={s.bar}
+                        style={{ width: `${pct}%` }}
+                        title={`${s.label}: ${formatNumber(v)} (${pct.toFixed(1)}%)`}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                  {SOURCE_META.map((s) => {
+                    const v = analytics.anchorsBySource[s.key];
+                    const pct = analytics.totalAnchors
+                      ? (v / analytics.totalAnchors) * 100
+                      : 0;
+                    return (
+                      <div key={s.key} className="flex items-center gap-2">
+                        <span
+                          className={`inline-block h-2 w-2 rounded-sm ${s.dot}`}
+                        />
+                        <span className="text-foreground/70">{s.label}</span>
+                        <span className="ml-auto font-mono text-xs text-foreground/60">
+                          {formatNumber(v)} ({pct.toFixed(0)}%)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </section>
+
+          <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
+            <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
+              Recent activity
+            </h2>
+            {analytics.recentActivity.length === 0 ? (
+              <p className="text-sm text-foreground/60">No activity yet.</p>
+            ) : (
+              <ul className="divide-y divide-foreground/10">
+                {analytics.recentActivity.map((item) => {
+                  const row = (
+                    <div className="flex items-center justify-between gap-4 py-3">
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground/90">
+                          {item.action}
+                        </div>
+                        <div className="text-xs text-foreground/50 font-mono truncate">
+                          {item.hash ? truncateHash(item.hash) : "no hash"}
+                          {item.block ? ` · block ${formatNumber(item.block)}` : ""}
+                        </div>
+                      </div>
+                      <span className="text-xs text-foreground/50 shrink-0">
+                        {formatRelativeTime(item.timestamp)}
+                      </span>
+                    </div>
+                  );
+                  return (
+                    <li key={item.txId}>
+                      {item.hash ? (
+                        <Link
+                          href={`/v/${item.hash}`}
+                          className="block hover:bg-foreground/[0.03] transition rounded-md px-1"
+                        >
+                          {row}
+                        </Link>
+                      ) : (
+                        <div className="px-1">{row}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </section>
         </>
