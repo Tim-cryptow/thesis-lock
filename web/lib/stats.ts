@@ -1,4 +1,5 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
 const CONTRACT_ADDRESS =
@@ -55,7 +56,7 @@ async function fetchContractCalls(contractName: string): Promise<AddressTx[]> {
 
   while (offset < total) {
     const url = `${API_URL}/extended/v1/address/${contractId}/transactions?limit=${HIRO_PAGE}&offset=${offset}`;
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url);
     if (!res.ok) {
       throw new Error(`Hiro tx fetch failed (${contractName}): ${res.status}`);
     }

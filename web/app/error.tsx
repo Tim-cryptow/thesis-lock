@@ -32,6 +32,11 @@ export default function Error({
       >
         Try again
       </button>
+      {process.env.NODE_ENV !== "production" && error.message && (
+        <pre className="mt-6 overflow-auto rounded-lg border border-foreground/10 bg-card p-4 text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
+          {error.message}
+        </pre>
+      )}
     </div>
   );
 }

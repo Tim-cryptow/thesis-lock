@@ -12,6 +12,7 @@ import {
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
 import { openContractCall } from "@stacks/connect";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME!;
@@ -70,7 +71,12 @@ export type GroupAnchor = {
 };
 
 export function getNetwork(): StacksNetwork {
-  return { ...STACKS_MAINNET, client: { baseUrl: API_URL } };
+  // Injecting fetchWithRetry as the client's fetch means every read-only
+  // contract call retries transient Hiro failures with exponential backoff.
+  return {
+    ...STACKS_MAINNET,
+    client: { baseUrl: API_URL, fetch: fetchWithRetry },
+  };
 }
 
 export function explorerAddressUrl(principal: string): string {
