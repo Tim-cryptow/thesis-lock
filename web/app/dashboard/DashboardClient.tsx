@@ -5,6 +5,12 @@ import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
+import {
+  downloadExport,
+  formatAnchorsCSV,
+  formatAnchorsJSON,
+} from "@/lib/export";
 import type { WalletAnalytics } from "@/lib/analytics";
 
 const CHART_DAYS = 30;
@@ -140,6 +146,37 @@ export default function DashboardClient() {
     }
     void load(address);
   }, [address, load]);
+
+  const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const handleExport = async (format: "csv" | "json") => {
+    if (!address) return;
+    setExportError(null);
+    setExporting(format);
+    try {
+      const all = await fetchAllAnchors(address);
+      const stamp = address.slice(0, 8);
+      if (format === "csv") {
+        downloadExport(
+          formatAnchorsCSV(all, address),
+          `thesislock-anchors-${stamp}.csv`,
+          "text/csv;charset=utf-8",
+        );
+      } else {
+        downloadExport(
+          formatAnchorsJSON(all, address),
+          `thesislock-anchors-${stamp}.json`,
+          "application/json",
+        );
+      }
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Export failed.");
+      setTimeout(() => setExportError(null), 4000);
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const chartDays = useMemo(
     () => (analytics ? buildChartWindow(analytics) : []),
@@ -427,7 +464,7 @@ export default function DashboardClient() {
                       {item.hash ? (
                         <Link
                           href={`/v/${item.hash}`}
-                          className="block hover:bg-foreground/[0.03] transition rounded-md px-1"
+                          className="block hover:bg-foreground/3 transition rounded-md px-1"
                         >
                           {row}
                         </Link>
@@ -438,6 +475,36 @@ export default function DashboardClient() {
                   );
                 })}
               </ul>
+            )}
+          </section>
+
+          <section className="rounded-lg border border-foreground/10 bg-card p-6">
+            <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-2">
+              Export full history
+            </h2>
+            <p className="text-sm text-foreground/60 mb-4">
+              Download every anchor registered to this wallet, with verify links.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => void handleExport("csv")}
+                disabled={exporting !== null}
+                className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {exporting === "csv" ? "Exporting..." : "Export CSV"}
+              </button>
+              <button
+                onClick={() => void handleExport("json")}
+                disabled={exporting !== null}
+                className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {exporting === "json" ? "Exporting..." : "Export JSON"}
+              </button>
+            </div>
+            {exportError && (
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                {exportError}
+              </p>
             )}
           </section>
         </>
