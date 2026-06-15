@@ -1,13 +1,28 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
+import ShortcutsModal from "./ShortcutsModal";
 
 // Dispatched when the search input should grab focus while already on /search.
 export const FOCUS_SEARCH_EVENT = "thesislock:focus-search";
 // Read once on the search page mount to focus after a cross-page navigation.
 export const FOCUS_SEARCH_FLAG = "thesislock.focusSearch";
+
+// The "mod" token renders as the platform modifier (Cmd on mac, Ctrl elsewhere).
+export type Shortcut = { keys: string[]; description: string };
+
+export const SHORTCUTS: Shortcut[] = [
+  { keys: ["mod", "K"], description: "Focus search" },
+  { keys: ["/"], description: "Focus search" },
+  { keys: ["mod", "N"], description: "New anchor" },
+  { keys: ["mod", "G"], description: "Groups" },
+  { keys: ["mod", "H"], description: "Anchor history" },
+  { keys: ["mod", "D"], description: "Documentation" },
+  { keys: ["mod", "."], description: "Toggle theme" },
+  { keys: ["?"], description: "Show this help" },
+];
 
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
@@ -24,6 +39,7 @@ export default function KeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
   const { cycle } = useTheme();
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const focusSearch = useCallback(() => {
     if (pathname === "/search") {
@@ -74,6 +90,12 @@ export default function KeyboardShortcuts() {
         }
       }
 
+      if (e.key === "?") {
+        e.preventDefault();
+        setHelpOpen((open) => !open);
+        return;
+      }
+
       if (e.key === "/") {
         e.preventDefault();
         focusSearch();
@@ -84,5 +106,7 @@ export default function KeyboardShortcuts() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [router, cycle, focusSearch]);
 
-  return null;
+  return (
+    <ShortcutsModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+  );
 }
