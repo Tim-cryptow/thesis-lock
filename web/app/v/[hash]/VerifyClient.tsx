@@ -176,8 +176,13 @@ export default function VerifyPage() {
         setLoading(false);
         return;
       }
-      if (showLoading) setLoading(true);
-      setError(null);
+      // On a silent retry keep any existing outage error visible until this
+      // attempt resolves. Clearing it eagerly would drop the render through to
+      // the "not anchored" branch mid-flight, since loading stays false.
+      if (showLoading) {
+        setLoading(true);
+        setError(null);
+      }
       try {
         const result = await readAnchor(hash);
         setAnchor(result);
@@ -218,6 +223,7 @@ export default function VerifyPage() {
           setGroupAnchor(null);
         }
         setHiroDown(false);
+        setError(null);
       } catch (e) {
         console.error(e);
         // Tell "the API is down" apart from a genuine lookup failure so the
