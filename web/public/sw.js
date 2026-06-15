@@ -3,6 +3,9 @@ const CACHE = "thesislock-v1";
 // App shell routes pre-cached so the core flows open without a network.
 const APP_SHELL = ["/", "/anchor", "/search", "/docs"];
 
+// Shown for navigations to routes that were never cached while offline.
+const OFFLINE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Offline</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF7;color:#1A1A1A;font-family:system-ui,sans-serif;text-align:center;padding:1.5rem}main{max-width:28rem}h1{font-size:1.25rem;margin:0 0 .5rem}p{color:#555;line-height:1.5;margin:0}</style></head><body><main><h1>You're offline</h1><p>This page hasn't been cached yet. Reconnect to load it. File hashing still works offline, but anchoring and verification require a connection.</p></main></body></html>`;
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -52,9 +55,14 @@ async function networkFirst(request) {
   } catch (err) {
     const cached = await cache.match(request);
     if (cached) return cached;
+    // Don't substitute the home document for an arbitrary uncached route (e.g.
+    // a bookmarked /v/<hash>): that would render home content under the wrong
+    // URL. Serve a clear offline page for navigations instead.
     if (request.mode === "navigate") {
-      const shell = await cache.match("/");
-      if (shell) return shell;
+      return new Response(OFFLINE_PAGE, {
+        status: 503,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
     }
     throw err;
   }
