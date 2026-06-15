@@ -5,6 +5,7 @@ import SkipToContent from "./components/SkipToContent";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
 import TxToast from "./components/TxToast";
+import KeyboardShortcuts from "./components/KeyboardShortcuts";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -83,6 +84,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TxProvider>
             <SkipToContent />
+            <KeyboardShortcuts />
             <main
               id="main-content"
               tabIndex={-1}

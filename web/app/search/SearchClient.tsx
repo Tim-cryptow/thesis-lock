@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import {
+  FOCUS_SEARCH_EVENT,
+  FOCUS_SEARCH_FLAG,
+} from "@/app/components/KeyboardShortcuts";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
 
@@ -90,9 +94,29 @@ export default function SearchClient() {
   const [recent, setRecent] = useState<string[]>([]);
   // Guards against a slow earlier request overwriting a newer one's results.
   const requestId = useRef(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setRecent(readRecent());
+  }, []);
+
+  // Focus the search field when the global Ctrl+K / "/" shortcut fires, either
+  // via a live event (already on this page) or a flag set before navigation.
+  useEffect(() => {
+    const focus = () => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    window.addEventListener(FOCUS_SEARCH_EVENT, focus);
+    try {
+      if (window.sessionStorage.getItem(FOCUS_SEARCH_FLAG) === "1") {
+        window.sessionStorage.removeItem(FOCUS_SEARCH_FLAG);
+        focus();
+      }
+    } catch {
+      // Non-fatal if sessionStorage is unavailable.
+    }
+    return () => window.removeEventListener(FOCUS_SEARCH_EVENT, focus);
   }, []);
 
   const pushRecent = useCallback((term: string) => {
@@ -209,6 +233,7 @@ export default function SearchClient() {
       <form onSubmit={onSubmit} className="mb-3">
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
