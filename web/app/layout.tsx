@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "./components/SkipToContent";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
 import TxToast from "./components/TxToast";
@@ -109,7 +110,7 @@ export default function RootLayout({
               tabIndex={-1}
               className="flex-1 flex flex-col"
             >
-              {children}
+              <ErrorBoundary>{children}</ErrorBoundary>
             </main>
             <TxToast />
             <InstallPrompt />
