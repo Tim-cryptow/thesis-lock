@@ -107,6 +107,17 @@ export default function KeyboardShortcuts() {
   }, [router, cycle, focusSearch]);
 
   return (
-    <ShortcutsModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+    <>
+      <button
+        type="button"
+        onClick={() => setHelpOpen(true)}
+        title="Keyboard shortcuts (?)"
+        aria-label="Keyboard shortcuts"
+        className="fixed bottom-4 right-4 z-40 inline-flex h-8 w-8 items-center justify-center rounded-full border border-foreground/15 bg-card font-mono text-sm text-foreground/50 opacity-40 hover:opacity-100 hover:border-foreground/40 hover:text-foreground transition"
+      >
+        ?
+      </button>
+      <ShortcutsModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+    </>
   );
 }
