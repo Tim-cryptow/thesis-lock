@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import ErrorFallback from "@/app/components/ErrorFallback";
 import { createGroup, explorerTxUrl } from "@/lib/stacks";
 import { fetchMyGroups, type GroupSummary } from "@/lib/groups";
 import { truncateAddress, useWallet } from "@/lib/wallet";
@@ -224,7 +225,10 @@ export default function GroupsPage() {
           </div>
 
           {loadError ? (
-            <p className="text-red-600 dark:text-red-400">{loadError}</p>
+            <ErrorFallback
+              message={loadError}
+              onRetry={() => void loadGroups(address)}
+            />
           ) : loading && groups.length === 0 ? (
             <p className="text-foreground/60">Loading groups...</p>
           ) : groups.length === 0 ? (

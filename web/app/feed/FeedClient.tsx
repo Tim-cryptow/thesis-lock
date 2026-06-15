@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerAddressUrl, explorerTxUrl } from "@/lib/stacks";
 import { truncateAddress } from "@/lib/wallet";
@@ -182,13 +183,18 @@ export default function FeedClient() {
         minute.
       </p>
 
-      {error && (
+      {error && entries.length > 0 && (
         <div className="mb-6 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
 
-      {loading ? (
+      {error && entries.length === 0 ? (
+        <ErrorFallback
+          message={error}
+          onRetry={() => void refresh(requestedLimit)}
+        />
+      ) : loading ? (
         <div className="space-y-3" aria-busy="true">
           {Array.from({ length: 4 }).map((_, i) => (
             <div

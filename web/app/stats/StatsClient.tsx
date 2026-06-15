@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import ErrorFallback from "@/app/components/ErrorFallback";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
@@ -49,24 +50,24 @@ export default function StatsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/stats");
-        if (!res.ok) throw new Error(`stats fetch failed: ${res.status}`);
-        const data = (await res.json()) as ProtocolStats;
-        if (active) setStats(data);
-      } catch {
-        if (active) setError("Could not load protocol stats. Try again soon.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stats");
+      if (!res.ok) throw new Error(`stats fetch failed: ${res.status}`);
+      const data = (await res.json()) as ProtocolStats;
+      setStats(data);
+    } catch {
+      setError("Could not load protocol stats. Try again soon.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const maxDayCount = stats
     ? stats.anchorsByDay.reduce((max, d) => Math.max(max, d.count), 0)
@@ -117,13 +118,9 @@ export default function StatsClient() {
         On-chain activity across the ThesisLock contracts on Stacks mainnet.
       </p>
 
-      {error && (
-        <div className="mb-6 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
-          {error}
-        </div>
-      )}
-
-      {loading ? (
+      {error ? (
+        <ErrorFallback message={error} onRetry={() => void load()} />
+      ) : loading ? (
         <div aria-busy="true">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             {Array.from({ length: 4 }).map((_, i) => (

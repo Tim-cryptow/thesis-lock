@@ -1,5 +1,6 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
 import { readBatchAnchor, type BatchAnchor } from "./stacks";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -43,7 +44,7 @@ async function fetchEvents(
   offset: number,
 ): Promise<RawEvent[]> {
   const url = `${API_URL}/extended/v1/contract/${CONTRACT_ADDRESS}.${contractName}/events?limit=${limit}&offset=${offset}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) {
     throw new Error(`Hiro events fetch failed (${contractName}): ${res.status}`);
   }
@@ -113,7 +114,7 @@ async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>> {
   const results = await Promise.all(
     unique.map(async (id) => {
       try {
-        const res = await fetch(`${API_URL}/extended/v1/tx/${id}`);
+        const res = await fetchWithRetry(`${API_URL}/extended/v1/tx/${id}`);
         if (!res.ok) return [id, 0] as const;
         const data = (await res.json()) as {
           burn_block_time?: number;

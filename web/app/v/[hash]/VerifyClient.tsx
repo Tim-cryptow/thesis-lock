@@ -23,6 +23,7 @@ import {
   type GroupAnchorMatch,
 } from "@/lib/groups";
 import { useWallet } from "@/lib/wallet";
+import { isHiroAvailable } from "@/lib/fetchWithRetry";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 
@@ -67,6 +68,7 @@ export default function VerifyPage() {
   const [groupAnchor, setGroupAnchor] = useState<GroupAnchorMatch | null>(null);
   const [proof, setProof] = useState<ProofWithId | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hiroDown, setHiroDown] = useState(false);
 
   const [verifyFile, setVerifyFile] = useState<File | null>(null);
   const [verifyHash, setVerifyHash] = useState<string | null>(null);
@@ -215,10 +217,18 @@ export default function VerifyPage() {
         } else {
           setGroupAnchor(null);
         }
+        setHiroDown(false);
       } catch (e) {
         console.error(e);
+        // Tell "the API is down" apart from a genuine lookup failure so the
+        // page can show a specific message and auto-retry instead of leaving
+        // the user to refresh manually.
+        const apiUp = await isHiroAvailable();
+        setHiroDown(!apiUp);
         setError(
-          "Could not look up this anchor. Check your connection and try again.",
+          apiUp
+            ? "Could not look up this anchor. Check your connection and try again."
+            : "The Hiro API is currently unavailable. Retrying automatically...",
         );
       } finally {
         if (showLoading) setLoading(false);
@@ -255,6 +265,14 @@ export default function VerifyPage() {
     const id = setInterval(() => void loadAnchor(false), 15000);
     return () => clearInterval(id);
   }, [valid, txId, anchor, batchAnchor, groupAnchor, error, loadAnchor]);
+
+  // When the lookup failed because the Hiro API was down, retry on a timer so
+  // the record appears on its own once the API recovers.
+  useEffect(() => {
+    if (!hiroDown) return;
+    const id = setInterval(() => void loadAnchor(false), 15000);
+    return () => clearInterval(id);
+  }, [hiroDown, loadAnchor]);
 
   const onVerifyFile = async (file: File | null) => {
     if (!file) return;

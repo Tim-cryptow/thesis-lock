@@ -7,6 +7,7 @@ import {
   readAnchor,
   readBatchAnchor,
 } from "./stacks";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -104,7 +105,7 @@ async function fetchEventsPage(
   offset: number,
 ): Promise<RawEvent[]> {
   const url = `${API_URL}/extended/v1/contract/${CONTRACT_ADDRESS}.${contractName}/events?limit=${HIRO_PAGE}&offset=${offset}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) {
     throw new Error(`Hiro events fetch failed (${contractName}): ${res.status}`);
   }

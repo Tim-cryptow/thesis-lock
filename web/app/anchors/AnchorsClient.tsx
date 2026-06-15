@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import ErrorFallback from "@/app/components/ErrorFallback";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -235,7 +236,10 @@ export default function AnchorsPage() {
       ) : loading ? (
         <p className="text-foreground/60">Loading history...</p>
       ) : error ? (
-        <p className="text-red-600 dark:text-red-400">{error}</p>
+        <ErrorFallback
+          message={error}
+          onRetry={() => void loadHistory(address)}
+        />
       ) : count === 0 ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">No anchors yet.</p>

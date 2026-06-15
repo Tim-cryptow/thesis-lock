@@ -5,6 +5,7 @@ import {
   getGroupAnchorCount,
   type Group,
 } from "./stacks";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -46,7 +47,7 @@ const HIRO_PAGE = 50;
 
 async function fetchEvents(limit: number, offset: number): Promise<RawEvent[]> {
   const url = `${API_URL}/extended/v1/contract/${CONTRACT_ADDRESS}.${GROUPS_CONTRACT}/events?limit=${limit}&offset=${offset}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) {
     throw new Error(`Hiro events fetch failed (${GROUPS_CONTRACT}): ${res.status}`);
   }
