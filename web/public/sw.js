@@ -68,6 +68,10 @@ self.addEventListener("fetch", (event) => {
   // Leave cross-origin requests (e.g. the Hiro API) to the network untouched.
   if (url.origin !== self.location.origin) return;
 
+  // Never cache API responses: replaying a stale anchor/verification result
+  // while offline would mislead the user, so let these hit the network only.
+  if (url.pathname.startsWith("/api/")) return;
+
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(request));
     return;
