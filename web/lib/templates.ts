@@ -226,3 +226,86 @@ export function getTemplate(id: string): AnchorTemplate | undefined {
 export const GENERIC_TEMPLATE: AnchorTemplate = TEMPLATES.find(
   (tpl) => tpl.id === GENERIC_TEMPLATE_ID,
 )!;
+
+// The two characters used to delimit the encoded label. They are stripped from
+// values so a value can never break the structure when parsed back.
+const SEGMENT_SEP = "|";
+const KEY_VALUE_SEP = ":";
+
+// Normalizes a single field value: collapse whitespace to dashes and remove the
+// delimiter characters, keeping the encoded label unambiguous to parse.
+function sanitizeValue(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+/g, "-")
+    .split(SEGMENT_SEP)
+    .join("")
+    .split(KEY_VALUE_SEP)
+    .join("");
+}
+
+// Combines a template's prefix and field values into a single structured label.
+// Empty fields are skipped. The Generic template returns the raw label value
+// unchanged (aside from the length cap), preserving the original behaviour.
+// The result is always capped at MAX_LABEL_LENGTH ASCII characters.
+export function buildLabel(
+  template: AnchorTemplate,
+  fieldValues: Record<string, string>,
+): string {
+  if (template.id === GENERIC_TEMPLATE_ID) {
+    const only = template.fields[0];
+    const raw = (fieldValues[only.key] ?? "").trim();
+    return raw.slice(0, MAX_LABEL_LENGTH);
+  }
+
+  const segments = template.fields
+    .map((field) => {
+      const value = sanitizeValue(fieldValues[field.key] ?? "");
+      return value ? `${field.key}${KEY_VALUE_SEP}${value}` : null;
+    })
+    .filter((segment): segment is string => segment !== null);
+
+  if (segments.length === 0) return "";
+
+  const label = template.labelPrefix + segments.join(SEGMENT_SEP);
+  return label.slice(0, MAX_LABEL_LENGTH);
+}
+
+// Reverse of buildLabel. Detects the template from the label prefix and splits
+// the structured segments back into a { key: value } map. Falls back to
+// { fields: { label: rawLabel } } for unstructured or empty labels so the
+// caller can always render something.
+export function parseLabel(label: string): {
+  templateId?: string;
+  fields: Record<string, string>;
+} {
+  if (!label) return { fields: { label } };
+
+  // Match the longest non-empty prefix first so "release-" is not shadowed by a
+  // shorter prefix. Generic has an empty prefix and is never matched here.
+  const candidates = TEMPLATES.filter(
+    (tpl) => tpl.labelPrefix && label.startsWith(tpl.labelPrefix),
+  ).sort((a, b) => b.labelPrefix.length - a.labelPrefix.length);
+
+  for (const template of candidates) {
+    const body = label.slice(template.labelPrefix.length);
+    // A genuine structured label always carries at least one "key:value" pair.
+    // Requiring the separator avoids misreading a free-form label that merely
+    // happens to start with these characters as a template.
+    if (!body.includes(KEY_VALUE_SEP)) continue;
+
+    const fields: Record<string, string> = {};
+    for (const segment of body.split(SEGMENT_SEP)) {
+      const idx = segment.indexOf(KEY_VALUE_SEP);
+      if (idx <= 0) continue;
+      const key = segment.slice(0, idx);
+      const value = segment.slice(idx + 1);
+      if (key && value) fields[key] = value;
+    }
+    if (Object.keys(fields).length > 0) {
+      return { templateId: template.id, fields };
+    }
+  }
+
+  return { fields: { label } };
+}
