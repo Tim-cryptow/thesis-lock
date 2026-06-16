@@ -32,6 +32,12 @@ export const DOCS: DocMeta[] = [
       "Structured label formats for papers, legal documents, code releases, datasets, and certificates, plus the label encoding.",
   },
   {
+    slug: "activity",
+    title: "Activity Log",
+    description:
+      "A unified per-wallet timeline of every contract interaction, with category filters and infinite scroll.",
+  },
+  {
     slug: "api",
     title: "API Reference",
     description:

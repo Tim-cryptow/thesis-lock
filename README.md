@@ -16,6 +16,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Anchor templates at `/templates`: structured label formats for papers, legal documents, code releases, datasets, and certificates, with a live label preview and parsed fields shown on verify and history pages.
 - Batch anchoring of up to ten files in a single transaction.
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
+- Unified activity log at `/activity`: a chronological timeline of every interaction across all five contracts (anchors, batches, registry entries, proof mints, and group actions), with category filters, date separators, and infinite scroll. Also exposed as JSON at `/api/activity`.
 - Anchor groups at `/groups`: create a named group, add members, and anchor documents under a shared, on-chain history.
 - Client-side SHA-256 hashing. The file never leaves your device.
 - Public verification at `/v/<hash>` with file re-upload check, plus bulk verification at `/verify-bulk`.
