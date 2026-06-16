@@ -340,8 +340,15 @@ export default function ActivityClient() {
             {t("common.actions.tryAgain")}
           </button>
         </div>
-      ) : loading && events.length === 0 ? (
-        <p className="text-foreground/60">{t("anchors.loading")}</p>
+      ) : events.length === 0 && (loading || hasMore) ? (
+        // Either the first load is in flight, or page 0 held no ThesisLock
+        // calls but more raw transactions remain. Keep the sentinel mounted so
+        // the observer pages forward until events appear or the stream ends,
+        // instead of prematurely showing the empty state.
+        <>
+          <p className="text-foreground/60">{t("anchors.loading")}</p>
+          <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+        </>
       ) : events.length === 0 ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">{t("activity.empty")}</p>
