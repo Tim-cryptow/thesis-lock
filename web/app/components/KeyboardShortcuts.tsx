@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
+import { useI18n } from "./I18nProvider";
 import ShortcutsModal from "./ShortcutsModal";
 
 // Dispatched when the search input should grab focus while already on /search.
@@ -11,17 +12,18 @@ export const FOCUS_SEARCH_EVENT = "thesislock:focus-search";
 export const FOCUS_SEARCH_FLAG = "thesislock.focusSearch";
 
 // The "mod" token renders as the platform modifier (Cmd on mac, Ctrl elsewhere).
-export type Shortcut = { keys: string[]; description: string };
+// descriptionKey is a leaf under common.shortcuts.items, translated at render.
+export type Shortcut = { keys: string[]; descriptionKey: string };
 
 export const SHORTCUTS: Shortcut[] = [
-  { keys: ["mod", "K"], description: "Focus search" },
-  { keys: ["/"], description: "Focus search" },
-  { keys: ["mod", "N"], description: "New anchor" },
-  { keys: ["mod", "G"], description: "Groups" },
-  { keys: ["mod", "H"], description: "Anchor history" },
-  { keys: ["mod", "D"], description: "Documentation" },
-  { keys: ["mod", "."], description: "Toggle theme" },
-  { keys: ["?"], description: "Show this help" },
+  { keys: ["mod", "K"], descriptionKey: "focusSearch" },
+  { keys: ["/"], descriptionKey: "focusSearch" },
+  { keys: ["mod", "N"], descriptionKey: "newAnchor" },
+  { keys: ["mod", "G"], descriptionKey: "groups" },
+  { keys: ["mod", "H"], descriptionKey: "anchorHistory" },
+  { keys: ["mod", "D"], descriptionKey: "documentation" },
+  { keys: ["mod", "."], descriptionKey: "toggleTheme" },
+  { keys: ["?"], descriptionKey: "showHelp" },
 ];
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -39,6 +41,7 @@ export default function KeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
   const { cycle } = useTheme();
+  const { t } = useI18n();
   const [helpOpen, setHelpOpen] = useState(false);
 
   const focusSearch = useCallback(() => {
@@ -111,8 +114,8 @@ export default function KeyboardShortcuts() {
       <button
         type="button"
         onClick={() => setHelpOpen(true)}
-        title="Keyboard shortcuts (?)"
-        aria-label="Keyboard shortcuts"
+        title={t("common.shortcuts.buttonTitle")}
+        aria-label={t("common.shortcuts.buttonAria")}
         className="fixed bottom-4 right-4 z-40 inline-flex h-8 w-8 items-center justify-center rounded-full border border-foreground/15 bg-card font-mono text-sm text-foreground/50 opacity-40 hover:opacity-100 hover:border-foreground/40 hover:text-foreground transition"
       >
         ?

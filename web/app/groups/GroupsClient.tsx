@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import { useI18n } from "@/app/components/I18nProvider";
 import { createGroup, explorerTxUrl } from "@/lib/stacks";
 import { fetchMyGroups, type GroupSummary } from "@/lib/groups";
 import { truncateAddress, useWallet } from "@/lib/wallet";
@@ -11,6 +12,7 @@ import { truncateAddress, useWallet } from "@/lib/wallet";
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 
 export default function GroupsPage() {
+  const { t } = useI18n();
   const {
     address,
     connecting,
@@ -34,7 +36,7 @@ export default function GroupsPage() {
     try {
       setGroups(await fetchMyGroups(owner));
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load groups.");
+      setLoadError(e instanceof Error ? e.message : t("groups.list.loadError"));
     } finally {
       setLoading(false);
     }
@@ -50,7 +52,7 @@ export default function GroupsPage() {
 
   const onNameChange = (next: string) => {
     if (!ASCII_REGEX.test(next)) {
-      setNameError("Names must be ASCII only.");
+      setNameError(t("groups.create.asciiError"));
       setName(next.slice(0, 64));
       return;
     }
@@ -80,46 +82,46 @@ export default function GroupsPage() {
         <div className="flex items-center gap-4 text-sm">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
-            Search
+            {t("common.nav.search")}
           </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
           >
-            Anchor
+            {t("common.nav.anchor")}
           </Link>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
-          <span className="text-foreground font-medium">Groups</span>
+          <span className="text-foreground font-medium">{t("common.nav.groups")}</span>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/stats"
             className="text-foreground/60 hover:text-foreground"
           >
-            Stats
+            {t("common.nav.stats")}
           </Link>
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"
           >
-            Dashboard
+            {t("common.nav.dashboard")}
           </Link>
         </div>
         {address ? (
           <button
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title="Disconnect"
-            aria-label="Disconnect wallet"
+            title={t("common.wallet.disconnect")}
+            aria-label={t("common.wallet.disconnectAria")}
           >
             {truncateAddress(address)}
           </button>
@@ -129,15 +131,14 @@ export default function GroupsPage() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
       </div>
 
-      <h1 className="text-3xl mb-2">Groups</h1>
+      <h1 className="text-3xl mb-2">{t("groups.list.title")}</h1>
       <p className="text-foreground/70 mb-8">
-        Create a named group and anchor documents under it with members you
-        trust. Every member can add to a shared, on-chain document history.
+        {t("groups.list.intro")}
       </p>
 
       {walletError && (
@@ -149,31 +150,31 @@ export default function GroupsPage() {
       {!address ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
-            Connect your Stacks wallet to create and manage groups.
+            {t("groups.list.connectPrompt")}
           </p>
           <button
             onClick={connectWallet}
             disabled={connecting}
             className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         </div>
       ) : (
         <>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-10">
-            <h2 className="text-lg mb-3">Create a group</h2>
+            <h2 className="text-lg mb-3">{t("groups.create.heading")}</h2>
             <label
               htmlFor="group-name"
               className="block text-sm text-foreground/60 mb-2"
             >
-              Group name (ASCII, up to 64 chars)
+              {t("groups.create.nameLabel")}
             </label>
             <input
               id="group-name"
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
-              placeholder="e.g. thesis-committee-2026"
+              placeholder={t("groups.create.namePlaceholder")}
               maxLength={64}
               disabled={pending}
               aria-invalid={nameError ? true : undefined}
@@ -195,38 +196,38 @@ export default function GroupsPage() {
               disabled={pending || !name.trim() || !!nameError}
               className="mt-4 px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
             >
-              {pending ? "Awaiting wallet signature..." : "Create group"}
+              {pending ? t("groups.create.awaitingSignature") : t("groups.create.submit")}
             </button>
             {createTxId && (
               <p className="mt-4 text-sm text-green-700 dark:text-green-400">
-                Group creation submitted.{" "}
+                {t("groups.create.submitted")}{" "}
                 <a
                   href={explorerTxUrl(createTxId)}
                   target="_blank"
                   rel="noreferrer"
                   className="underline hover:no-underline"
                 >
-                  View transaction
+                  {t("groups.viewTransaction")}
                 </a>
-                . It will appear below once confirmed on chain.{" "}
+                {t("groups.create.appearOnConfirm")}{" "}
                 <button
                   onClick={() => void loadGroups(address)}
                   className="underline hover:no-underline"
                 >
-                  Refresh
+                  {t("groups.refresh")}
                 </button>
               </p>
             )}
           </div>
 
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg">Your groups</h2>
+            <h2 className="text-lg">{t("groups.list.yourGroups")}</h2>
             <button
               onClick={() => void loadGroups(address)}
               disabled={loading}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
-              {loading ? "Loading..." : "Refresh"}
+              {loading ? t("groups.loading") : t("groups.refresh")}
             </button>
           </div>
 
@@ -236,12 +237,11 @@ export default function GroupsPage() {
               onRetry={() => void loadGroups(address)}
             />
           ) : loading && groups.length === 0 ? (
-            <p className="text-foreground/60">Loading groups...</p>
+            <p className="text-foreground/60">{t("groups.list.loadingGroups")}</p>
           ) : groups.length === 0 ? (
             <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
               <p className="text-foreground/70">
-                You are not a member of any group yet. Create one above to get
-                started.
+                {t("groups.list.empty")}
               </p>
             </div>
           ) : (
@@ -257,16 +257,21 @@ export default function GroupsPage() {
                       {group.name}
                     </div>
                     <div className="mt-1 text-sm text-foreground/60">
-                      Group #{group.id} &middot; {group.anchorCount} anchor
-                      {group.anchorCount === 1 ? "" : "s"}
-                      {group.admin === address ? " · admin" : ""}
+                      {t("groups.list.cardMeta", {
+                        id: group.id,
+                        anchors:
+                          group.anchorCount === 1
+                            ? t("groups.anchorCountOne", { count: group.anchorCount })
+                            : t("groups.anchorCountOther", { count: group.anchorCount }),
+                      })}
+                      {group.admin === address ? t("groups.list.adminSuffix") : ""}
                     </div>
                   </div>
                   <Link
                     href={`/groups/${group.id}`}
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                   >
-                    Open &rarr;
+                    {t("groups.list.open")}
                   </Link>
                 </div>
               ))}

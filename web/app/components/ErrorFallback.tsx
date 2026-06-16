@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useI18n } from "./I18nProvider";
 
 type ErrorFallbackProps = {
   message: string;
@@ -31,6 +34,7 @@ export default function ErrorFallback({
   onRetry,
   icon,
 }: ErrorFallbackProps) {
+  const { t } = useI18n();
   return (
     <div
       role="alert"
@@ -45,7 +49,7 @@ export default function ErrorFallback({
           onClick={onRetry}
           className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
         >
-          Try again
+          {t("common.actions.tryAgain")}
         </button>
       )}
     </div>

@@ -26,6 +26,7 @@ import { useWallet } from "@/lib/wallet";
 import { isHiroAvailable } from "@/lib/fetchWithRetry";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 // c32-encoded Stacks principals are variable length: hash160 leading zero
@@ -39,6 +40,7 @@ export default function VerifyPage() {
   const hash = (params.hash ?? "").toLowerCase();
   const valid = useMemo(() => HEX_64.test(hash), [hash]);
   const { address } = useWallet();
+  const { t } = useI18n();
 
   const rawOwnerParam = searchParams.get("owner");
   const ownerParam = useMemo(() => {
@@ -136,7 +138,7 @@ export default function VerifyPage() {
 
   const tweetIntent = (() => {
     if (!publicVerifyUrl) return "";
-    const text = "Anchored on Stacks. Verifiable timestamp without sharing the file:";
+    const text = t("verify.tweetText");
     return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       text,
     )}&url=${encodeURIComponent(publicVerifyUrl)}`;
@@ -233,14 +235,14 @@ export default function VerifyPage() {
         setHiroDown(!apiUp);
         setError(
           apiUp
-            ? "Could not look up this anchor. Check your connection and try again."
-            : "The Hiro API is currently unavailable. Retrying automatically...",
+            ? t("verify.error.lookupFailed")
+            : t("verify.error.hiroUnavailable"),
         );
       } finally {
         if (showLoading) setLoading(false);
       }
     },
-    [hash, valid, batchOwner, ownerParam, groupLocation],
+    [hash, valid, batchOwner, ownerParam, groupLocation, t],
   );
 
   useEffect(() => {
@@ -291,7 +293,7 @@ export default function VerifyPage() {
       setVerifyHash(h);
     } catch (e) {
       setVerifyError(
-        e instanceof Error ? e.message : "Could not hash this file.",
+        e instanceof Error ? e.message : t("verify.error.hashFailed"),
       );
     } finally {
       setVerifying(false);
@@ -304,57 +306,57 @@ export default function VerifyPage() {
         <div className="flex items-center gap-4 text-sm flex-wrap">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
-            Search
+            {t("common.nav.search")}
           </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
           >
-            Anchor
+            {t("common.nav.anchor")}
           </Link>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"
           >
-            Groups
+            {t("common.nav.groups")}
           </Link>
           <Link
             href="/feed"
             className="text-foreground/60 hover:text-foreground"
           >
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/stats"
             className="text-foreground/60 hover:text-foreground"
           >
-            Stats
+            {t("common.nav.stats")}
           </Link>
           <Link
             href="/verify-bulk"
             className="text-foreground/60 hover:text-foreground"
           >
-            Bulk Verify
+            {t("common.nav.bulkVerify")}
           </Link>
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"
           >
-            Dashboard
+            {t("common.nav.dashboard")}
           </Link>
         </div>
-        <h1 className="text-3xl mt-8 mb-2">Invalid hash format.</h1>
+        <h1 className="text-3xl mt-8 mb-2">{t("verify.invalidHash.title")}</h1>
         <p className="text-foreground/70">
-          A valid hash is 64 lowercase hex characters.
+          {t("verify.invalidHash.body")}
         </p>
       </div>
     );
@@ -365,61 +367,61 @@ export default function VerifyPage() {
       <div className="flex items-center gap-4 text-sm flex-wrap">
         <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
+          {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
-          Search
+          {t("common.nav.search")}
         </Link>
         <Link
           href="/anchor"
           className="text-foreground/60 hover:text-foreground"
         >
-          Anchor
+          {t("common.nav.anchor")}
         </Link>
         <Link
           href="/anchors"
           className="text-foreground/60 hover:text-foreground"
         >
-          My Anchors
+          {t("common.nav.myAnchors")}
         </Link>
         <Link
           href="/groups"
           className="text-foreground/60 hover:text-foreground"
         >
-          Groups
+          {t("common.nav.groups")}
         </Link>
         <Link
           href="/feed"
           className="text-foreground/60 hover:text-foreground"
         >
-          Feed
+          {t("common.nav.feed")}
         </Link>
         <Link
           href="/stats"
           className="text-foreground/60 hover:text-foreground"
         >
-          Stats
+          {t("common.nav.stats")}
         </Link>
         <Link
           href="/dashboard"
           className="text-foreground/60 hover:text-foreground"
         >
-          Dashboard
+          {t("common.nav.dashboard")}
         </Link>
       </div>
-      <h1 className="text-3xl mt-8 mb-6">Anchor record</h1>
+      <h1 className="text-3xl mt-8 mb-6">{t("verify.recordTitle")}</h1>
 
       <div className="rounded-lg border border-foreground/10 bg-card p-6">
         <div className="mb-4">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-            Hash (SHA-256)
+            {t("verify.fields.hash")}
           </div>
           <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
         </div>
 
         <div role="status" aria-live="polite" aria-busy={loading || undefined}>
         {loading ? (
-          <p className="text-foreground/60">Looking up on chain...</p>
+          <p className="text-foreground/60">{t("verify.lookingUp")}</p>
         ) : error ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <p className="text-red-600 dark:text-red-400" role="alert">
@@ -429,18 +431,18 @@ export default function VerifyPage() {
               onClick={() => void loadAnchor()}
               className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Try again
+              {t("common.actions.tryAgain")}
             </button>
           </div>
         ) : !preferGroup && preferBatch && batchAnchor && batchOwner ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <p className="text-foreground/80 text-sm mb-3">
-              Anchored via batch transaction
+              {t("verify.batch.heading")}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Owner
+                  {t("verify.fields.owner")}
                 </div>
                 <a
                   href={explorerAddressUrl(batchOwner)}
@@ -453,15 +455,15 @@ export default function VerifyPage() {
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Label
+                  {t("verify.fields.label")}
                 </div>
                 <code className="font-mono text-xs md:text-sm">
-                  {batchAnchor.label || "(none)"}
+                  {batchAnchor.label || t("verify.fields.noLabel")}
                 </code>
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Stacks block
+                  {t("verify.fields.stacksBlock")}
                 </div>
                 <code className="font-mono text-sm">
                   {batchAnchor.stacksBlock}
@@ -469,7 +471,7 @@ export default function VerifyPage() {
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Burn block
+                  {t("verify.fields.burnBlock")}
                 </div>
                 <code className="font-mono text-sm">
                   {batchAnchor.burnBlock}
@@ -477,7 +479,7 @@ export default function VerifyPage() {
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Batch ID
+                  {t("verify.fields.batchId")}
                 </div>
                 <code className="font-mono text-sm">
                   #{batchAnchor.batchId}
@@ -489,17 +491,21 @@ export default function VerifyPage() {
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-foreground/20 text-foreground/70 uppercase tracking-wide">
-                Group anchor
+                {t("verify.group.badge")}
               </span>
               <p className="text-foreground/80 text-sm">
-                Anchored in Group #{groupAnchor.groupId}
-                {groupAnchor.groupName ? ` (${groupAnchor.groupName})` : ""}
+                {groupAnchor.groupName
+                  ? t("verify.group.anchoredInNamed", {
+                      id: groupAnchor.groupId,
+                      name: groupAnchor.groupName,
+                    })
+                  : t("verify.group.anchoredIn", { id: groupAnchor.groupId })}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Anchored by
+                  {t("verify.fields.anchoredBy")}
                 </div>
                 <a
                   href={explorerAddressUrl(groupAnchor.anchoredBy)}
@@ -512,15 +518,15 @@ export default function VerifyPage() {
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Label
+                  {t("verify.fields.label")}
                 </div>
                 <code className="font-mono text-xs md:text-sm">
-                  {groupAnchor.label || "(none)"}
+                  {groupAnchor.label || t("verify.fields.noLabel")}
                 </code>
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Stacks block
+                  {t("verify.fields.stacksBlock")}
                 </div>
                 <code className="font-mono text-sm">
                   {groupAnchor.stacksBlock}
@@ -528,13 +534,13 @@ export default function VerifyPage() {
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  Group
+                  {t("verify.fields.group")}
                 </div>
                 <Link
                   href={`/groups/${groupAnchor.groupId}`}
                   className="text-sm underline hover:no-underline"
                 >
-                  View group history
+                  {t("verify.group.viewHistory")}
                 </Link>
               </div>
             </div>
@@ -543,8 +549,7 @@ export default function VerifyPage() {
           txId ? (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
-                Transaction submitted. Waiting for it to be confirmed on
-                chain. This can take a few minutes and updates automatically.
+                {t("verify.pending.body")}
               </p>
               <a
                 href={explorerTxUrl(txId)}
@@ -552,26 +557,26 @@ export default function VerifyPage() {
                 rel="noreferrer"
                 className="inline-block mt-3 text-sm underline hover:no-underline"
               >
-                View transaction in the explorer
+                {t("verify.pending.viewTx")}
               </a>
             </div>
           ) : (
             <div className="mt-4 pt-4 border-t border-foreground/10">
               <p className="text-foreground/80">
-                This hash has not been anchored.
+                {t("verify.notAnchored.body")}
               </p>
               {!batchOwner && (
                 <p className="mt-3 text-sm text-foreground/70">
-                  If this was batch-anchored, add{" "}
+                  {t("verify.notAnchored.batchHintPrefix")}{" "}
                   <code className="font-mono">?owner=&lt;principal&gt;</code>{" "}
-                  to the URL or connect the anchoring wallet to verify.
+                  {t("verify.notAnchored.batchHintSuffix")}
                 </p>
               )}
               <Link
                 href="/anchor"
                 className="inline-block mt-3 text-sm underline hover:no-underline"
               >
-                Anchor a document
+                {t("verify.notAnchored.cta")}
               </Link>
             </div>
           )
@@ -579,7 +584,7 @@ export default function VerifyPage() {
           <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                Anchored by
+                {t("verify.fields.anchoredBy")}
               </div>
               <a
                 href={explorerAddressUrl(anchor.anchoredBy)}
@@ -592,21 +597,21 @@ export default function VerifyPage() {
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                Label
+                {t("verify.fields.label")}
               </div>
               <code className="font-mono text-xs md:text-sm">
-                {anchor.label || "(none)"}
+                {anchor.label || t("verify.fields.noLabel")}
               </code>
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                Stacks block
+                {t("verify.fields.stacksBlock")}
               </div>
               <code className="font-mono text-sm">{anchor.stacksBlock}</code>
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                Burn block
+                {t("verify.fields.burnBlock")}
               </div>
               <code className="font-mono text-sm">{anchor.burnBlock}</code>
             </div>
@@ -618,10 +623,10 @@ export default function VerifyPage() {
       {proof && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-            Proof NFT
+            {t("verify.proof.heading")}
           </div>
           <p className="text-sm text-foreground/80">
-            Proof NFT #{proof.tokenId} minted by{" "}
+            {t("verify.proof.mintedByPrefix", { tokenId: proof.tokenId })}{" "}
             <a
               href={explorerAddressUrl(proof.anchoredBy)}
               target="_blank"
@@ -636,23 +641,22 @@ export default function VerifyPage() {
 
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
-          <h2 className="text-xl mb-2">Share this verification</h2>
+          <h2 className="text-xl mb-2">{t("verify.share.heading")}</h2>
           <p className="text-foreground/70 text-sm mb-4">
-            Anyone with this link can confirm the timestamp without you ever
-            sending the file.
+            {t("verify.share.body")}
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={copyShareUrl}
               disabled={!publicVerifyUrl}
-              aria-label="Copy verification link to clipboard"
+              aria-label={t("verify.share.copyLinkAria")}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedShare
-                ? "Link copied"
+                ? t("verify.share.linkCopied")
                 : copyShareFailed
-                  ? "Copy failed"
-                  : "Copy verification link"}
+                  ? t("verify.share.copyFailed")
+                  : t("verify.share.copyLink")}
             </button>
             <button
               onClick={() => {
@@ -692,10 +696,10 @@ export default function VerifyPage() {
                   });
                 }
               }}
-              aria-label="Download verification certificate"
+              aria-label={t("verify.share.downloadCertAria")}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Download certificate
+              {t("verify.share.downloadCert")}
             </button>
             {publicVerifyUrl ? (
               <a
@@ -704,14 +708,14 @@ export default function VerifyPage() {
                 rel="noreferrer"
                 className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
               >
-                Share on X
+                {t("verify.share.shareOnX")}
               </a>
             ) : (
               <button
                 disabled
                 className="text-sm px-3 py-2 rounded-md bg-heading text-background opacity-50 cursor-not-allowed"
               >
-                Share on X
+                {t("verify.share.shareOnX")}
               </button>
             )}
           </div>
@@ -720,16 +724,15 @@ export default function VerifyPage() {
 
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
-          <h2 className="text-xl mb-2">Embed a badge</h2>
+          <h2 className="text-xl mb-2">{t("verify.embed.heading")}</h2>
           <p className="text-foreground/70 text-sm mb-4">
-            Drop this badge into a README, website, or submission to show the
-            anchor is live on Stacks.
+            {t("verify.embed.body")}
           </p>
           {badgeSrc && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={badgeSrc}
-              alt="ThesisLock verification badge"
+              alt={t("verify.embed.badgeAlt")}
               height={20}
               className="mb-4"
             />
@@ -741,10 +744,10 @@ export default function VerifyPage() {
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedEmbed === "markdown"
-                ? "Markdown copied"
+                ? t("verify.embed.markdownCopied")
                 : copyEmbedFailed
-                  ? "Copy failed"
-                  : "Copy Markdown"}
+                  ? t("verify.embed.copyFailed")
+                  : t("verify.embed.copyMarkdown")}
             </button>
             <button
               onClick={() => void copyEmbed("html")}
@@ -752,35 +755,35 @@ export default function VerifyPage() {
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
             >
               {copiedEmbed === "html"
-                ? "HTML copied"
+                ? t("verify.embed.htmlCopied")
                 : copyEmbedFailed
-                  ? "Copy failed"
-                  : "Copy HTML"}
+                  ? t("verify.embed.copyFailed")
+                  : t("verify.embed.copyHtml")}
             </button>
             <Link
               href="/embed"
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Customize
+              {t("verify.embed.customize")}
             </Link>
           </div>
         </div>
       )}
 
       <div className="mt-10 rounded-lg border border-foreground/10 bg-card p-6">
-        <h2 className="text-xl mb-2">Verify a file</h2>
+        <h2 className="text-xl mb-2">{t("verify.file.heading")}</h2>
         <p className="text-foreground/70 text-sm mb-4">
-          Pick a file. The browser will hash it and compare to the anchored hash.
+          {t("verify.file.body")}
         </p>
         <FileDropZone
           onFile={(f) => void onVerifyFile(f)}
-          ariaLabel="Choose a file to verify against this hash, or drop one here"
+          ariaLabel={t("verify.file.dropAria")}
         >
           {verifyFile ? (
             <p className="text-foreground/80 font-medium">{verifyFile.name}</p>
           ) : (
             <p className="text-foreground/60">
-              Drop a file here, or click to choose one
+              {t("verify.file.dropPrompt")}
             </p>
           )}
         </FileDropZone>
@@ -791,15 +794,15 @@ export default function VerifyPage() {
                 {verifyError}
               </p>
             ) : verifying ? (
-              <p className="text-foreground/60">Hashing...</p>
+              <p className="text-foreground/60">{t("verify.file.hashing")}</p>
             ) : verifyHash ? (
               verifyHash === hash ? (
                 <p className="text-green-700 dark:text-green-400">
-                  Match. This file is the anchored document.
+                  {t("verify.file.match")}
                 </p>
               ) : (
                 <p className="text-red-600 dark:text-red-400">
-                  No match. This is a different file.
+                  {t("verify.file.noMatch")}
                 </p>
               )
             ) : null}

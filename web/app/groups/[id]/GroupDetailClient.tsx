@@ -21,6 +21,7 @@ import { fetchGroupMembers } from "@/lib/groups";
 import { formatBytes } from "@/lib/format";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import FileDropZone from "@/app/components/FileDropZone";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
@@ -31,6 +32,7 @@ function truncateHash(hash: string): string {
 }
 
 export default function GroupDetailPage() {
+  const { t } = useI18n();
   const params = useParams<{ id: string }>();
   const groupId = Number(params.id);
   const validId = Number.isInteger(groupId) && groupId > 0;
@@ -67,7 +69,7 @@ export default function GroupDetailPage() {
   const load = useCallback(async () => {
     if (!validId) {
       setLoading(false);
-      setLoadError("Invalid group id.");
+      setLoadError(t("groups.detail.invalidId"));
       return;
     }
     setLoading(true);
@@ -84,11 +86,11 @@ export default function GroupDetailPage() {
       setAnchors(recent.filter((a): a is GroupAnchor => a !== null));
       setMembers(mems);
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Failed to load group.");
+      setLoadError(e instanceof Error ? e.message : t("groups.detail.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [groupId, validId]);
+  }, [groupId, validId, t]);
 
   useEffect(() => {
     void load();
@@ -110,7 +112,7 @@ export default function GroupDetailPage() {
   const submitAddMember = () => {
     const value = newMember.trim().toUpperCase();
     if (!STX_PRINCIPAL.test(value)) {
-      setMemberError("Enter a valid Stacks principal (starts with SP or SM).");
+      setMemberError(t("groups.detail.invalidPrincipal"));
       return;
     }
     setMemberError(null);
@@ -157,15 +159,15 @@ export default function GroupDetailPage() {
     try {
       setHash(await hashFile(selected));
     } catch (e) {
-      setHashError(e instanceof Error ? e.message : "Could not hash this file.");
+      setHashError(e instanceof Error ? e.message : t("groups.detail.hashError"));
     } finally {
       setHashing(false);
     }
-  }, []);
+  }, [t]);
 
   const onLabelChange = (next: string) => {
     if (!ASCII_REGEX.test(next)) {
-      setLabelError("Labels must be ASCII only.");
+      setLabelError(t("groups.detail.labelAsciiError"));
       setLabel(next.slice(0, 64));
       return;
     }
@@ -198,39 +200,39 @@ export default function GroupDetailPage() {
         <div className="flex items-center gap-4 text-sm">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
-            Search
+            {t("common.nav.search")}
           </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"
           >
-            Groups
+            {t("common.nav.groups")}
           </Link>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"
           >
-            Dashboard
+            {t("common.nav.dashboard")}
           </Link>
         </div>
         {address ? (
           <button
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title="Disconnect"
-            aria-label="Disconnect wallet"
+            title={t("common.wallet.disconnect")}
+            aria-label={t("common.wallet.disconnectAria")}
           >
             {truncateAddress(address)}
           </button>
@@ -240,7 +242,7 @@ export default function GroupDetailPage() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
       </div>
@@ -252,46 +254,52 @@ export default function GroupDetailPage() {
       )}
 
       {loading ? (
-        <p className="text-foreground/60">Loading group...</p>
+        <p className="text-foreground/60">{t("groups.detail.loadingGroup")}</p>
       ) : loadError ? (
         <p className="text-red-600 dark:text-red-400">{loadError}</p>
       ) : !group ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
-            Group #{params.id} does not exist.
+            {t("groups.detail.notFound", { id: params.id })}
           </p>
           <Link
             href="/groups"
             className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
           >
-            Back to groups
+            {t("groups.detail.backToGroups")}
           </Link>
         </div>
       ) : (
         <>
           <h1 className="text-3xl mb-2">{group.name}</h1>
           <div className="text-sm text-foreground/60 mb-8">
-            Group #{groupId} &middot; admin{" "}
+            {t("groups.detail.metaPrefix", { id: groupId })}{" "}
             <code className="font-mono">{truncateAddress(group.admin)}</code>{" "}
-            &middot; {members.length} member{members.length === 1 ? "" : "s"}{" "}
-            &middot; {anchorCount} anchor{anchorCount === 1 ? "" : "s"}
+            &middot;{" "}
+            {members.length === 1
+              ? t("groups.memberCountOne", { count: members.length })
+              : t("groups.memberCountOther", { count: members.length })}{" "}
+            &middot;{" "}
+            {anchorCount === 1
+              ? t("groups.anchorCountOne", { count: anchorCount })
+              : t("groups.anchorCountOther", { count: anchorCount })}
           </div>
 
           {isAdmin && (
             <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
-              <h2 className="text-lg mb-3">Members</h2>
+              <h2 className="text-lg mb-3">{t("groups.detail.membersHeading")}</h2>
               <label
                 htmlFor="new-member"
                 className="block text-sm text-foreground/60 mb-2"
               >
-                Add a member by Stacks principal
+                {t("groups.detail.addMemberLabel")}
               </label>
               <div className="flex gap-2 flex-wrap">
                 <input
                   id="new-member"
                   value={newMember}
                   onChange={(e) => setNewMember(e.target.value)}
-                  placeholder="SP..."
+                  placeholder={t("groups.detail.principalPlaceholder")}
                   disabled={addPending}
                   aria-invalid={memberError ? true : undefined}
                   className="flex-1 min-w-0 px-3 py-2 rounded-md border border-foreground/15 bg-card font-mono text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
@@ -301,7 +309,7 @@ export default function GroupDetailPage() {
                   disabled={addPending || !newMember.trim()}
                   className="text-sm px-4 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-40 transition"
                 >
-                  {addPending ? "Signing..." : "Add"}
+                  {addPending ? t("groups.detail.signing") : t("groups.detail.add")}
                 </button>
               </div>
               {memberError && (
@@ -310,7 +318,7 @@ export default function GroupDetailPage() {
                 </p>
               )}
               <p className="mt-2 text-xs text-foreground/50">
-                After the transaction confirms, refresh to see the updated list.
+                {t("groups.detail.refreshHint")}
               </p>
 
               <ul className="mt-4 space-y-2" role="list">
@@ -321,7 +329,7 @@ export default function GroupDetailPage() {
                   >
                     <code className="font-mono truncate">
                       {truncateAddress(m, 6, 6)}
-                      {m === group.admin ? " (admin)" : ""}
+                      {m === group.admin ? t("groups.detail.adminSuffix") : ""}
                     </code>
                     {m !== group.admin && (
                       <button
@@ -329,7 +337,7 @@ export default function GroupDetailPage() {
                         disabled={removingMember === m}
                         className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50 shrink-0"
                       >
-                        {removingMember === m ? "Signing..." : "Remove"}
+                        {removingMember === m ? t("groups.detail.signing") : t("groups.detail.remove")}
                       </button>
                     )}
                   </li>
@@ -339,22 +347,20 @@ export default function GroupDetailPage() {
           )}
 
           <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
-            <h2 className="text-lg mb-1">Anchor a document to this group</h2>
+            <h2 className="text-lg mb-1">{t("groups.detail.anchorHeading")}</h2>
             <p className="text-foreground/70 text-sm mb-4">
-              The file is hashed in your browser. Only the hash is recorded on
-              chain.
+              {t("groups.detail.anchorIntro")}
             </p>
             {!member ? (
               <p className="text-sm text-amber-700 dark:text-amber-400">
-                Only group members can anchor documents here. Ask the admin to
-                add your wallet.
+                {t("groups.detail.notMember")}
               </p>
             ) : (
               <>
                 <FileDropZone
                   onFile={(f) => void onFileSelect(f)}
                   disabled={anchorPending}
-                  ariaLabel="Drop a file here to hash it, or click to choose one"
+                  ariaLabel={t("groups.detail.dropZoneAria")}
                 >
                   {file ? (
                     <p className="text-foreground/80">
@@ -365,7 +371,7 @@ export default function GroupDetailPage() {
                     </p>
                   ) : (
                     <p className="text-foreground/60">
-                      Drop a file here, or click to choose one
+                      {t("groups.detail.dropZoneLabel")}
                     </p>
                   )}
                 </FileDropZone>
@@ -383,7 +389,7 @@ export default function GroupDetailPage() {
                     </div>
                     {hashing ? (
                       <p className="font-mono text-sm text-foreground/50">
-                        Hashing...
+                        {t("groups.detail.hashing")}
                       </p>
                     ) : (
                       <code className="font-mono text-xs break-all bg-foreground/5 px-3 py-2 rounded block">
@@ -398,13 +404,13 @@ export default function GroupDetailPage() {
                     htmlFor="anchor-label"
                     className="block text-sm text-foreground/60 mb-2"
                   >
-                    Label (optional, ASCII, up to 64 chars)
+                    {t("groups.detail.labelLabel")}
                   </label>
                   <input
                     id="anchor-label"
                     value={label}
                     onChange={(e) => onLabelChange(e.target.value)}
-                    placeholder="e.g. chapter-3-draft"
+                    placeholder={t("groups.detail.labelPlaceholder")}
                     maxLength={64}
                     disabled={anchorPending}
                     aria-invalid={labelError ? true : undefined}
@@ -429,27 +435,27 @@ export default function GroupDetailPage() {
                   className="mt-4 px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
                 >
                   {anchorPending
-                    ? "Awaiting wallet signature..."
-                    : "Anchor to group"}
+                    ? t("groups.detail.awaitingSignature")
+                    : t("groups.detail.anchorSubmit")}
                 </button>
 
                 {anchorTxId && (
                   <p className="mt-4 text-sm text-green-700 dark:text-green-400">
-                    Anchor submitted.{" "}
+                    {t("groups.detail.anchorSubmitted")}{" "}
                     <a
                       href={explorerTxUrl(anchorTxId)}
                       target="_blank"
                       rel="noreferrer"
                       className="underline hover:no-underline"
                     >
-                      View transaction
+                      {t("groups.viewTransaction")}
                     </a>
-                    . It will appear below once confirmed.{" "}
+                    {t("groups.detail.appearOnConfirm")}{" "}
                     <button
                       onClick={() => void load()}
                       className="underline hover:no-underline"
                     >
-                      Refresh
+                      {t("groups.refresh")}
                     </button>
                   </p>
                 )}
@@ -458,24 +464,22 @@ export default function GroupDetailPage() {
           </div>
 
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg">Recent anchors</h2>
+            <h2 className="text-lg">{t("groups.detail.recentHeading")}</h2>
             <button
               onClick={() => void load()}
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Refresh
+              {t("groups.refresh")}
             </button>
           </div>
           <p className="text-foreground/60 text-sm mb-4">
-            Group anchors live in the thesislock-groups contract, keyed by group
-            and index. Copy a hash to confirm it on chain against this
-            group&apos;s history.
+            {t("groups.detail.recentIntro")}
           </p>
 
           {anchors.length === 0 ? (
             <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
               <p className="text-foreground/70">
-                No documents anchored to this group yet.
+                {t("groups.detail.recentEmpty")}
               </p>
             </div>
           ) : (
@@ -489,7 +493,7 @@ export default function GroupDetailPage() {
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="min-w-0 flex-1">
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Hash
+                        {t("groups.detail.hashFieldLabel")}
                       </div>
                       <code className="font-mono text-sm">
                         {truncateHash(anchor.hash)}
@@ -497,24 +501,24 @@ export default function GroupDetailPage() {
                     </div>
                     <button
                       onClick={() => void copyHash(anchor.hash)}
-                      aria-label="Copy hash"
+                      aria-label={t("groups.detail.copyHashAria")}
                       className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                     >
-                      {copiedHash === anchor.hash ? "Copied" : "Copy hash"}
+                      {copiedHash === anchor.hash ? t("common.actions.copied") : t("groups.detail.copyHash")}
                     </button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Label
+                        {t("groups.detail.labelFieldLabel")}
                       </div>
                       <code className="font-mono text-xs">
-                        {anchor.label || "(none)"}
+                        {anchor.label || t("groups.detail.labelNone")}
                       </code>
                     </div>
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Anchored by
+                        {t("groups.detail.anchoredByLabel")}
                       </div>
                       <code className="font-mono text-xs">
                         {truncateAddress(anchor.anchoredBy)}
@@ -522,7 +526,7 @@ export default function GroupDetailPage() {
                     </div>
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Stacks block
+                        {t("groups.detail.stacksBlockLabel")}
                       </div>
                       <code className="font-mono text-xs">
                         {anchor.stacksBlock}

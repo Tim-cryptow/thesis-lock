@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
@@ -15,9 +16,9 @@ const SINGLE_CONTRACT_NAME =
   process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 
 const CONTRACTS = [
-  { name: SINGLE_CONTRACT_NAME, label: "Single anchor" },
-  { name: "thesislock-batch", label: "Batch anchor" },
-  { name: "thesislock-registry", label: "Registry" },
+  { name: SINGLE_CONTRACT_NAME, labelId: "single" },
+  { name: "thesislock-batch", labelId: "batch" },
+  { name: "thesislock-registry", labelId: "registry" },
 ];
 
 function formatNumber(n: number): string {
@@ -46,6 +47,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 }
 
 export default function StatsClient() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<ProtocolStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,11 +61,11 @@ export default function StatsClient() {
       const data = (await res.json()) as ProtocolStats;
       setStats(data);
     } catch {
-      setError("Could not load protocol stats. Try again soon.");
+      setError(t("stats.error"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -78,50 +80,50 @@ export default function StatsClient() {
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
         <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
+          {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
-          Search
+          {t("common.nav.search")}
         </Link>
         <Link
           href="/anchor"
           className="text-foreground/60 hover:text-foreground"
         >
-          Anchor
+          {t("common.nav.anchor")}
         </Link>
         <Link
           href="/anchors"
           className="text-foreground/60 hover:text-foreground"
         >
-          My Anchors
+          {t("common.nav.myAnchors")}
         </Link>
         <Link
           href="/groups"
           className="text-foreground/60 hover:text-foreground"
         >
-          Groups
+          {t("common.nav.groups")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
-          Feed
+          {t("common.nav.feed")}
         </Link>
-        <span className="text-foreground font-medium">Stats</span>
+        <span className="text-foreground font-medium">{t("common.nav.stats")}</span>
         <Link
           href="/verify-bulk"
           className="text-foreground/60 hover:text-foreground"
         >
-          Bulk Verify
+          {t("common.nav.bulkVerify")}
         </Link>
         <Link
           href="/dashboard"
           className="text-foreground/60 hover:text-foreground"
         >
-          Dashboard
+          {t("common.nav.dashboard")}
         </Link>
       </div>
 
-      <h1 className="text-3xl mb-2">Protocol stats</h1>
+      <h1 className="text-3xl mb-2">{t("stats.title")}</h1>
       <p className="text-foreground/70 mb-8">
-        On-chain activity across the ThesisLock contracts on Stacks mainnet.
+        {t("stats.subtitle")}
       </p>
 
       {error ? (
@@ -147,19 +149,19 @@ export default function StatsClient() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
-              label="Total anchors"
+              label={t("stats.totalAnchors")}
               value={formatNumber(stats.totalAnchors)}
             />
             <StatCard
-              label="Unique wallets"
+              label={t("stats.uniqueWallets")}
               value={formatNumber(stats.uniqueWallets)}
             />
             <StatCard
-              label="Contracts deployed"
+              label={t("stats.contractsDeployed")}
               value={formatNumber(stats.contractsDeployed)}
             />
             <StatCard
-              label="Latest block"
+              label={t("stats.latestBlock")}
               value={
                 stats.latestAnchorBlock
                   ? formatNumber(stats.latestAnchorBlock)
@@ -170,15 +172,15 @@ export default function StatsClient() {
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
-              Activity per day
+              {t("stats.activityPerDay")}
             </h2>
             {stats.anchorsByDay.length === 0 ? (
-              <p className="text-sm text-foreground/60">No activity yet.</p>
+              <p className="text-sm text-foreground/60">{t("stats.noActivity")}</p>
             ) : (
               <div
                 className="flex items-end gap-1 h-40"
                 role="img"
-                aria-label="Daily anchor activity bar chart"
+                aria-label={t("stats.chartAria")}
               >
                 {stats.anchorsByDay.map((d) => {
                   const pct = maxDayCount
@@ -218,7 +220,7 @@ export default function StatsClient() {
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
-              Deployed contracts
+              {t("stats.deployedContracts")}
             </h2>
             <ul className="space-y-3">
               {CONTRACTS.map((c) => (
@@ -229,7 +231,7 @@ export default function StatsClient() {
                   <div className="min-w-0">
                     <code className="font-mono text-sm">{c.name}</code>
                     <span className="ml-2 text-xs text-foreground/50">
-                      {c.label}
+                      {t(`stats.contract.${c.labelId}`)}
                     </span>
                   </div>
                   <a
@@ -238,25 +240,34 @@ export default function StatsClient() {
                     rel="noreferrer"
                     className="text-xs underline hover:no-underline shrink-0"
                   >
-                    View on explorer &rarr;
+                    {t("stats.viewOnExplorer")}
                   </a>
                 </li>
               ))}
             </ul>
             <div className="mt-4 text-xs text-foreground/50 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <span>
-                Single anchors:{" "}
-                {formatNumber(stats.totalAnchors - stats.totalBatchAnchors)}
+                {t("stats.singleAnchors", {
+                  count: formatNumber(
+                    stats.totalAnchors - stats.totalBatchAnchors,
+                  ),
+                })}
               </span>
               <span>
-                Batch anchors: {formatNumber(stats.totalBatchAnchors)}
+                {t("stats.batchAnchors", {
+                  count: formatNumber(stats.totalBatchAnchors),
+                })}
               </span>
               <span>
-                Registrations: {formatNumber(stats.totalRegistrations)}
+                {t("stats.registrations", {
+                  count: formatNumber(stats.totalRegistrations),
+                })}
               </span>
               {stats.firstAnchorBlock > 0 && (
                 <span>
-                  First block: {formatNumber(stats.firstAnchorBlock)}
+                  {t("stats.firstBlock", {
+                    count: formatNumber(stats.firstAnchorBlock),
+                  })}
                 </span>
               )}
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "./I18nProvider";
 
 const DISMISS_KEY = "thesislock.pwa.dismissed";
 
@@ -10,6 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function InstallPrompt() {
+  const { t } = useI18n();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
     null,
   );
@@ -66,7 +68,7 @@ export default function InstallPrompt() {
     <div className="fixed bottom-16 left-4 right-4 z-40 sm:left-auto sm:right-4 sm:max-w-sm">
       <div className="rounded-lg border border-foreground/15 bg-card p-4 shadow-lg">
         <p className="text-sm text-foreground/80">
-          Install ThesisLock for quick access
+          {t("common.install.prompt")}
         </p>
         <div className="mt-3 flex items-center justify-end gap-2">
           <button
@@ -74,14 +76,14 @@ export default function InstallPrompt() {
             onClick={dismiss}
             className="rounded-md px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition"
           >
-            Dismiss
+            {t("common.actions.dismiss")}
           </button>
           <button
             type="button"
             onClick={() => void install()}
             className="rounded-md bg-heading px-4 py-1.5 text-sm font-medium text-background hover:opacity-90 transition"
           >
-            Install
+            {t("common.actions.install")}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SHORTCUTS } from "./KeyboardShortcuts";
+import { useI18n } from "./I18nProvider";
 
 function useModLabel(): string {
   const [isMac, setIsMac] = useState(false);
@@ -27,6 +28,7 @@ export default function ShortcutsModal({
   onClose: () => void;
 }) {
   const modLabel = useModLabel();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!open) return;
@@ -51,16 +53,18 @@ export default function ShortcutsModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Keyboard shortcuts"
+        aria-label={t("common.shortcuts.title")}
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md rounded-lg border border-foreground/15 bg-card p-6 shadow-xl"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg text-heading">Keyboard shortcuts</h2>
+          <h2 className="text-lg text-heading">
+            {t("common.shortcuts.title")}
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("common.shortcuts.close")}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md text-foreground/50 hover:bg-foreground/5 hover:text-foreground transition"
           >
             &times;
@@ -70,7 +74,7 @@ export default function ShortcutsModal({
         <dl className="grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-3">
           {SHORTCUTS.map((shortcut) => (
             <div
-              key={`${shortcut.keys.join("+")}-${shortcut.description}`}
+              key={`${shortcut.keys.join("+")}-${shortcut.descriptionKey}`}
               className="contents"
             >
               <dt className="flex items-center gap-1">
@@ -79,7 +83,7 @@ export default function ShortcutsModal({
                 ))}
               </dt>
               <dd className="text-sm text-foreground/70">
-                {shortcut.description}
+                {t(`common.shortcuts.items.${shortcut.descriptionKey}`)}
               </dd>
             </div>
           ))}

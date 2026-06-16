@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import type { ProtocolStats } from "@/lib/stats";
 import AnimatedCounter from "@/app/components/AnimatedCounter";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const STATIC_CONTRACTS = 5;
 
 export default function StatsBar() {
+  const { t } = useI18n();
   const [stats, setStats] = useState<ProtocolStats | null>(null);
 
   useEffect(() => {
@@ -23,10 +25,19 @@ export default function StatsBar() {
   }, []);
 
   const items = [
-    { label: "Documents anchored", value: stats?.totalAnchors ?? 0 },
-    { label: "Unique wallets", value: stats?.uniqueWallets ?? 0 },
-    { label: "Smart contracts", value: STATIC_CONTRACTS },
-    { label: "Transactions", value: stats?.totalTransactions ?? 0 },
+    {
+      label: t("landing.statsBar.documentsAnchored"),
+      value: stats?.totalAnchors ?? 0,
+    },
+    {
+      label: t("landing.statsBar.uniqueWallets"),
+      value: stats?.uniqueWallets ?? 0,
+    },
+    { label: t("landing.statsBar.smartContracts"), value: STATIC_CONTRACTS },
+    {
+      label: t("landing.statsBar.transactions"),
+      value: stats?.totalTransactions ?? 0,
+    },
   ];
 
   return (

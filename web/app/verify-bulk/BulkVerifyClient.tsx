@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { useI18n } from "@/app/components/I18nProvider";
 import {
   getProofByHash,
   hashFile,
@@ -38,16 +39,18 @@ function truncateHash(hash: string): string {
   return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
 }
 
-function statusLabel(status: RowStatus): string {
+// Maps a row status to a stable translation key id. The English label lives in
+// the dictionary; callers translate at the render/export site.
+function statusLabelKey(status: RowStatus): string {
   switch (status) {
     case "verified":
-      return "Verified";
+      return "bulkVerify.status.verified";
     case "notfound":
-      return "Not found";
+      return "bulkVerify.status.notFound";
     case "error":
-      return "Error";
+      return "bulkVerify.status.error";
     default:
-      return "Checking";
+      return "bulkVerify.status.checking";
   }
 }
 
@@ -58,6 +61,7 @@ function newId(file: File): string {
 }
 
 export default function BulkVerifyClient() {
+  const { t } = useI18n();
   const { address, connecting, connectWallet, disconnectWallet } = useWallet();
   const [rows, setRows] = useState<Row[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -168,14 +172,14 @@ export default function BulkVerifyClient() {
       }
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : "Could not check this hash.";
+        e instanceof Error ? e.message : t("bulkVerify.errors.checkFailed");
       setRows((cur) =>
         cur.map((r) =>
           r.id === id ? { ...r, status: "error", message } : r,
         ),
       );
     }
-  }, []);
+  }, [t]);
 
   // Batch records are keyed by {hash, owner}, so a "not found" row only reflects
   // the wallet it was checked against. When the connected wallet changes (first
@@ -221,7 +225,7 @@ export default function BulkVerifyClient() {
           })
           .catch((e: unknown) => {
             const message =
-              e instanceof Error ? e.message : "Could not hash this file.";
+              e instanceof Error ? e.message : t("bulkVerify.errors.hashFailed");
             setRows((cur) =>
               cur.map((r) =>
                 r.id === row.id ? { ...r, status: "error", message } : r,
@@ -230,7 +234,7 @@ export default function BulkVerifyClient() {
           });
       });
     },
-    [resolve],
+    [resolve, t],
   );
 
   const onDrop = useCallback(
@@ -260,7 +264,7 @@ export default function BulkVerifyClient() {
       rows.map((r) => ({
         filename: r.file.name,
         hash: r.hash,
-        status: statusLabel(r.status),
+        status: t(statusLabelKey(r.status)),
         source: r.source,
         block: r.block,
       })),
@@ -283,55 +287,55 @@ export default function BulkVerifyClient() {
         <div className="flex items-center gap-4 text-sm">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
-            Search
+            {t("common.nav.search")}
           </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
           >
-            Anchor
+            {t("common.nav.anchor")}
           </Link>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"
           >
-            Groups
+            {t("common.nav.groups")}
           </Link>
           <Link
             href="/feed"
             className="text-foreground/60 hover:text-foreground"
           >
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/stats"
             className="text-foreground/60 hover:text-foreground"
           >
-            Stats
+            {t("common.nav.stats")}
           </Link>
-          <span className="text-foreground font-medium">Bulk Verify</span>
+          <span className="text-foreground font-medium">{t("common.nav.bulkVerify")}</span>
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"
           >
-            Dashboard
+            {t("common.nav.dashboard")}
           </Link>
         </div>
         {address ? (
           <button
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title="Disconnect"
-            aria-label="Disconnect wallet"
+            title={t("common.wallet.disconnect")}
+            aria-label={t("common.wallet.disconnectAria")}
           >
             {truncateAddress(address)}
           </button>
@@ -341,22 +345,20 @@ export default function BulkVerifyClient() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
       </div>
 
-      <h1 className="text-3xl mb-2">Bulk verify</h1>
+      <h1 className="text-3xl mb-2">{t("bulkVerify.heading")}</h1>
       <p className="text-foreground/70 mb-8">
-        Drop multiple documents to check them all against the chain at once.
-        Files are hashed in your browser and never uploaded. Connect your wallet
-        to also resolve batch anchors keyed to your principal.
+        {t("bulkVerify.intro")}
       </p>
 
       <div
         role="button"
         tabIndex={0}
-        aria-label="Drop files here to verify them, or click to choose"
+        aria-label={t("bulkVerify.dropzone.aria")}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -387,7 +389,7 @@ export default function BulkVerifyClient() {
           }}
         />
         <p className="text-foreground/60">
-          Drop files here, or click to choose. Add as many as you like.
+          {t("bulkVerify.dropzone.label")}
         </p>
       </div>
 
@@ -396,9 +398,19 @@ export default function BulkVerifyClient() {
           <div className="rounded-lg border border-foreground/10 bg-card p-4 mb-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <p className="text-sm font-medium" aria-live="polite">
-                {verifiedCount} of {total} file{total === 1 ? "" : "s"} verified
+                {total === 1
+                  ? t("bulkVerify.summary.verifiedOne", {
+                      verified: verifiedCount,
+                      total,
+                    })
+                  : t("bulkVerify.summary.verifiedMany", {
+                      verified: verifiedCount,
+                      total,
+                    })}
                 {settledCount < total
-                  ? ` (${total - settledCount} checking)`
+                  ? t("bulkVerify.summary.checkingSuffix", {
+                      count: total - settledCount,
+                    })
                   : ""}
               </p>
               <div className="flex gap-2">
@@ -406,13 +418,13 @@ export default function BulkVerifyClient() {
                   onClick={exportResults}
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                 >
-                  Export results
+                  {t("bulkVerify.actions.export")}
                 </button>
                 <button
                   onClick={clearAll}
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                 >
-                  Clear all
+                  {t("bulkVerify.actions.clearAll")}
                 </button>
               </div>
             </div>
@@ -430,7 +442,7 @@ export default function BulkVerifyClient() {
             </div>
           </div>
 
-          <h2 className="text-lg mb-4">Results</h2>
+          <h2 className="text-lg mb-4">{t("bulkVerify.results.heading")}</h2>
 
           <div className="space-y-3" role="list">
             {rows.map((row) => (
@@ -451,27 +463,29 @@ export default function BulkVerifyClient() {
                         </code>
                         <button
                           onClick={() => void copyHash(row.hash!)}
-                          aria-label="Copy hash"
+                          aria-label={t("bulkVerify.row.copyHashAria")}
                           className="text-xs px-2 py-0.5 rounded border border-foreground/15 hover:border-foreground/40 transition"
                         >
-                          {copiedHash === row.hash ? "Copied" : "Copy"}
+                          {copiedHash === row.hash
+                            ? t("common.actions.copied")
+                            : t("common.actions.copy")}
                         </button>
                       </div>
                     ) : (
                       <div className="mt-1 text-xs text-foreground/50 font-mono">
-                        Hashing...
+                        {t("bulkVerify.row.hashing")}
                       </div>
                     )}
                   </div>
                   <div className="text-right text-sm">
                     {row.status === "checking" ? (
-                      <span className="text-foreground/50">Checking...</span>
+                      <span className="text-foreground/50">{t("bulkVerify.row.checking")}</span>
                     ) : row.status === "verified" ? (
-                      <span className="text-green-700 dark:text-green-400">Verified &#10003;</span>
+                      <span className="text-green-700 dark:text-green-400">{t("bulkVerify.status.verified")} &#10003;</span>
                     ) : row.status === "notfound" ? (
-                      <span className="text-red-600 dark:text-red-400">Not found &#10007;</span>
+                      <span className="text-red-600 dark:text-red-400">{t("bulkVerify.status.notFound")} &#10007;</span>
                     ) : (
-                      <span className="text-amber-700 dark:text-amber-400">Error</span>
+                      <span className="text-amber-700 dark:text-amber-400">{t("bulkVerify.status.error")}</span>
                     )}
                   </div>
                 </div>
@@ -484,7 +498,7 @@ export default function BulkVerifyClient() {
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Source
+                        {t("bulkVerify.row.source")}
                       </div>
                       <code className="font-mono text-xs">
                         {row.source ?? "-"}
@@ -492,7 +506,7 @@ export default function BulkVerifyClient() {
                     </div>
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                        Stacks block
+                        {t("bulkVerify.row.stacksBlock")}
                       </div>
                       <code className="font-mono text-xs">
                         {row.block !== null ? row.block : "-"}
@@ -506,10 +520,12 @@ export default function BulkVerifyClient() {
                               ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
                               : `/v/${row.hash}`
                           }
-                          aria-label={`Open verify page for ${row.file.name}`}
+                          aria-label={t("bulkVerify.row.verifyAria", {
+                            name: row.file.name,
+                          })}
                           className="inline-flex text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                         >
-                          Verify &rarr;
+                          {t("bulkVerify.row.verifyLink")} &rarr;
                         </Link>
                       )}
                     </div>

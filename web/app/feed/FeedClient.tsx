@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
@@ -16,21 +17,29 @@ function truncateHash(h: string): string {
   return `${h.slice(0, 8)}...${h.slice(-6)}`;
 }
 
-function timeAgo(iso: string): string {
+type Translate = (key: string, params?: Record<string, string | number>) => string;
+
+function timeAgo(iso: string, t: Translate): string {
   if (!iso) return "";
   const then = new Date(iso).getTime();
   if (!then) return "";
   const sec = Math.max(0, Math.floor((Date.now() - then) / 1000));
-  if (sec < 60) return "just now";
+  if (sec < 60) return t("feed.time.justNow");
   const min = Math.floor(sec / 60);
-  if (min < 60) return `${min} min${min === 1 ? "" : "s"} ago`;
+  if (min < 60) {
+    return t(min === 1 ? "feed.time.minute" : "feed.time.minutes", { count: min });
+  }
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} hour${hr === 1 ? "" : "s"} ago`;
+  if (hr < 24) {
+    return t(hr === 1 ? "feed.time.hour" : "feed.time.hours", { count: hr });
+  }
   const day = Math.floor(hr / 24);
-  if (day < 30) return `${day} day${day === 1 ? "" : "s"} ago`;
+  if (day < 30) {
+    return t(day === 1 ? "feed.time.day" : "feed.time.days", { count: day });
+  }
   const mon = Math.floor(day / 30);
-  if (mon < 12) return `${mon} mo ago`;
-  return `${Math.floor(mon / 12)} yr ago`;
+  if (mon < 12) return t("feed.time.months", { count: mon });
+  return t("feed.time.years", { count: Math.floor(mon / 12) });
 }
 
 function verifyLinkFor(entry: FeedEntry): string {
@@ -51,6 +60,7 @@ function sourceBadgeClass(source: FeedEntry["source"]): string {
 }
 
 export default function FeedClient() {
+  const { t } = useI18n();
   const [entries, setEntries] = useState<FeedEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,13 +85,13 @@ export default function FeedClient() {
         setEntries(fresh);
         setHasMore(fresh.length >= n);
       } catch {
-        setError("Could not load the feed. Try again in a moment.");
+        setError(t("feed.errors.load"));
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [t],
   );
 
   useEffect(() => {
@@ -116,7 +126,7 @@ export default function FeedClient() {
         setHasMore(grown.length >= nextLimit);
       }
     } catch {
-      setError("Could not load more entries. Try again in a moment.");
+      setError(t("feed.errors.loadMore"));
     } finally {
       setLoadingMore(false);
     }
@@ -137,56 +147,55 @@ export default function FeedClient() {
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
         <div className="order-last ml-auto"><ThemeToggle /></div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
+          {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
-          Search
+          {t("common.nav.search")}
         </Link>
         <Link
           href="/anchor"
           className="text-foreground/60 hover:text-foreground"
         >
-          Anchor
+          {t("common.nav.anchor")}
         </Link>
         <Link
           href="/anchors"
           className="text-foreground/60 hover:text-foreground"
         >
-          My Anchors
+          {t("common.nav.myAnchors")}
         </Link>
         <Link
           href="/groups"
           className="text-foreground/60 hover:text-foreground"
         >
-          Groups
+          {t("common.nav.groups")}
         </Link>
-        <span className="text-foreground font-medium">Feed</span>
+        <span className="text-foreground font-medium">{t("common.nav.feed")}</span>
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
-          Stats
+          {t("common.nav.stats")}
         </Link>
         <Link
           href="/verify-bulk"
           className="text-foreground/60 hover:text-foreground"
         >
-          Bulk Verify
+          {t("common.nav.bulkVerify")}
         </Link>
         <Link
           href="/dashboard"
           className="text-foreground/60 hover:text-foreground"
         >
-          Dashboard
+          {t("common.nav.dashboard")}
         </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
-        <h1 className="text-3xl">Recent anchors</h1>
+        <h1 className="text-3xl">{t("feed.title")}</h1>
         {refreshing && (
-          <span className="text-xs text-foreground/50">Refreshing...</span>
+          <span className="text-xs text-foreground/50">{t("feed.refreshing")}</span>
         )}
       </div>
       <p className="text-foreground/70 mb-8">
-        Recent on-chain anchor activity from any wallet. Auto-refreshes every
-        minute.
+        {t("feed.subtitle")}
       </p>
 
       {error && entries.length > 0 && (
@@ -216,13 +225,13 @@ export default function FeedClient() {
       ) : entries.length === 0 ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
-            No anchors found yet. Be the first &mdash; anchor a document.
+            {t("feed.empty.message")}
           </p>
           <Link
             href="/anchor"
             className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
           >
-            Anchor a document
+            {t("feed.empty.cta")}
           </Link>
         </div>
       ) : (
@@ -241,11 +250,11 @@ export default function FeedClient() {
                           entry.source,
                         )}`}
                       >
-                        {entry.source}
+                        {t(`feed.source.${entry.source}`)}
                       </span>
                       <span className="text-xs text-foreground/50">
-                        {timeAgo(entry.timestamp) ||
-                          `block ${entry.stacksBlock}`}
+                        {timeAgo(entry.timestamp, t) ||
+                          t("feed.block", { block: entry.stacksBlock })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -256,20 +265,22 @@ export default function FeedClient() {
                         onClick={() => void copyHash(entry.hash)}
                         className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition"
                       >
-                        {copiedHash === entry.hash ? "Copied" : "Copy"}
+                        {copiedHash === entry.hash
+                          ? t("common.actions.copied")
+                          : t("common.actions.copy")}
                       </button>
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
-                        Label
+                        {t("feed.entry.label")}
                       </span>
                       <code className="font-mono text-xs">
-                        {entry.label || "(unlabeled)"}
+                        {entry.label || t("feed.entry.unlabeled")}
                       </code>
                     </div>
                     <div className="text-sm text-foreground/80">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
-                        By
+                        {t("feed.entry.by")}
                       </span>
                       <a
                         href={explorerAddressUrl(entry.owner)}
@@ -286,11 +297,11 @@ export default function FeedClient() {
                         rel="noreferrer"
                         className="text-xs underline hover:no-underline"
                       >
-                        tx
+                        {t("feed.entry.tx")}
                       </a>
                       <span className="mx-2 text-foreground/30">&middot;</span>
                       <span className="text-xs text-foreground/60 font-mono">
-                        block {entry.stacksBlock}
+                        {t("feed.block", { block: entry.stacksBlock })}
                       </span>
                     </div>
                   </div>
@@ -298,7 +309,7 @@ export default function FeedClient() {
                     href={verifyLinkFor(entry)}
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                   >
-                    Verify &rarr;
+                    {t("feed.entry.verify")}
                   </Link>
                 </div>
               </li>
@@ -311,11 +322,11 @@ export default function FeedClient() {
                 disabled={loadingMore}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {loadingMore ? "Loading..." : "Load more"}
+                {loadingMore ? t("feed.loadingMore") : t("feed.loadMore")}
               </button>
             ) : (
               <p className="text-xs text-foreground/50">
-                End of feed.
+                {t("feed.endOfFeed")}
               </p>
             )}
           </div>

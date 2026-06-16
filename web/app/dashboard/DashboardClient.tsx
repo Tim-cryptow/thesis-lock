@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import {
@@ -16,9 +17,9 @@ import type { WalletAnalytics } from "@/lib/analytics";
 const CHART_DAYS = 30;
 
 const SOURCE_META = [
-  { key: "single", label: "Single", bar: "bg-blue-500", dot: "bg-blue-500" },
-  { key: "batch", label: "Batch", bar: "bg-green-500", dot: "bg-green-500" },
-  { key: "group", label: "Group", bar: "bg-purple-500", dot: "bg-purple-500" },
+  { key: "single", id: "sourceSingle", bar: "bg-blue-500", dot: "bg-blue-500" },
+  { key: "batch", id: "sourceBatch", bar: "bg-green-500", dot: "bg-green-500" },
+  { key: "group", id: "sourceGroup", bar: "bg-purple-500", dot: "bg-purple-500" },
 ] as const;
 
 function formatNumber(n: number): string {
@@ -40,21 +41,24 @@ function truncateHash(hash: string): string {
   return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
 }
 
-function formatRelativeTime(iso: string): string {
+function formatRelativeTime(
+  iso: string,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
   if (!iso) return "";
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) return "";
   const seconds = Math.round((Date.now() - then) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("dashboard.timeJustNow");
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t("dashboard.timeMinutesAgo", { count: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("dashboard.timeHoursAgo", { count: hours });
   const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return t("dashboard.timeDaysAgo", { count: days });
   const months = Math.round(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.round(months / 12)}y ago`;
+  if (months < 12) return t("dashboard.timeMonthsAgo", { count: months });
+  return t("dashboard.timeYearsAgo", { count: Math.round(months / 12) });
 }
 
 type ChartDay = {
@@ -117,6 +121,7 @@ function StatCard({
 }
 
 export default function DashboardClient() {
+  const { t } = useI18n();
   const { address, connecting, connectWallet, disconnectWallet } = useWallet();
   const [analytics, setAnalytics] = useState<WalletAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
@@ -133,11 +138,11 @@ export default function DashboardClient() {
       const data = (await res.json()) as WalletAnalytics;
       setAnalytics(data);
     } catch {
-      setError("Could not load your analytics. Try again soon.");
+      setError(t("dashboard.loadError"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!address) {
@@ -171,7 +176,7 @@ export default function DashboardClient() {
         );
       }
     } catch (e) {
-      setExportError(e instanceof Error ? e.message : "Export failed.");
+      setExportError(e instanceof Error ? e.message : t("dashboard.exportError"));
       setTimeout(() => setExportError(null), 4000);
     } finally {
       setExporting(null);
@@ -200,48 +205,50 @@ export default function DashboardClient() {
             <ThemeToggle />
           </div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link
             href="/search"
             className="text-foreground/60 hover:text-foreground"
           >
-            Search
+            {t("common.nav.search")}
           </Link>
           <Link
             href="/anchor"
             className="text-foreground/60 hover:text-foreground"
           >
-            Anchor
+            {t("common.nav.anchor")}
           </Link>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"
           >
-            Groups
+            {t("common.nav.groups")}
           </Link>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/stats"
             className="text-foreground/60 hover:text-foreground"
           >
-            Stats
+            {t("common.nav.stats")}
           </Link>
-          <span className="text-foreground font-medium">Dashboard</span>
+          <span className="text-foreground font-medium">
+            {t("common.nav.dashboard")}
+          </span>
         </div>
         {address ? (
           <button
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title="Disconnect"
+            title={t("common.wallet.disconnect")}
           >
             {truncateAddress(address)}
           </button>
@@ -251,28 +258,29 @@ export default function DashboardClient() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting
+              ? t("common.wallet.opening")
+              : t("common.wallet.connect")}
           </button>
         )}
       </div>
 
-      <h1 className="text-3xl mb-2">My dashboard</h1>
-      <p className="text-foreground/70 mb-8">
-        Your anchoring activity on the ThesisLock contracts, by source and over
-        time.
-      </p>
+      <h1 className="text-3xl mb-2">{t("dashboard.title")}</h1>
+      <p className="text-foreground/70 mb-8">{t("dashboard.subtitle")}</p>
 
       {!address ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
-            Connect your Stacks wallet to view your personal analytics.
+            {t("dashboard.connectPrompt")}
           </p>
           <button
             onClick={connectWallet}
             disabled={connecting}
             className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting
+              ? t("common.wallet.opening")
+              : t("common.wallet.connect")}
           </button>
         </div>
       ) : error ? (
@@ -298,25 +306,35 @@ export default function DashboardClient() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
-              label="Total anchors"
+              label={t("dashboard.statTotalAnchors")}
               value={formatNumber(analytics.totalAnchors)}
-              hint={`${formatNumber(analytics.anchorsBySource.single)} single, ${formatNumber(analytics.anchorsBySource.batch)} batch, ${formatNumber(analytics.anchorsBySource.group)} group`}
-              title={`${analytics.anchorsBySource.single} single, ${analytics.anchorsBySource.batch} batch, ${analytics.anchorsBySource.group} group`}
+              hint={t("dashboard.sourceBreakdown", {
+                single: formatNumber(analytics.anchorsBySource.single),
+                batch: formatNumber(analytics.anchorsBySource.batch),
+                group: formatNumber(analytics.anchorsBySource.group),
+              })}
+              title={t("dashboard.sourceBreakdown", {
+                single: analytics.anchorsBySource.single,
+                batch: analytics.anchorsBySource.batch,
+                group: analytics.anchorsBySource.group,
+              })}
             />
             <StatCard
-              label="Proof NFTs minted"
+              label={t("dashboard.statProofNFTs")}
               value={formatNumber(analytics.proofNFTsMinted)}
             />
             <StatCard
-              label="Groups joined"
+              label={t("dashboard.statGroupsJoined")}
               value={formatNumber(analytics.totalGroups)}
             />
             <StatCard
-              label="Active since"
+              label={t("dashboard.statActiveSince")}
               value={activeSince ? formatDateLabel(activeSince) : "-"}
               hint={
                 analytics.firstAnchorBlock
-                  ? `Block ${formatNumber(analytics.firstAnchorBlock)}`
+                  ? t("dashboard.blockHint", {
+                      block: formatNumber(analytics.firstAnchorBlock),
+                    })
                   : undefined
               }
             />
@@ -325,26 +343,26 @@ export default function DashboardClient() {
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
               <h2 className="text-sm uppercase tracking-wide text-foreground/50">
-                Activity, last {CHART_DAYS} days
+                {t("dashboard.activityHeading", { days: CHART_DAYS })}
               </h2>
               <div className="flex items-center gap-3 text-xs text-foreground/60">
                 {SOURCE_META.map((s) => (
                   <span key={s.key} className="flex items-center gap-1">
                     <span className={`inline-block h-2 w-2 rounded-sm ${s.dot}`} />
-                    {s.label}
+                    {t(`dashboard.${s.id}`)}
                   </span>
                 ))}
               </div>
             </div>
             {maxDayCount === 0 ? (
               <p className="text-sm text-foreground/60">
-                No anchoring activity in this window yet.
+                {t("dashboard.activityEmpty")}
               </p>
             ) : (
               <div
                 className="flex items-end gap-1 h-40"
                 role="img"
-                aria-label="Daily anchoring activity by source"
+                aria-label={t("dashboard.chartAria")}
               >
                 {chartDays.map((d) => {
                   const total = maxDayCount
@@ -354,7 +372,13 @@ export default function DashboardClient() {
                     <div
                       key={d.date}
                       className="flex-1 flex flex-col justify-end h-full"
-                      title={`${formatDateLabel(d.date)}: ${d.count} (${d.single} single, ${d.batch} batch, ${d.group} group)`}
+                      title={t("dashboard.barTitle", {
+                        date: formatDateLabel(d.date),
+                        count: d.count,
+                        single: d.single,
+                        batch: d.batch,
+                        group: d.group,
+                      })}
                     >
                       <div
                         className="w-full flex flex-col-reverse"
@@ -390,10 +414,12 @@ export default function DashboardClient() {
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
-              Anchors by source
+              {t("dashboard.bySourceHeading")}
             </h2>
             {analytics.totalAnchors === 0 ? (
-              <p className="text-sm text-foreground/60">No anchors yet.</p>
+              <p className="text-sm text-foreground/60">
+                {t("dashboard.noAnchors")}
+              </p>
             ) : (
               <>
                 <div className="flex h-4 w-full overflow-hidden rounded-full bg-foreground/10">
@@ -406,7 +432,11 @@ export default function DashboardClient() {
                         key={s.key}
                         className={s.bar}
                         style={{ width: `${pct}%` }}
-                        title={`${s.label}: ${formatNumber(v)} (${pct.toFixed(1)}%)`}
+                        title={t("dashboard.sourceBarTitle", {
+                          label: t(`dashboard.${s.id}`),
+                          count: formatNumber(v),
+                          pct: pct.toFixed(1),
+                        })}
                       />
                     );
                   })}
@@ -422,7 +452,9 @@ export default function DashboardClient() {
                         <span
                           className={`inline-block h-2 w-2 rounded-sm ${s.dot}`}
                         />
-                        <span className="text-foreground/70">{s.label}</span>
+                        <span className="text-foreground/70">
+                          {t(`dashboard.${s.id}`)}
+                        </span>
                         <span className="ml-auto font-mono text-xs text-foreground/60">
                           {formatNumber(v)} ({pct.toFixed(0)}%)
                         </span>
@@ -436,10 +468,12 @@ export default function DashboardClient() {
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
-              Recent activity
+              {t("dashboard.recentHeading")}
             </h2>
             {analytics.recentActivity.length === 0 ? (
-              <p className="text-sm text-foreground/60">No activity yet.</p>
+              <p className="text-sm text-foreground/60">
+                {t("dashboard.noActivity")}
+              </p>
             ) : (
               <ul className="divide-y divide-foreground/10">
                 {analytics.recentActivity.map((item) => {
@@ -450,12 +484,18 @@ export default function DashboardClient() {
                           {item.action}
                         </div>
                         <div className="text-xs text-foreground/50 font-mono truncate">
-                          {item.hash ? truncateHash(item.hash) : "no hash"}
-                          {item.block ? ` · block ${formatNumber(item.block)}` : ""}
+                          {item.hash
+                            ? truncateHash(item.hash)
+                            : t("dashboard.noHash")}
+                          {item.block
+                            ? t("dashboard.blockSuffix", {
+                                block: formatNumber(item.block),
+                              })
+                            : ""}
                         </div>
                       </div>
                       <span className="text-xs text-foreground/50 shrink-0">
-                        {formatRelativeTime(item.timestamp)}
+                        {formatRelativeTime(item.timestamp, t)}
                       </span>
                     </div>
                   );
@@ -480,10 +520,10 @@ export default function DashboardClient() {
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-2">
-              Export full history
+              {t("dashboard.exportHeading")}
             </h2>
             <p className="text-sm text-foreground/60 mb-4">
-              Download every anchor registered to this wallet, with verify links.
+              {t("dashboard.exportDescription")}
             </p>
             <div className="flex gap-2">
               <button
@@ -491,14 +531,18 @@ export default function DashboardClient() {
                 disabled={exporting !== null}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {exporting === "csv" ? "Exporting..." : "Export CSV"}
+                {exporting === "csv"
+                  ? t("dashboard.exporting")
+                  : t("dashboard.exportCSV")}
               </button>
               <button
                 onClick={() => void handleExport("json")}
                 disabled={exporting !== null}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {exporting === "json" ? "Exporting..." : "Export JSON"}
+                {exporting === "json"
+                  ? t("dashboard.exporting")
+                  : t("dashboard.exportJSON")}
               </button>
             </div>
             {exportError && (

@@ -20,6 +20,7 @@ import { downloadCertificate } from "@/lib/downloadCertificate";
 import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useTx } from "@/app/components/TxProvider";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const MAX_BATCH = 10;
@@ -57,12 +58,14 @@ type SingleSuccess = {
   txId: string;
 };
 
+// Returns a stable error id (not user-facing text) so the render site can
+// translate it via t(). null means valid.
 function validateLabel(next: string): {
   value: string;
   error: string | null;
 } {
   if (!ASCII_REGEX.test(next)) {
-    return { value: next.slice(0, 64), error: "Labels must be ASCII only." };
+    return { value: next.slice(0, 64), error: "asciiOnly" };
   }
   return { value: next.slice(0, 64), error: null };
 }
@@ -81,6 +84,8 @@ export default function AnchorPage() {
   } = useWallet();
 
   const { trackTx, pendingCount } = useTx();
+
+  const { t } = useI18n();
 
   const [mode, setMode] = useState<Mode>("single");
 
@@ -141,12 +146,12 @@ export default function AnchorPage() {
       setHash(h);
     } catch (e) {
       setHashError(
-        e instanceof Error ? e.message : "Could not hash this file.",
+        e instanceof Error ? e.message : t("anchor.errors.hashFailed"),
       );
     } finally {
       setHashing(false);
     }
-  }, []);
+  }, [t]);
 
   const onLabelChange = (next: string) => {
     const { value, error } = validateLabel(next);
@@ -173,13 +178,17 @@ export default function AnchorPage() {
     setRows((prev) => {
       const remaining = MAX_BATCH - prev.length;
       if (remaining <= 0) {
-        setBatchLimitNotice(`Limit is ${MAX_BATCH} files per batch.`);
+        setBatchLimitNotice(t("anchor.batch.limitReached", { max: MAX_BATCH }));
         return prev;
       }
       const accepted = incomingArr.slice(0, remaining);
       if (incomingArr.length > accepted.length) {
         setBatchLimitNotice(
-          `Only added ${accepted.length} of ${incomingArr.length}. Limit is ${MAX_BATCH} per batch.`,
+          t("anchor.batch.partiallyAdded", {
+            added: accepted.length,
+            total: incomingArr.length,
+            max: MAX_BATCH,
+          }),
         );
       }
       const newRows: BatchRow[] = accepted.map((f) => ({
@@ -204,7 +213,7 @@ export default function AnchorPage() {
           })
           .catch((e: unknown) => {
             const message =
-              e instanceof Error ? e.message : "Could not hash this file.";
+              e instanceof Error ? e.message : t("anchor.errors.hashFailed");
             setRows((current) =>
               current.map((r) =>
                 r.id === row.id
@@ -216,7 +225,7 @@ export default function AnchorPage() {
       });
       return [...prev, ...newRows];
     });
-  }, []);
+  }, [t]);
 
   const onBatchDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -499,47 +508,47 @@ export default function AnchorPage() {
         <div className="flex items-center gap-4 text-sm">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
-            &larr; ThesisLock
+            {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
-            Search
+            {t("common.nav.search")}
           </Link>
-          <span className="text-foreground font-medium">Anchor</span>
+          <span className="text-foreground font-medium">{t("common.nav.anchor")}</span>
           <Link
             href="/anchors"
             className="text-foreground/60 hover:text-foreground"
           >
-            My Anchors
+            {t("common.nav.myAnchors")}
           </Link>
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"
           >
-            Groups
+            {t("common.nav.groups")}
           </Link>
           <Link
             href="/feed"
             className="text-foreground/60 hover:text-foreground"
           >
-            Feed
+            {t("common.nav.feed")}
           </Link>
           <Link
             href="/stats"
             className="text-foreground/60 hover:text-foreground"
           >
-            Stats
+            {t("common.nav.stats")}
           </Link>
           <Link
             href="/verify-bulk"
             className="text-foreground/60 hover:text-foreground"
           >
-            Bulk Verify
+            {t("common.nav.bulkVerify")}
           </Link>
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"
           >
-            Dashboard
+            {t("common.nav.dashboard")}
           </Link>
         </div>
         <div className="flex items-center gap-3">
@@ -547,17 +556,17 @@ export default function AnchorPage() {
           <span
             className="text-xs font-mono px-2.5 py-1 rounded-full border border-foreground/15 text-foreground/60"
             aria-live="polite"
-            title="Transactions waiting to confirm on chain"
+            title={t("common.wallet.pendingTitle")}
           >
-            Pending ({pendingCount})
+            {t("common.wallet.pending", { count: pendingCount })}
           </span>
         )}
         {address ? (
           <button
             onClick={disconnectWallet}
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title="Disconnect"
-            aria-label="Disconnect wallet"
+            title={t("common.wallet.disconnect")}
+            aria-label={t("common.wallet.disconnectAria")}
           >
             {truncateAddress(address)}
           </button>
@@ -567,7 +576,7 @@ export default function AnchorPage() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting ? "Opening wallet..." : "Connect wallet"}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
         </div>
@@ -581,14 +590,13 @@ export default function AnchorPage() {
 
       {singleSuccess ? (
         <>
-          <h1 className="text-3xl mb-2">Anchored</h1>
+          <h1 className="text-3xl mb-2">{t("anchor.success.single.heading")}</h1>
           <p className="text-foreground/70 mb-6">
-            Your document is recorded on chain. Share the verification link or
-            keep the certificate as a permanent proof of timestamp.
+            {t("anchor.success.single.description")}
           </p>
           <div className="rounded-lg border border-foreground/10 bg-card p-5">
             <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-              Hash
+              {t("anchor.success.hashLabel")}
             </div>
             <code className="font-mono text-xs break-all block mb-3">
               {singleSuccess.hash}
@@ -596,7 +604,7 @@ export default function AnchorPage() {
             {singleSuccess.label && (
               <div className="mb-3">
                 <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                  Label
+                  {t("anchor.success.labelLabel")}
                 </div>
                 <code className="font-mono text-xs">
                   {singleSuccess.label}
@@ -608,7 +616,7 @@ export default function AnchorPage() {
                 href={`/v/${singleSuccess.hash}?tx=${encodeURIComponent(singleSuccess.txId)}`}
                 className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
               >
-                Open verify page
+                {t("anchor.success.openVerify")}
               </Link>
               <button
                 onClick={() =>
@@ -622,32 +630,31 @@ export default function AnchorPage() {
                 className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
                 {certBusyHash === singleSuccess.hash
-                  ? "Preparing..."
-                  : "Download certificate"}
+                  ? t("anchor.success.preparing")
+                  : t("anchor.success.downloadCertificate")}
               </button>
             </div>
             {certNoticeHash === singleSuccess.hash && (
               <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
-                Not yet confirmed on chain. Try again in a moment, or open the
-                verify page which polls automatically.
+                {t("anchor.success.notConfirmed")}
               </p>
             )}
           </div>
           <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">Proof NFT</h2>
+            <h2 className="text-lg mb-1">{t("anchor.proof.single.heading")}</h2>
             <p className="text-foreground/70 text-sm mb-4">
-              Mint a soulbound NFT as permanent proof in your wallet (optional).
+              {t("anchor.proof.single.description")}
             </p>
             {mintTxId ? (
               <p className="text-sm text-green-700 dark:text-green-400">
-                Proof NFT minting submitted.{" "}
+                {t("anchor.proof.submitted")}{" "}
                 <a
                   href={explorerTxUrl(mintTxId)}
                   target="_blank"
                   rel="noreferrer"
                   className="underline hover:no-underline"
                 >
-                  View transaction
+                  {t("anchor.proof.viewTransaction")}
                 </a>
               </p>
             ) : (
@@ -658,7 +665,7 @@ export default function AnchorPage() {
                 disabled={minting || !address}
                 className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {minting ? "Awaiting wallet signature..." : "Mint Proof NFT"}
+                {minting ? t("anchor.proof.awaitingSignature") : t("anchor.proof.single.mint")}
               </button>
             )}
           </div>
@@ -667,22 +674,21 @@ export default function AnchorPage() {
               href="/anchors"
               className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
             >
-              View my anchors
+              {t("anchor.success.viewMyAnchors")}
             </Link>
             <button
               onClick={startAnotherSingle}
               className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Anchor another document
+              {t("anchor.success.single.anchorAnother")}
             </button>
           </div>
         </>
       ) : batchSuccess ? (
         <>
-          <h1 className="text-3xl mb-2">Batch anchored</h1>
+          <h1 className="text-3xl mb-2">{t("anchor.success.batch.heading")}</h1>
           <p className="text-foreground/70 mb-6">
-            Each document below is recorded on chain. Share the verification
-            links so anyone can confirm them without connecting a wallet.
+            {t("anchor.success.batch.description")}
           </p>
           <div className="space-y-3">
             {batchSuccess.entries.map((entry, idx) => (
@@ -691,7 +697,7 @@ export default function AnchorPage() {
                 className="rounded-lg border border-foreground/10 bg-card p-5"
               >
                 <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                  Hash
+                  {t("anchor.success.hashLabel")}
                 </div>
                 <code className="font-mono text-xs break-all block mb-3">
                   {entry.hash}
@@ -699,7 +705,7 @@ export default function AnchorPage() {
                 {entry.label && (
                   <div className="mb-3">
                     <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                      Label
+                      {t("anchor.success.labelLabel")}
                     </div>
                     <code className="font-mono text-xs">{entry.label}</code>
                   </div>
@@ -709,7 +715,7 @@ export default function AnchorPage() {
                     href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}&tx=${encodeURIComponent(batchSuccess.txId)}`}
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
-                    Open verify page
+                    {t("anchor.success.openVerify")}
                   </Link>
                   <button
                     onClick={() =>
@@ -722,10 +728,10 @@ export default function AnchorPage() {
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     {copiedLinkHash === entry.hash
-                      ? "Link copied"
+                      ? t("anchor.success.linkCopied")
                       : copyLinkFailedHash === entry.hash
-                        ? "Copy failed"
-                        : "Copy verify link"}
+                        ? t("anchor.success.copyFailed")
+                        : t("anchor.success.copyVerifyLink")}
                   </button>
                   <button
                     onClick={() =>
@@ -740,33 +746,37 @@ export default function AnchorPage() {
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
                   >
                     {certBusyHash === entry.hash
-                      ? "Preparing..."
-                      : "Download certificate"}
+                      ? t("anchor.success.preparing")
+                      : t("anchor.success.downloadCertificate")}
                   </button>
                 </div>
                 {certNoticeHash === entry.hash && (
                   <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
-                    Not yet confirmed on chain. Try again in a moment, or open
-                    the verify page which polls automatically.
+                    {t("anchor.success.notConfirmed")}
                   </p>
                 )}
               </div>
             ))}
           </div>
           <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">Proof NFTs</h2>
+            <h2 className="text-lg mb-1">{t("anchor.proof.batch.heading")}</h2>
             <p className="text-foreground/70 text-sm mb-4">
-              Mint a soulbound NFT per document as permanent proof in your
-              wallet (optional). Each one is a separate wallet signature.
+              {t("anchor.proof.batch.description")}
             </p>
             {mintProgress ? (
               <p className="text-sm text-foreground/70">
-                Minting {mintProgress.current} of {mintProgress.total}...
+                {t("anchor.proof.minting", {
+                  current: mintProgress.current,
+                  total: mintProgress.total,
+                })}
               </p>
             ) : mintTxId ? (
               <p className="text-sm text-green-700 dark:text-green-400">
-                Proof NFT minting submitted for {batchSuccess.entries.length}{" "}
-                document{batchSuccess.entries.length === 1 ? "" : "s"}.
+                {batchSuccess.entries.length === 1
+                  ? t("anchor.proof.batch.submittedOne")
+                  : t("anchor.proof.batch.submittedMany", {
+                      count: batchSuccess.entries.length,
+                    })}
               </p>
             ) : (
               <button
@@ -775,8 +785,12 @@ export default function AnchorPage() {
                 className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
                 {minting
-                  ? "Awaiting wallet signature..."
-                  : `Mint ${batchSuccess.entries.length} Proof NFT${batchSuccess.entries.length === 1 ? "" : "s"}`}
+                  ? t("anchor.proof.awaitingSignature")
+                  : batchSuccess.entries.length === 1
+                    ? t("anchor.proof.batch.mintOne")
+                    : t("anchor.proof.batch.mintMany", {
+                        count: batchSuccess.entries.length,
+                      })}
               </button>
             )}
           </div>
@@ -785,32 +799,32 @@ export default function AnchorPage() {
               href="/anchors"
               className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
             >
-              View my anchors
+              {t("anchor.success.viewMyAnchors")}
             </Link>
             <button
               onClick={startAnotherBatch}
               className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >
-              Anchor another batch
+              {t("anchor.success.batch.anchorAnother")}
             </button>
           </div>
         </>
       ) : (
         <>
-      <h1 className="text-3xl mb-2">Anchor a document</h1>
+      <h1 className="text-3xl mb-2">{t("anchor.form.heading")}</h1>
       <p className="text-foreground/70 mb-6">
-        Files are hashed in your browser. Only the hash is submitted on chain.
+        {t("anchor.form.intro")}
       </p>
 
       <div
         role="group"
-        aria-label="Anchor mode"
+        aria-label={t("anchor.form.modeGroupAria")}
         className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-card"
       >
         <button
           onClick={() => setMode("single")}
           disabled={pending}
-          aria-label="Anchor a single file"
+          aria-label={t("anchor.form.singleModeAria")}
           aria-pressed={mode === "single"}
           className={`text-sm px-4 py-2 rounded transition ${
             mode === "single"
@@ -818,12 +832,12 @@ export default function AnchorPage() {
               : "text-foreground/70 hover:text-foreground"
           } disabled:opacity-50`}
         >
-          Single file
+          {t("anchor.form.singleMode")}
         </button>
         <button
           onClick={() => setMode("batch")}
           disabled={pending}
-          aria-label={`Anchor a batch of up to ${MAX_BATCH} files`}
+          aria-label={t("anchor.form.batchModeAria", { max: MAX_BATCH })}
           aria-pressed={mode === "batch"}
           className={`text-sm px-4 py-2 rounded transition ${
             mode === "batch"
@@ -831,7 +845,7 @@ export default function AnchorPage() {
               : "text-foreground/70 hover:text-foreground"
           } disabled:opacity-50`}
         >
-          Batch (up to {MAX_BATCH})
+          {t("anchor.form.batchMode", { max: MAX_BATCH })}
         </button>
       </div>
 
@@ -840,7 +854,7 @@ export default function AnchorPage() {
           <FileDropZone
             onFile={(f) => void onFileSelect(f)}
             disabled={pending}
-            ariaLabel="Drop a file here to hash it, or click to choose one"
+            ariaLabel={t("anchor.single.dropZoneAria")}
           >
             {file ? (
               <p className="text-foreground/80">
@@ -851,7 +865,7 @@ export default function AnchorPage() {
               </p>
             ) : (
               <p className="text-foreground/60">
-                Drop a file here, or click to choose one
+                {t("anchor.single.dropZonePrompt")}
               </p>
             )}
           </FileDropZone>
@@ -866,16 +880,16 @@ export default function AnchorPage() {
             <div
               className="mt-6"
               role="region"
-              aria-label="Document hash"
+              aria-label={t("anchor.single.hashRegionAria")}
               aria-live="polite"
               aria-busy={hashing}
             >
               <div className="block text-sm text-foreground/60 mb-2">
-                SHA-256
+                {t("anchor.single.sha256")}
               </div>
               {hashing ? (
                 <p className="font-mono text-sm text-foreground/50">
-                  Hashing...
+                  {t("anchor.single.hashing")}
                 </p>
               ) : (
                 <div className="flex items-center gap-2">
@@ -884,10 +898,10 @@ export default function AnchorPage() {
                   </code>
                   <button
                     onClick={copyHash}
-                    aria-label="Copy document hash to clipboard"
+                    aria-label={t("anchor.single.copyHashAria")}
                     className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
                   >
-                    {copied ? "Copied" : copyFailed ? "Copy failed" : "Copy"}
+                    {copied ? t("common.actions.copied") : copyFailed ? t("anchor.single.copyFailed") : t("common.actions.copy")}
                   </button>
                 </div>
               )}
@@ -899,13 +913,13 @@ export default function AnchorPage() {
               htmlFor="label"
               className="block text-sm text-foreground/60 mb-2"
             >
-              Label (optional, ASCII, up to 64 chars)
+              {t("anchor.label.fieldLabel")}
             </label>
             <input
               id="label"
               value={label}
               onChange={(e) => onLabelChange(e.target.value)}
-              placeholder="e.g. thesis-chapter-3-draft-v2"
+              placeholder={t("anchor.label.placeholder")}
               maxLength={64}
               aria-describedby="label-status"
               aria-invalid={labelError ? true : undefined}
@@ -919,7 +933,7 @@ export default function AnchorPage() {
                 className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
                 role={labelError ? "alert" : undefined}
               >
-                {labelError ?? "."}
+                {labelError ? t("anchor.label.asciiOnly") : "."}
               </span>
               <span className="text-foreground/50 font-mono">
                 {label.length}/64
@@ -934,13 +948,15 @@ export default function AnchorPage() {
           >
             {pending
               ? registerProgress
-                ? `Registering ${registerProgress.current} of ${registerProgress.total}...`
-                : "Awaiting wallet signature..."
-              : "Anchor on Stacks"}
+                ? t("anchor.submit.registering", {
+                    current: registerProgress.current,
+                    total: registerProgress.total,
+                  })
+                : t("anchor.submit.awaitingSignature")
+              : t("anchor.submit.single")}
           </button>
           <p className="mt-3 text-xs text-foreground/50 text-center">
-            You will sign two transactions: the anchor itself, then a second to
-            record it in your wallet&apos;s anchor history.
+            {t("anchor.submit.singleHelp")}
           </p>
         </>
       ) : (
@@ -948,7 +964,7 @@ export default function AnchorPage() {
           <div
             role="button"
             tabIndex={pending ? -1 : 0}
-            aria-label={`Drop up to ${MAX_BATCH} files here to hash them, or click to choose`}
+            aria-label={t("anchor.batch.dropZoneAria", { max: MAX_BATCH })}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
@@ -976,8 +992,10 @@ export default function AnchorPage() {
               onChange={(e) => addBatchFiles(e.target.files)}
             />
             <p className="text-foreground/60">
-              Drop up to {MAX_BATCH} files here, or click to choose. Added:{" "}
-              {rows.length}/{MAX_BATCH}.
+              {t("anchor.batch.dropZonePrompt", {
+                max: MAX_BATCH,
+                added: rows.length,
+              })}
             </p>
           </div>
 
@@ -1004,20 +1022,20 @@ export default function AnchorPage() {
                     <button
                       onClick={() => removeRow(row.id)}
                       disabled={pending}
-                      aria-label={`Remove file ${row.file.name}`}
+                      aria-label={t("anchor.batch.removeFileAria", { name: row.file.name })}
                       className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
                     >
-                      Remove
+                      {t("anchor.batch.remove")}
                     </button>
                   </div>
 
                   <div className="mt-3">
                     <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                      SHA-256
+                      {t("anchor.single.sha256")}
                     </div>
                     {row.hashing ? (
                       <p className="font-mono text-xs text-foreground/50">
-                        Hashing...
+                        {t("anchor.single.hashing")}
                       </p>
                     ) : row.hashError ? (
                       <p className="text-xs text-red-600 dark:text-red-400" role="alert">
@@ -1034,10 +1052,10 @@ export default function AnchorPage() {
                     <input
                       value={row.label}
                       onChange={(e) => updateRowLabel(row.id, e.target.value)}
-                      placeholder="Label (optional, ASCII, up to 64 chars)"
+                      placeholder={t("anchor.label.fieldLabel")}
                       maxLength={64}
                       disabled={pending}
-                      aria-label={`Label for ${row.file.name}`}
+                      aria-label={t("anchor.batch.labelForAria", { name: row.file.name })}
                       aria-invalid={row.labelError ? true : undefined}
                       className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
                     />
@@ -1047,7 +1065,7 @@ export default function AnchorPage() {
                           row.labelError ? "text-red-600 dark:text-red-400" : "text-transparent"
                         }
                       >
-                        {row.labelError ?? "."}
+                        {row.labelError ? t("anchor.label.asciiOnly") : "."}
                       </span>
                       <span className="text-foreground/50 font-mono">
                         {row.label.length}/64
@@ -1066,20 +1084,22 @@ export default function AnchorPage() {
           >
             {pending
               ? registerProgress
-                ? `Registering ${registerProgress.current} of ${registerProgress.total}...`
-                : "Awaiting wallet signature..."
-              : `Anchor batch of ${rows.length}`}
+                ? t("anchor.submit.registering", {
+                    current: registerProgress.current,
+                    total: registerProgress.total,
+                  })
+                : t("anchor.submit.awaitingSignature")
+              : t("anchor.submit.batch", { count: rows.length })}
           </button>
           <p className="mt-3 text-xs text-foreground/50 text-center">
-            You will sign one batch transaction, then one more per file to
-            record each in your anchor history.
+            {t("anchor.submit.batchHelp")}
           </p>
         </>
       )}
 
       {pending && (
         <p className="mt-4 text-sm text-foreground/60 text-center">
-          Do not navigate away while transactions are in your wallet.
+          {t("anchor.submit.doNotNavigate")}
         </p>
       )}
 

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import type { ProtocolStats } from "@/lib/stats";
+import { useI18n } from "@/app/components/I18nProvider";
 
 function formatNumber(n: number): string {
   return n.toLocaleString("en-US");
 }
 
 export default function HeroStats() {
+  const { t } = useI18n();
   const [anchors, setAnchors] = useState<number | null>(null);
 
   useEffect(() => {
@@ -29,11 +31,12 @@ export default function HeroStats() {
 
   return (
     <p className="mt-10 text-sm text-foreground/60 font-mono">
-      5 smart contracts
+      {t("landing.heroStats.contracts")}
       <span className="mx-2 text-foreground/30">&middot;</span>
-      {docs}documents anchored
+      {docs}
+      {t("landing.heroStats.documentsAnchored")}
       <span className="mx-2 text-foreground/30">&middot;</span>
-      100% client-side hashing
+      {t("landing.heroStats.clientSide")}
     </p>
   );
 }
