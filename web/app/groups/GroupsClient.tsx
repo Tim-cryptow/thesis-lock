@@ -115,6 +115,12 @@ export default function GroupsPage() {
           >
             {t("common.nav.dashboard")}
           </Link>
+          <Link
+            href="/activity"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.activity")}
+          </Link>
         </div>
         {address ? (
           <button

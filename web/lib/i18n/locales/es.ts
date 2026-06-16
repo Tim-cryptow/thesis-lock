@@ -16,6 +16,7 @@ export const es: Translations = {
       stats: "Estadísticas",
       bulkVerify: "Verificación masiva",
       dashboard: "Panel",
+      activity: "Actividad",
       templates: "Plantillas",
       docs: "Documentación",
       api: "API",
@@ -595,6 +596,7 @@ export const es: Translations = {
     noAnchors: "Todavía no hay anclajes.",
     sourceBarTitle: "{label}: {count} ({pct}%)",
     recentHeading: "Actividad reciente",
+    viewAllActivity: "Ver toda la actividad",
     noActivity: "Todavía no hay actividad.",
     noHash: "sin hash",
     blockSuffix: " · bloque {block}",
@@ -659,6 +661,29 @@ export const es: Translations = {
     menu: "Menú",
     close: "Cerrar",
     navAria: "Documentación",
+  },
+  activity: {
+    title: "Actividad",
+    subtitle:
+      "Cada interacción en todos los contratos de ThesisLock, las más recientes primero.",
+    connectPrompt: "Conecta tu monedero para ver tu actividad.",
+    empty: "Todavía no hay actividad. Empieza anclando un documento.",
+    emptyCta: "Anclar un documento",
+    loadError: "No se pudo cargar tu actividad.",
+    loadingMore: "Cargando más...",
+    noMore: "No hay más actividad",
+    viewTx: "Ver transacción",
+    filters: {
+      all: "Todo",
+      anchors: "Anclajes",
+      groups: "Grupos",
+      proofs: "Pruebas",
+      registry: "Registro",
+    },
+    date: {
+      today: "Hoy",
+      yesterday: "Ayer",
+    },
   },
   templates: {
     selector: {

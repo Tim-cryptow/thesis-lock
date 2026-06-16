@@ -186,6 +186,12 @@ export default function FeedClient() {
         >
           {t("common.nav.dashboard")}
         </Link>
+        <Link
+          href="/activity"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.activity")}
+        </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
