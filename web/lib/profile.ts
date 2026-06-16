@@ -62,11 +62,12 @@ export function isValidProfileAddress(address: string): boolean {
 // no check that it is backed by a real anchor, so a public profile must confirm
 // each shown entry resolves to an actual anchor before publishing it with a
 // verify link (mirrors the feed's registry validation). Returns which contract
-// backs the hash, or null when neither does (the row is dropped). The single
-// contract is checked first so a hash that exists as both a single and an
-// owner-keyed batch links to the single record the registry row represents.
-// Defaults to "single" on a transient lookup error so a Hiro hiccup keeps a
-// real anchor rather than hiding it.
+// backs the hash, or null when neither does. The single contract is checked
+// first so a hash that exists as both a single and an owner-keyed batch links to
+// the single record the registry row represents. A lookup that throws before a
+// source is confirmed returns null (drop the row): an unconfirmed anchor must
+// not be published as a confirmed one, which would yield a verify link that can
+// report "not anchored" or point at the wrong record.
 async function anchorSource(
   owner: string,
   entry: RegistryEntry,
@@ -80,7 +81,7 @@ async function anchorSource(
     if (batch) return "batch";
     return null;
   } catch {
-    return "single";
+    return null;
   }
 }
 
