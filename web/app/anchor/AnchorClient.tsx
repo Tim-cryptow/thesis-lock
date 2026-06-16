@@ -633,6 +633,12 @@ export default function AnchorPage() {
             {t("common.nav.dashboard")}
           </Link>
           <Link
+            href="/activity"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.activity")}
+          </Link>
+          <Link
             href="/templates"
             className="text-foreground/60 hover:text-foreground"
           >

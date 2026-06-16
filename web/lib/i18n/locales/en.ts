@@ -21,6 +21,7 @@ export const en = {
       stats: "Stats",
       bulkVerify: "Bulk Verify",
       dashboard: "Dashboard",
+      activity: "Activity",
       templates: "Templates",
       docs: "Docs",
       api: "API",
@@ -600,6 +601,7 @@ export const en = {
     noAnchors: "No anchors yet.",
     sourceBarTitle: "{label}: {count} ({pct}%)",
     recentHeading: "Recent activity",
+    viewAllActivity: "View all activity",
     noActivity: "No activity yet.",
     noHash: "no hash",
     blockSuffix: " · block {block}",
@@ -664,6 +666,29 @@ export const en = {
     menu: "Menu",
     close: "Close",
     navAria: "Documentation",
+  },
+  activity: {
+    title: "Activity",
+    subtitle:
+      "Every interaction across all ThesisLock contracts, newest first.",
+    connectPrompt: "Connect your wallet to see your activity.",
+    empty: "No activity yet. Start by anchoring a document.",
+    emptyCta: "Anchor a document",
+    loadError: "Could not load your activity.",
+    loadingMore: "Loading more...",
+    noMore: "No more activity",
+    viewTx: "View transaction",
+    filters: {
+      all: "All",
+      anchors: "Anchors",
+      groups: "Groups",
+      proofs: "Proofs",
+      registry: "Registry",
+    },
+    date: {
+      today: "Today",
+      yesterday: "Yesterday",
+    },
   },
   templates: {
     selector: {

@@ -398,6 +398,12 @@ export default function VerifyPage() {
           >
             {t("common.nav.dashboard")}
           </Link>
+          <Link
+            href="/activity"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.activity")}
+          </Link>
         </div>
         <h1 className="text-3xl mt-8 mb-2">{t("verify.invalidHash.title")}</h1>
         <p className="text-foreground/70">
@@ -452,6 +458,12 @@ export default function VerifyPage() {
           className="text-foreground/60 hover:text-foreground"
         >
           {t("common.nav.dashboard")}
+        </Link>
+        <Link
+          href="/activity"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.activity")}
         </Link>
       </div>
       <h1 className="text-3xl mt-8 mb-6">{t("verify.recordTitle")}</h1>

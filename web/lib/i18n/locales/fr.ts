@@ -16,6 +16,7 @@ export const fr: Translations = {
       stats: "Statistiques",
       bulkVerify: "Vérification groupée",
       dashboard: "Tableau de bord",
+      activity: "Activité",
       templates: "Modèles",
       docs: "Docs",
       api: "API",
@@ -595,6 +596,7 @@ export const fr: Translations = {
     noAnchors: "Aucune ancre pour l'instant.",
     sourceBarTitle: "{label} : {count} ({pct}%)",
     recentHeading: "Activité récente",
+    viewAllActivity: "Voir toute l'activité",
     noActivity: "Aucune activité pour l'instant.",
     noHash: "aucune empreinte",
     blockSuffix: " · bloc {block}",
@@ -659,6 +661,29 @@ export const fr: Translations = {
     menu: "Menu",
     close: "Fermer",
     navAria: "Documentation",
+  },
+  activity: {
+    title: "Activité",
+    subtitle:
+      "Chaque interaction sur tous les contrats ThesisLock, les plus récentes d'abord.",
+    connectPrompt: "Connectez votre portefeuille pour voir votre activité.",
+    empty: "Aucune activité pour l'instant. Commencez par ancrer un document.",
+    emptyCta: "Ancrer un document",
+    loadError: "Impossible de charger votre activité.",
+    loadingMore: "Chargement...",
+    noMore: "Plus aucune activité",
+    viewTx: "Voir la transaction",
+    filters: {
+      all: "Tout",
+      anchors: "Ancres",
+      groups: "Groupes",
+      proofs: "Preuves",
+      registry: "Registre",
+    },
+    date: {
+      today: "Aujourd'hui",
+      yesterday: "Hier",
+    },
   },
   templates: {
     selector: {
