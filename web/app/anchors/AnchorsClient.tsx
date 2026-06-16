@@ -22,6 +22,10 @@ import {
   formatAnchorsCSV,
   formatAnchorsJSON,
 } from "@/lib/export";
+import { getTemplate, parseLabel } from "@/lib/templates";
+
+// Sentinel filter value for anchors whose label is free-form (no template).
+const UNSTRUCTURED_FILTER = "__unstructured";
 
 function truncateHash(hash: string): string {
   if (hash.length <= 14) return hash;
@@ -36,6 +40,7 @@ export default function AnchorsPage() {
   const [entries, setEntries] = useState<RegistryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [templateFilter, setTemplateFilter] = useState<string>("all");
 
   const loadHistory = useCallback(async (owner: string) => {
     setLoading(true);
@@ -154,6 +159,26 @@ export default function AnchorsPage() {
     }
   };
 
+  // Parse each label so structured anchors can show a template badge and be
+  // filtered. Free-form labels parse to no templateId and fall through.
+  const parsedEntries = entries.map((entry) => ({
+    entry,
+    parsed: parseLabel(entry.label),
+  }));
+  const presentTemplateIds = Array.from(
+    new Set(
+      parsedEntries
+        .map((p) => p.parsed.templateId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  );
+  const hasStructured = presentTemplateIds.length > 0;
+  const visibleEntries = parsedEntries.filter(({ parsed }) => {
+    if (templateFilter === "all") return true;
+    if (templateFilter === UNSTRUCTURED_FILTER) return !parsed.templateId;
+    return parsed.templateId === templateFilter;
+  });
+
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
@@ -259,7 +284,33 @@ export default function AnchorsPage() {
         </div>
       ) : (
         <div className="space-y-3" role="list">
-          {entries.map((entry, idx) => (
+          {hasStructured && (
+            <div className="flex items-center gap-2 pb-1">
+              <label
+                htmlFor="template-filter"
+                className="text-xs text-foreground/50 uppercase tracking-wide"
+              >
+                {t("templates.filter.label")}
+              </label>
+              <select
+                id="template-filter"
+                value={templateFilter}
+                onChange={(e) => setTemplateFilter(e.target.value)}
+                className="text-sm px-2 py-1 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
+              >
+                <option value="all">{t("templates.filter.all")}</option>
+                {presentTemplateIds.map((id) => (
+                  <option key={id} value={id}>
+                    {getTemplate(id)?.name ?? id}
+                  </option>
+                ))}
+                <option value={UNSTRUCTURED_FILTER}>
+                  {t("templates.filter.unstructured")}
+                </option>
+              </select>
+            </div>
+          )}
+          {visibleEntries.map(({ entry, parsed }, idx) => (
             <div
               key={`${entry.hash}-${idx}`}
               role="listitem"
@@ -307,7 +358,18 @@ export default function AnchorsPage() {
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                     {t("anchors.labelLabel")}
                   </div>
-                  <code className="font-mono text-xs">
+                  {parsed.templateId && (
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-foreground/60 border border-foreground/15 rounded px-1.5 py-0.5 mb-1">
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex h-3.5 w-3.5 items-center justify-center rounded bg-heading text-background text-[8px] font-semibold"
+                      >
+                        {getTemplate(parsed.templateId)?.icon}
+                      </span>
+                      {getTemplate(parsed.templateId)?.name}
+                    </span>
+                  )}
+                  <code className="font-mono text-xs block">
                     {entry.label || t("anchors.labelNone")}
                   </code>
                 </div>
