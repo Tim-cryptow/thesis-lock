@@ -16,6 +16,7 @@ export const fr: Translations = {
       stats: "Statistiques",
       bulkVerify: "Vérification groupée",
       dashboard: "Tableau de bord",
+      templates: "Modèles",
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
@@ -658,5 +659,52 @@ export const fr: Translations = {
     menu: "Menu",
     close: "Fermer",
     navAria: "Documentation",
+  },
+  templates: {
+    selector: {
+      heading: "Modèle",
+      description:
+        "Choisissez un modèle pour structurer votre étiquette, ou laissez-la libre.",
+    },
+    field: {
+      required: "{name} est obligatoire.",
+      optionalTag: "facultatif",
+    },
+    preview: {
+      heading: "Aperçu de l'étiquette",
+      empty: "Remplissez les champs pour prévisualiser l'étiquette générée.",
+    },
+    warning: {
+      truncated:
+        "L'étiquette dépasse {max} caractères et sera tronquée sur la chaîne.",
+    },
+    batch: {
+      defaultHeading: "Modèle par défaut",
+      defaultDescription:
+        "Appliqué à chaque fichier. Chaque fichier peut le remplacer ci-dessous.",
+      overrideLabel: "Modèle pour ce fichier",
+    },
+    verify: {
+      badge: "Modèle",
+      via: "Structuré avec le modèle {name}.",
+    },
+    filter: {
+      label: "Filtrer par modèle",
+      all: "Tous les modèles",
+      unstructured: "Libre",
+    },
+    page: {
+      heading: "Modèles d'ancrage",
+      intro:
+        "Les modèles donnent à vos ancrages des étiquettes structurées et cohérentes. Choisissez-en un lors de l'ancrage pour enregistrer des champs comme le titre, la version ou le département dans une seule étiquette sur la chaîne.",
+      exampleHeading: "Étiquette d'exemple",
+      fieldsHeading: "Champs",
+      use: "Utiliser ce modèle",
+      requiredTag: "obligatoire",
+      custom: {
+        heading: "Étiquettes personnalisées",
+        body: "Tous les documents ne correspondent pas à un modèle. Choisissez Générique pour ancrer avec n'importe quelle étiquette libre jusqu'à 64 caractères ASCII, comme avant.",
+      },
+    },
   },
 };
