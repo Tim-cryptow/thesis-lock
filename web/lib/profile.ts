@@ -1,5 +1,11 @@
 import { validateStacksAddress } from "@stacks/transactions";
-import { getAnchorCount, getRecentAnchors, type RegistryEntry } from "./stacks";
+import {
+  getAnchorCount,
+  getRecentAnchors,
+  readAnchor,
+  readBatchAnchor,
+  type RegistryEntry,
+} from "./stacks";
 import { fetchActivityLog, type ActivityEvent } from "./activityLog";
 import { parseLabel } from "./templates";
 
@@ -34,12 +40,35 @@ const SCAN_PAGE_SIZE = 50;
 const MAX_SCAN_PAGES = 6;
 
 // Profiles are public and unauthenticated, so the only addresses worth a lookup
-// are real mainnet (SP) or testnet (ST) principals. validateStacksAddress does
-// the c32 checksum; the prefix guard keeps contract and multisig principals out.
+// are standard Stacks wallet principals: SP/SM on mainnet and ST/SN on testnet,
+// the same S[PMNT] set the verify and feed pages accept (SM/SN are multisig
+// wallets such as Asigna). validateStacksAddress does the c32 checksum; the
+// prefix guard keeps contract principals out.
 export function isValidProfileAddress(address: string): boolean {
   const addr = address.toUpperCase();
-  if (!/^S[PT][0-9A-Z]{5,40}$/.test(addr)) return false;
+  if (!/^S[PMNT][0-9A-Z]{5,40}$/.test(addr)) return false;
   return validateStacksAddress(addr);
+}
+
+// The registry is a self-asserted index: register-anchor accepts any hash with
+// no check that it is backed by a real anchor, so a public profile must confirm
+// each shown entry resolves to an actual single or batch anchor before
+// publishing it with a verify link (mirrors the feed's registry validation).
+// Returns true on a transient lookup error so a Hiro hiccup keeps a real anchor
+// rather than hiding it; only entries that resolve to "none" in both contracts
+// are dropped.
+async function isBackedAnchor(
+  owner: string,
+  entry: RegistryEntry,
+): Promise<boolean> {
+  try {
+    const batch = await readBatchAnchor(entry.hash, owner);
+    if (batch) return true;
+    const single = await readAnchor(entry.hash);
+    return single !== null && single.anchoredBy.toUpperCase() === owner;
+  } catch {
+    return true;
+  }
 }
 
 // Reduces a single label to the document "type" it represents: the template id
@@ -88,9 +117,15 @@ export async function fetchWalletProfile(
   let recentAnchors: RegistryEntry[] = [];
   try {
     const recent = await getRecentAnchors(addr);
-    recentAnchors = recent
+    const candidates = recent
       .filter((entry): entry is RegistryEntry => entry !== null)
       .slice(0, RECENT_LIMIT);
+    // Drop registry rows that aren't backed by a real anchor so the profile
+    // never shows entries whose verify link reports "not anchored".
+    const backed = await Promise.all(
+      candidates.map((entry) => isBackedAnchor(addr, entry)),
+    );
+    recentAnchors = candidates.filter((_, i) => backed[i]);
   } catch {
     recentAnchors = [];
   }

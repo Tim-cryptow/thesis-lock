@@ -10,7 +10,7 @@ import { explorerAddressUrl } from "@/lib/stacks";
 import { getTemplate, parseLabel } from "@/lib/templates";
 import type { WalletProfile } from "@/lib/profile";
 
-const STX_PRINCIPAL = /^S[PT][0-9A-Z]{5,40}$/;
+const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 type Status = "loading" | "ready" | "error";
 
@@ -151,8 +151,8 @@ export default function ProfileClient() {
         <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-8 text-center">
           <h1 className="text-2xl mb-2">Invalid address</h1>
           <p className="text-sm text-red-700 dark:text-red-400">
-            This is not a valid Stacks principal. A profile address must start
-            with SP (mainnet) or ST (testnet).
+            This is not a valid Stacks principal. A profile address must be a
+            standard wallet principal (SP or SM on mainnet, ST or SN on testnet).
           </p>
         </div>
       ) : status === "error" ? (

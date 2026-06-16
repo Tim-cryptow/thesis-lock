@@ -14,7 +14,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
   if (!isValidProfileAddress(address)) {
     return Response.json(
-      { error: "Invalid Stacks address. Provide a mainnet (SP) or testnet (ST) principal." },
+      { error: "Invalid Stacks address. Provide a standard Stacks wallet principal." },
       { status: 400, headers: corsHeaders() },
     );
   }
