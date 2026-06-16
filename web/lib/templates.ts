@@ -244,18 +244,15 @@ function sanitizeValue(raw: string): string {
     .join("");
 }
 
-// Combines a template's prefix and field values into a single structured label.
-// Empty fields are skipped. The Generic template returns the raw label value
-// unchanged (aside from the length cap), preserving the original behaviour.
-// The result is always capped at MAX_LABEL_LENGTH ASCII characters.
-export function buildLabel(
+// Like buildLabel but without the length cap, so callers (the live preview)
+// can tell whether the on-chain label would be truncated.
+export function buildRawLabel(
   template: AnchorTemplate,
   fieldValues: Record<string, string>,
 ): string {
   if (template.id === GENERIC_TEMPLATE_ID) {
     const only = template.fields[0];
-    const raw = (fieldValues[only.key] ?? "").trim();
-    return raw.slice(0, MAX_LABEL_LENGTH);
+    return (fieldValues[only.key] ?? "").trim();
   }
 
   const segments = template.fields
@@ -267,8 +264,43 @@ export function buildLabel(
 
   if (segments.length === 0) return "";
 
-  const label = template.labelPrefix + segments.join(SEGMENT_SEP);
-  return label.slice(0, MAX_LABEL_LENGTH);
+  return template.labelPrefix + segments.join(SEGMENT_SEP);
+}
+
+// Combines a template's prefix and field values into a single structured label.
+// Empty fields are skipped. The Generic template returns the raw label value
+// unchanged (aside from the length cap), preserving the original behaviour.
+// The result is always capped at MAX_LABEL_LENGTH ASCII characters.
+export function buildLabel(
+  template: AnchorTemplate,
+  fieldValues: Record<string, string>,
+): string {
+  return buildRawLabel(template, fieldValues).slice(0, MAX_LABEL_LENGTH);
+}
+
+// Labels are stored on chain as ASCII only, matching the single-anchor input.
+export const ASCII_LABEL_REGEX = /^[\x20-\x7E]*$/;
+
+// Per-field validation. Returns a stable error id ("asciiOnly" | "required")
+// the UI can translate, or null when the field is valid.
+export function templateFieldError(
+  field: TemplateField,
+  value: string,
+): "asciiOnly" | "required" | null {
+  if (!ASCII_LABEL_REGEX.test(value)) return "asciiOnly";
+  if (field.required && value.trim() === "") return "required";
+  return null;
+}
+
+// True when every field in the template passes validation, so the caller can
+// gate submission. Over-length is handled by buildLabel truncating, not here.
+export function isTemplateValid(
+  template: AnchorTemplate,
+  fieldValues: Record<string, string>,
+): boolean {
+  return template.fields.every(
+    (field) => templateFieldError(field, fieldValues[field.key] ?? "") === null,
+  );
 }
 
 // Reverse of buildLabel. Detects the template from the label prefix and splits
