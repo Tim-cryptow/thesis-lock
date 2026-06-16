@@ -501,14 +501,12 @@ export default function VerifyPage() {
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                   {t("verify.fields.owner")}
                 </div>
-                <a
-                  href={explorerAddressUrl(batchOwner)}
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href={`/u/${batchOwner}`}
                   className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
                 >
                   {batchOwner}
-                </a>
+                </Link>
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -562,14 +560,12 @@ export default function VerifyPage() {
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                   {t("verify.fields.anchoredBy")}
                 </div>
-                <a
-                  href={explorerAddressUrl(groupAnchor.anchoredBy)}
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  href={`/u/${groupAnchor.anchoredBy}`}
                   className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
                 >
                   {groupAnchor.anchoredBy}
-                </a>
+                </Link>
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -639,14 +635,12 @@ export default function VerifyPage() {
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.anchoredBy")}
               </div>
-              <a
-                href={explorerAddressUrl(anchor.anchoredBy)}
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href={`/u/${anchor.anchoredBy}`}
                 className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
               >
                 {anchor.anchoredBy}
-              </a>
+              </Link>
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
