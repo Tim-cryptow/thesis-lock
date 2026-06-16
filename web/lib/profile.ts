@@ -150,6 +150,7 @@ export async function fetchWalletProfile(
   let firstSeen = 0;
   let lastSeen = 0;
   const labelCounts = new Map<string, number>();
+  const countedHashes = new Set<string>();
 
   for (const event of events) {
     if (event.type === "batch-anchor") totalBatches++;
@@ -164,17 +165,25 @@ export async function fetchWalletProfile(
 
     const label =
       typeof event.details?.label === "string" ? event.details.label : "";
+    const hash =
+      typeof event.details?.hash === "string" ? event.details.hash : "";
     const type = labelType(label);
-    if (type) labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
+    if (type) {
+      labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
+      if (hash) countedHashes.add(hash);
+    }
   }
 
-  // Fall back to the registry's recent anchors for document types when the tx
-  // scan surfaced none (e.g. a wallet whose anchors predate the scan window).
-  if (labelCounts.size === 0) {
-    for (const entry of recentAnchors) {
-      const type = labelType(entry.label);
-      if (type) labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
-    }
+  // Always fold the registry's recent anchors into the document-type counts.
+  // A batch-anchor activity event carries only a count and no per-entry labels,
+  // so the registry (which records each batch-anchored hash with its label) is
+  // the only source of batch document types; merging it unconditionally keeps a
+  // mixed single+batch wallet from dropping its batch labels. Hashes already
+  // counted from an event are skipped so single anchors are not double-counted.
+  for (const entry of recentAnchors) {
+    if (countedHashes.has(entry.hash)) continue;
+    const type = labelType(entry.label);
+    if (type) labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
   }
 
   const topLabels = [...labelCounts.entries()]
