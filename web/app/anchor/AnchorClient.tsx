@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import TemplateSelector from "@/app/components/TemplateSelector";
+import TemplateFields from "@/app/components/TemplateFields";
+import {
+  GENERIC_TEMPLATE,
+  GENERIC_TEMPLATE_ID,
+  buildLabel,
+  getTemplate,
+  isTemplateValid,
+} from "@/lib/templates";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -33,8 +43,10 @@ type BatchRow = {
   hash: string | null;
   hashing: boolean;
   hashError: string | null;
-  label: string;
-  labelError: string | null;
+  // Each file carries its own template selection and field values. The label
+  // submitted on chain is derived from these via buildLabel at submit time.
+  templateId: string;
+  fieldValues: Record<string, string>;
 };
 
 type RegisterProgress = { current: number; total: number };
@@ -86,6 +98,7 @@ export default function AnchorPage() {
   const { trackTx, pendingCount } = useTx();
 
   const { t } = useI18n();
+  const searchParams = useSearchParams();
 
   const [mode, setMode] = useState<Mode>("single");
 
@@ -95,6 +108,38 @@ export default function AnchorPage() {
   const [hashError, setHashError] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [labelError, setLabelError] = useState<string | null>(null);
+
+  // Template selection for single mode. The library page links here with
+  // ?template=<id> to pre-select a template.
+  const [templateId, setTemplateId] = useState<string>(GENERIC_TEMPLATE_ID);
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+  const template = getTemplate(templateId) ?? GENERIC_TEMPLATE;
+  const isGenericTemplate = templateId === GENERIC_TEMPLATE_ID;
+  const effectiveSingleLabel = isGenericTemplate
+    ? label
+    : buildLabel(template, fieldValues);
+
+  // The batch default template seeds every newly added file and re-applies to
+  // all rows when changed; individual rows can override it afterward.
+  const [batchTemplateId, setBatchTemplateId] =
+    useState<string>(GENERIC_TEMPLATE_ID);
+
+  useEffect(() => {
+    const param = searchParams.get("template");
+    if (param && getTemplate(param)) {
+      setTemplateId(param);
+      setFieldValues({});
+    }
+  }, [searchParams]);
+
+  const setFieldValue = (key: string, value: string) => {
+    setFieldValues((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const onSelectTemplate = (id: string) => {
+    setTemplateId(id);
+    setFieldValues({});
+  };
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
 
@@ -197,8 +242,8 @@ export default function AnchorPage() {
         hash: null,
         hashing: true,
         hashError: null,
-        label: "",
-        labelError: null,
+        templateId: batchTemplateId,
+        fieldValues: {},
       }));
       newRows.forEach((row) => {
         hashFile(row.file)
@@ -225,7 +270,7 @@ export default function AnchorPage() {
       });
       return [...prev, ...newRows];
     });
-  }, [t]);
+  }, [t, batchTemplateId]);
 
   const onBatchDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -236,12 +281,36 @@ export default function AnchorPage() {
     [addBatchFiles],
   );
 
-  const updateRowLabel = (id: string, next: string) => {
-    const { value, error } = validateLabel(next);
+  const updateRowField = (id: string, key: string, value: string) => {
     setRows((current) =>
       current.map((r) =>
-        r.id === id ? { ...r, label: value, labelError: error } : r,
+        r.id === id
+          ? { ...r, fieldValues: { ...r.fieldValues, [key]: value } }
+          : r,
       ),
+    );
+  };
+
+  const setRowTemplate = (id: string, nextTemplateId: string) => {
+    setRows((current) =>
+      current.map((r) =>
+        r.id === id
+          ? { ...r, templateId: nextTemplateId, fieldValues: {} }
+          : r,
+      ),
+    );
+  };
+
+  // Changing the batch default re-applies the template to every row, clearing
+  // field values so each row starts fresh under the new schema.
+  const onSelectBatchTemplate = (nextTemplateId: string) => {
+    setBatchTemplateId(nextTemplateId);
+    setRows((current) =>
+      current.map((r) => ({
+        ...r,
+        templateId: nextTemplateId,
+        fieldValues: {},
+      })),
     );
   };
 
@@ -276,12 +345,16 @@ export default function AnchorPage() {
   );
 
   const canSubmitSingle =
-    !!hash && !labelError && !!address && !pending && !hashing;
+    !!hash &&
+    !!address &&
+    !pending &&
+    !hashing &&
+    (isGenericTemplate ? !labelError : isTemplateValid(template, fieldValues));
 
   const submitSingle = () => {
     if (!hash || !address) return;
     const submittingHash = hash;
-    const submittingLabel = label;
+    const submittingLabel = effectiveSingleLabel;
     const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
@@ -325,12 +398,20 @@ export default function AnchorPage() {
 
   const allRowsReady =
     rows.length > 0 &&
-    rows.every((r) => r.hash && !r.hashing && !r.labelError);
+    rows.every(
+      (r) =>
+        r.hash &&
+        !r.hashing &&
+        isTemplateValid(getTemplate(r.templateId) ?? GENERIC_TEMPLATE, r.fieldValues),
+    );
   const canSubmitBatch = allRowsReady && !!address && !pending;
 
   const submitBatch = () => {
     if (!canSubmitBatch || !address) return;
-    const entries = rows.map((r) => ({ hash: r.hash!, label: r.label }));
+    const entries = rows.map((r) => ({
+      hash: r.hash!,
+      label: buildLabel(getTemplate(r.templateId) ?? GENERIC_TEMPLATE, r.fieldValues),
+    }));
     const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
@@ -386,6 +467,7 @@ export default function AnchorPage() {
     setFile(null);
     setHash(null);
     setLabel("");
+    setFieldValues({});
     setSubmitError(null);
     setMintTxId(null);
     setMintProgress(null);
@@ -549,6 +631,12 @@ export default function AnchorPage() {
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.dashboard")}
+          </Link>
+          <Link
+            href="/templates"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.templates")}
           </Link>
         </div>
         <div className="flex items-center gap-3">
@@ -909,37 +997,55 @@ export default function AnchorPage() {
           )}
 
           <div className="mt-6">
-            <label
-              htmlFor="label"
-              className="block text-sm text-foreground/60 mb-2"
-            >
-              {t("anchor.label.fieldLabel")}
-            </label>
-            <input
-              id="label"
-              value={label}
-              onChange={(e) => onLabelChange(e.target.value)}
-              placeholder={t("anchor.label.placeholder")}
-              maxLength={64}
-              aria-describedby="label-status"
-              aria-invalid={labelError ? true : undefined}
-              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
+            <TemplateSelector
+              selectedId={templateId}
+              onSelect={onSelectTemplate}
             />
-            <div
-              id="label-status"
-              className="mt-1 flex items-center justify-between text-xs"
-            >
-              <span
-                className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
-                role={labelError ? "alert" : undefined}
-              >
-                {labelError ? t("anchor.label.asciiOnly") : "."}
-              </span>
-              <span className="text-foreground/50 font-mono">
-                {label.length}/64
-              </span>
-            </div>
           </div>
+
+          {isGenericTemplate ? (
+            <div className="mt-6">
+              <label
+                htmlFor="label"
+                className="block text-sm text-foreground/60 mb-2"
+              >
+                {t("anchor.label.fieldLabel")}
+              </label>
+              <input
+                id="label"
+                value={label}
+                onChange={(e) => onLabelChange(e.target.value)}
+                placeholder={t("anchor.label.placeholder")}
+                maxLength={64}
+                aria-describedby="label-status"
+                aria-invalid={labelError ? true : undefined}
+                className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
+              />
+              <div
+                id="label-status"
+                className="mt-1 flex items-center justify-between text-xs"
+              >
+                <span
+                  className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
+                  role={labelError ? "alert" : undefined}
+                >
+                  {labelError ? t("anchor.label.asciiOnly") : "."}
+                </span>
+                <span className="text-foreground/50 font-mono">
+                  {label.length}/64
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6">
+              <TemplateFields
+                template={template}
+                values={fieldValues}
+                onChange={setFieldValue}
+                disabled={pending}
+              />
+            </div>
+          )}
 
           <button
             onClick={submitSingle}
@@ -961,6 +1067,19 @@ export default function AnchorPage() {
         </>
       ) : (
         <>
+          <div className="mb-6">
+            <TemplateSelector
+              variant="compact"
+              selectId="batch-default-template"
+              label={t("templates.batch.defaultHeading")}
+              selectedId={batchTemplateId}
+              onSelect={onSelectBatchTemplate}
+            />
+            <p className="mt-1 text-xs text-foreground/50">
+              {t("templates.batch.defaultDescription")}
+            </p>
+          </div>
+
           <div
             role="button"
             tabIndex={pending ? -1 : 0}
@@ -1049,28 +1168,25 @@ export default function AnchorPage() {
                   </div>
 
                   <div className="mt-3">
-                    <input
-                      value={row.label}
-                      onChange={(e) => updateRowLabel(row.id, e.target.value)}
-                      placeholder={t("anchor.label.fieldLabel")}
-                      maxLength={64}
-                      disabled={pending}
-                      aria-label={t("anchor.batch.labelForAria", { name: row.file.name })}
-                      aria-invalid={row.labelError ? true : undefined}
-                      className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+                    <TemplateSelector
+                      variant="compact"
+                      selectId={`row-template-${row.id}`}
+                      label={t("templates.batch.overrideLabel")}
+                      selectedId={row.templateId}
+                      onSelect={(id) => setRowTemplate(row.id, id)}
                     />
-                    <div className="mt-1 flex items-center justify-between text-xs">
-                      <span
-                        className={
-                          row.labelError ? "text-red-600 dark:text-red-400" : "text-transparent"
-                        }
-                      >
-                        {row.labelError ? t("anchor.label.asciiOnly") : "."}
-                      </span>
-                      <span className="text-foreground/50 font-mono">
-                        {row.label.length}/64
-                      </span>
-                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <TemplateFields
+                      template={getTemplate(row.templateId) ?? GENERIC_TEMPLATE}
+                      values={row.fieldValues}
+                      onChange={(key, value) =>
+                        updateRowField(row.id, key, value)
+                      }
+                      disabled={pending}
+                      idPrefix={`row-${row.id}`}
+                    />
                   </div>
                 </div>
               ))}
