@@ -176,16 +176,31 @@ export default function DashboardClient() {
       return;
     }
     let cancelled = false;
-    fetch(
-      `/api/activity?address=${encodeURIComponent(address)}&page=0&limit=${RECENT_FETCH}`,
-    )
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
-      .then((d: { events: ActivityEvent[] }) => {
-        if (!cancelled) setRecentEvents(d.events.slice(0, RECENT_LIMIT));
-      })
-      .catch(() => {
+    // The API filters unrelated Hiro transactions after paging, so a single raw
+    // window can come back empty even when the wallet has older ThesisLock
+    // activity. Page forward until five events are collected or the stream ends,
+    // with a cap so a busy non-ThesisLock wallet doesn't scan forever.
+    const MAX_PREVIEW_PAGES = 5;
+    void (async () => {
+      const collected: ActivityEvent[] = [];
+      try {
+        for (let page = 0; page < MAX_PREVIEW_PAGES; page += 1) {
+          const res = await fetch(
+            `/api/activity?address=${encodeURIComponent(address)}&page=${page}&limit=${RECENT_FETCH}`,
+          );
+          if (!res.ok) break;
+          const data = (await res.json()) as {
+            events: ActivityEvent[];
+            hasMore: boolean;
+          };
+          collected.push(...data.events);
+          if (collected.length >= RECENT_LIMIT || !data.hasMore) break;
+        }
+        if (!cancelled) setRecentEvents(collected.slice(0, RECENT_LIMIT));
+      } catch {
         if (!cancelled) setRecentEvents([]);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };

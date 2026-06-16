@@ -18,6 +18,9 @@ const CATEGORIES: ActivityCategory[] = [
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 function parseIntParam(raw: string | null, fallback: number): number {
+  // An omitted param must fall back, not coerce: Number(null) is 0, which would
+  // otherwise clamp the page size down to a single transaction window.
+  if (raw === null || raw.trim() === "") return fallback;
   const n = Number(raw);
   return Number.isInteger(n) && n >= 0 ? n : fallback;
 }
