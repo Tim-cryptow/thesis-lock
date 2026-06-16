@@ -171,10 +171,11 @@ export default function DashboardClient() {
   const [recentEvents, setRecentEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
-    if (!address) {
-      setRecentEvents([]);
-      return;
-    }
+    // Clear on every wallet change so the previous wallet's events don't linger
+    // under the new one while its request is in flight (the analytics request
+    // can resolve first and exit the loading branch).
+    setRecentEvents([]);
+    if (!address) return;
     let cancelled = false;
     // The API filters unrelated Hiro transactions after paging, so a single raw
     // window can come back empty even when the wallet has older ThesisLock
