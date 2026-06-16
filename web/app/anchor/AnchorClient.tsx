@@ -535,6 +535,12 @@ export default function AnchorPage() {
           >
             Bulk Verify
           </Link>
+          <Link
+            href="/dashboard"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Dashboard
+          </Link>
         </div>
         <div className="flex items-center gap-3">
         {pendingCount > 0 && (

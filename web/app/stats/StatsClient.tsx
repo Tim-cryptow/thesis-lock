@@ -111,6 +111,12 @@ export default function StatsClient() {
         >
           Bulk Verify
         </Link>
+        <Link
+          href="/dashboard"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          Dashboard
+        </Link>
       </div>
 
       <h1 className="text-3xl mb-2">Protocol stats</h1>

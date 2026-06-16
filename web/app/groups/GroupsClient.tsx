@@ -107,6 +107,12 @@ export default function GroupsPage() {
           >
             Stats
           </Link>
+          <Link
+            href="/dashboard"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Dashboard
+          </Link>
         </div>
         {address ? (
           <button

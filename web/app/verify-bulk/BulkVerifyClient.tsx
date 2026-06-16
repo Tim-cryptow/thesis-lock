@@ -319,6 +319,12 @@ export default function BulkVerifyClient() {
             Stats
           </Link>
           <span className="text-foreground font-medium">Bulk Verify</span>
+          <Link
+            href="/dashboard"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            Dashboard
+          </Link>
         </div>
         {address ? (
           <button
