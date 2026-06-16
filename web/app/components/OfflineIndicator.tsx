@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "./I18nProvider";
 
 export default function OfflineIndicator() {
+  const { t } = useI18n();
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
@@ -23,8 +25,7 @@ export default function OfflineIndicator() {
       role="status"
       className="sticky top-0 z-50 bg-yellow-200 px-4 py-2 text-center text-sm text-yellow-900"
     >
-      You&apos;re offline. File hashing still works, but anchoring and
-      verification require a connection.
+      {t("common.offline.message")}
     </div>
   );
 }

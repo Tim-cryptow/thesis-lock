@@ -1,12 +1,7 @@
 "use client";
 
-import { useTheme, type ThemeMode } from "./ThemeProvider";
-
-const LABELS: Record<ThemeMode, string> = {
-  system: "System",
-  light: "Light",
-  dark: "Dark",
-};
+import { useTheme } from "./ThemeProvider";
+import { useI18n } from "./I18nProvider";
 
 function SunIcon() {
   return (
@@ -63,8 +58,9 @@ function MonitorIcon() {
 
 export default function ThemeToggle() {
   const { mode, cycle } = useTheme();
+  const { t } = useI18n();
 
-  const label = LABELS[mode];
+  const label = t(`common.theme.${mode}`);
   const icon =
     mode === "light" ? (
       <SunIcon />
@@ -78,8 +74,8 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={cycle}
-      title={`Theme: ${label}`}
-      aria-label={`Theme: ${label}. Click to change.`}
+      title={t("common.theme.label", { mode: label })}
+      aria-label={t("common.theme.ariaLabel", { mode: label })}
       className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-foreground/15 text-foreground/70 hover:border-foreground/40 hover:text-foreground transition"
     >
       {icon}

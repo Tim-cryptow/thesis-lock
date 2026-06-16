@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DOCS } from "@/lib/docs";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const NAV = [{ slug: "", title: "Overview" }, ...DOCS];
 
 export default function DocsSidebar() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   const isActive = (slug: string) => {
@@ -26,12 +28,12 @@ export default function DocsSidebar() {
         className="md:hidden mb-4 inline-flex items-center gap-2 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
       >
         <span aria-hidden="true">{open ? "✕" : "☰"}</span>
-        {open ? "Close" : "Menu"}
+        {open ? t("docs.close") : t("docs.menu")}
       </button>
 
       <nav
         id="docs-nav"
-        aria-label="Documentation"
+        aria-label={t("docs.navAria")}
         className={`${open ? "block" : "hidden"} md:block md:sticky md:top-8`}
       >
         <ul className="space-y-1">
@@ -50,7 +52,7 @@ export default function DocsSidebar() {
                       : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
-                  {item.title}
+                  {item.slug === "" ? t("docs.overview") : item.title}
                 </Link>
               </li>
             );

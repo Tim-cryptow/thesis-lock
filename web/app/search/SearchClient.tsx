@@ -8,6 +8,7 @@ import {
   FOCUS_SEARCH_FLAG,
 } from "@/app/components/KeyboardShortcuts";
 import { explorerAddressUrl } from "@/lib/stacks";
+import { useI18n } from "@/app/components/I18nProvider";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
 
 const RECENT_KEY = "thesislock.search.recent";
@@ -16,11 +17,11 @@ const MAX_RECENT = 6;
 const HEX_64 = /^[0-9a-f]{64}$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
-const TYPE_OPTIONS: { value: SearchType; label: string }[] = [
-  { value: "auto", label: "Auto" },
-  { value: "hash", label: "Hash" },
-  { value: "principal", label: "Principal" },
-  { value: "label", label: "Label" },
+const TYPE_OPTIONS: { value: SearchType; id: string }[] = [
+  { value: "auto", id: "typeAuto" },
+  { value: "hash", id: "typeHash" },
+  { value: "principal", id: "typePrincipal" },
+  { value: "label", id: "typeLabel" },
 ];
 
 const SOURCE_ORDER: SearchSource[] = [
@@ -31,12 +32,12 @@ const SOURCE_ORDER: SearchSource[] = [
   "group",
 ];
 
-const SOURCE_LABELS: Record<SearchSource, string> = {
-  single: "Single anchors",
-  batch: "Batch anchors",
-  registry: "Registry",
-  proof: "Proof NFTs",
-  group: "Group anchors",
+const SOURCE_LABEL_IDS: Record<SearchSource, string> = {
+  single: "sourceSingle",
+  batch: "sourceBatch",
+  registry: "sourceRegistry",
+  proof: "sourceProof",
+  group: "sourceGroup",
 };
 
 function detectType(query: string): Exclude<SearchType, "auto"> {
@@ -84,6 +85,7 @@ function readRecent(): string[] {
 }
 
 export default function SearchClient() {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [type, setType] = useState<SearchType>("auto");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -147,20 +149,21 @@ export default function SearchClient() {
       try {
         const params = new URLSearchParams({ q: term, type: searchType });
         const res = await fetch(`/api/search?${params.toString()}`);
-        if (!res.ok) throw new Error(`Search failed (${res.status})`);
+        if (!res.ok)
+          throw new Error(t("search.fetchFailed", { status: res.status }));
         const data = (await res.json()) as SearchResult[];
         if (id !== requestId.current) return;
         setResults(Array.isArray(data) ? data : []);
         pushRecent(term);
       } catch {
         if (id !== requestId.current) return;
-        setError("Search failed. Please try again in a moment.");
+        setError(t("search.error"));
         setResults([]);
       } finally {
         if (id === requestId.current) setLoading(false);
       }
     },
-    [pushRecent],
+    [pushRecent, t],
   );
 
   const onSubmit = (e: React.FormEvent) => {
@@ -196,45 +199,45 @@ export default function SearchClient() {
           <ThemeToggle />
         </div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
-          &larr; ThesisLock
+          {t("common.nav.back")}
         </Link>
         <Link
           href="/anchor"
           className="text-foreground/60 hover:text-foreground"
         >
-          Anchor
+          {t("common.nav.anchor")}
         </Link>
         <Link
           href="/anchors"
           className="text-foreground/60 hover:text-foreground"
         >
-          My Anchors
+          {t("common.nav.myAnchors")}
         </Link>
         <Link
           href="/groups"
           className="text-foreground/60 hover:text-foreground"
         >
-          Groups
+          {t("common.nav.groups")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
-          Feed
+          {t("common.nav.feed")}
         </Link>
-        <span className="text-foreground font-medium">Search</span>
+        <span className="text-foreground font-medium">
+          {t("common.nav.search")}
+        </span>
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
-          Stats
+          {t("common.nav.stats")}
         </Link>
         <Link
           href="/dashboard"
           className="text-foreground/60 hover:text-foreground"
         >
-          Dashboard
+          {t("common.nav.dashboard")}
         </Link>
       </div>
 
-      <h1 className="text-3xl mb-2">Search anchors</h1>
-      <p className="text-foreground/70 mb-8">
-        Look up anchored documents across every ThesisLock contract.
-      </p>
+      <h1 className="text-3xl mb-2">{t("search.heading")}</h1>
+      <p className="text-foreground/70 mb-8">{t("search.intro")}</p>
 
       <form onSubmit={onSubmit} className="mb-3">
         <div className="flex gap-2">
@@ -243,8 +246,8 @@ export default function SearchClient() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Hash, wallet address, or label"
-            aria-label="Search query"
+            placeholder={t("search.placeholder")}
+            aria-label={t("search.inputAria")}
             autoComplete="off"
             spellCheck={false}
             className="flex-1 rounded-md border border-foreground/15 bg-card px-4 py-2.5 text-sm focus:border-foreground/40 outline-none transition"
@@ -254,7 +257,7 @@ export default function SearchClient() {
             disabled={loading || query.trim().length === 0}
             className="inline-flex items-center px-5 py-2.5 rounded-md bg-heading text-background font-medium hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Searching..." : "Search"}
+            {loading ? t("search.searching") : t("search.submit")}
           </button>
         </div>
       </form>
@@ -274,23 +277,28 @@ export default function SearchClient() {
                   : "border-foreground/15 text-foreground/70 hover:border-foreground/40"
               }`}
             >
-              {opt.label}
+              {t(`search.${opt.id}`)}
             </button>
           );
         })}
       </div>
 
       <p className="text-xs text-foreground/50 mb-8">
-        Search by document hash, wallet address, or label.
+        {t("search.hint")}
         {query.trim() && type === "auto" && (
-          <span> Detected: {effectiveType}.</span>
+          <span>
+            {" "}
+            {t("search.detected", {
+              type: t(`search.detectedType.${effectiveType}`),
+            })}
+          </span>
         )}
       </p>
 
       {!searchedFor && recent.length > 0 && (
         <div className="mb-8">
           <p className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
-            Recent searches
+            {t("search.recentSearches")}
           </p>
           <div className="flex items-center gap-2 flex-wrap">
             {recent.map((term) => (
@@ -329,8 +337,9 @@ export default function SearchClient() {
       ) : searchedFor && results.length === 0 && !error ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70">
-            No results found for{" "}
-            <code className="font-mono text-sm break-all">{searchedFor}</code>.
+            {t("search.noResultsBefore")}{" "}
+            <code className="font-mono text-sm break-all">{searchedFor}</code>
+            {t("search.noResultsAfter")}
           </p>
         </div>
       ) : (
@@ -338,7 +347,8 @@ export default function SearchClient() {
           {grouped.map((group) => (
             <section key={group.source}>
               <h2 className="text-xs text-foreground/50 uppercase tracking-wide mb-3">
-                {SOURCE_LABELS[group.source]} ({group.rows.length})
+                {t(`search.${SOURCE_LABEL_IDS[group.source]}`)} (
+                {group.rows.length})
               </h2>
               <ul className="space-y-3">
                 {group.rows.map((row) => (
@@ -354,15 +364,17 @@ export default function SearchClient() {
                               row.source,
                             )}`}
                           >
-                            {row.source}
+                            {t(`search.badge.${row.source}`)}
                           </span>
                           {row.groupId !== undefined && (
                             <span className="text-xs text-foreground/50">
-                              group #{row.groupId}
+                              {t("search.groupLabel", { id: row.groupId })}
                             </span>
                           )}
                           <span className="text-xs text-foreground/50">
-                            block {row.stacksBlock}
+                            {t("search.blockLabel", {
+                              block: row.stacksBlock,
+                            })}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -374,21 +386,23 @@ export default function SearchClient() {
                             onClick={() => void copyHash(row.hash)}
                             className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition"
                           >
-                            {copiedHash === row.hash ? "Copied" : "Copy"}
+                            {copiedHash === row.hash
+                              ? t("common.actions.copied")
+                              : t("common.actions.copy")}
                           </button>
                         </div>
                         <div className="text-sm mb-2">
                           <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
-                            Label
+                            {t("search.labelHeading")}
                           </span>
                           <code className="font-mono text-xs">
-                            {row.label || "(unlabeled)"}
+                            {row.label || t("search.unlabeled")}
                           </code>
                         </div>
                         {row.owner && (
                           <div className="text-sm">
                             <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
-                              Owner
+                              {t("search.ownerHeading")}
                             </span>
                             <a
                               href={explorerAddressUrl(row.owner)}
@@ -405,7 +419,7 @@ export default function SearchClient() {
                         href={row.verifyUrl}
                         className="text-sm text-foreground/70 hover:text-foreground whitespace-nowrap"
                       >
-                        Verify &rarr;
+                        {t("search.verify")}
                       </Link>
                     </div>
                   </li>

@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import HeroStats from "@/app/components/HeroStats";
 import StatsBar from "@/app/components/StatsBar";
 import Footer from "@/app/components/Footer";
 import FeatureCard from "@/app/components/FeatureCard";
+import { useI18n } from "@/app/components/I18nProvider";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -12,10 +15,11 @@ function contractUrl(name: string): string {
   return `https://explorer.hiro.so/txid/${CONTRACT_ADDRESS}.${name}?chain=mainnet`;
 }
 
+// Stable ids drive the translation keys (landing.features.<id>); icons and
+// hrefs are structural and stay in the array.
 const FEATURES = [
   {
-    title: "Single & Batch Anchoring",
-    body: "Anchor one document or up to ten in a single transaction, each with its own label.",
+    id: "anchoring",
     href: "/anchor",
     icon: (
       <>
@@ -26,8 +30,7 @@ const FEATURES = [
     ),
   },
   {
-    title: "Groups",
-    body: "Create shared spaces where invited wallets anchor documents under one roof.",
+    id: "groups",
     href: "/groups",
     icon: (
       <>
@@ -39,8 +42,7 @@ const FEATURES = [
     ),
   },
   {
-    title: "Proof NFTs",
-    body: "Mint a soulbound SIP-009 token that carries the anchor record on chain.",
+    id: "proofNfts",
     href: "/docs/contracts",
     icon: (
       <>
@@ -50,8 +52,7 @@ const FEATURES = [
     ),
   },
   {
-    title: "Verification Badges",
-    body: "Embed a live SVG badge that shows a document's anchored status anywhere.",
+    id: "badges",
     href: "/embed",
     icon: (
       <>
@@ -61,8 +62,7 @@ const FEATURES = [
     ),
   },
   {
-    title: "Export & Certificates",
-    body: "Download an HTML certificate or export bulk verification results as CSV.",
+    id: "exportCerts",
     href: "/verify-bulk",
     icon: (
       <>
@@ -74,8 +74,7 @@ const FEATURES = [
     ),
   },
   {
-    title: "Developer Tools",
-    body: "Integrate with the TypeScript SDK, CLI, GitHub Action, and REST API.",
+    id: "devtools",
     href: "/docs",
     icon: (
       <>
@@ -88,32 +87,16 @@ const FEATURES = [
 ];
 
 const CONTRACTS = [
-  {
-    name: "thesislock",
-    label: "Anchors a single document hash with a timestamp and label.",
-  },
-  {
-    name: "thesislock-batch",
-    label: "Anchors up to ten document hashes in one transaction.",
-  },
-  {
-    name: "thesislock-registry",
-    label: "Indexes every anchor per wallet for fast history lookups.",
-  },
-  {
-    name: "thesislock-proof",
-    label: "Issues soulbound SIP-009 proof NFTs for anchored documents.",
-  },
-  {
-    name: "thesislock-groups",
-    label: "Manages group membership and shared, multi-wallet anchoring.",
-  },
+  { name: "thesislock", id: "thesislock" },
+  { name: "thesislock-batch", id: "batch" },
+  { name: "thesislock-registry", id: "registry" },
+  { name: "thesislock-proof", id: "proof" },
+  { name: "thesislock-groups", id: "groups" },
 ];
 
 const STEPS = [
   {
-    title: "Drop your file",
-    body: "Your browser hashes the document with SHA-256. The file itself never leaves your device.",
+    id: "dropFile",
     icon: (
       <>
         <path d="M12 3v12" />
@@ -123,8 +106,7 @@ const STEPS = [
     ),
   },
   {
-    title: "Sign with your wallet",
-    body: "Approve one Stacks transaction. Your wallet signs the hash and anchors it on chain with an optional label.",
+    id: "sign",
     icon: (
       <>
         <path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -134,8 +116,7 @@ const STEPS = [
     ),
   },
   {
-    title: "Verify anytime",
-    body: "Anyone can confirm when the document existed, by which wallet, forever. The proof lives on Bitcoin via Stacks.",
+    id: "verify",
     icon: (
       <>
         <path d="M12 3 4 6v6c0 4 3.5 7.5 8 9 4.5-1.5 8-5 8-9V6z" />
@@ -146,39 +127,40 @@ const STEPS = [
 ];
 
 export default function Page() {
+  const { t } = useI18n();
+
   return (
     <div className="flex-1 flex flex-col">
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 w-full">
         <h1 className="text-5xl md:text-6xl leading-tight">
-          Prove any document existed. On Bitcoin.
+          {t("landing.hero.title")}
         </h1>
         <p className="mt-6 text-lg max-w-2xl text-foreground/80">
-          ThesisLock anchors SHA-256 hashes on the Stacks blockchain.
-          Permanent, verifiable, private. Your file never leaves your device.
+          {t("landing.hero.subtitle")}
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/anchor"
             className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
           >
-            Anchor a Document
+            {t("landing.hero.anchorCta")}
           </Link>
           <Link
             href="/search"
             className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
           >
-            Verify a Hash
+            {t("landing.hero.verifyCta")}
           </Link>
         </div>
         <HeroStats />
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-10">How it works</h2>
+        <h2 className="text-3xl mb-10">{t("landing.steps.heading")}</h2>
         <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {STEPS.map((step, i) => (
             <li
-              key={step.title}
+              key={step.id}
               className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col"
             >
               <div className="flex items-center gap-3 mb-4">
@@ -198,9 +180,11 @@ export default function Page() {
                   {step.icon}
                 </svg>
               </div>
-              <h3 className="text-xl mb-2">{step.title}</h3>
+              <h3 className="text-xl mb-2">
+                {t(`landing.steps.${step.id}.title`)}
+              </h3>
               <p className="text-foreground/80 text-sm leading-relaxed">
-                {step.body}
+                {t(`landing.steps.${step.id}.body`)}
               </p>
             </li>
           ))}
@@ -208,17 +192,16 @@ export default function Page() {
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">Everything in one protocol</h2>
+        <h2 className="text-3xl mb-3">{t("landing.features.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
-          From a one-click timestamp to programmable proofs, ThesisLock covers
-          the full lifecycle of document provenance.
+          {t("landing.features.intro")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((feature) => (
             <FeatureCard
-              key={feature.title}
-              title={feature.title}
-              body={feature.body}
+              key={feature.id}
+              title={t(`landing.features.${feature.id}.title`)}
+              body={t(`landing.features.${feature.id}.body`)}
               href={feature.href}
               icon={feature.icon}
             />
@@ -227,12 +210,9 @@ export default function Page() {
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">
-          Built on 5 smart contracts on Stacks mainnet
-        </h2>
+        <h2 className="text-3xl mb-3">{t("landing.contracts.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
-          Each contract owns one responsibility and is verifiable on the Stacks
-          explorer. Together they form the ThesisLock protocol.
+          {t("landing.contracts.intro")}
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           <ul className="flex flex-col gap-3">
@@ -250,7 +230,7 @@ export default function Page() {
                   {contract.name}
                 </a>
                 <p className="text-foreground/70 text-sm mt-1">
-                  {contract.label}
+                  {t(`landing.contracts.${contract.id}`)}
                 </p>
               </li>
             ))}
@@ -276,16 +256,15 @@ export default function Page() {
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">Integrate ThesisLock in your workflow</h2>
+        <h2 className="text-3xl mb-3">{t("landing.integrate.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
-          Anchor and verify documents from your own code, terminal, or CI
-          pipeline.
+          {t("landing.integrate.intro")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">SDK</h3>
+            <h3 className="text-xl mb-3">{t("landing.integrate.sdk.title")}</h3>
             <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              A typed TypeScript client for Node and the browser.
+              {t("landing.integrate.sdk.body")}
             </p>
             <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npm install thesislock-sdk
 
@@ -294,16 +273,18 @@ const client = createClient();
 const result = await client.verify(hash);`}</pre>
           </div>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">CLI</h3>
+            <h3 className="text-xl mb-3">{t("landing.integrate.cli.title")}</h3>
             <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              Hash, anchor, and verify documents straight from the terminal.
+              {t("landing.integrate.cli.body")}
             </p>
             <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npx thesislock-cli verify <hash>`}</pre>
           </div>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">GitHub Action</h3>
+            <h3 className="text-xl mb-3">
+              {t("landing.integrate.githubAction.title")}
+            </h3>
             <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              Verify an anchor as a step in any GitHub workflow.
+              {t("landing.integrate.githubAction.body")}
             </p>
             <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`- uses: Tim-cryptow/thesis-lock/action@main
   with:
@@ -314,12 +295,12 @@ const result = await client.verify(hash);`}</pre>
           href="/docs"
           className="inline-flex items-center mt-8 px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
         >
-          Read the docs
+          {t("landing.integrate.readDocs")}
         </Link>
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-10">Live on Stacks mainnet</h2>
+        <h2 className="text-3xl mb-10">{t("landing.live.heading")}</h2>
         <StatsBar />
       </section>
 

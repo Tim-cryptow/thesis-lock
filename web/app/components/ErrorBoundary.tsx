@@ -4,6 +4,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ErrorFallback from "./ErrorFallback";
+import { useI18n } from "./I18nProvider";
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -11,6 +12,10 @@ type ErrorBoundaryProps = {
   // error when this differs, so navigating away (e.g. via "Go home") recovers
   // instead of leaving the fallback stuck across route changes.
   pathname: string;
+  // Translated copy is resolved in the function wrapper and passed in, since a
+  // class component cannot call the useI18n hook itself.
+  message: string;
+  homeLabel: string;
 };
 
 type ErrorBoundaryState = {
@@ -47,10 +52,7 @@ class ErrorBoundaryInner extends Component<
 
     return (
       <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-        <ErrorFallback
-          message="Something went wrong while rendering this page."
-          onRetry={this.reset}
-        />
+        <ErrorFallback message={this.props.message} onRetry={this.reset} />
         {process.env.NODE_ENV !== "production" && (
           <pre className="mt-4 overflow-auto rounded-lg border border-foreground/10 bg-card p-4 text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
             {error.message}
@@ -61,7 +63,7 @@ class ErrorBoundaryInner extends Component<
             href="/"
             className="text-sm text-foreground/60 hover:text-foreground underline hover:no-underline"
           >
-            Go home
+            {this.props.homeLabel}
           </Link>
         </div>
       </div>
@@ -75,5 +77,14 @@ export default function ErrorBoundary({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  return <ErrorBoundaryInner pathname={pathname}>{children}</ErrorBoundaryInner>;
+  const { t } = useI18n();
+  return (
+    <ErrorBoundaryInner
+      pathname={pathname}
+      message={t("common.error.boundaryMessage")}
+      homeLabel={t("common.actions.goHome")}
+    >
+      {children}
+    </ErrorBoundaryInner>
+  );
 }
