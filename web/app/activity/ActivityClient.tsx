@@ -15,6 +15,10 @@ import { describeActivity } from "@/lib/activityDescriptions";
 
 const PAGE_SIZE = 20;
 
+type Filter = "all" | ActivityCategory;
+
+const FILTERS: Filter[] = ["all", "anchors", "groups", "proofs", "registry"];
+
 const LOCALE_TAGS: Record<string, string> = {
   en: "en-US",
   es: "es-ES",
@@ -158,6 +162,7 @@ export default function ActivityClient() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
 
   const load = useCallback(
     async (owner: string) => {
@@ -187,7 +192,13 @@ export default function ActivityClient() {
     void load(address);
   }, [address, load]);
 
-  const groups = groupByDay(events, t, localeTag);
+  // Filtering is client-side over the loaded events, so switching pills is
+  // instant and never refetches.
+  const visibleEvents =
+    filter === "all"
+      ? events
+      : events.filter((e) => activityCategory(e.type) === filter);
+  const groups = groupByDay(visibleEvents, t, localeTag);
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -285,20 +296,51 @@ export default function ActivityClient() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-6">
-          {groups.map((group) => (
-            <section key={group.key}>
-              <h2 className="text-xs uppercase tracking-wide text-foreground/50 mb-1 sticky top-0 bg-background/80 backdrop-blur py-1">
-                {group.label}
-              </h2>
-              <ul className="divide-y divide-foreground/10 border-l-2 border-foreground/10 pl-4">
-                {group.events.map((event) => (
-                  <EventRow key={event.id} event={event} t={t} />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
+        <>
+          <div
+            role="group"
+            aria-label={t("activity.title")}
+            className="flex flex-wrap gap-2 mb-6"
+          >
+            {FILTERS.map((f) => {
+              const active = f === filter;
+              return (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setFilter(f)}
+                  className={`text-sm px-3 py-1.5 rounded-full border transition ${
+                    active
+                      ? "bg-heading text-background border-transparent"
+                      : "border-foreground/15 text-foreground/70 hover:border-foreground/40"
+                  }`}
+                >
+                  {t(`activity.filters.${f}`)}
+                </button>
+              );
+            })}
+          </div>
+
+          {visibleEvents.length === 0 ? (
+            <p className="text-sm text-foreground/60">{t("activity.empty")}</p>
+          ) : (
+            <div className="space-y-6">
+              {groups.map((group) => (
+                <section key={group.key}>
+                  <h2 className="text-xs uppercase tracking-wide text-foreground/50 mb-1 sticky top-0 bg-background/80 backdrop-blur py-1">
+                    {group.label}
+                  </h2>
+                  <ul className="divide-y divide-foreground/10 border-l-2 border-foreground/10 pl-4">
+                    {group.events.map((event) => (
+                      <EventRow key={event.id} event={event} t={t} />
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
