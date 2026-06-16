@@ -27,6 +27,51 @@ import { isHiroAvailable } from "@/lib/fetchWithRetry";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
+import { getTemplate, parseLabel } from "@/lib/templates";
+
+// Renders an anchor label. When the label was created from a template, it parses
+// back into a template badge and a key-value list of fields; otherwise it shows
+// the raw label exactly as stored on chain.
+function LabelValue({ label }: { label: string }) {
+  const { t } = useI18n();
+  const parsed = parseLabel(label);
+  const template = parsed.templateId ? getTemplate(parsed.templateId) : undefined;
+
+  if (!template) {
+    return (
+      <code className="font-mono text-xs md:text-sm">
+        {label || t("verify.fields.noLabel")}
+      </code>
+    );
+  }
+
+  return (
+    <div>
+      <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-foreground/60 border border-foreground/15 rounded px-1.5 py-0.5 mb-2">
+        <span
+          aria-hidden="true"
+          className="inline-flex h-4 w-4 items-center justify-center rounded bg-heading text-background text-[9px] font-semibold"
+        >
+          {template.icon}
+        </span>
+        {t("templates.verify.badge")}: {template.name}
+      </span>
+      <dl className="space-y-1">
+        {Object.entries(parsed.fields).map(([key, value]) => {
+          const field = template.fields.find((f) => f.key === key);
+          return (
+            <div key={key} className="flex gap-2 text-xs">
+              <dt className="text-foreground/50 shrink-0">
+                {field?.name ?? key}
+              </dt>
+              <dd className="font-mono break-all">{value}</dd>
+            </div>
+          );
+        })}
+      </dl>
+    </div>
+  );
+}
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 // c32-encoded Stacks principals are variable length: hash160 leading zero
@@ -457,9 +502,7 @@ export default function VerifyPage() {
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                   {t("verify.fields.label")}
                 </div>
-                <code className="font-mono text-xs md:text-sm">
-                  {batchAnchor.label || t("verify.fields.noLabel")}
-                </code>
+                <LabelValue label={batchAnchor.label} />
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -520,9 +563,7 @@ export default function VerifyPage() {
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                   {t("verify.fields.label")}
                 </div>
-                <code className="font-mono text-xs md:text-sm">
-                  {groupAnchor.label || t("verify.fields.noLabel")}
-                </code>
+                <LabelValue label={groupAnchor.label} />
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -599,9 +640,7 @@ export default function VerifyPage() {
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.label")}
               </div>
-              <code className="font-mono text-xs md:text-sm">
-                {anchor.label || t("verify.fields.noLabel")}
-              </code>
+              <LabelValue label={anchor.label} />
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">

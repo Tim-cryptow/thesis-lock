@@ -16,6 +16,7 @@ export const es: Translations = {
       stats: "Estadísticas",
       bulkVerify: "Verificación masiva",
       dashboard: "Panel",
+      templates: "Plantillas",
       docs: "Documentación",
       api: "API",
       explorer: "Explorador",
@@ -658,5 +659,52 @@ export const es: Translations = {
     menu: "Menú",
     close: "Cerrar",
     navAria: "Documentación",
+  },
+  templates: {
+    selector: {
+      heading: "Plantilla",
+      description:
+        "Elige una plantilla para estructurar tu etiqueta, o déjala libre.",
+    },
+    field: {
+      required: "{name} es obligatorio.",
+      optionalTag: "opcional",
+    },
+    preview: {
+      heading: "Vista previa de la etiqueta",
+      empty: "Completa los campos para ver la etiqueta generada.",
+    },
+    warning: {
+      truncated:
+        "La etiqueta supera los {max} caracteres y se truncará en la cadena.",
+    },
+    batch: {
+      defaultHeading: "Plantilla predeterminada",
+      defaultDescription:
+        "Se aplica a cada archivo. Cada archivo puede anularla abajo.",
+      overrideLabel: "Plantilla para este archivo",
+    },
+    verify: {
+      badge: "Plantilla",
+      via: "Estructurado con la plantilla {name}.",
+    },
+    filter: {
+      label: "Filtrar por plantilla",
+      all: "Todas las plantillas",
+      unstructured: "Libre",
+    },
+    page: {
+      heading: "Plantillas de anclaje",
+      intro:
+        "Las plantillas dan a tus anclajes etiquetas estructuradas y consistentes. Elige una al anclar para registrar campos como título, versión o departamento en una sola etiqueta en la cadena.",
+      exampleHeading: "Etiqueta de ejemplo",
+      fieldsHeading: "Campos",
+      use: "Usar esta plantilla",
+      requiredTag: "obligatorio",
+      custom: {
+        heading: "Etiquetas personalizadas",
+        body: "No todos los documentos encajan en una plantilla. Elige Genérica para anclar con cualquier etiqueta libre de hasta 64 caracteres ASCII, igual que antes.",
+      },
+    },
   },
 };

@@ -21,6 +21,7 @@ export const en = {
       stats: "Stats",
       bulkVerify: "Bulk Verify",
       dashboard: "Dashboard",
+      templates: "Templates",
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
@@ -663,5 +664,52 @@ export const en = {
     menu: "Menu",
     close: "Close",
     navAria: "Documentation",
+  },
+  templates: {
+    selector: {
+      heading: "Template",
+      description:
+        "Choose a template to structure your label, or keep it free-form.",
+    },
+    field: {
+      required: "{name} is required.",
+      optionalTag: "optional",
+    },
+    preview: {
+      heading: "Label preview",
+      empty: "Fill in the fields to preview the generated label.",
+    },
+    warning: {
+      truncated:
+        "Label is over {max} characters and will be truncated on chain.",
+    },
+    batch: {
+      defaultHeading: "Default template",
+      defaultDescription:
+        "Applied to every file. Each file can override it below.",
+      overrideLabel: "Template for this file",
+    },
+    verify: {
+      badge: "Template",
+      via: "Structured with the {name} template.",
+    },
+    filter: {
+      label: "Filter by template",
+      all: "All templates",
+      unstructured: "Free-form",
+    },
+    page: {
+      heading: "Anchor Templates",
+      intro:
+        "Templates give your anchors structured, consistent labels. Pick one when anchoring to record fields like title, version, or department in a single on-chain label.",
+      exampleHeading: "Example label",
+      fieldsHeading: "Fields",
+      use: "Use this template",
+      requiredTag: "required",
+      custom: {
+        heading: "Custom labels",
+        body: "Not every document fits a template. Choose Generic to anchor with any free-form label up to 64 ASCII characters, exactly as before.",
+      },
+    },
   },
 };
