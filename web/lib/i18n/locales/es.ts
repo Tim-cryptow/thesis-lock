@@ -11,6 +11,7 @@ export const es: Translations = {
       search: "Buscar",
       anchor: "Anclar",
       myAnchors: "Mis anclajes",
+      myProfile: "Mi perfil",
       groups: "Grupos",
       feed: "Actividad",
       stats: "Estadísticas",
