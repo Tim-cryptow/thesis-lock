@@ -13,8 +13,24 @@ import {
   formatAnchorsJSON,
 } from "@/lib/export";
 import type { WalletAnalytics } from "@/lib/analytics";
+import {
+  activityCategory,
+  type ActivityCategory,
+  type ActivityEvent,
+} from "@/lib/activityLog";
+import { describeActivity } from "@/lib/activityDescriptions";
 
 const CHART_DAYS = 30;
+
+const RECENT_LIMIT = 5;
+
+// Icon badge colors per activity category, matching the full activity timeline.
+const CATEGORY_BADGE: Record<ActivityCategory, string> = {
+  anchors: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  groups: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  proofs: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  registry: "bg-foreground/10 text-foreground/60",
+};
 
 const SOURCE_META = [
   { key: "single", id: "sourceSingle", bar: "bg-blue-500", dot: "bg-blue-500" },
@@ -34,11 +50,6 @@ function formatDateLabel(iso: string): string {
     day: "numeric",
     timeZone: "UTC",
   });
-}
-
-function truncateHash(hash: string): string {
-  if (hash.length <= 14) return hash;
-  return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
 }
 
 function formatRelativeTime(
@@ -152,6 +163,31 @@ export default function DashboardClient() {
     void load(address);
   }, [address, load]);
 
+  // The compact activity feed reads the unified activity log directly, so it
+  // stays consistent with the full /activity timeline.
+  const [recentEvents, setRecentEvents] = useState<ActivityEvent[]>([]);
+
+  useEffect(() => {
+    if (!address) {
+      setRecentEvents([]);
+      return;
+    }
+    let cancelled = false;
+    fetch(
+      `/api/activity?address=${encodeURIComponent(address)}&page=0&limit=${RECENT_LIMIT}`,
+    )
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
+      .then((d: { events: ActivityEvent[] }) => {
+        if (!cancelled) setRecentEvents(d.events.slice(0, RECENT_LIMIT));
+      })
+      .catch(() => {
+        if (!cancelled) setRecentEvents([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address]);
+
   const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -243,6 +279,12 @@ export default function DashboardClient() {
           <span className="text-foreground font-medium">
             {t("common.nav.dashboard")}
           </span>
+          <Link
+            href="/activity"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.activity")}
+          </Link>
         </div>
         {address ? (
           <button
@@ -467,50 +509,47 @@ export default function DashboardClient() {
           </section>
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
-            <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
-              {t("dashboard.recentHeading")}
-            </h2>
-            {analytics.recentActivity.length === 0 ? (
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h2 className="text-sm uppercase tracking-wide text-foreground/50">
+                {t("dashboard.recentHeading")}
+              </h2>
+              <Link
+                href="/activity"
+                className="text-xs text-foreground/60 hover:text-foreground shrink-0"
+              >
+                {t("dashboard.viewAllActivity")} &rarr;
+              </Link>
+            </div>
+            {recentEvents.length === 0 ? (
               <p className="text-sm text-foreground/60">
                 {t("dashboard.noActivity")}
               </p>
             ) : (
               <ul className="divide-y divide-foreground/10">
-                {analytics.recentActivity.map((item) => {
-                  const row = (
-                    <div className="flex items-center justify-between gap-4 py-3">
-                      <div className="min-w-0">
-                        <div className="text-sm text-foreground/90">
-                          {item.action}
-                        </div>
-                        <div className="text-xs text-foreground/50 font-mono truncate">
-                          {item.hash
-                            ? truncateHash(item.hash)
-                            : t("dashboard.noHash")}
-                          {item.block
-                            ? t("dashboard.blockSuffix", {
-                                block: formatNumber(item.block),
-                              })
-                            : ""}
-                        </div>
+                {recentEvents.map((event) => {
+                  const { title, subtitle, icon } = describeActivity(event);
+                  return (
+                    <li
+                      key={event.id}
+                      className="flex items-center gap-3 py-3"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${CATEGORY_BADGE[activityCategory(event.type)]}`}
+                      >
+                        {icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm text-foreground/90">{title}</div>
+                        {subtitle && (
+                          <div className="text-xs text-foreground/50 font-mono truncate">
+                            {subtitle}
+                          </div>
+                        )}
                       </div>
                       <span className="text-xs text-foreground/50 shrink-0">
-                        {formatRelativeTime(item.timestamp, t)}
+                        {formatRelativeTime(event.timestamp, t)}
                       </span>
-                    </div>
-                  );
-                  return (
-                    <li key={item.txId}>
-                      {item.hash ? (
-                        <Link
-                          href={`/v/${item.hash}`}
-                          className="block hover:bg-foreground/3 transition rounded-md px-1"
-                        >
-                          {row}
-                        </Link>
-                      ) : (
-                        <div className="px-1">{row}</div>
-                      )}
                     </li>
                   );
                 })}
