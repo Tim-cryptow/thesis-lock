@@ -154,20 +154,26 @@ function numberArg(tx: AddressTx, name: string): number | null {
   return null;
 }
 
-// The document hashes submitted in an anchor-batch call, in list order.
-function batchEntryHashes(tx: AddressTx): string[] {
+// The { hash, label } pairs submitted in an anchor-batch call, in list order.
+// Both fields are decoded so consumers can attribute per-document labels to a
+// batch, which the batch contract's own print event does not carry.
+function batchEntries(tx: AddressTx): Array<{ hash: string; label: string }> {
   const value = decodeArg(tx, "entries");
   if (!Array.isArray(value)) return [];
-  const hashes: string[] = [];
+  const entries: Array<{ hash: string; label: string }> = [];
   for (const entry of value) {
     const tuple = unwrap(entry);
     if (!tuple || typeof tuple !== "object") continue;
-    const hash = unwrap((tuple as Record<string, unknown>).hash);
-    if (typeof hash === "string" && hash) {
-      hashes.push(stripHex(hash).toLowerCase());
-    }
+    const rec = tuple as Record<string, unknown>;
+    const hash = unwrap(rec.hash);
+    if (typeof hash !== "string" || !hash) continue;
+    const label = unwrap(rec.label);
+    entries.push({
+      hash: stripHex(hash).toLowerCase(),
+      label: typeof label === "string" ? label : "",
+    });
   }
-  return hashes;
+  return entries;
 }
 
 // A successful call returns (ok <value>); for the mint/batch/create paths that
@@ -204,9 +210,10 @@ function toEvent(tx: AddressTx): ActivityEvent | null {
       break;
     }
     case "batch-anchor": {
-      const hashes = batchEntryHashes(tx);
-      details.count = hashes.length;
-      details.hash = hashes[0] ?? null;
+      const entries = batchEntries(tx);
+      details.count = entries.length;
+      details.hash = entries[0]?.hash ?? null;
+      details.entries = entries;
       details.batchId = okUint(tx);
       break;
     }

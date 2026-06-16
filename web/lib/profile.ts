@@ -16,6 +16,14 @@ import { parseLabel } from "./templates";
 // and the wallet's Hiro contract-call history (batch, group, and proof totals,
 // plus first and last activity blocks).
 
+// A validated registry anchor plus the contract that actually backs it. The
+// source lets the profile build a verify link that resolves to the displayed
+// record: an `?owner=` param forces VerifyClient to prefer the owner-keyed batch
+// record, so a single-backed row must link without it.
+export type ProfileAnchor = RegistryEntry & {
+  source: "single" | "batch";
+};
+
 export type WalletProfile = {
   address: string;
   totalAnchors: number;
@@ -24,7 +32,7 @@ export type WalletProfile = {
   proofNFTs: number;
   firstSeen: number;
   lastSeen: number;
-  recentAnchors: RegistryEntry[];
+  recentAnchors: ProfileAnchor[];
   topLabels: string[];
 };
 
@@ -52,22 +60,27 @@ export function isValidProfileAddress(address: string): boolean {
 
 // The registry is a self-asserted index: register-anchor accepts any hash with
 // no check that it is backed by a real anchor, so a public profile must confirm
-// each shown entry resolves to an actual single or batch anchor before
-// publishing it with a verify link (mirrors the feed's registry validation).
-// Returns true on a transient lookup error so a Hiro hiccup keeps a real anchor
-// rather than hiding it; only entries that resolve to "none" in both contracts
-// are dropped.
-async function isBackedAnchor(
+// each shown entry resolves to an actual anchor before publishing it with a
+// verify link (mirrors the feed's registry validation). Returns which contract
+// backs the hash, or null when neither does (the row is dropped). The single
+// contract is checked first so a hash that exists as both a single and an
+// owner-keyed batch links to the single record the registry row represents.
+// Defaults to "single" on a transient lookup error so a Hiro hiccup keeps a
+// real anchor rather than hiding it.
+async function anchorSource(
   owner: string,
   entry: RegistryEntry,
-): Promise<boolean> {
+): Promise<"single" | "batch" | null> {
   try {
-    const batch = await readBatchAnchor(entry.hash, owner);
-    if (batch) return true;
     const single = await readAnchor(entry.hash);
-    return single !== null && single.anchoredBy.toUpperCase() === owner;
+    if (single !== null && single.anchoredBy.toUpperCase() === owner) {
+      return "single";
+    }
+    const batch = await readBatchAnchor(entry.hash, owner);
+    if (batch) return "batch";
+    return null;
   } catch {
-    return true;
+    return "single";
   }
 }
 
@@ -114,18 +127,24 @@ export async function fetchWalletProfile(
     totalAnchors = 0;
   }
 
-  let recentAnchors: RegistryEntry[] = [];
+  let recentAnchors: ProfileAnchor[] = [];
   try {
     const recent = await getRecentAnchors(addr);
     const candidates = recent
       .filter((entry): entry is RegistryEntry => entry !== null)
       .slice(0, RECENT_LIMIT);
     // Drop registry rows that aren't backed by a real anchor so the profile
-    // never shows entries whose verify link reports "not anchored".
-    const backed = await Promise.all(
-      candidates.map((entry) => isBackedAnchor(addr, entry)),
+    // never shows entries whose verify link reports "not anchored", and tag the
+    // survivors with their backing contract for link generation.
+    const sources = await Promise.all(
+      candidates.map((entry) => anchorSource(addr, entry)),
     );
-    recentAnchors = candidates.filter((_, i) => backed[i]);
+    recentAnchors = candidates
+      .map((entry, i) => {
+        const source = sources[i];
+        return source ? { ...entry, source } : null;
+      })
+      .filter((entry): entry is ProfileAnchor => entry !== null);
   } catch {
     recentAnchors = [];
   }
@@ -163,6 +182,27 @@ export async function fetchWalletProfile(
       if (firstSeen === 0 || block < firstSeen) firstSeen = block;
     }
 
+    // A batch carries one label per document, so count each entry. This pulls
+    // batch document types from the full scanned window rather than only the
+    // recent registry rows below.
+    if (event.type === "batch-anchor") {
+      const entries = Array.isArray(event.details?.entries)
+        ? (event.details.entries as Array<{ hash?: unknown; label?: unknown }>)
+        : [];
+      for (const entry of entries) {
+        const entryHash = typeof entry.hash === "string" ? entry.hash : "";
+        if (entryHash && countedHashes.has(entryHash)) continue;
+        const entryType = labelType(
+          typeof entry.label === "string" ? entry.label : "",
+        );
+        if (entryType) {
+          labelCounts.set(entryType, (labelCounts.get(entryType) ?? 0) + 1);
+          if (entryHash) countedHashes.add(entryHash);
+        }
+      }
+      continue;
+    }
+
     const label =
       typeof event.details?.label === "string" ? event.details.label : "";
     const hash =
@@ -178,16 +218,17 @@ export async function fetchWalletProfile(
     }
   }
 
-  // Always fold the registry's recent anchors into the document-type counts.
-  // A batch-anchor activity event carries only a count and no per-entry labels,
-  // so the registry (which records each batch-anchored hash with its label) is
-  // the only source of batch document types; merging it unconditionally keeps a
-  // mixed single+batch wallet from dropping its batch labels. Hashes already
-  // counted from an event are skipped so single anchors are not double-counted.
+  // Fold in any recent registry anchors not already counted from the scan, so a
+  // wallet whose anchors predate the scanned transaction window still surfaces
+  // its document types. Hashes seen in the scan are skipped to avoid
+  // double-counting.
   for (const entry of recentAnchors) {
     if (countedHashes.has(entry.hash)) continue;
     const type = labelType(entry.label);
-    if (type) labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
+    if (type) {
+      labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
+      countedHashes.add(entry.hash);
+    }
   }
 
   const topLabels = [...labelCounts.entries()]

@@ -263,7 +263,11 @@ export default function ProfileClient() {
                         {truncateAddress(entry.hash, 10, 10)}
                       </code>
                       <Link
-                        href={`/v/${entry.hash}?owner=${encodeURIComponent(profile.address)}`}
+                        href={
+                          entry.source === "batch"
+                            ? `/v/${entry.hash}?owner=${encodeURIComponent(profile.address)}`
+                            : `/v/${entry.hash}`
+                        }
                         className="text-xs underline hover:no-underline shrink-0"
                       >
                         Verify
