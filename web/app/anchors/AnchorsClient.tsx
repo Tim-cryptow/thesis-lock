@@ -173,10 +173,18 @@ export default function AnchorsPage() {
     ),
   );
   const hasStructured = presentTemplateIds.length > 0;
+  // Fall back to "all" when the selector is hidden or the selected template is
+  // no longer present (e.g. after switching wallets), so a stale filter can
+  // never leave the list empty with no way to recover.
+  const filterAvailable =
+    templateFilter === "all" ||
+    templateFilter === UNSTRUCTURED_FILTER ||
+    presentTemplateIds.includes(templateFilter);
+  const effectiveFilter = hasStructured && filterAvailable ? templateFilter : "all";
   const visibleEntries = parsedEntries.filter(({ parsed }) => {
-    if (templateFilter === "all") return true;
-    if (templateFilter === UNSTRUCTURED_FILTER) return !parsed.templateId;
-    return parsed.templateId === templateFilter;
+    if (effectiveFilter === "all") return true;
+    if (effectiveFilter === UNSTRUCTURED_FILTER) return !parsed.templateId;
+    return parsed.templateId === effectiveFilter;
   });
 
   return (
@@ -294,7 +302,7 @@ export default function AnchorsPage() {
               </label>
               <select
                 id="template-filter"
-                value={templateFilter}
+                value={effectiveFilter}
                 onChange={(e) => setTemplateFilter(e.target.value)}
                 className="text-sm px-2 py-1 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
               >

@@ -358,7 +358,7 @@ export default function AnchorPage() {
     const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
-    submitAnchor(hash, label, {
+    submitAnchor(submittingHash, submittingLabel, {
       onFinish: (txId) => {
         trackTx(txId, {
           hash: submittingHash,
