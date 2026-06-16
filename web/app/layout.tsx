@@ -3,6 +3,7 @@ import { Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "./components/SkipToContent";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { I18nProvider } from "./components/I18nProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
 import TxToast from "./components/TxToast";
@@ -99,23 +100,25 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <TxProvider>
-            <OfflineIndicator />
-            <SkipToContent />
-            <ServiceWorkerRegistration />
-            <KeyboardShortcuts />
-            <main
-              id="main-content"
-              tabIndex={-1}
-              className="flex-1 flex flex-col"
-            >
-              <ErrorBoundary>{children}</ErrorBoundary>
-            </main>
-            <TxToast />
-            <InstallPrompt />
-          </TxProvider>
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider>
+            <TxProvider>
+              <OfflineIndicator />
+              <SkipToContent />
+              <ServiceWorkerRegistration />
+              <KeyboardShortcuts />
+              <main
+                id="main-content"
+                tabIndex={-1}
+                className="flex-1 flex flex-col"
+              >
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </main>
+              <TxToast />
+              <InstallPrompt />
+            </TxProvider>
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );
