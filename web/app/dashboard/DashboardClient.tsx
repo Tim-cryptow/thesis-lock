@@ -23,6 +23,9 @@ import { describeActivity } from "@/lib/activityDescriptions";
 const CHART_DAYS = 30;
 
 const RECENT_LIMIT = 5;
+// Pull a wider transaction window than we display, so the preview still finds
+// ThesisLock events when a wallet's most recent transactions are unrelated.
+const RECENT_FETCH = 20;
 
 // Icon badge colors per activity category, matching the full activity timeline.
 const CATEGORY_BADGE: Record<ActivityCategory, string> = {
@@ -174,7 +177,7 @@ export default function DashboardClient() {
     }
     let cancelled = false;
     fetch(
-      `/api/activity?address=${encodeURIComponent(address)}&page=0&limit=${RECENT_LIMIT}`,
+      `/api/activity?address=${encodeURIComponent(address)}&page=0&limit=${RECENT_FETCH}`,
     )
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
       .then((d: { events: ActivityEvent[] }) => {
