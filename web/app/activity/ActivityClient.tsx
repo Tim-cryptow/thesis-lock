@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -161,36 +161,93 @@ export default function ActivityClient() {
 
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [hasMore, setHasMore] = useState(false);
 
-  const load = useCallback(
+  // The next raw page to request. Kept in a ref so the scroll observer reads the
+  // current value without re-subscribing on every page increment.
+  const pageRef = useRef(0);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchPage = useCallback(async (owner: string, page: number) => {
+    const res = await fetch(
+      `/api/activity?address=${encodeURIComponent(owner)}&page=${page}&limit=${PAGE_SIZE}`,
+    );
+    if (!res.ok) throw new Error(`activity fetch failed: ${res.status}`);
+    return (await res.json()) as { events: ActivityEvent[]; hasMore: boolean };
+  }, []);
+
+  const loadInitial = useCallback(
     async (owner: string) => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `/api/activity?address=${encodeURIComponent(owner)}&page=0&limit=${PAGE_SIZE}`,
-        );
-        if (!res.ok) throw new Error(`activity fetch failed: ${res.status}`);
-        const data = (await res.json()) as { events: ActivityEvent[] };
+        const data = await fetchPage(owner, 0);
         setEvents(data.events);
+        setHasMore(data.hasMore);
+        pageRef.current = 1;
       } catch {
         setError(t("activity.loadError"));
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
     },
-    [t],
+    [fetchPage, t],
+  );
+
+  const loadMore = useCallback(
+    async (owner: string) => {
+      setLoadingMore(true);
+      try {
+        const page = pageRef.current;
+        const data = await fetchPage(owner, page);
+        // Pages are taken over the raw transaction stream, so dedupe by id in
+        // case a record straddles a page boundary.
+        setEvents((prev) => {
+          const seen = new Set(prev.map((e) => e.id));
+          return [...prev, ...data.events.filter((e) => !seen.has(e.id))];
+        });
+        setHasMore(data.hasMore);
+        pageRef.current = page + 1;
+      } catch {
+        setHasMore(false);
+      } finally {
+        setLoadingMore(false);
+      }
+    },
+    [fetchPage],
   );
 
   useEffect(() => {
     if (!address) {
       setEvents([]);
+      setHasMore(false);
+      pageRef.current = 0;
       return;
     }
-    void load(address);
-  }, [address, load]);
+    void loadInitial(address);
+  }, [address, loadInitial]);
+
+  // Load the next page when the sentinel scrolls into view. Re-subscribing on
+  // hasMore/loading changes means a still-visible sentinel keeps paging until
+  // the stream is exhausted.
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || !address) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          void loadMore(address);
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [address, hasMore, loading, loadingMore, loadMore]);
 
   // Filtering is client-side over the loaded events, so switching pills is
   // instant and never refetches.
@@ -277,7 +334,7 @@ export default function ActivityClient() {
             {error}
           </p>
           <button
-            onClick={() => void load(address)}
+            onClick={() => void loadInitial(address)}
             className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
           >
             {t("common.actions.tryAgain")}
@@ -339,6 +396,18 @@ export default function ActivityClient() {
                 </section>
               ))}
             </div>
+          )}
+
+          <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+          {loadingMore && (
+            <p className="mt-4 text-center text-sm text-foreground/60">
+              {t("activity.loadingMore")}
+            </p>
+          )}
+          {!hasMore && events.length > 0 && (
+            <p className="mt-6 text-center text-xs text-foreground/40">
+              {t("activity.noMore")}
+            </p>
           )}
         </>
       )}
