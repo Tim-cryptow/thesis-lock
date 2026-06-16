@@ -167,6 +167,10 @@ export async function fetchWalletProfile(
       typeof event.details?.label === "string" ? event.details.label : "";
     const hash =
       typeof event.details?.hash === "string" ? event.details.hash : "";
+    // Submitting a single anchor through the app emits both an anchor-document
+    // and a register-anchor call for the same hash, so skip a hash already
+    // counted to weight each document once rather than twice.
+    if (hash && countedHashes.has(hash)) continue;
     const type = labelType(label);
     if (type) {
       labelCounts.set(type, (labelCounts.get(type) ?? 0) + 1);
