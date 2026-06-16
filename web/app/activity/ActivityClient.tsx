@@ -170,6 +170,10 @@ export default function ActivityClient() {
   // current value without re-subscribing on every page increment.
   const pageRef = useRef(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // The wallet whose load is current. An in-flight request whose owner no longer
+  // matches is stale (the wallet changed mid-flight) and must not commit, so its
+  // response can't overwrite the new wallet's timeline.
+  const requestOwnerRef = useRef<string | null>(null);
 
   const fetchPage = useCallback(async (owner: string, page: number) => {
     const res = await fetch(
@@ -185,14 +189,16 @@ export default function ActivityClient() {
       setError(null);
       try {
         const data = await fetchPage(owner, 0);
+        if (requestOwnerRef.current !== owner) return;
         setEvents(data.events);
         setHasMore(data.hasMore);
         pageRef.current = 1;
       } catch {
+        if (requestOwnerRef.current !== owner) return;
         setError(t("activity.loadError"));
         setHasMore(false);
       } finally {
-        setLoading(false);
+        if (requestOwnerRef.current === owner) setLoading(false);
       }
     },
     [fetchPage, t],
@@ -204,6 +210,7 @@ export default function ActivityClient() {
       try {
         const page = pageRef.current;
         const data = await fetchPage(owner, page);
+        if (requestOwnerRef.current !== owner) return;
         // Pages are taken over the raw transaction stream, so dedupe by id in
         // case a record straddles a page boundary.
         setEvents((prev) => {
@@ -213,21 +220,29 @@ export default function ActivityClient() {
         setHasMore(data.hasMore);
         pageRef.current = page + 1;
       } catch {
+        if (requestOwnerRef.current !== owner) return;
         setHasMore(false);
       } finally {
-        setLoadingMore(false);
+        if (requestOwnerRef.current === owner) setLoadingMore(false);
       }
     },
     [fetchPage],
   );
 
   useEffect(() => {
+    // Reset on every wallet change so the new wallet starts from a clean
+    // timeline rather than briefly showing the previous wallet's events.
+    setEvents([]);
+    setHasMore(false);
+    setLoadingMore(false);
+    setError(null);
+    pageRef.current = 0;
     if (!address) {
-      setEvents([]);
-      setHasMore(false);
-      pageRef.current = 0;
+      requestOwnerRef.current = null;
+      setLoading(false);
       return;
     }
+    requestOwnerRef.current = address;
     void loadInitial(address);
   }, [address, loadInitial]);
 
