@@ -26,6 +26,12 @@ export const DOCS: DocMeta[] = [
       "Anchoring single files and batches, using groups, verifying, bulk checks, history export, and certificates.",
   },
   {
+    slug: "templates",
+    title: "Anchor Templates",
+    description:
+      "Structured label formats for papers, legal documents, code releases, datasets, and certificates, plus the label encoding.",
+  },
+  {
     slug: "api",
     title: "API Reference",
     description:

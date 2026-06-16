@@ -13,6 +13,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 ## Features
 
 - Single file anchoring with optional ASCII label up to 64 characters.
+- Anchor templates at `/templates`: structured label formats for papers, legal documents, code releases, datasets, and certificates, with a live label preview and parsed fields shown on verify and history pages.
 - Batch anchoring of up to ten files in a single transaction.
 - Per-wallet anchor history at `/anchors`, populated automatically when you anchor.
 - Anchor groups at `/groups`: create a named group, add members, and anchor documents under a shared, on-chain history.
