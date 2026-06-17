@@ -287,6 +287,7 @@ export const fr: Translations = {
       body: "Une empreinte valide comporte 64 caractères hexadécimaux en minuscules.",
     },
     recordTitle: "Enregistrement de l'ancre",
+    compareLink: "Comparer avec un autre document",
     lookingUp: "Recherche sur la chaîne...",
     tweetText:
       "Ancré sur Stacks. Horodatage vérifiable sans partager le fichier :",
@@ -389,6 +390,9 @@ export const fr: Translations = {
     exportJson: "Exporter en JSON",
     exporting: "Exportation...",
     exportError: "Échec de l'exportation.",
+    selectAria: "Sélectionner l'ancre {hash} pour comparer",
+    compareSelected: "Comparer la sélection",
+    compareHint: "Sélectionnez deux ancres pour les comparer côte à côte.",
   },
   feed: {
     title: "Ancres récentes",

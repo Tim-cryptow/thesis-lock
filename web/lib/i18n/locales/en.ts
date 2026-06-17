@@ -292,6 +292,7 @@ export const en = {
       body: "A valid hash is 64 lowercase hex characters.",
     },
     recordTitle: "Anchor record",
+    compareLink: "Compare with another document",
     lookingUp: "Looking up on chain...",
     tweetText:
       "Anchored on Stacks. Verifiable timestamp without sharing the file:",
@@ -394,6 +395,9 @@ export const en = {
     exportJson: "Export JSON",
     exporting: "Exporting...",
     exportError: "Export failed.",
+    selectAria: "Select anchor {hash} to compare",
+    compareSelected: "Compare selected",
+    compareHint: "Select two anchors to compare them side by side.",
   },
   feed: {
     title: "Recent anchors",

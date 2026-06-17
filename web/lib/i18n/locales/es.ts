@@ -287,6 +287,7 @@ export const es: Translations = {
       body: "Un hash válido tiene 64 caracteres hexadecimales en minúscula.",
     },
     recordTitle: "Registro de anclaje",
+    compareLink: "Comparar con otro documento",
     lookingUp: "Consultando en la cadena...",
     tweetText:
       "Anclado en Stacks. Marca de tiempo verificable sin compartir el archivo:",
@@ -389,6 +390,9 @@ export const es: Translations = {
     exportJson: "Exportar JSON",
     exporting: "Exportando...",
     exportError: "Error al exportar.",
+    selectAria: "Seleccionar el anclaje {hash} para comparar",
+    compareSelected: "Comparar seleccionados",
+    compareHint: "Selecciona dos anclajes para compararlos lado a lado.",
   },
   feed: {
     title: "Anclajes recientes",

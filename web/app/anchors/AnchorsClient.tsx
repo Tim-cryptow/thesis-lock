@@ -41,6 +41,27 @@ export default function AnchorsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [templateFilter, setTemplateFilter] = useState<string>("all");
+  // Hashes ticked for side-by-side comparison. Capped at two: the compare page
+  // takes exactly two documents.
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const toggleSelect = (hash: string) => {
+    setSelected((prev) => {
+      if (prev.includes(hash)) return prev.filter((h) => h !== hash);
+      if (prev.length >= 2) return prev;
+      return [...prev, hash];
+    });
+  };
+
+  // Both anchors belong to this wallet, so pass its address as the owner for
+  // each. The compare page prefers the owner-keyed batch record and falls back
+  // to the global single anchor, so this is correct for either anchor type.
+  const compareHref =
+    selected.length === 2 && address
+      ? `/compare?a=${selected[0]}&b=${selected[1]}&ownerA=${encodeURIComponent(
+          address,
+        )}&ownerB=${encodeURIComponent(address)}`
+      : null;
 
   const loadHistory = useCallback(async (owner: string) => {
     setLoading(true);
@@ -60,6 +81,7 @@ export default function AnchorsPage() {
   }, [t]);
 
   useEffect(() => {
+    setSelected([]);
     if (!address) {
       setCount(null);
       setEntries([]);
@@ -332,6 +354,19 @@ export default function AnchorsPage() {
               </select>
             </div>
           )}
+          <div className="flex items-center justify-between gap-3 flex-wrap pb-1">
+            <p className="text-xs text-foreground/50">
+              {t("anchors.compareHint")}
+            </p>
+            {compareHref && (
+              <Link
+                href={compareHref}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+              >
+                {t("anchors.compareSelected")} &rarr;
+              </Link>
+            )}
+          </div>
           {visibleEntries.map(({ entry, parsed }, idx) => (
             <div
               key={`${entry.hash}-${idx}`}
@@ -339,6 +374,18 @@ export default function AnchorsPage() {
               className="rounded-lg border border-foreground/10 bg-card p-5"
             >
               <div className="flex items-start justify-between gap-4 flex-wrap">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(entry.hash)}
+                  disabled={
+                    !selected.includes(entry.hash) && selected.length >= 2
+                  }
+                  onChange={() => toggleSelect(entry.hash)}
+                  aria-label={t("anchors.selectAria", {
+                    hash: truncateHash(entry.hash),
+                  })}
+                  className="mt-1 h-4 w-4 shrink-0 accent-current disabled:opacity-40"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                     {t("anchors.hashLabel")}

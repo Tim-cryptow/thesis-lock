@@ -684,6 +684,21 @@ export default function VerifyPage() {
         </div>
       )}
 
+      {(anchor || (batchAnchor && batchOwner) || groupAnchor) && (
+        <div className="mt-6">
+          <Link
+            href={`/compare?a=${hash}${
+              preferBatch && batchOwner
+                ? `&ownerA=${encodeURIComponent(batchOwner)}`
+                : ""
+            }`}
+            className="inline-flex items-center text-sm underline hover:no-underline"
+          >
+            {t("verify.compareLink")} &rarr;
+          </Link>
+        </div>
+      )}
+
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <h2 className="text-xl mb-2">{t("verify.share.heading")}</h2>
