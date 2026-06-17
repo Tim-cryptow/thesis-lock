@@ -78,13 +78,24 @@ function notFound(hash: string): CompareEntry {
   };
 }
 
+// True when no owner was requested, or when `anchoredBy` matches the requested
+// owner (already upper-cased by the caller). Used to scope the hash-only
+// fall-through lookups: when the caller pins an owner, a single/group/proof
+// record by a different wallet must not be surfaced as that owner's anchor.
+function ownerMatches(validOwner: string | undefined, anchoredBy: string): boolean {
+  return !validOwner || anchoredBy.toUpperCase() === validOwner;
+}
+
 // Resolves a single hash across every contract, mirroring the verify page's
 // precedence: an explicit owner means the caller is asking about that
 // owner-keyed batch record, so it wins over a global single anchor with the
 // same hash. Single is checked next, then the groups contract, and finally the
 // proof contract (a hash anchored only via a proof mint is invisible to the
-// other three). Each lookup is best-effort; a transient failure on one source
-// falls through to the next rather than failing the whole comparison.
+// other three). When an owner is pinned, the hash-only fall-through lookups
+// (single/group/proof) only resolve a record anchored by that owner, so a
+// transient batch-lookup failure can never surface another wallet's anchor as
+// the pinned owner's. Each lookup is otherwise best-effort: a transient failure
+// on one source falls through to the next rather than failing the comparison.
 async function fetchCompareEntry(
   hash: string,
   owner?: string,
@@ -158,7 +169,7 @@ async function fetchCompareEntry(
 
   try {
     const single = await fetchAnchor(normalizedHash);
-    if (single) {
+    if (single && ownerMatches(validOwner, single.anchoredBy)) {
       return {
         hash: normalizedHash,
         label: single.label,
@@ -176,7 +187,7 @@ async function fetchCompareEntry(
 
   try {
     const group = await findGroupAnchorByHash(normalizedHash);
-    if (group) {
+    if (group && ownerMatches(validOwner, group.anchoredBy)) {
       return {
         hash: normalizedHash,
         label: group.label,
@@ -200,7 +211,11 @@ async function fetchCompareEntry(
   if (proofNFT !== null) {
     try {
       const proof = await fetchProof(proofNFT);
-      if (proof && proof.hash.toLowerCase() === normalizedHash) {
+      if (
+        proof &&
+        proof.hash.toLowerCase() === normalizedHash &&
+        ownerMatches(validOwner, proof.anchoredBy)
+      ) {
         return {
           hash: normalizedHash,
           label: proof.label,
