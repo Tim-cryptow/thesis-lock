@@ -7,6 +7,7 @@ import Footer from "@/app/components/Footer";
 import { useI18n } from "@/app/components/I18nProvider";
 import EndpointSelector from "@/app/components/playground/EndpointSelector";
 import ParameterForm from "@/app/components/playground/ParameterForm";
+import CurlPreview from "@/app/components/playground/CurlPreview";
 import {
   ALL_ENDPOINTS,
   initialValues,
@@ -78,6 +79,7 @@ export default function PlaygroundClient() {
               onSubmit={() => {}}
               loading={false}
             />
+            <CurlPreview endpoint={endpoint} values={values} />
           </section>
         </div>
       </div>
