@@ -221,6 +221,24 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
         responseKind: "json",
       },
       {
+        id: "profile",
+        method: "GET",
+        path: "/api/profile/[address]",
+        description: "Wallet profile JSON with anchoring stats and history.",
+        params: [
+          {
+            name: "address",
+            label: "address",
+            kind: "text",
+            location: "path",
+            required: true,
+            placeholder: "SP...",
+            validate: validatePrincipal,
+          },
+        ],
+        responseKind: "json",
+      },
+      {
         id: "activity",
         method: "GET",
         path: "/api/activity",
