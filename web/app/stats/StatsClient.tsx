@@ -125,6 +125,12 @@ export default function StatsClient() {
         >
           {t("common.nav.activity")}
         </Link>
+        <Link
+          href="/compare"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.compare")}
+        </Link>
       </div>
 
       <h1 className="text-3xl mb-2">{t("stats.title")}</h1>
