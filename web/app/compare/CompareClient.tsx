@@ -96,9 +96,29 @@ export default function ComparePage() {
   const aReq = useRef(0);
   const bReq = useRef(0);
 
+  // A manual edit to a column (typing a hash or owner) invalidates any in-flight
+  // file hash for that column by bumping its token, and clears a shown result so
+  // the rendered comparison and the share link can never reflect inputs that
+  // were edited after the comparison ran.
+  const editColumn = useCallback(
+    (
+      set: typeof setA,
+      reqRef: { current: number },
+      patch: Partial<ColumnState>,
+    ) => {
+      reqRef.current++;
+      setComparison(null);
+      set((s) => ({ ...s, ...patch }));
+    },
+    [],
+  );
+
   const hashColumnFile = useCallback(
     async (file: File, set: typeof setA, reqRef: { current: number }) => {
       const token = ++reqRef.current;
+      // A new file is itself an edit, so a previously shown result no longer
+      // matches the inputs.
+      setComparison(null);
       // Clear the previous hash up front: a stale hash left in place while the
       // new file is hashing (or if hashing fails) would otherwise let a compare
       // run against the old document while the new file name is shown.
@@ -269,16 +289,16 @@ export default function ComparePage() {
           state={a}
           onFile={(f) => void hashColumnFile(f, setA, aReq)}
           onHashChange={(hash) =>
-            setA((s) => ({
-              ...s,
+            editColumn(setA, aReq, {
               hash,
               file: null,
               hashError: null,
+              hashing: false,
               group: undefined,
-            }))
+            })
           }
           onOwnerChange={(owner) =>
-            setA((s) => ({ ...s, owner, group: undefined }))
+            editColumn(setA, aReq, { owner, group: undefined })
           }
         />
         <DocColumn
@@ -286,16 +306,16 @@ export default function ComparePage() {
           state={b}
           onFile={(f) => void hashColumnFile(f, setB, bReq)}
           onHashChange={(hash) =>
-            setB((s) => ({
-              ...s,
+            editColumn(setB, bReq, {
               hash,
               file: null,
               hashError: null,
+              hashing: false,
               group: undefined,
-            }))
+            })
           }
           onOwnerChange={(owner) =>
-            setB((s) => ({ ...s, owner, group: undefined }))
+            editColumn(setB, bReq, { owner, group: undefined })
           }
         />
       </div>
