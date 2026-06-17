@@ -791,9 +791,13 @@ export const es: Translations = {
       heading: "Cronología",
       sameBlock: "Ambos documentos se anclaron en el mismo bloque de Stacks.",
       aBeforeB:
-        "El documento A se ancló {blocks} bloques (unos {duration}) antes que el documento B.",
+        "El documento A se ancló {blocks} bloques de Stacks (unos {duration}) antes que el documento B.",
       bBeforeA:
-        "El documento B se ancló {blocks} bloques (unos {duration}) antes que el documento A.",
+        "El documento B se ancló {blocks} bloques de Stacks (unos {duration}) antes que el documento A.",
+      aBeforeBNoEstimate:
+        "El documento A se ancló {blocks} bloques de Stacks antes que el documento B. No hay estimación de tiempo disponible para los anclajes de grupo.",
+      bBeforeANoEstimate:
+        "El documento B se ancló {blocks} bloques de Stacks antes que el documento A. No hay estimación de tiempo disponible para los anclajes de grupo.",
       unavailable: "La cronología necesita que ambos documentos estén anclados.",
       earlier: "Antes",
       later: "Después",

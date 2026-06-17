@@ -791,9 +791,13 @@ export const fr: Translations = {
       heading: "Chronologie",
       sameBlock: "Les deux documents ont été ancrés dans le même bloc Stacks.",
       aBeforeB:
-        "Le document A a été ancré {blocks} blocs (environ {duration}) avant le document B.",
+        "Le document A a été ancré {blocks} blocs Stacks (environ {duration}) avant le document B.",
       bBeforeA:
-        "Le document B a été ancré {blocks} blocs (environ {duration}) avant le document A.",
+        "Le document B a été ancré {blocks} blocs Stacks (environ {duration}) avant le document A.",
+      aBeforeBNoEstimate:
+        "Le document A a été ancré {blocks} blocs Stacks avant le document B. Une estimation horaire n'est pas disponible pour les ancres de groupe.",
+      bBeforeANoEstimate:
+        "Le document B a été ancré {blocks} blocs Stacks avant le document A. Une estimation horaire n'est pas disponible pour les ancres de groupe.",
       unavailable: "Une chronologie nécessite que les deux documents soient ancrés.",
       earlier: "Avant",
       later: "Après",

@@ -796,9 +796,13 @@ export const en = {
       heading: "Timeline",
       sameBlock: "Both documents were anchored in the same Stacks block.",
       aBeforeB:
-        "Document A was anchored {blocks} blocks (about {duration}) before Document B.",
+        "Document A was anchored {blocks} Stacks blocks (about {duration}) before Document B.",
       bBeforeA:
-        "Document B was anchored {blocks} blocks (about {duration}) before Document A.",
+        "Document B was anchored {blocks} Stacks blocks (about {duration}) before Document A.",
+      aBeforeBNoEstimate:
+        "Document A was anchored {blocks} Stacks blocks before Document B. A wall-clock estimate is unavailable for group anchors.",
+      bBeforeANoEstimate:
+        "Document B was anchored {blocks} Stacks blocks before Document A. A wall-clock estimate is unavailable for group anchors.",
       unavailable: "A timeline needs both documents to be anchored.",
       earlier: "Earlier",
       later: "Later",

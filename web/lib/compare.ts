@@ -16,21 +16,26 @@ import { parseLabel, type ParsedTemplate } from "./templates";
 
 export const HEX_64 = /^[0-9a-f]{64}$/;
 
-// Stacks blocks settle on Bitcoin roughly every ten minutes, so the block gap
-// between two anchors maps to an approximate wall-clock gap. This is an
-// estimate, not a precise timestamp; callers label it as such.
-const BLOCK_MINUTES = 10;
+// A Bitcoin (burn) block settles roughly every ten minutes, so the burn-block
+// gap between two anchors maps to an approximate wall-clock gap. Stacks blocks
+// are far more frequent (many per burn block), so the Stacks-height gap is NOT
+// a usable time proxy and is only used for ordering. This is an estimate, not a
+// precise timestamp; callers label it as such.
+const BURN_BLOCK_MINUTES = 10;
 
 // One resolved anchor. `source` is the contract that backs it ("single",
 // "batch", "group", or "proof"), or "none" when the hash is not anchored
-// anywhere.
-// `template` is the parsed label when the entry was found, and `proofNFT` is the
-// soulbound proof token id minted for the hash, if any.
+// anywhere. `block` is the Stacks height (used for ordering); `burnBlock` is the
+// Bitcoin height that backs the wall-clock estimate, and is 0 for group anchors,
+// which only expose Stacks height. `template` is the parsed label when the entry
+// was found, and `proofNFT` is the soulbound proof token id minted for the hash,
+// if any.
 export type CompareEntry = {
   hash: string;
   label: string;
   owner: string;
   block: number;
+  burnBlock: number;
   source: string;
   template?: ParsedTemplate;
   proofNFT?: number | null;
@@ -49,7 +54,10 @@ export type GroupLocation = { groupId: number; index: number };
 export type AnchorComparison = {
   left: CompareEntry;
   right: CompareEntry;
-  timeDelta: { blocks: number; estimatedMinutes: number };
+  // `blocks` is the Stacks-height gap (ordering). `estimatedMinutes` is derived
+  // from the burn-block gap and is null when either side is a group anchor (no
+  // burn height), in which case the UI omits the wall-clock estimate.
+  timeDelta: { blocks: number; estimatedMinutes: number | null };
   sameOwner: boolean;
   sameLabel: boolean;
   sameSource: boolean;
@@ -64,6 +72,7 @@ function notFound(hash: string): CompareEntry {
     label: "",
     owner: "",
     block: 0,
+    burnBlock: 0,
     source: "none",
     proofNFT: null,
   };
@@ -116,6 +125,7 @@ async function fetchCompareEntry(
           label: located.label,
           owner: located.anchoredBy,
           block: located.stacksBlock,
+          burnBlock: 0,
           source: "group",
           template: parseLabel(located.label),
           proofNFT,
@@ -135,6 +145,7 @@ async function fetchCompareEntry(
           label: batch.label,
           owner: validOwner,
           block: batch.stacksBlock,
+          burnBlock: batch.burnBlock,
           source: "batch",
           template: parseLabel(batch.label),
           proofNFT,
@@ -153,6 +164,7 @@ async function fetchCompareEntry(
         label: single.label,
         owner: single.anchoredBy,
         block: single.stacksBlock,
+        burnBlock: single.burnBlock,
         source: "single",
         template: parseLabel(single.label),
         proofNFT,
@@ -170,6 +182,7 @@ async function fetchCompareEntry(
         label: group.label,
         owner: group.anchoredBy,
         block: group.stacksBlock,
+        burnBlock: 0,
         source: "group",
         template: parseLabel(group.label),
         proofNFT,
@@ -193,6 +206,7 @@ async function fetchCompareEntry(
           label: proof.label,
           owner: proof.anchoredBy,
           block: proof.stacksBlock,
+          burnBlock: proof.burnBlock,
           source: "proof",
           template: parseLabel(proof.label),
           proofNFT,
@@ -236,8 +250,16 @@ export async function compareAnchors(
 
   const bothFound = left.source !== "none" && right.source !== "none";
 
+  // Ordering uses the Stacks height, which is comparable across every source.
+  // The wall-clock estimate uses the burn-block gap and is only meaningful when
+  // both sides expose a burn height; group anchors do not, so it stays null and
+  // the UI omits the estimate rather than reporting a misleading figure.
   const blocks = bothFound ? Math.abs(left.block - right.block) : 0;
-  const timeDelta = { blocks, estimatedMinutes: blocks * BLOCK_MINUTES };
+  const haveBurn = bothFound && left.burnBlock > 0 && right.burnBlock > 0;
+  const estimatedMinutes = haveBurn
+    ? Math.abs(left.burnBlock - right.burnBlock) * BURN_BLOCK_MINUTES
+    : null;
+  const timeDelta = { blocks, estimatedMinutes };
 
   let olderSide: "left" | "right" | "same" = "same";
   if (bothFound) {

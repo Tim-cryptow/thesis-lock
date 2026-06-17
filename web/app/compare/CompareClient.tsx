@@ -515,19 +515,26 @@ function Timeline({ comparison }: { comparison: AnchorComparison }) {
     );
   }
 
-  const duration = humanize(timeDelta.estimatedMinutes);
+  // The wall-clock estimate is null when a group anchor is involved (Stacks
+  // height only, no burn block), so fall back to a block-gap-only message that
+  // still conveys ordering rather than inventing a misleading duration.
+  const { estimatedMinutes } = timeDelta;
   const sameBlock = olderSide === "same";
   const message = sameBlock
     ? t("compare.timeline.sameBlock")
-    : olderSide === "left"
-      ? t("compare.timeline.aBeforeB", {
-          blocks: timeDelta.blocks,
-          duration,
-        })
-      : t("compare.timeline.bBeforeA", {
-          blocks: timeDelta.blocks,
-          duration,
-        });
+    : estimatedMinutes !== null
+      ? olderSide === "left"
+        ? t("compare.timeline.aBeforeB", {
+            blocks: timeDelta.blocks,
+            duration: humanize(estimatedMinutes),
+          })
+        : t("compare.timeline.bBeforeA", {
+            blocks: timeDelta.blocks,
+            duration: humanize(estimatedMinutes),
+          })
+      : olderSide === "left"
+        ? t("compare.timeline.aBeforeBNoEstimate", { blocks: timeDelta.blocks })
+        : t("compare.timeline.bBeforeANoEstimate", { blocks: timeDelta.blocks });
 
   // Order the two markers chronologically: the earlier document sits on the
   // left of the bar regardless of which input column it came from.
