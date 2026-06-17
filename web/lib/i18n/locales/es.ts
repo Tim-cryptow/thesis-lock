@@ -784,6 +784,7 @@ export const es: Translations = {
       single: "Individual",
       batch: "Lote",
       group: "Grupo",
+      proof: "Prueba",
       none: "Ninguno",
     },
     timeline: {

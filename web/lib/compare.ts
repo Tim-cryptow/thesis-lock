@@ -2,6 +2,7 @@ import { validateStacksAddress } from "@stacks/transactions";
 import {
   fetchAnchor,
   fetchBatchAnchor,
+  fetchProof,
   fetchProofIdByHash,
 } from "./hiroAnchor";
 import { findGroupAnchorByHash, getGroupAnchorByLocation } from "./groups";
@@ -21,7 +22,8 @@ export const HEX_64 = /^[0-9a-f]{64}$/;
 const BLOCK_MINUTES = 10;
 
 // One resolved anchor. `source` is the contract that backs it ("single",
-// "batch", or "group"), or "none" when the hash is not anchored anywhere.
+// "batch", "group", or "proof"), or "none" when the hash is not anchored
+// anywhere.
 // `template` is the parsed label when the entry was found, and `proofNFT` is the
 // soulbound proof token id minted for the hash, if any.
 export type CompareEntry = {
@@ -70,10 +72,10 @@ function notFound(hash: string): CompareEntry {
 // Resolves a single hash across every contract, mirroring the verify page's
 // precedence: an explicit owner means the caller is asking about that
 // owner-keyed batch record, so it wins over a global single anchor with the
-// same hash. Single is checked next, then the groups contract as a last resort
-// (a group-only hash is invisible to the single and batch contracts). Each
-// lookup is best-effort; a transient failure on one source falls through to the
-// next rather than failing the whole comparison.
+// same hash. Single is checked next, then the groups contract, and finally the
+// proof contract (a hash anchored only via a proof mint is invisible to the
+// other three). Each lookup is best-effort; a transient failure on one source
+// falls through to the next rather than failing the whole comparison.
 async function fetchCompareEntry(
   hash: string,
   owner?: string,
@@ -174,7 +176,31 @@ async function fetchCompareEntry(
       };
     }
   } catch {
-    // fall through to the not-found result
+    // fall through to the proof and not-found results
+  }
+
+  // A hash can be anchored solely through the proof contract, which stores the
+  // owner, label, and block alongside the soulbound token. Without this the
+  // comparison would show the proof NFT number yet mark the document not found
+  // and suppress the timeline and metadata diff. Resolve the proof token (its id
+  // is already known) into a real entry before giving up.
+  if (proofNFT !== null) {
+    try {
+      const proof = await fetchProof(proofNFT);
+      if (proof && proof.hash.toLowerCase() === normalizedHash) {
+        return {
+          hash: normalizedHash,
+          label: proof.label,
+          owner: proof.anchoredBy,
+          block: proof.stacksBlock,
+          source: "proof",
+          template: parseLabel(proof.label),
+          proofNFT,
+        };
+      }
+    } catch {
+      // fall through to the not-found result
+    }
   }
 
   return { ...notFound(normalizedHash), proofNFT };

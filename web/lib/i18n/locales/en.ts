@@ -789,6 +789,7 @@ export const en = {
       single: "Single",
       batch: "Batch",
       group: "Group",
+      proof: "Proof",
       none: "None",
     },
     timeline: {
