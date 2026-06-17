@@ -179,6 +179,8 @@ export default function ComparePage() {
         <div className="mt-10" aria-live="polite">
           <h2 className="text-2xl mb-4">{t("compare.results.heading")}</h2>
           <ResultsTable comparison={comparison} />
+          <Timeline comparison={comparison} />
+          <RelationshipBadges comparison={comparison} />
         </div>
       )}
     </div>
@@ -284,6 +286,139 @@ function OwnerCell({ entry }: { entry: CompareEntry }) {
     >
       {entry.owner}
     </Link>
+  );
+}
+
+// Turns the estimated minute gap into a friendly, localized duration, stepping
+// up to hours then days so a large block gap stays readable.
+function useHumanizeDuration() {
+  const { t } = useI18n();
+  return (minutes: number): string => {
+    if (minutes < 60) return t("compare.units.minutes", { count: minutes });
+    if (minutes < 1440)
+      return t("compare.units.hours", { count: Math.round(minutes / 60) });
+    return t("compare.units.days", { count: Math.round(minutes / 1440) });
+  };
+}
+
+// A visual bar plus a sentence describing which document was anchored first and
+// by how much. Needs both documents anchored; otherwise it explains why no
+// timeline can be drawn.
+function Timeline({ comparison }: { comparison: AnchorComparison }) {
+  const { t } = useI18n();
+  const humanize = useHumanizeDuration();
+  const { left, right, timeDelta, olderSide } = comparison;
+  const bothFound = left.source !== "none" && right.source !== "none";
+
+  if (!bothFound) {
+    return (
+      <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+        <h3 className="text-sm uppercase tracking-wide text-foreground/50 mb-2">
+          {t("compare.timeline.heading")}
+        </h3>
+        <p className="text-sm text-foreground/70">
+          {t("compare.timeline.unavailable")}
+        </p>
+      </div>
+    );
+  }
+
+  const duration = humanize(timeDelta.estimatedMinutes);
+  const sameBlock = olderSide === "same";
+  const message = sameBlock
+    ? t("compare.timeline.sameBlock")
+    : olderSide === "left"
+      ? t("compare.timeline.aBeforeB", {
+          blocks: timeDelta.blocks,
+          duration,
+        })
+      : t("compare.timeline.bBeforeA", {
+          blocks: timeDelta.blocks,
+          duration,
+        });
+
+  // Order the two markers chronologically: the earlier document sits on the
+  // left of the bar regardless of which input column it came from.
+  const earlierLabel =
+    olderSide === "right" ? t("compare.columnB") : t("compare.columnA");
+  const laterLabel =
+    olderSide === "right" ? t("compare.columnA") : t("compare.columnB");
+
+  return (
+    <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+      <h3 className="text-sm uppercase tracking-wide text-foreground/50 mb-3">
+        {t("compare.timeline.heading")}
+      </h3>
+      <p className="text-sm text-foreground/80 mb-4">{message}</p>
+      {sameBlock ? (
+        <div className="flex items-center justify-center">
+          <span className="inline-flex items-center gap-2 text-xs">
+            <span className="h-2.5 w-2.5 rounded-full bg-heading" aria-hidden="true" />
+            {earlierLabel}
+            <span className="text-foreground/30">+</span>
+            {laterLabel}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 text-xs">
+          <span className="flex flex-col items-start">
+            <span className="h-2.5 w-2.5 rounded-full bg-heading" aria-hidden="true" />
+            <span className="mt-1 font-medium">{earlierLabel}</span>
+            <span className="text-foreground/50">{t("compare.timeline.earlier")}</span>
+          </span>
+          <span className="flex-1 h-0.5 bg-foreground/20 rounded" aria-hidden="true" />
+          <span className="flex flex-col items-end">
+            <span className="h-2.5 w-2.5 rounded-full bg-foreground/40" aria-hidden="true" />
+            <span className="mt-1 font-medium">{laterLabel}</span>
+            <span className="text-foreground/50">{t("compare.timeline.later")}</span>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Pill badges summarizing the relationships: shared owner, shared template type,
+// and any supersession one label declares over the other. Only shown when both
+// documents are anchored, since the comparisons are otherwise meaningless.
+function RelationshipBadges({ comparison }: { comparison: AnchorComparison }) {
+  const { t } = useI18n();
+  const { left, right, sameOwner, sameTemplate, supersedes } = comparison;
+  const bothFound = left.source !== "none" && right.source !== "none";
+  if (!bothFound) return null;
+
+  const positive =
+    "border-green-600/30 text-green-700 dark:text-green-400 bg-green-500/5";
+  const neutral = "border-foreground/20 text-foreground/70";
+
+  return (
+    <div className="mt-6 flex flex-wrap gap-2">
+      <span
+        className={`text-xs px-3 py-1 rounded-full border ${
+          sameOwner ? positive : neutral
+        }`}
+      >
+        {sameOwner
+          ? t("compare.badges.sameOwner")
+          : t("compare.badges.differentOwners")}
+      </span>
+      <span
+        className={`text-xs px-3 py-1 rounded-full border ${
+          sameTemplate ? positive : neutral
+        }`}
+      >
+        {sameTemplate
+          ? t("compare.badges.sameTemplate")
+          : t("compare.badges.differentTemplates")}
+      </span>
+      {supersedes && (
+        <span className="text-xs px-3 py-1 rounded-full border border-amber-600/40 text-amber-700 dark:text-amber-400 bg-amber-500/5">
+          {supersedes === "left"
+            ? t("compare.badges.aSupersedesB")
+            : t("compare.badges.bSupersedesA")}
+        </span>
+      )}
+    </div>
   );
 }
 
