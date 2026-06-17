@@ -111,6 +111,44 @@ function JsonValue({
   return <span className="text-zinc-300">{String(value)}</span>;
 }
 
+// Inline preview for image responses. SVG markup is rendered directly (the
+// markup comes from our own API, not user input); other image types are shown
+// through their object URL.
+function ImagePreview({ result }: { result: PlaygroundResult }) {
+  const isSvg = result.contentType.includes("svg");
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-center rounded-md border border-foreground/10 bg-[repeating-conic-gradient(#0001_0_25%,transparent_0_50%)] bg-[length:16px_16px] p-6">
+        {isSvg ? (
+          <span
+            className="inline-block"
+            // The SVG is produced by the ThesisLock badge API, not user input.
+            dangerouslySetInnerHTML={{ __html: result.text }}
+          />
+        ) : result.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={result.imageUrl}
+            alt="API image response preview"
+            className="max-w-full"
+          />
+        ) : (
+          <span className="text-sm text-foreground/50">
+            No preview available.
+          </span>
+        )}
+      </div>
+      {isSvg ? (
+        <pre className="overflow-x-auto rounded-md bg-zinc-900 px-4 py-3 text-xs text-zinc-100">
+          <code className="font-mono whitespace-pre-wrap break-all">
+            {result.text}
+          </code>
+        </pre>
+      ) : null}
+    </div>
+  );
+}
+
 function HeaderRow({ name, value }: { name: string; value: string }) {
   if (!value) return null;
   return (
@@ -176,6 +214,8 @@ export default function ResponsePanel({ result, loading, error }: Props) {
             <JsonValue value={result.json} indent={0} />
           </code>
         </pre>
+      ) : result.kind === "image" ? (
+        <ImagePreview result={result} />
       ) : (
         <pre className="overflow-x-auto rounded-md bg-zinc-900 px-4 py-3 text-sm text-zinc-100">
           <code className="font-mono whitespace-pre-wrap break-all">
