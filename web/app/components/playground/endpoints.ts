@@ -58,6 +58,13 @@ function validatePrincipal(value: string): string | null {
     : "Must be a Stacks principal (starts with SP).";
 }
 
+function validateNonNegativeInt(value: string): string | null {
+  const n = Number(value.trim());
+  return Number.isInteger(n) && n >= 0
+    ? null
+    : "Must be a non-negative integer.";
+}
+
 const hashParam: EndpointParam = {
   name: "hash",
   label: "hash",
@@ -131,6 +138,45 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
             required: false,
             placeholder: "SP...",
             validate: validatePrincipal,
+          },
+          // Optional group-anchor locations. groupA/giA and groupB/giB each pin
+          // a specific row within a named group; the route ignores a location
+          // unless both its id and index are present and valid.
+          {
+            name: "groupA",
+            label: "groupA",
+            kind: "text",
+            location: "query",
+            required: false,
+            placeholder: "group id",
+            validate: validateNonNegativeInt,
+          },
+          {
+            name: "giA",
+            label: "giA",
+            kind: "text",
+            location: "query",
+            required: false,
+            placeholder: "index in group A",
+            validate: validateNonNegativeInt,
+          },
+          {
+            name: "groupB",
+            label: "groupB",
+            kind: "text",
+            location: "query",
+            required: false,
+            placeholder: "group id",
+            validate: validateNonNegativeInt,
+          },
+          {
+            name: "giB",
+            label: "giB",
+            kind: "text",
+            location: "query",
+            required: false,
+            placeholder: "index in group B",
+            validate: validateNonNegativeInt,
           },
         ],
         responseKind: "json",
