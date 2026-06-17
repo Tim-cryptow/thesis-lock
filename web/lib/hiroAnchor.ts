@@ -132,6 +132,25 @@ export async function fetchBatchAnchor(
   };
 }
 
+// Resolves the soulbound proof token id minted for a hash, or null when none
+// exists. The proof contract is keyed by hash alone, so no owner is needed.
+// get-token-id-by-hash returns an optional uint; cvToValue unwraps it to the
+// number, the verbose { value } shape, or null on a miss.
+export async function fetchProofIdByHash(
+  hash: string,
+): Promise<number | null> {
+  if (!HEX_64.test(hash)) return null;
+  const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
+  const value = await callReadOnly(
+    PROOF_CONTRACT_NAME,
+    "get-token-id-by-hash",
+    [hashArg],
+  );
+  if (value === null || value === undefined) return null;
+  const id = Number(fieldValue(value));
+  return Number.isFinite(id) ? id : null;
+}
+
 export async function fetchProof(
   tokenId: number,
 ): Promise<FetchedProof | null> {
