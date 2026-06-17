@@ -55,6 +55,7 @@ export const en = {
       github: "GitHub",
       explorer: "Explorer",
       api: "API",
+      developers: "Developers",
     },
     a11y: {
       skipToContent: "Skip to main content",

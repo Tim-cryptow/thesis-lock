@@ -50,6 +50,7 @@ export const es: Translations = {
       github: "GitHub",
       explorer: "Explorador",
       api: "API",
+      developers: "Desarrolladores",
     },
     a11y: {
       skipToContent: "Saltar al contenido principal",
