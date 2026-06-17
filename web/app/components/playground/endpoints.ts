@@ -65,6 +65,13 @@ function validateNonNegativeInt(value: string): string | null {
     : "Must be a non-negative integer.";
 }
 
+function validatePositiveInt(value: string): string | null {
+  const n = Number(value.trim());
+  return Number.isInteger(n) && n >= 1
+    ? null
+    : "Must be a positive integer.";
+}
+
 const hashParam: EndpointParam = {
   name: "hash",
   label: "hash",
@@ -339,6 +346,24 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
           },
         ],
         responseKind: "image",
+      },
+      {
+        id: "nft",
+        method: "GET",
+        path: "/api/nft/[id]",
+        description: "Soulbound proof NFT metadata (SIP-009) by token id.",
+        params: [
+          {
+            name: "id",
+            label: "id",
+            kind: "text",
+            location: "path",
+            required: true,
+            placeholder: "1",
+            validate: validatePositiveInt,
+          },
+        ],
+        responseKind: "json",
       },
     ],
   },
