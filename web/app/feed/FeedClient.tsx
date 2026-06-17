@@ -6,7 +6,7 @@ import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
-import { explorerAddressUrl, explorerTxUrl } from "@/lib/stacks";
+import { explorerTxUrl } from "@/lib/stacks";
 import { truncateAddress } from "@/lib/wallet";
 
 const PAGE_SIZE = 20;
@@ -288,14 +288,12 @@ export default function FeedClient() {
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
                         {t("feed.entry.by")}
                       </span>
-                      <a
-                        href={explorerAddressUrl(entry.owner)}
-                        target="_blank"
-                        rel="noreferrer"
+                      <Link
+                        href={`/u/${entry.owner}`}
                         className="font-mono text-xs underline hover:no-underline"
                       >
                         {truncateAddress(entry.owner, 6, 6)}
-                      </a>
+                      </Link>
                       <span className="mx-2 text-foreground/30">&middot;</span>
                       <a
                         href={explorerTxUrl(entry.txId)}

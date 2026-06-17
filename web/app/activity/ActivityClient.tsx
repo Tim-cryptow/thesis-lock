@@ -294,6 +294,14 @@ export default function ActivityClient() {
           >
             {t("common.nav.myAnchors")}
           </Link>
+          {address && (
+            <Link
+              href={`/u/${address}`}
+              className="text-foreground/60 hover:text-foreground"
+            >
+              {t("common.nav.myProfile")}
+            </Link>
+          )}
           <Link
             href="/dashboard"
             className="text-foreground/60 hover:text-foreground"

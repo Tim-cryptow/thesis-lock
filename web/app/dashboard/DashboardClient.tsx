@@ -280,6 +280,14 @@ export default function DashboardClient() {
           >
             {t("common.nav.myAnchors")}
           </Link>
+          {address && (
+            <Link
+              href={`/u/${address}`}
+              className="text-foreground/60 hover:text-foreground"
+            >
+              {t("common.nav.myProfile")}
+            </Link>
+          )}
           <Link
             href="/groups"
             className="text-foreground/60 hover:text-foreground"

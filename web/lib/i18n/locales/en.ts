@@ -16,6 +16,7 @@ export const en = {
       search: "Search",
       anchor: "Anchor",
       myAnchors: "My Anchors",
+      myProfile: "My Profile",
       groups: "Groups",
       feed: "Feed",
       stats: "Stats",

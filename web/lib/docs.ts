@@ -38,6 +38,12 @@ export const DOCS: DocMeta[] = [
       "A unified per-wallet timeline of every contract interaction, with category filters and infinite scroll.",
   },
   {
+    slug: "wallet-profiles",
+    title: "Wallet Profiles",
+    description:
+      "Public per-wallet profile pages with anchoring stats, recent anchors, document types, a JSON API, and an embeddable badge.",
+  },
+  {
     slug: "api",
     title: "API Reference",
     description:
