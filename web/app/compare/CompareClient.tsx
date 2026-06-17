@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 import { hashFile } from "@/lib/stacks";
-import { compareAnchors, HEX_64, type AnchorComparison } from "@/lib/compare";
+import {
+  compareAnchors,
+  HEX_64,
+  type AnchorComparison,
+  type CompareEntry,
+} from "@/lib/compare";
+import { getTemplate } from "@/lib/templates";
 
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
@@ -172,21 +178,228 @@ export default function ComparePage() {
       {comparison && (
         <div className="mt-10" aria-live="polite">
           <h2 className="text-2xl mb-4">{t("compare.results.heading")}</h2>
-          <p className="text-sm text-foreground/70">
-            {t(
-              `compare.results.${
-                comparison.left.source !== "none" ? "verified" : "notFound"
-              }`,
-            )}{" "}
-            /{" "}
-            {t(
-              `compare.results.${
-                comparison.right.source !== "none" ? "verified" : "notFound"
-              }`,
-            )}
-          </p>
+          <ResultsTable comparison={comparison} />
         </div>
       )}
+    </div>
+  );
+}
+
+// A cell that differs between the two documents gets a subtle highlight so the
+// metadata that changed across versions is immediately visible.
+const HIGHLIGHT = "bg-amber-400/10";
+
+function SourceBadge({ source }: { source: string }) {
+  const { t } = useI18n();
+  if (source === "none") {
+    return <span className="text-foreground/50">{t("compare.source.none")}</span>;
+  }
+  return (
+    <span className="inline-flex items-center text-[10px] uppercase tracking-wide text-foreground/70 border border-foreground/20 rounded-full px-2 py-0.5">
+      {t(`compare.source.${source}`)}
+    </span>
+  );
+}
+
+// Renders an entry's label: a template badge plus parsed fields when the label
+// was created from a template, otherwise the raw label exactly as stored.
+function LabelCell({ entry }: { entry: CompareEntry }) {
+  const { t } = useI18n();
+  if (entry.source === "none") {
+    return <span className="text-foreground/40">{t("compare.results.dash")}</span>;
+  }
+  const template = entry.template?.templateId
+    ? getTemplate(entry.template.templateId)
+    : undefined;
+  if (!template || !entry.template) {
+    return (
+      <code className="font-mono text-xs break-all">
+        {entry.label || t("compare.results.noLabel")}
+      </code>
+    );
+  }
+  return (
+    <div>
+      <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-foreground/60 border border-foreground/15 rounded px-1.5 py-0.5 mb-1">
+        <span
+          aria-hidden="true"
+          className="inline-flex h-3.5 w-3.5 items-center justify-center rounded bg-heading text-background text-[8px] font-semibold"
+        >
+          {template.icon}
+        </span>
+        {template.name}
+      </span>
+      <dl className="space-y-0.5">
+        {Object.entries(entry.template.fields).map(([key, value]) => {
+          const field = template.fields.find((f) => f.key === key);
+          return (
+            <div key={key} className="flex gap-2 text-xs">
+              <dt className="text-foreground/50 shrink-0">
+                {field?.name ?? key}
+              </dt>
+              <dd className="font-mono break-all">{value}</dd>
+            </div>
+          );
+        })}
+      </dl>
+    </div>
+  );
+}
+
+function HashCell({ entry }: { entry: CompareEntry }) {
+  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(entry.hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard access can be denied; the hash stays visible to copy by hand.
+    }
+  };
+  return (
+    <div className="flex items-start gap-2">
+      <code className="font-mono text-xs break-all">{entry.hash}</code>
+      <button
+        onClick={() => void copy()}
+        aria-label={t("compare.copy")}
+        className="shrink-0 text-[10px] px-2 py-0.5 rounded border border-foreground/15 hover:border-foreground/40 transition"
+      >
+        {copied ? t("compare.copied") : t("compare.copy")}
+      </button>
+    </div>
+  );
+}
+
+function OwnerCell({ entry }: { entry: CompareEntry }) {
+  const { t } = useI18n();
+  if (entry.source === "none" || !entry.owner) {
+    return <span className="text-foreground/40">{t("compare.results.dash")}</span>;
+  }
+  return (
+    <Link
+      href={`/u/${entry.owner}`}
+      className="font-mono text-xs break-all underline hover:no-underline"
+    >
+      {entry.owner}
+    </Link>
+  );
+}
+
+function ResultsTable({ comparison }: { comparison: AnchorComparison }) {
+  const { t } = useI18n();
+  const { left, right } = comparison;
+  const leftFound = left.source !== "none";
+  const rightFound = right.source !== "none";
+  const bothFound = leftFound && rightFound;
+
+  const statusCell = (entry: CompareEntry) =>
+    entry.source !== "none" ? (
+      <span className="text-green-700 dark:text-green-400">
+        {t("compare.results.verified")} &#10003;
+      </span>
+    ) : (
+      <span className="text-red-600 dark:text-red-400">
+        {t("compare.results.notFound")} &#10007;
+      </span>
+    );
+
+  const blockCell = (entry: CompareEntry) =>
+    entry.source !== "none" ? (
+      <code className="font-mono text-xs">{entry.block}</code>
+    ) : (
+      <span className="text-foreground/40">{t("compare.results.dash")}</span>
+    );
+
+  const proofCell = (entry: CompareEntry) =>
+    entry.proofNFT !== null && entry.proofNFT !== undefined ? (
+      <code className="font-mono text-xs">#{entry.proofNFT}</code>
+    ) : (
+      <span className="text-foreground/50">{t("compare.results.none")}</span>
+    );
+
+  // Each row pairs a field name with its renderer for both sides, plus whether
+  // the two sides differ. Differences are only flagged when both documents are
+  // anchored, since the Status row already conveys a missing anchor.
+  const rows: Array<{
+    key: string;
+    label: string;
+    differs: boolean;
+    render: (entry: CompareEntry) => ReactNode;
+  }> = [
+    {
+      key: "hash",
+      label: t("compare.results.rowHash"),
+      differs: false,
+      render: (entry) => <HashCell entry={entry} />,
+    },
+    {
+      key: "status",
+      label: t("compare.results.rowStatus"),
+      differs: leftFound !== rightFound,
+      render: statusCell,
+    },
+    {
+      key: "label",
+      label: t("compare.results.rowLabel"),
+      differs: bothFound && !comparison.sameLabel,
+      render: (entry) => <LabelCell entry={entry} />,
+    },
+    {
+      key: "source",
+      label: t("compare.results.rowSource"),
+      differs: bothFound && !comparison.sameSource,
+      render: (entry) => <SourceBadge source={entry.source} />,
+    },
+    {
+      key: "owner",
+      label: t("compare.results.rowOwner"),
+      differs: bothFound && !comparison.sameOwner,
+      render: (entry) => <OwnerCell entry={entry} />,
+    },
+    {
+      key: "block",
+      label: t("compare.results.rowBlock"),
+      differs: bothFound && left.block !== right.block,
+      render: blockCell,
+    },
+    {
+      key: "proof",
+      label: t("compare.results.rowProof"),
+      differs: bothFound && left.proofNFT !== right.proofNFT,
+      render: proofCell,
+    },
+  ];
+
+  return (
+    <div className="overflow-x-auto rounded-lg border border-foreground/10 bg-card">
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="border-b border-foreground/10 text-left">
+            <th className="p-3 font-medium text-foreground/50 uppercase text-xs tracking-wide w-32">
+              {t("compare.results.field")}
+            </th>
+            <th className="p-3 font-medium">{t("compare.columnA")}</th>
+            <th className="p-3 font-medium">{t("compare.columnB")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key} className="border-b border-foreground/10 align-top">
+              <td className="p-3 text-foreground/50 uppercase text-xs tracking-wide">
+                {row.label}
+              </td>
+              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>
+                {row.render(left)}
+              </td>
+              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>
+                {row.render(right)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
