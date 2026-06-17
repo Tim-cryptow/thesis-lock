@@ -44,6 +44,12 @@ export const DOCS: DocMeta[] = [
       "Public per-wallet profile pages with anchoring stats, recent anchors, document types, a JSON API, and an embeddable badge.",
   },
   {
+    slug: "compare",
+    title: "Anchor Comparison",
+    description:
+      "Compare two anchored documents side by side: which was anchored first, the estimated time gap, and how their owner, label, source, and metadata differ, with shareable comparison links.",
+  },
+  {
     slug: "api",
     title: "API Reference",
     description:

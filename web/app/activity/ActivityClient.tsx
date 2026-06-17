@@ -311,6 +311,12 @@ export default function ActivityClient() {
           <span className="text-foreground font-medium">
             {t("common.nav.activity")}
           </span>
+          <Link
+            href="/compare"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.compare")}
+          </Link>
         </div>
         {address ? (
           <button

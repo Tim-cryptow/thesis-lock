@@ -303,14 +303,19 @@ export function isTemplateValid(
   );
 }
 
+// The shape parseLabel returns: an optional detected template id plus the
+// decoded { key: value } fields. Named so callers (the comparison library,
+// verify and history views) can pass parsed labels around with a stable type.
+export type ParsedTemplate = {
+  templateId?: string;
+  fields: Record<string, string>;
+};
+
 // Reverse of buildLabel. Detects the template from the label prefix and splits
 // the structured segments back into a { key: value } map. Falls back to
 // { fields: { label: rawLabel } } for unstructured or empty labels so the
 // caller can always render something.
-export function parseLabel(label: string): {
-  templateId?: string;
-  fields: Record<string, string>;
-} {
+export function parseLabel(label: string): ParsedTemplate {
   if (!label) return { fields: { label } };
 
   // Match the longest non-empty prefix first so "release-" is not shadowed by a
