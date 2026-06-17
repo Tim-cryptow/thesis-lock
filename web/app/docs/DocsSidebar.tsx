@@ -57,6 +57,20 @@ export default function DocsSidebar() {
               </li>
             );
           })}
+          <li>
+            <Link
+              href="/developers"
+              onClick={() => setOpen(false)}
+              aria-current={pathname === "/developers" ? "page" : undefined}
+              className={`block rounded-md px-3 py-2 text-sm transition ${
+                pathname === "/developers"
+                  ? "bg-foreground/5 text-foreground font-medium"
+                  : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+              }`}
+            >
+              API Playground
+            </Link>
+          </li>
         </ul>
       </nav>
     </>

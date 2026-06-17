@@ -44,6 +44,12 @@ export default function Footer() {
           <Link href="/docs/api" className="hover:text-foreground transition">
             {t("common.footer.api")}
           </Link>
+          <Link
+            href="/developers"
+            className="hover:text-foreground transition"
+          >
+            {t("common.footer.developers")}
+          </Link>
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
