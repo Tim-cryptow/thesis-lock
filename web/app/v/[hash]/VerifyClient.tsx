@@ -151,6 +151,30 @@ export default function VerifyPage() {
   // even when the same hash also has a single or batch anchor by someone else.
   const preferGroup = Boolean(groupLocation && groupAnchor);
 
+  // The compare link carries enough to resolve the same record on the compare
+  // page. It mirrors the display precedence below: a batch record passes its
+  // owner, and a group record passes its exact { group-id, index } location so
+  // a hash anchored in several groups still compares the row shown here rather
+  // than the first group event that matches the hash.
+  const compareHref = useMemo(() => {
+    const params = new URLSearchParams({ a: hash });
+    if (!preferGroup && preferBatch && batchAnchor && batchOwner) {
+      params.set("ownerA", batchOwner);
+    } else if ((preferGroup || !anchor) && groupAnchor) {
+      params.set("groupA", String(groupAnchor.groupId));
+      params.set("giA", String(groupAnchor.index));
+    }
+    return `/compare?${params.toString()}`;
+  }, [
+    hash,
+    preferGroup,
+    preferBatch,
+    batchAnchor,
+    batchOwner,
+    anchor,
+    groupAnchor,
+  ]);
+
   // When the batch path resolves via the connected wallet rather than the
   // URL's ?owner=, the bare share URL points recipients to a page that
   // can't look it up without their own wallet connected. Inject the owner
@@ -699,11 +723,7 @@ export default function VerifyPage() {
       {(anchor || (batchAnchor && batchOwner) || groupAnchor) && (
         <div className="mt-6">
           <Link
-            href={`/compare?a=${hash}${
-              preferBatch && batchOwner
-                ? `&ownerA=${encodeURIComponent(batchOwner)}`
-                : ""
-            }`}
+            href={compareHref}
             className="inline-flex items-center text-sm underline hover:no-underline"
           >
             {t("verify.compareLink")} &rarr;

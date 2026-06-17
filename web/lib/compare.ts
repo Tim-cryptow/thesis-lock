@@ -4,7 +4,7 @@ import {
   fetchBatchAnchor,
   fetchProofIdByHash,
 } from "./hiroAnchor";
-import { findGroupAnchorByHash } from "./groups";
+import { findGroupAnchorByHash, getGroupAnchorByLocation } from "./groups";
 import { parseLabel, type ParsedTemplate } from "./templates";
 
 // Side-by-side comparison of two anchors. Users who anchor multiple versions of
@@ -33,6 +33,12 @@ export type CompareEntry = {
   template?: ParsedTemplate;
   proofNFT?: number | null;
 };
+
+// The exact on-chain location of a group anchor: { group-id, index }. A hash can
+// be anchored in several groups (or re-anchored in one), so a link that points
+// at a specific group record carries its location to resolve that precise row
+// rather than the first group event that happens to match the hash.
+export type GroupLocation = { groupId: number; index: number };
 
 // The computed relationship between two entries. `sameTemplate` and `supersedes`
 // are not in the original field list but back the template-type and supersession
@@ -71,6 +77,7 @@ function notFound(hash: string): CompareEntry {
 async function fetchCompareEntry(
   hash: string,
   owner?: string,
+  group?: GroupLocation,
 ): Promise<CompareEntry> {
   const normalizedHash = hash.toLowerCase();
   if (!HEX_64.test(normalizedHash)) return notFound(normalizedHash);
@@ -88,6 +95,33 @@ async function fetchCompareEntry(
     proofNFT = await fetchProofIdByHash(normalizedHash);
   } catch {
     proofNFT = null;
+  }
+
+  // An explicit group location asks about one specific group anchor, so resolve
+  // it directly and prefer it over any single or batch record for the same
+  // hash (mirrors the verify page's preferGroup ordering). The hash is confirmed
+  // to match so a stale or tampered location falls through instead of showing an
+  // unrelated record.
+  if (group) {
+    try {
+      const located = await getGroupAnchorByLocation(
+        group.groupId,
+        group.index,
+      );
+      if (located && located.hash === normalizedHash) {
+        return {
+          hash: normalizedHash,
+          label: located.label,
+          owner: located.anchoredBy,
+          block: located.stacksBlock,
+          source: "group",
+          template: parseLabel(located.label),
+          proofNFT,
+        };
+      }
+    } catch {
+      // fall through to the hash-based lookups
+    }
   }
 
   if (validOwner) {
@@ -166,10 +200,12 @@ export async function compareAnchors(
   hashB: string,
   ownerA?: string,
   ownerB?: string,
+  groupA?: GroupLocation,
+  groupB?: GroupLocation,
 ): Promise<AnchorComparison> {
   const [left, right] = await Promise.all([
-    fetchCompareEntry(hashA, ownerA),
-    fetchCompareEntry(hashB, ownerB),
+    fetchCompareEntry(hashA, ownerA, groupA),
+    fetchCompareEntry(hashB, ownerB, groupB),
   ]);
 
   const bothFound = left.source !== "none" && right.source !== "none";

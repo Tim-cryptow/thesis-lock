@@ -18,6 +18,7 @@ import {
   HEX_64,
   type AnchorComparison,
   type CompareEntry,
+  type GroupLocation,
 } from "@/lib/compare";
 import { getTemplate } from "@/lib/templates";
 
@@ -31,6 +32,9 @@ type ColumnState = {
   hashError: string | null;
   hashing: boolean;
   owner: string;
+  // Set only from a shareable link that points at a specific group anchor, so
+  // the comparison resolves that exact record. Cleared on any manual edit.
+  group?: GroupLocation;
 };
 
 const EMPTY_COLUMN: ColumnState = {
@@ -50,6 +54,20 @@ function ownerParam(owner: string): string | undefined {
   return STX_PRINCIPAL.test(upper) ? upper : undefined;
 }
 
+// A group location needs both a group id and a non-negative integer index;
+// anything else drops the location so the comparison resolves by hash.
+function parseGroupParam(
+  groupValue: string | null,
+  indexValue: string | null,
+): GroupLocation | undefined {
+  if (groupValue === null || indexValue === null) return undefined;
+  const groupId = Number(groupValue);
+  const index = Number(indexValue);
+  if (!Number.isInteger(groupId) || groupId < 0) return undefined;
+  if (!Number.isInteger(index) || index < 0) return undefined;
+  return { groupId, index };
+}
+
 export default function ComparePage() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
@@ -65,11 +83,26 @@ export default function ComparePage() {
 
   const aHash = a.hash.toLowerCase().trim();
   const bHash = b.hash.toLowerCase().trim();
-  const canCompare = isValidHash(aHash) && isValidHash(bHash) && !loading;
+  const canCompare =
+    isValidHash(aHash) &&
+    isValidHash(bHash) &&
+    !loading &&
+    !a.hashing &&
+    !b.hashing;
 
   const hashColumnFile = useCallback(
     async (file: File, set: typeof setA) => {
-      set((s) => ({ ...s, file, hashing: true, hashError: null }));
+      // Clear the previous hash up front: a stale hash left in place while the
+      // new file is hashing (or if hashing fails) would otherwise let a compare
+      // run against the old document while the new file name is shown.
+      set((s) => ({
+        ...s,
+        file,
+        hash: "",
+        group: undefined,
+        hashing: true,
+        hashError: null,
+      }));
       try {
         const h = await hashFile(file);
         set((s) => ({ ...s, hash: h, hashing: false }));
@@ -85,7 +118,14 @@ export default function ComparePage() {
   );
 
   const runCompare = useCallback(
-    async (aH: string, bH: string, aOwner: string, bOwner: string) => {
+    async (
+      aH: string,
+      bH: string,
+      aOwner: string,
+      bOwner: string,
+      aGroup?: GroupLocation,
+      bGroup?: GroupLocation,
+    ) => {
       if (!isValidHash(aH) || !isValidHash(bH)) return;
       setLoading(true);
       setError(null);
@@ -95,6 +135,8 @@ export default function ComparePage() {
           bH,
           ownerParam(aOwner),
           ownerParam(bOwner),
+          aGroup,
+          bGroup,
         );
         setComparison(result);
       } catch {
@@ -107,13 +149,14 @@ export default function ComparePage() {
   );
 
   const onCompare = useCallback(
-    () => void runCompare(aHash, bHash, a.owner, b.owner),
-    [runCompare, aHash, bHash, a.owner, b.owner],
+    () => void runCompare(aHash, bHash, a.owner, b.owner, a.group, b.group),
+    [runCompare, aHash, bHash, a.owner, b.owner, a.group, b.group],
   );
 
-  // Hydrate from shareable URL params (?a=&b=&ownerA=&ownerB=) once on load and
-  // auto-compare when both hashes are present, so a shared link opens straight
-  // to its result. Runs a single time; later edits go through the inputs.
+  // Hydrate from shareable URL params once on load and auto-compare when both
+  // hashes are present, so a shared link opens straight to its result. Group
+  // locations (?groupA=&giA=&groupB=&giB=) pin a specific group anchor. Runs a
+  // single time; later edits go through the inputs.
   const initialized = useRef(false);
   useEffect(() => {
     if (initialized.current) return;
@@ -122,10 +165,18 @@ export default function ComparePage() {
     const pb = (searchParams.get("b") ?? "").toLowerCase().trim();
     const poa = searchParams.get("ownerA") ?? "";
     const pob = searchParams.get("ownerB") ?? "";
-    if (isValidHash(pa)) setA((s) => ({ ...s, hash: pa, owner: poa }));
-    if (isValidHash(pb)) setB((s) => ({ ...s, hash: pb, owner: pob }));
+    const pga = parseGroupParam(
+      searchParams.get("groupA"),
+      searchParams.get("giA"),
+    );
+    const pgb = parseGroupParam(
+      searchParams.get("groupB"),
+      searchParams.get("giB"),
+    );
+    if (isValidHash(pa)) setA((s) => ({ ...s, hash: pa, owner: poa, group: pga }));
+    if (isValidHash(pb)) setB((s) => ({ ...s, hash: pb, owner: pob, group: pgb }));
     if (isValidHash(pa) && isValidHash(pb)) {
-      void runCompare(pa, pb, poa, pob);
+      void runCompare(pa, pb, poa, pob, pga, pgb);
     }
   }, [searchParams, runCompare]);
 
@@ -138,6 +189,14 @@ export default function ComparePage() {
     const ob = ownerParam(b.owner);
     if (oa) params.set("ownerA", oa);
     if (ob) params.set("ownerB", ob);
+    if (a.group) {
+      params.set("groupA", String(a.group.groupId));
+      params.set("giA", String(a.group.index));
+    }
+    if (b.group) {
+      params.set("groupB", String(b.group.groupId));
+      params.set("giB", String(b.group.index));
+    }
     const url = `${window.location.origin}/compare?${params.toString()}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -146,7 +205,7 @@ export default function ComparePage() {
       setShareState("failed");
     }
     setTimeout(() => setShareState("idle"), 1500);
-  }, [aHash, bHash, a.owner, b.owner]);
+  }, [aHash, bHash, a.owner, b.owner, a.group, b.group]);
 
   return (
     <div className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
@@ -201,7 +260,13 @@ export default function ComparePage() {
           state={a}
           onFile={(f) => void hashColumnFile(f, setA)}
           onHashChange={(hash) =>
-            setA((s) => ({ ...s, hash, file: null, hashError: null }))
+            setA((s) => ({
+              ...s,
+              hash,
+              file: null,
+              hashError: null,
+              group: undefined,
+            }))
           }
           onOwnerChange={(owner) => setA((s) => ({ ...s, owner }))}
         />
@@ -210,7 +275,13 @@ export default function ComparePage() {
           state={b}
           onFile={(f) => void hashColumnFile(f, setB)}
           onHashChange={(hash) =>
-            setB((s) => ({ ...s, hash, file: null, hashError: null }))
+            setB((s) => ({
+              ...s,
+              hash,
+              file: null,
+              hashError: null,
+              group: undefined,
+            }))
           }
           onOwnerChange={(owner) => setB((s) => ({ ...s, owner }))}
         />

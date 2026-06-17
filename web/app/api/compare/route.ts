@@ -1,4 +1,4 @@
-import { compareAnchors, HEX_64 } from "@/lib/compare";
+import { compareAnchors, HEX_64, type GroupLocation } from "@/lib/compare";
 import { corsHeaders } from "@/lib/verify";
 
 export const runtime = "nodejs";
@@ -16,6 +16,20 @@ function pickOwner(value: string | null): string | undefined {
   return STX_PRINCIPAL.test(upper) ? upper : undefined;
 }
 
+// A group location needs both a group id and an index; either missing or
+// non-numeric drops the location so the resolver falls back to a hash lookup.
+function pickGroup(
+  groupValue: string | null,
+  indexValue: string | null,
+): GroupLocation | undefined {
+  if (groupValue === null || indexValue === null) return undefined;
+  const groupId = Number(groupValue);
+  const index = Number(indexValue);
+  if (!Number.isInteger(groupId) || groupId < 0) return undefined;
+  if (!Number.isInteger(index) || index < 0) return undefined;
+  return { groupId, index };
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const a = (url.searchParams.get("a") ?? "").toLowerCase();
@@ -29,9 +43,17 @@ export async function GET(req: Request) {
 
   const ownerA = pickOwner(url.searchParams.get("ownerA"));
   const ownerB = pickOwner(url.searchParams.get("ownerB"));
+  const groupA = pickGroup(
+    url.searchParams.get("groupA"),
+    url.searchParams.get("giA"),
+  );
+  const groupB = pickGroup(
+    url.searchParams.get("groupB"),
+    url.searchParams.get("giB"),
+  );
 
   try {
-    const comparison = await compareAnchors(a, b, ownerA, ownerB);
+    const comparison = await compareAnchors(a, b, ownerA, ownerB, groupA, groupB);
     return Response.json(comparison, {
       headers: corsHeaders({ "Cache-Control": "public, s-maxage=120" }),
     });
