@@ -90,8 +90,15 @@ export default function ComparePage() {
     !a.hashing &&
     !b.hashing;
 
+  // Per-column request token. Dropping a new file bumps the token, so a slower
+  // earlier hashFile promise that settles out of order is discarded instead of
+  // overwriting the digest of the file the column is now showing.
+  const aReq = useRef(0);
+  const bReq = useRef(0);
+
   const hashColumnFile = useCallback(
-    async (file: File, set: typeof setA) => {
+    async (file: File, set: typeof setA, reqRef: { current: number }) => {
+      const token = ++reqRef.current;
       // Clear the previous hash up front: a stale hash left in place while the
       // new file is hashing (or if hashing fails) would otherwise let a compare
       // run against the old document while the new file name is shown.
@@ -105,8 +112,10 @@ export default function ComparePage() {
       }));
       try {
         const h = await hashFile(file);
+        if (reqRef.current !== token) return;
         set((s) => ({ ...s, hash: h, hashing: false }));
       } catch (e) {
+        if (reqRef.current !== token) return;
         set((s) => ({
           ...s,
           hashing: false,
@@ -258,7 +267,7 @@ export default function ComparePage() {
         <DocColumn
           title={t("compare.columnA")}
           state={a}
-          onFile={(f) => void hashColumnFile(f, setA)}
+          onFile={(f) => void hashColumnFile(f, setA, aReq)}
           onHashChange={(hash) =>
             setA((s) => ({
               ...s,
@@ -268,12 +277,14 @@ export default function ComparePage() {
               group: undefined,
             }))
           }
-          onOwnerChange={(owner) => setA((s) => ({ ...s, owner }))}
+          onOwnerChange={(owner) =>
+            setA((s) => ({ ...s, owner, group: undefined }))
+          }
         />
         <DocColumn
           title={t("compare.columnB")}
           state={b}
-          onFile={(f) => void hashColumnFile(f, setB)}
+          onFile={(f) => void hashColumnFile(f, setB, bReq)}
           onHashChange={(hash) =>
             setB((s) => ({
               ...s,
@@ -283,7 +294,9 @@ export default function ComparePage() {
               group: undefined,
             }))
           }
-          onOwnerChange={(owner) => setB((s) => ({ ...s, owner }))}
+          onOwnerChange={(owner) =>
+            setB((s) => ({ ...s, owner, group: undefined }))
+          }
         />
       </div>
 
