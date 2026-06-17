@@ -1,7 +1,14 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -45,12 +52,16 @@ function ownerParam(owner: string): string | undefined {
 
 export default function ComparePage() {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
 
   const [a, setA] = useState<ColumnState>(EMPTY_COLUMN);
   const [b, setB] = useState<ColumnState>(EMPTY_COLUMN);
   const [comparison, setComparison] = useState<AnchorComparison | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
 
   const aHash = a.hash.toLowerCase().trim();
   const bHash = b.hash.toLowerCase().trim();
@@ -73,24 +84,69 @@ export default function ComparePage() {
     [t],
   );
 
-  const onCompare = useCallback(async () => {
-    if (!isValidHash(aHash) || !isValidHash(bHash)) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await compareAnchors(
-        aHash,
-        bHash,
-        ownerParam(a.owner),
-        ownerParam(b.owner),
-      );
-      setComparison(result);
-    } catch {
-      setError(t("compare.compareError"));
-    } finally {
-      setLoading(false);
+  const runCompare = useCallback(
+    async (aH: string, bH: string, aOwner: string, bOwner: string) => {
+      if (!isValidHash(aH) || !isValidHash(bH)) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await compareAnchors(
+          aH,
+          bH,
+          ownerParam(aOwner),
+          ownerParam(bOwner),
+        );
+        setComparison(result);
+      } catch {
+        setError(t("compare.compareError"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
+
+  const onCompare = useCallback(
+    () => void runCompare(aHash, bHash, a.owner, b.owner),
+    [runCompare, aHash, bHash, a.owner, b.owner],
+  );
+
+  // Hydrate from shareable URL params (?a=&b=&ownerA=&ownerB=) once on load and
+  // auto-compare when both hashes are present, so a shared link opens straight
+  // to its result. Runs a single time; later edits go through the inputs.
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    const pa = (searchParams.get("a") ?? "").toLowerCase().trim();
+    const pb = (searchParams.get("b") ?? "").toLowerCase().trim();
+    const poa = searchParams.get("ownerA") ?? "";
+    const pob = searchParams.get("ownerB") ?? "";
+    if (isValidHash(pa)) setA((s) => ({ ...s, hash: pa, owner: poa }));
+    if (isValidHash(pb)) setB((s) => ({ ...s, hash: pb, owner: pob }));
+    if (isValidHash(pa) && isValidHash(pb)) {
+      void runCompare(pa, pb, poa, pob);
     }
-  }, [aHash, bHash, a.owner, b.owner, t]);
+  }, [searchParams, runCompare]);
+
+  // The shareable link reflects the currently entered hashes and owners, so a
+  // recipient lands on the same comparison. Owners are included only when valid.
+  const shareComparison = useCallback(async () => {
+    if (!isValidHash(aHash) || !isValidHash(bHash)) return;
+    const params = new URLSearchParams({ a: aHash, b: bHash });
+    const oa = ownerParam(a.owner);
+    const ob = ownerParam(b.owner);
+    if (oa) params.set("ownerA", oa);
+    if (ob) params.set("ownerB", ob);
+    const url = `${window.location.origin}/compare?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareState("copied");
+    } catch {
+      setShareState("failed");
+    }
+    setTimeout(() => setShareState("idle"), 1500);
+  }, [aHash, bHash, a.owner, b.owner]);
 
   return (
     <div className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
@@ -177,7 +233,19 @@ export default function ComparePage() {
 
       {comparison && (
         <div className="mt-10" aria-live="polite">
-          <h2 className="text-2xl mb-4">{t("compare.results.heading")}</h2>
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+            <h2 className="text-2xl">{t("compare.results.heading")}</h2>
+            <button
+              onClick={() => void shareComparison()}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              {shareState === "copied"
+                ? t("compare.share.copied")
+                : shareState === "failed"
+                  ? t("compare.share.failed")
+                  : t("compare.share.button")}
+            </button>
+          </div>
           <ResultsTable comparison={comparison} />
           <Timeline comparison={comparison} />
           <RelationshipBadges comparison={comparison} />
