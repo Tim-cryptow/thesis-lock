@@ -170,6 +170,7 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
             required: false,
             options: ["auto", "hash", "principal", "label"],
           },
+          ownerParam,
         ],
         responseKind: "json",
       },
