@@ -95,11 +95,26 @@ export default function ComparePage() {
   // overwriting the digest of the file the column is now showing.
   const aReq = useRef(0);
   const bReq = useRef(0);
+  // Token for the in-flight comparison. Any edit bumps it, so a slow compare
+  // (the group fallback can scan many Hiro events) that settles after the user
+  // changed an input is discarded instead of restoring a result that no longer
+  // matches the inputs.
+  const compareReq = useRef(0);
+
+  // Discards any pending comparison: a shown result no longer matches the edited
+  // inputs, and a compare still running must not write its result back. Bumping
+  // the compare token also lets that run's own finally know it is stale, so this
+  // resets the loading state directly.
+  const cancelPendingCompare = useCallback(() => {
+    compareReq.current++;
+    setLoading(false);
+    setComparison(null);
+  }, []);
 
   // A manual edit to a column (typing a hash or owner) invalidates any in-flight
-  // file hash for that column by bumping its token, and clears a shown result so
-  // the rendered comparison and the share link can never reflect inputs that
-  // were edited after the comparison ran.
+  // file hash for that column by bumping its token, and cancels a pending or
+  // shown comparison so the rendered table and the share link can never reflect
+  // inputs that were edited after the comparison ran.
   const editColumn = useCallback(
     (
       set: typeof setA,
@@ -107,18 +122,17 @@ export default function ComparePage() {
       patch: Partial<ColumnState>,
     ) => {
       reqRef.current++;
-      setComparison(null);
+      cancelPendingCompare();
       set((s) => ({ ...s, ...patch }));
     },
-    [],
+    [cancelPendingCompare],
   );
 
   const hashColumnFile = useCallback(
     async (file: File, set: typeof setA, reqRef: { current: number }) => {
       const token = ++reqRef.current;
-      // A new file is itself an edit, so a previously shown result no longer
-      // matches the inputs.
-      setComparison(null);
+      // A new file is itself an edit, so cancel a pending or shown comparison.
+      cancelPendingCompare();
       // Clear the previous hash up front: a stale hash left in place while the
       // new file is hashing (or if hashing fails) would otherwise let a compare
       // run against the old document while the new file name is shown.
@@ -143,7 +157,7 @@ export default function ComparePage() {
         }));
       }
     },
-    [t],
+    [t, cancelPendingCompare],
   );
 
   const runCompare = useCallback(
@@ -156,6 +170,7 @@ export default function ComparePage() {
       bGroup?: GroupLocation,
     ) => {
       if (!isValidHash(aH) || !isValidHash(bH)) return;
+      const token = ++compareReq.current;
       setLoading(true);
       setError(null);
       try {
@@ -167,11 +182,16 @@ export default function ComparePage() {
           aGroup,
           bGroup,
         );
+        // A newer compare or an edit superseded this run; drop its result.
+        if (compareReq.current !== token) return;
         setComparison(result);
       } catch {
+        if (compareReq.current !== token) return;
         setError(t("compare.compareError"));
       } finally {
-        setLoading(false);
+        // Only the current run owns the loading state; a stale run clearing it
+        // would prematurely re-enable the UI while a newer compare is pending.
+        if (compareReq.current === token) setLoading(false);
       }
     },
     [t],
