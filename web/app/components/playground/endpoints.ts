@@ -209,6 +209,7 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
             required: false,
             placeholder: "Custom left-hand label",
           },
+          ownerParam,
         ],
         responseKind: "image",
       },
@@ -217,7 +218,7 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
         method: "GET",
         path: "/api/card/[hash]",
         description: "Social sharing card image for an anchor.",
-        params: [hashParam],
+        params: [hashParam, ownerParam],
         responseKind: "image",
       },
       {
