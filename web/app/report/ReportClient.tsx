@@ -65,11 +65,14 @@ export default function ReportClient() {
   const [anchorsLoading, setAnchorsLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  // Generation state.
+  // Generation state. generationId tags each run so that an in-flight
+  // generateReport can be abandoned when the inputs change underneath it (see
+  // the invalidation effect and generate below).
   const [generating, setGenerating] = useState(false);
   const [statuses, setStatuses] = useState<("pending" | "verified" | "notfound")[]>([]);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [report, setReport] = useState<ReportData | null>(null);
+  const generationId = useRef(0);
 
   // Adds hashes, skipping duplicates and anything not a valid 64-hex string, and
   // enforcing the same per-report cap as the API so the builder cannot stage a
@@ -150,16 +153,18 @@ export default function ReportClient() {
 
   const clearItems = useCallback(() => setItems([]), []);
 
-  // A generated report describes one specific document list. If that list later
-  // changes (cleared, removed, or added to), drop the stale report and progress
-  // so the preview and the Download/Print/Share actions can never export results
-  // that no longer match what the builder shows. items is stable during
-  // generation, so this never clears a report mid-run.
+  // A generated report describes one specific document list resolved against one
+  // connected wallet (the owner used for batch resolution and generatedBy). If
+  // either changes (list cleared/removed/added, or the wallet switches), drop the
+  // stale report and progress so the preview and Download/Print/Share actions can
+  // never export results that no longer match the builder. Bumping generationId
+  // also abandons any run still in flight so its result is never published.
   useEffect(() => {
+    generationId.current += 1;
     setReport(null);
     setStatuses([]);
     setProgress({ done: 0, total: 0 });
-  }, [items]);
+  }, [items, address]);
 
   const loadAnchors = useCallback(async () => {
     if (!address) return;
@@ -207,6 +212,7 @@ export default function ReportClient() {
 
   const generate = useCallback(async () => {
     if (items.length === 0 || generating) return;
+    const runId = (generationId.current += 1);
     setGenerating(true);
     setReport(null);
     setStatuses(items.map(() => "pending"));
@@ -215,6 +221,8 @@ export default function ReportClient() {
       items,
       address ?? undefined,
       (done, total, entry, index) => {
+        // Ignore progress from a run the inputs have since invalidated.
+        if (generationId.current !== runId) return;
         setProgress({ done, total });
         setStatuses((prev) => {
           const next = [...prev];
@@ -223,7 +231,10 @@ export default function ReportClient() {
         });
       },
     );
-    setReport({ ...data, title: title.trim() || DEFAULT_REPORT_TITLE });
+    // Only publish if this run still describes the current inputs and wallet.
+    if (generationId.current === runId) {
+      setReport({ ...data, title: title.trim() || DEFAULT_REPORT_TITLE });
+    }
     setGenerating(false);
   }, [items, generating, address, title]);
 
