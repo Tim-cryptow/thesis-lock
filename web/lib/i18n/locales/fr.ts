@@ -167,6 +167,7 @@ export const fr: Translations = {
         body: "Vérifiez une ancre comme étape de n'importe quel flux GitHub.",
       },
       readDocs: "Lire la documentation",
+      developerPortal: "Ouvrir le portail développeur",
     },
     live: {
       heading: "En direct sur le mainnet Stacks",

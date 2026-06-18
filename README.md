@@ -25,7 +25,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Public wallet profiles at `/u/<principal>`: anyone's anchoring history as a verifiable portfolio, with anchor, batch, group, and proof totals, recent anchors, and the document types they anchor. Exposed as JSON at `/api/profile/<principal>` and as a shields-style badge at `/api/profile-badge/<principal>`.
 - Embeddable badges at `/embed`: a shields-style "Verified on Stacks" SVG badge (`/api/badge/<hash>`) and a social sharing card (`/api/card/<hash>`) for any anchored hash.
 - Optional soulbound proof NFTs (SIP-009) as permanent in-wallet evidence of an anchor.
-- Interactive [API Playground](https://thesis-lock.vercel.app/developers) at `/developers`: pick any GET endpoint, fill in parameters, send live requests, and see the response with a matching copy-ready curl command.
+- [Developer Portal](https://thesis-lock.vercel.app/developers) at `/developers` with an API playground, key management, and integration guides: pick any GET endpoint and send live requests with a copy-ready curl command, create scoped API keys (stored client-side), and copy ready-to-run examples for JavaScript, Python, cURL, GitHub Actions, and CI/CD.
 
 ## Protocol
 
