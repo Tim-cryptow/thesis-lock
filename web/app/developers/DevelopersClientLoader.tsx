@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 
-const PlaygroundClient = dynamic(() => import("./PlaygroundClient"), {
+const DeveloperPortal = dynamic(() => import("./DeveloperPortal"), {
   ssr: false,
 });
 
 export default function DevelopersClientLoader() {
-  return <PlaygroundClient />;
+  return <DeveloperPortal />;
 }
