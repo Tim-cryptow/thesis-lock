@@ -1,5 +1,9 @@
 import { corsHeaders } from "@/lib/verify";
-import { generateReport, type HashInput } from "@/lib/report";
+import {
+  generateReport,
+  MAX_REPORT_HASHES,
+  type HashInput,
+} from "@/lib/report";
 import {
   renderReportCSV,
   renderReportHTML,
@@ -8,10 +12,6 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-// Upper bound on hashes per request. Each one pages a contract's full event
-// history, so an unbounded list would let a single request hammer the Hiro API.
-const MAX_HASHES = 200;
 
 type ReportRequest = {
   hashes?: unknown;
@@ -57,9 +57,9 @@ export async function POST(req: Request) {
       { status: 400, headers: corsHeaders() },
     );
   }
-  if (hashes.length > MAX_HASHES) {
+  if (hashes.length > MAX_REPORT_HASHES) {
     return Response.json(
-      { error: `Too many hashes. The limit is ${MAX_HASHES} per request.` },
+      { error: `Too many hashes. The limit is ${MAX_REPORT_HASHES} per request.` },
       { status: 400, headers: corsHeaders() },
     );
   }

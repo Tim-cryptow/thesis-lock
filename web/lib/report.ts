@@ -42,6 +42,11 @@ export type HashInput = { hash: string; filename?: string };
 
 export const DEFAULT_REPORT_TITLE = "Verification Report";
 
+// Upper bound on hashes per report. Each one pages a contract's full event
+// history, so an unbounded list would hammer the Hiro API. Shared by the API
+// route and the builder UI so both enforce the same limit.
+export const MAX_REPORT_HASHES = 200;
+
 const HEX_64 = /^[0-9a-f]{64}$/;
 
 function normalizeHash(raw: string): string {

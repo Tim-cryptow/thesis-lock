@@ -11,6 +11,7 @@ import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import type { RegistryEntry } from "@/lib/stacks";
 import {
   DEFAULT_REPORT_TITLE,
+  MAX_REPORT_HASHES,
   generateReport,
   type HashInput,
   type ReportData,
@@ -70,12 +71,15 @@ export default function ReportClient() {
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [report, setReport] = useState<ReportData | null>(null);
 
-  // Adds hashes, skipping duplicates and anything not a valid 64-hex string.
+  // Adds hashes, skipping duplicates and anything not a valid 64-hex string, and
+  // enforcing the same per-report cap as the API so the builder cannot stage a
+  // list that the server would reject (or that would hammer the Hiro API).
   const addItems = useCallback((incoming: HashInput[]) => {
     setItems((prev) => {
       const seen = new Set(prev.map((i) => i.hash));
       const next = [...prev];
       for (const item of incoming) {
+        if (next.length >= MAX_REPORT_HASHES) break;
         const hash = normalize(item.hash);
         if (!HEX_64.test(hash) || seen.has(hash)) continue;
         seen.add(hash);
@@ -157,6 +161,14 @@ export default function ReportClient() {
     } finally {
       setAnchorsLoading(false);
     }
+  }, [address]);
+
+  // Drop previously loaded anchors when the wallet changes so the import list
+  // reflects the connected wallet rather than a stale one. The load effect below
+  // then refetches for the new wallet.
+  useEffect(() => {
+    setAnchors([]);
+    setSelected(new Set());
   }, [address]);
 
   useEffect(() => {
@@ -375,6 +387,12 @@ export default function ReportClient() {
               </button>
             ) : null}
           </div>
+          {items.length >= MAX_REPORT_HASHES ? (
+            <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+              Limit of {MAX_REPORT_HASHES} documents reached. Remove some to add
+              more.
+            </p>
+          ) : null}
           {items.length === 0 ? (
             <p className="mt-3 text-sm text-foreground/50">
               No documents yet. Drop files, paste hashes, or import from your anchors.
@@ -579,7 +597,7 @@ function ReportPreview({ data }: { data: ReportData }) {
         </div>
       ) : null}
 
-      <div className="mt-6 max-h-[32rem] overflow-y-auto rounded-lg border border-foreground/10 divide-y divide-foreground/10">
+      <div className="mt-6 max-h-128 overflow-y-auto rounded-lg border border-foreground/10 divide-y divide-foreground/10">
         {data.hashes.map((entry, index) => (
           <article key={`${entry.hash}-${index}`} className="p-4">
             <div className="flex items-center gap-3">
