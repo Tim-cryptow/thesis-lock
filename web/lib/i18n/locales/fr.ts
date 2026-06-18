@@ -20,6 +20,7 @@ export const fr: Translations = {
       activity: "Activité",
       templates: "Modèles",
       compare: "Comparer",
+      report: "Rapport",
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
@@ -138,6 +139,10 @@ export const fr: Translations = {
       devtools: {
         title: "Outils pour développeurs",
         body: "Intégrez avec le SDK TypeScript, le CLI, l'action GitHub et l'API REST.",
+      },
+      reports: {
+        title: "Rapports de vérification",
+        body: "Générez un rapport d'audit formel multi-documents, exportable en HTML, JSON ou CSV.",
       },
     },
     contracts: {

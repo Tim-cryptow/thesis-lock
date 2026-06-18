@@ -239,6 +239,12 @@ export default function GroupDetailPage() {
           >
             {t("common.nav.compare")}
           </Link>
+          <Link
+            href="/report"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.report")}
+          </Link>
         </div>
         {address ? (
           <button

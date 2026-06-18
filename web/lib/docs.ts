@@ -73,6 +73,12 @@ export const DOCS: DocMeta[] = [
     description:
       "Gate any CI pipeline on a document being anchored on Stacks, with inputs, outputs, and example workflows.",
   },
+  {
+    slug: "reports",
+    title: "Verification Reports",
+    description:
+      "Generate formal, multi-document verification reports proving a set of hashes were anchored on Stacks, exportable as HTML, JSON, or CSV.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

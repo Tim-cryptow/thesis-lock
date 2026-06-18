@@ -224,7 +224,7 @@ export default function ReportClient() {
             <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
               {t("common.nav.dashboard")}
             </Link>
-            <span className="text-foreground font-medium">Report</span>
+            <span className="text-foreground font-medium">{t("common.nav.report")}</span>
           </div>
           {address ? (
             <button

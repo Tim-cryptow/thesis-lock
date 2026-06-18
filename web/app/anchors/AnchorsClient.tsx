@@ -272,6 +272,12 @@ export default function AnchorsPage() {
           >
             {t("common.nav.activity")}
           </Link>
+          <Link
+            href="/report"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.report")}
+          </Link>
         </div>
         {address ? (
           <button

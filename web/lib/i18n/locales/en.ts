@@ -25,6 +25,7 @@ export const en = {
       activity: "Activity",
       templates: "Templates",
       compare: "Compare",
+      report: "Report",
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
@@ -143,6 +144,10 @@ export const en = {
       devtools: {
         title: "Developer Tools",
         body: "Integrate with the TypeScript SDK, CLI, GitHub Action, and REST API.",
+      },
+      reports: {
+        title: "Verification Reports",
+        body: "Generate a formal multi-document audit report, exportable as HTML, JSON, or CSV.",
       },
     },
     contracts: {

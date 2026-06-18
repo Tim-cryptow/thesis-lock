@@ -198,6 +198,12 @@ export default function FeedClient() {
         >
           {t("common.nav.compare")}
         </Link>
+        <Link
+          href="/report"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.report")}
+        </Link>
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
