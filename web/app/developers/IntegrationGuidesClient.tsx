@@ -307,7 +307,7 @@ thesislock hash ./thesis.pdf --verify`}
         language="bash"
         title="Docker"
         code={`docker run --rm -v "$PWD:/work" -w /work node:20-alpine \\
-  npx thesislock-cli hash ./thesis.pdf --verify`}
+  npx --yes thesislock-cli hash ./thesis.pdf --verify`}
       />
 
       <p className="mt-4 text-sm text-foreground/70">
@@ -323,7 +323,7 @@ files=("thesis.pdf" "dataset.csv" "appendix.zip")
 
 for file in "\${files[@]}"; do
   echo "Verifying $file"
-  if ! npx thesislock-cli hash "./$file" --verify; then
+  if ! npx --yes thesislock-cli hash "./$file" --verify; then
     echo "Not anchored: $file"
     exit 1
   fi
