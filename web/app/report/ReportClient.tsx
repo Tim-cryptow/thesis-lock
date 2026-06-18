@@ -17,6 +17,7 @@ import {
   type ReportEntry,
 } from "@/lib/report";
 import { verifyUrlFor } from "@/lib/reportRenderer";
+import ReportActions from "./ReportActions";
 
 const SOURCE_LABELS: Record<string, string> = {
   single: "Single anchor",
@@ -468,6 +469,7 @@ export default function ReportClient() {
         ) : null}
 
         {report ? <ReportPreview data={report} /> : null}
+        {report ? <ReportActions data={report} /> : null}
       </div>
       <Footer />
     </>
