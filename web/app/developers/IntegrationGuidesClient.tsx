@@ -2,12 +2,19 @@
 
 import CodeBlock from "@/app/components/CodeBlock";
 
-export type GuideTabId = "javascript" | "python" | "curl";
+export type GuideTabId =
+  | "javascript"
+  | "python"
+  | "curl"
+  | "github"
+  | "cicd";
 
 const TABS: { id: GuideTabId; label: string }[] = [
   { id: "javascript", label: "JavaScript/Node.js" },
   { id: "python", label: "Python" },
   { id: "curl", label: "cURL" },
+  { id: "github", label: "GitHub Actions" },
+  { id: "cicd", label: "CI/CD Generic" },
 ];
 
 type Props = {
@@ -200,6 +207,133 @@ function CurlGuide() {
   );
 }
 
+function GithubActionsGuide() {
+  return (
+    <div>
+      <h3 className="text-xl">GitHub Actions</h3>
+      <p className="mt-2 text-sm text-foreground/70">
+        The reusable action{" "}
+        <code className="font-mono">Tim-cryptow/thesis-lock/action@main</code>{" "}
+        verifies a document hash from inside any workflow. It reads the public
+        Hiro mainnet API and needs no wallet or secret.
+      </p>
+
+      <CodeBlock
+        language="yaml"
+        title="Verify on push"
+        code={`name: Verify anchor
+on: [push]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify dataset hash
+        uses: Tim-cryptow/thesis-lock/action@main
+        with:
+          file: ./data/dataset.csv
+          fail-on-unverified: "true"`}
+      />
+
+      <CodeBlock
+        language="yaml"
+        title="Verify on release"
+        code={`name: Verify release artifact
+on:
+  release:
+    types: [published]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Tim-cryptow/thesis-lock/action@main
+        with:
+          hash: "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06"`}
+      />
+
+      <p className="mt-4 text-sm text-foreground/70">
+        Multi-step: hash a file, verify it, and fail the job if the proof is
+        missing.
+      </p>
+      <CodeBlock
+        language="yaml"
+        title="Hash, verify, gate"
+        code={`jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify the thesis is anchored
+        id: anchor
+        uses: Tim-cryptow/thesis-lock/action@main
+        with:
+          file: ./thesis.pdf
+          fail-on-unverified: "true"
+      - name: Continue the pipeline
+        if: steps.anchor.outcome == 'success'
+        run: echo "Anchor confirmed, proceeding"`}
+      />
+    </div>
+  );
+}
+
+function CicdGuide() {
+  return (
+    <div>
+      <h3 className="text-xl">CI/CD Generic</h3>
+      <p className="mt-2 text-sm text-foreground/70">
+        Outside GitHub Actions, the{" "}
+        <code className="font-mono">thesislock-cli</code> package verifies
+        anchors from any shell, including GitLab CI, CircleCI, and Jenkins.
+      </p>
+
+      <CodeBlock
+        language="bash"
+        title="Any CI pipeline"
+        code={`npm install -g thesislock-cli
+
+# Hash a file and verify it is anchored. Exit code is non-zero if not.
+thesislock-cli verify ./thesis.pdf`}
+      />
+
+      <p className="mt-4 text-sm text-foreground/70">
+        Run it in a container without a global install:
+      </p>
+      <CodeBlock
+        language="bash"
+        title="Docker"
+        code={`docker run --rm -v "$PWD:/work" -w /work node:20-alpine \\
+  npx thesislock-cli verify ./thesis.pdf`}
+      />
+
+      <p className="mt-4 text-sm text-foreground/70">
+        Verify several files and fail on the first one that is not anchored:
+      </p>
+      <CodeBlock
+        language="bash"
+        title="verify-all.sh"
+        code={`#!/usr/bin/env bash
+set -euo pipefail
+
+files=("thesis.pdf" "dataset.csv" "appendix.zip")
+
+for file in "\${files[@]}"; do
+  echo "Verifying $file"
+  if ! npx thesislock-cli verify "./$file"; then
+    echo "Not anchored: $file"
+    exit 1
+  fi
+done
+
+echo "All files verified"`}
+      />
+    </div>
+  );
+}
+
 export default function IntegrationGuidesClient({
   activeTab,
   onTabChange,
@@ -244,6 +378,8 @@ export default function IntegrationGuidesClient({
         {activeTab === "javascript" ? <JavaScriptGuide /> : null}
         {activeTab === "python" ? <PythonGuide /> : null}
         {activeTab === "curl" ? <CurlGuide /> : null}
+        {activeTab === "github" ? <GithubActionsGuide /> : null}
+        {activeTab === "cicd" ? <CicdGuide /> : null}
       </div>
     </div>
   );
