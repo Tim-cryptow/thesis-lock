@@ -51,14 +51,25 @@ function useTargetRect(step: TourStep): DOMRect | null {
       setRect(null);
       return;
     }
-    // Retry a handful of times: the target may mount after a route change or a
-    // smooth scroll may still be settling.
     let cancelled = false;
+
+    // A MutationObserver keeps watching for the target so it is spotlighted even
+    // when it mounts after the timed retries below, for example when the tour
+    // navigates to a route whose content arrives through a client-only dynamic
+    // import. It disconnects as soon as the target is found.
+    const observer = new MutationObserver(() => {
+      if (!cancelled && measure()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Retry a few times up front: the target may mount after a route change or a
+    // smooth scroll may still be settling, and a found target lets us stop
+    // observing immediately.
     const timers: ReturnType<typeof setTimeout>[] = [];
     [0, 80, 200, 400, 700].forEach((delay) => {
       timers.push(
         setTimeout(() => {
-          if (!cancelled) measure();
+          if (!cancelled && measure()) observer.disconnect();
         }, delay),
       );
     });
@@ -67,6 +78,7 @@ function useTargetRect(step: TourStep): DOMRect | null {
     window.addEventListener("scroll", onChange, true);
     return () => {
       cancelled = true;
+      observer.disconnect();
       timers.forEach(clearTimeout);
       window.removeEventListener("resize", onChange);
       window.removeEventListener("scroll", onChange, true);
