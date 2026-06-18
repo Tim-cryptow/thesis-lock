@@ -132,7 +132,7 @@ if __name__ == "__main__":
     file_hash = hash_file("thesis.pdf")
     data = verify(file_hash)
     if data.get("verified"):
-        print("Anchored by", data["anchoredBy"])
+        print("Anchored by", data["owner"])
         print("Stacks block", data["stacksBlock"])
     else:
         print("Not anchored:", file_hash)`}
@@ -295,8 +295,9 @@ function CicdGuide() {
         title="Any CI pipeline"
         code={`npm install -g thesislock-cli
 
-# Hash a file and verify it is anchored. Exit code is non-zero if not.
-thesislock-cli verify ./thesis.pdf`}
+# The package installs a "thesislock" binary. Hash a file and check its
+# anchor in one step; the exit code is non-zero when it is not anchored.
+thesislock hash ./thesis.pdf --verify`}
       />
 
       <p className="mt-4 text-sm text-foreground/70">
@@ -306,7 +307,7 @@ thesislock-cli verify ./thesis.pdf`}
         language="bash"
         title="Docker"
         code={`docker run --rm -v "$PWD:/work" -w /work node:20-alpine \\
-  npx thesislock-cli verify ./thesis.pdf`}
+  npx thesislock-cli hash ./thesis.pdf --verify`}
       />
 
       <p className="mt-4 text-sm text-foreground/70">
@@ -322,7 +323,7 @@ files=("thesis.pdf" "dataset.csv" "appendix.zip")
 
 for file in "\${files[@]}"; do
   echo "Verifying $file"
-  if ! npx thesislock-cli verify "./$file"; then
+  if ! npx thesislock-cli hash "./$file" --verify; then
     echo "Not anchored: $file"
     exit 1
   fi
