@@ -14,6 +14,18 @@ export const DOCS: DocMeta[] = [
       "What ThesisLock is, how anchoring works, and how to anchor your first document in under a minute.",
   },
   {
+    slug: "getting-started-tour",
+    title: "Getting Started Tour",
+    description:
+      "The interactive onboarding tour that walks first-time visitors through anchoring, history, search, groups, stats, and more, and how to restart it any time.",
+  },
+  {
+    slug: "command-palette",
+    title: "Command Palette",
+    description:
+      "Open the command palette with Ctrl+K (Cmd+K on macOS) to jump to any page or run a common action with fuzzy search and the keyboard.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
