@@ -189,7 +189,7 @@ function CurlGuide() {
       <CodeBlock
         language="bash"
         title="Search by label"
-        code={`curl -s "https://thesis-lock.vercel.app/api/search?q=thesis" | jq '.results'`}
+        code={`curl -s "https://thesis-lock.vercel.app/api/search?q=thesis" | jq`}
       />
 
       <CodeBlock
