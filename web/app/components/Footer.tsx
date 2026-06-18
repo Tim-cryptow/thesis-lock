@@ -3,6 +3,8 @@
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import { useTour } from "@/app/components/TourProvider";
+import { resetTour } from "@/lib/onboarding";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
@@ -13,6 +15,7 @@ const EXPLORER_URL = `https://explorer.hiro.so/address/${CONTRACT_ADDRESS}?chain
 
 export default function Footer() {
   const { t } = useI18n();
+  const { startTour } = useTour();
 
   return (
     <footer className="mt-auto border-t border-foreground/10 py-8 px-6 text-sm text-foreground/60">
@@ -22,6 +25,16 @@ export default function Footer() {
           <span className="text-foreground/50">{t("common.tagline")}</span>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              resetTour();
+              startTour();
+            }}
+            className="hover:text-foreground transition"
+          >
+            Restart onboarding tour
+          </button>
           <Link href="/docs" className="hover:text-foreground transition">
             {t("common.footer.docs")}
           </Link>
@@ -46,6 +59,7 @@ export default function Footer() {
           </Link>
           <Link
             href="/developers"
+            data-tour="developers-link"
             className="hover:text-foreground transition"
           >
             {t("common.footer.developers")}

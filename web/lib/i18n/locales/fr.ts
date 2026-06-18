@@ -21,6 +21,7 @@ export const fr: Translations = {
       templates: "Modèles",
       compare: "Comparer",
       report: "Rapport",
+      developers: "Développeurs",
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
@@ -77,6 +78,7 @@ export const fr: Translations = {
       buttonAria: "Raccourcis clavier",
       items: {
         focusSearch: "Aller à la recherche",
+        commandPalette: "Palette de commandes",
         newAnchor: "Nouvelle ancre",
         groups: "Groupes",
         anchorHistory: "Historique des ancres",

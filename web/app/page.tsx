@@ -5,6 +5,7 @@ import HeroStats from "@/app/components/HeroStats";
 import StatsBar from "@/app/components/StatsBar";
 import Footer from "@/app/components/Footer";
 import FeatureCard from "@/app/components/FeatureCard";
+import TourBanner from "@/app/components/TourBanner";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const CONTRACT_ADDRESS =
@@ -165,6 +166,7 @@ export default function Page() {
           </Link>
         </div>
         <HeroStats />
+        <TourBanner />
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">

@@ -21,6 +21,7 @@ export const es: Translations = {
       templates: "Plantillas",
       compare: "Comparar",
       report: "Informe",
+      developers: "Desarrolladores",
       docs: "Documentación",
       api: "API",
       explorer: "Explorador",
@@ -77,6 +78,7 @@ export const es: Translations = {
       buttonAria: "Atajos de teclado",
       items: {
         focusSearch: "Enfocar búsqueda",
+        commandPalette: "Paleta de comandos",
         newAnchor: "Nuevo anclaje",
         groups: "Grupos",
         anchorHistory: "Historial de anclajes",

@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useI18n } from "./I18nProvider";
 import ShortcutsModal from "./ShortcutsModal";
+import {
+  PALETTE_OPEN_EVENT,
+  SHORTCUTS_OPEN_EVENT,
+} from "@/lib/commandPalette";
 
 // Dispatched when the search input should grab focus while already on /search.
 export const FOCUS_SEARCH_EVENT = "thesislock:focus-search";
@@ -16,7 +20,7 @@ export const FOCUS_SEARCH_FLAG = "thesislock.focusSearch";
 export type Shortcut = { keys: string[]; descriptionKey: string };
 
 export const SHORTCUTS: Shortcut[] = [
-  { keys: ["mod", "K"], descriptionKey: "focusSearch" },
+  { keys: ["mod", "K"], descriptionKey: "commandPalette" },
   { keys: ["/"], descriptionKey: "focusSearch" },
   { keys: ["mod", "N"], descriptionKey: "newAnchor" },
   { keys: ["mod", "G"], descriptionKey: "groups" },
@@ -59,15 +63,21 @@ export default function KeyboardShortcuts() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (isEditableTarget(e.target)) return;
       const mod = e.metaKey || e.ctrlKey;
+
+      // The command palette toggle works even from editable elements: users
+      // should be able to open it while typing in a field, and close it with
+      // the same chord from its own focused search input.
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        window.dispatchEvent(new Event(PALETTE_OPEN_EVENT));
+        return;
+      }
+
+      if (isEditableTarget(e.target)) return;
 
       if (mod) {
         switch (e.key.toLowerCase()) {
-          case "k":
-            e.preventDefault();
-            focusSearch();
-            return;
           case "n":
             e.preventDefault();
             router.push("/anchor");
@@ -109,10 +119,18 @@ export default function KeyboardShortcuts() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [router, cycle, focusSearch]);
 
+  // The command palette's "Open shortcuts help" action opens this modal.
+  useEffect(() => {
+    const onOpen = () => setHelpOpen(true);
+    window.addEventListener(SHORTCUTS_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(SHORTCUTS_OPEN_EVENT, onOpen);
+  }, []);
+
   return (
     <>
       <button
         type="button"
+        data-tour="shortcuts-help"
         onClick={() => setHelpOpen(true)}
         title={t("common.shortcuts.buttonTitle")}
         aria-label={t("common.shortcuts.buttonAria")}

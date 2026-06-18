@@ -73,6 +73,7 @@ export default function ThemeToggle() {
   return (
     <button
       type="button"
+      data-tour="theme-toggle"
       onClick={cycle}
       title={t("common.theme.label", { mode: label })}
       aria-label={t("common.theme.ariaLabel", { mode: label })}

@@ -27,6 +27,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Embeddable badges at `/embed`: a shields-style "Verified on Stacks" SVG badge (`/api/badge/<hash>`) and a social sharing card (`/api/card/<hash>`) for any anchored hash.
 - Optional soulbound proof NFTs (SIP-009) as permanent in-wallet evidence of an anchor.
 - [Developer Portal](https://thesis-lock.vercel.app/developers) at `/developers` with an API playground, key management, and integration guides: pick any GET endpoint and send live requests with a copy-ready curl command, create scoped API keys (stored client-side), and copy ready-to-run examples for JavaScript, Python, cURL, GitHub Actions, and CI/CD.
+- Interactive onboarding tour and command palette (Ctrl+K): a guided fifteen-step walkthrough that introduces the main features to first-time visitors and can be restarted any time, plus a keyboard-first command palette to jump to any page or run a common action with fuzzy search.
 
 ## Protocol
 
@@ -71,6 +72,8 @@ npm run dev
 Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):
 
 - [Getting Started](https://thesis-lock.vercel.app/docs/getting-started): what ThesisLock is and how to anchor your first document.
+- [Getting Started Tour](https://thesis-lock.vercel.app/docs/getting-started-tour): the interactive onboarding tour, what it covers, and how to restart it.
+- [Command Palette](https://thesis-lock.vercel.app/docs/command-palette): the Ctrl+K command palette for jumping to any page or running a common action.
 - [Contracts](https://thesis-lock.vercel.app/docs/contracts): all five contracts, function signatures, and direct Hiro API calls.
 - [Web App Guide](https://thesis-lock.vercel.app/docs/web-app): anchoring, batches, groups, verification, and proof NFTs.
 - [API Reference](https://thesis-lock.vercel.app/docs/api): the JSON REST API for verification, search, stats, badges, and cards.

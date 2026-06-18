@@ -26,6 +26,7 @@ export const en = {
       templates: "Templates",
       compare: "Compare",
       report: "Report",
+      developers: "Developers",
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
@@ -82,6 +83,7 @@ export const en = {
       buttonAria: "Keyboard shortcuts",
       items: {
         focusSearch: "Focus search",
+        commandPalette: "Command palette",
         newAnchor: "New anchor",
         groups: "Groups",
         anchorHistory: "Anchor history",
