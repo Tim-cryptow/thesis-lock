@@ -172,6 +172,7 @@ export const es: Translations = {
         body: "Verifica un anclaje como un paso en cualquier flujo de trabajo de GitHub.",
       },
       readDocs: "Leer la documentación",
+      developerPortal: "Abrir el portal para desarrolladores",
     },
     live: {
       heading: "En vivo en la mainnet de Stacks",

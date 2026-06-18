@@ -79,6 +79,18 @@ export const DOCS: DocMeta[] = [
     description:
       "Generate formal, multi-document verification reports proving a set of hashes were anchored on Stacks, exportable as HTML, JSON, or CSV.",
   },
+  {
+    slug: "api-keys",
+    title: "API Keys",
+    description:
+      "Create and manage scoped API keys in the developer portal, how they are stored, and what they are for.",
+  },
+  {
+    slug: "integration-guides",
+    title: "Integration Guides",
+    description:
+      "Copy-ready examples for verifying anchors from JavaScript, Python, cURL, GitHub Actions, and any CI/CD pipeline.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

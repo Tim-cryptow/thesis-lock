@@ -177,6 +177,7 @@ export const en = {
         body: "Verify an anchor as a step in any GitHub workflow.",
       },
       readDocs: "Read the docs",
+      developerPortal: "Open the developer portal",
     },
     live: {
       heading: "Live on Stacks mainnet",

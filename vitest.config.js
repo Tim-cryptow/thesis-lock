@@ -21,6 +21,10 @@ import { vitestSetupFilePath, getClarinetVitestsArgv } from "@stacks/clarinet-sd
 
 export default defineConfig({
   test: {
+    // Only run the Clarity contract suites. The Playwright e2e specs under
+    // web/e2e/*.spec.ts are run by their own runner and must not be swept in
+    // here (they import @playwright/test, which is not a root dependency).
+    include: ["tests/**/*.test.ts"],
     environment: "clarinet", // use vitest-environment-clarinet
     pool: "forks",
     poolOptions: {
