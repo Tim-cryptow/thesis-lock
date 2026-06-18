@@ -17,6 +17,9 @@ export type ReportEntry = {
   block: number | null;
   proofNFT: number | null;
   template?: ParsedTemplate;
+  // Exact verify-page path for this anchor, carrying the owner or group/index
+  // that pins it to the precise on-chain row this entry describes.
+  verifyUrl?: string;
 };
 
 export type ReportData = {
@@ -58,9 +61,23 @@ const SOURCE_PRIORITY: Record<SearchSource, number> = {
   registry: 1,
 };
 
-function pickBest(results: SearchResult[]): SearchResult | null {
+function pickBest(
+  results: SearchResult[],
+  owner?: string,
+): SearchResult | null {
   if (results.length === 0) return null;
+  const wanted = owner?.toUpperCase();
   return [...results].sort((a, b) => {
+    // When the caller named an owner, that wallet's batch anchor is the record
+    // they are asking about, so it outranks a global single anchor that may
+    // describe a different owner, label, and block for the same hash. This
+    // mirrors the verify and certificate paths, which check the owner-keyed
+    // batch first.
+    if (wanted) {
+      const aOwnerBatch = a.source === "batch" && a.owner.toUpperCase() === wanted;
+      const bOwnerBatch = b.source === "batch" && b.owner.toUpperCase() === wanted;
+      if (aOwnerBatch !== bOwnerBatch) return aOwnerBatch ? -1 : 1;
+    }
     const byPriority = SOURCE_PRIORITY[b.source] - SOURCE_PRIORITY[a.source];
     if (byPriority !== 0) return byPriority;
     return b.stacksBlock - a.stacksBlock;
@@ -93,7 +110,7 @@ export async function verifyReportEntry(
     getProofByHash(hash).catch(() => null),
   ]);
 
-  const best = pickBest(results);
+  const best = pickBest(results, owner);
   if (!best && !proof) return base;
 
   const label = best?.label || proof?.label || "";
@@ -106,6 +123,7 @@ export async function verifyReportEntry(
     block: best?.stacksBlock ?? proof?.stacksBlock ?? null,
     proofNFT: proof?.tokenId ?? null,
     ...(label ? { template: parseLabel(label) } : {}),
+    ...(best?.verifyUrl ? { verifyUrl: best.verifyUrl } : {}),
   };
 }
 

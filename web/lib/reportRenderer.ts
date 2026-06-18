@@ -11,9 +11,17 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// Owner-keyed batch anchors only resolve on the verify page when the owner
-// travels with the link; single and proof anchors are keyed by hash alone.
+// Prefer the exact verify path captured at generation time: it pins batch
+// anchors to their owner and group anchors to their { group, index }, so the
+// link always resolves to the precise row the entry describes. Fall back to a
+// bare hash link (with owner for batch) when no exact path is available, such
+// as a proof-only match.
 export function verifyUrlFor(entry: ReportEntry): string {
+  if (entry.verifyUrl) {
+    return entry.verifyUrl.startsWith("http")
+      ? entry.verifyUrl
+      : `${SITE_URL}${entry.verifyUrl}`;
+  }
   const base = `${SITE_URL}/v/${entry.hash}`;
   if (entry.source === "batch" && entry.owner) {
     return `${base}?owner=${entry.owner}`;
