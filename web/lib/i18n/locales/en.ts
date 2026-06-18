@@ -26,6 +26,7 @@ export const en = {
       templates: "Templates",
       compare: "Compare",
       report: "Report",
+      developers: "Developers",
       docs: "Docs",
       api: "API",
       explorer: "Explorer",

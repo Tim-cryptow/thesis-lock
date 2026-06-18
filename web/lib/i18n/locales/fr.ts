@@ -21,6 +21,7 @@ export const fr: Translations = {
       templates: "Modèles",
       compare: "Comparer",
       report: "Rapport",
+      developers: "Développeurs",
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",

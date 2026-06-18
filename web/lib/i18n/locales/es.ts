@@ -21,6 +21,7 @@ export const es: Translations = {
       templates: "Plantillas",
       compare: "Comparar",
       report: "Informe",
+      developers: "Desarrolladores",
       docs: "Documentación",
       api: "API",
       explorer: "Explorador",

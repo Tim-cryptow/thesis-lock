@@ -666,6 +666,13 @@ export default function AnchorPage() {
           >
             {t("common.nav.templates")}
           </Link>
+          <Link
+            href="/developers"
+            data-tour="developers-link"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.developers")}
+          </Link>
         </div>
         <div className="flex items-center gap-3">
         {pendingCount > 0 && (
