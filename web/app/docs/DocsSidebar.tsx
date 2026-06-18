@@ -68,7 +68,7 @@ export default function DocsSidebar() {
                   : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
               }`}
             >
-              API Playground
+              Developer Portal
             </Link>
           </li>
         </ul>

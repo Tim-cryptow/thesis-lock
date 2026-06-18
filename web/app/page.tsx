@@ -291,12 +291,20 @@ const result = await client.verify(hash);`}</pre>
     hash: "abc123..."`}</pre>
           </div>
         </div>
-        <Link
-          href="/docs"
-          className="inline-flex items-center mt-8 px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-        >
-          {t("landing.integrate.readDocs")}
-        </Link>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link
+            href="/docs"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            {t("landing.integrate.readDocs")}
+          </Link>
+          <Link
+            href="/developers"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+          >
+            {t("landing.integrate.developerPortal")}
+          </Link>
+        </div>
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
