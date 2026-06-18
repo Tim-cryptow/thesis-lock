@@ -91,8 +91,12 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     [router],
   );
 
-  // Auto-start once for a first-time visitor, after a short settling delay.
+  // Auto-start once for a first-time visitor, after a short settling delay. Skip
+  // automated browsers (crawlers, end-to-end tests): a full-screen modal popping
+  // up unprompted has nothing to offer them and would intercept their clicks.
+  // Manually starting the tour still works everywhere.
   useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.webdriver) return;
     if (!shouldShowTour()) return;
     const timer = setTimeout(() => {
       // Skip if the visitor already started or dismissed the tour in the

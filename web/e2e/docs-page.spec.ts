@@ -35,13 +35,16 @@ test.describe("docs site", () => {
     const nav = page.getByRole("navigation", { name: "Documentation" });
     for (const { title, slug } of SECTIONS) {
       await page.goto("/docs");
-      await nav.getByRole("link", { name: title }).click();
+      // Match exactly: some sidebar titles are prefixes of others (for example
+      // "Getting Started" and "Getting Started Tour"), which would otherwise
+      // resolve to multiple links and trip strict mode.
+      await nav.getByRole("link", { name: title, exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/docs/${slug}$`));
       // Match the page's main heading by level so a section whose title is a
       // substring of a subheading (e.g. "Contracts" vs "The five contracts")
       // does not trip strict mode.
       await expect(
-        page.getByRole("heading", { name: title, level: 1 }),
+        page.getByRole("heading", { name: title, level: 1, exact: true }),
       ).toBeVisible();
     }
   });
