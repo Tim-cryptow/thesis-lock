@@ -18,6 +18,7 @@ import {
   type GroupAnchor,
 } from "@/lib/stacks";
 import { fetchGroupMembers } from "@/lib/groups";
+import { stageReportInput } from "@/lib/reportLink";
 import { formatBytes } from "@/lib/format";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -475,14 +476,27 @@ export default function GroupDetailPage() {
             )}
           </div>
 
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
             <h2 className="text-lg">{t("groups.detail.recentHeading")}</h2>
-            <button
-              onClick={() => void load()}
-              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            >
-              {t("groups.refresh")}
-            </button>
+            <div className="flex gap-2">
+              {anchors.length > 0 && (
+                <Link
+                  href="/report"
+                  onClick={() =>
+                    stageReportInput(anchors.map((a) => ({ hash: a.hash })))
+                  }
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  {t("groups.detail.generateReport")}
+                </Link>
+              )}
+              <button
+                onClick={() => void load()}
+                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+              >
+                {t("groups.refresh")}
+              </button>
+            </div>
           </div>
           <p className="text-foreground/60 text-sm mb-4">
             {t("groups.detail.recentIntro")}

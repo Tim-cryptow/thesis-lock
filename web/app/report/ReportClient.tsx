@@ -17,6 +17,7 @@ import {
   type ReportEntry,
 } from "@/lib/report";
 import { verifyUrlFor } from "@/lib/reportRenderer";
+import { REPORT_INPUT_KEY } from "@/lib/reportLink";
 import ReportActions from "./ReportActions";
 
 const SOURCE_LABELS: Record<string, string> = {
@@ -40,7 +41,6 @@ function entryLabel(entry: ReportEntry): string {
 }
 
 const HEX_64 = /^[0-9a-f]{64}$/;
-const INPUT_KEY = "thesislock_report_input";
 
 type InputTab = "drop" | "paste" | "import";
 
@@ -92,9 +92,9 @@ export default function ReportClient() {
     if (hydrated.current) return;
     hydrated.current = true;
     try {
-      const raw = window.sessionStorage.getItem(INPUT_KEY);
+      const raw = window.sessionStorage.getItem(REPORT_INPUT_KEY);
       if (raw) {
-        window.sessionStorage.removeItem(INPUT_KEY);
+        window.sessionStorage.removeItem(REPORT_INPUT_KEY);
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) addItems(parsed as HashInput[]);
       }

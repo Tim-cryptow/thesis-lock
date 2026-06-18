@@ -398,6 +398,7 @@ export const en = {
     exportError: "Export failed.",
     selectAria: "Select anchor {hash} to compare",
     compareSelected: "Compare selected",
+    generateReport: "Generate report",
     compareHint: "Select two anchors to compare them side by side.",
   },
   feed: {
@@ -575,6 +576,7 @@ export const en = {
       anchorSubmitted: "Anchor submitted.",
       appearOnConfirm: ". It will appear below once confirmed.",
       recentHeading: "Recent anchors",
+      generateReport: "Generate report",
       recentIntro:
         "Group anchors live in the thesislock-groups contract, keyed by group and index. Copy a hash to confirm it on chain against this group's history.",
       recentEmpty: "No documents anchored to this group yet.",
@@ -618,6 +620,7 @@ export const en = {
     exporting: "Exporting...",
     exportCSV: "Export CSV",
     exportJSON: "Export JSON",
+    generateReport: "Generate full report",
     sourceSingle: "Single",
     sourceBatch: "Batch",
     sourceGroup: "Group",
@@ -644,6 +647,7 @@ export const en = {
     actions: {
       export: "Export results",
       clearAll: "Clear all",
+      generateReport: "Generate report",
     },
     results: {
       heading: "Results",
