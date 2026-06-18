@@ -84,6 +84,18 @@ const FEATURES = [
       </>
     ),
   },
+  {
+    id: "reports",
+    href: "/report",
+    icon: (
+      <>
+        <path d="M6 2h9l5 5v15H6z" />
+        <path d="M15 2v5h5" />
+        <path d="M9 12h6" />
+        <path d="M9 16h6" />
+      </>
+    ),
+  },
 ];
 
 const CONTRACTS = [

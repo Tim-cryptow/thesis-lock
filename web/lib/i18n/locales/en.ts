@@ -25,6 +25,7 @@ export const en = {
       activity: "Activity",
       templates: "Templates",
       compare: "Compare",
+      report: "Report",
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
@@ -143,6 +144,10 @@ export const en = {
       devtools: {
         title: "Developer Tools",
         body: "Integrate with the TypeScript SDK, CLI, GitHub Action, and REST API.",
+      },
+      reports: {
+        title: "Verification Reports",
+        body: "Generate a formal multi-document audit report, exportable as HTML, JSON, or CSV.",
       },
     },
     contracts: {
@@ -399,6 +404,7 @@ export const en = {
     exportError: "Export failed.",
     selectAria: "Select anchor {hash} to compare",
     compareSelected: "Compare selected",
+    generateReport: "Generate report",
     compareHint: "Select two anchors to compare them side by side.",
   },
   feed: {
@@ -576,6 +582,7 @@ export const en = {
       anchorSubmitted: "Anchor submitted.",
       appearOnConfirm: ". It will appear below once confirmed.",
       recentHeading: "Recent anchors",
+      generateReport: "Generate report",
       recentIntro:
         "Group anchors live in the thesislock-groups contract, keyed by group and index. Copy a hash to confirm it on chain against this group's history.",
       recentEmpty: "No documents anchored to this group yet.",
@@ -619,6 +626,7 @@ export const en = {
     exporting: "Exporting...",
     exportCSV: "Export CSV",
     exportJSON: "Export JSON",
+    generateReport: "Generate full report",
     sourceSingle: "Single",
     sourceBatch: "Batch",
     sourceGroup: "Group",
@@ -645,6 +653,7 @@ export const en = {
     actions: {
       export: "Export results",
       clearAll: "Clear all",
+      generateReport: "Generate report",
     },
     results: {
       heading: "Results",

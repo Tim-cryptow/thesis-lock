@@ -33,3 +33,6 @@ web/out
 
 # Deployment logs
 .deploy-logs/
+
+# Playwright test artifacts
+test-results/

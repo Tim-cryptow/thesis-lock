@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
+import { stageReportInput } from "@/lib/reportLink";
 import {
   downloadExport,
   formatAnchorsCSV,
@@ -209,6 +211,8 @@ export default function DashboardClient() {
 
   const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const router = useRouter();
 
   const handleExport = async (format: "csv" | "json") => {
     if (!address) return;
@@ -235,6 +239,23 @@ export default function DashboardClient() {
       setTimeout(() => setExportError(null), 4000);
     } finally {
       setExporting(null);
+    }
+  };
+
+  // Stage every anchor this wallet owns, then open the report builder
+  // pre-populated. Fetching is async, so this navigates only once staged.
+  const handleGenerateReport = async () => {
+    if (!address) return;
+    setReportLoading(true);
+    try {
+      const all = await fetchAllAnchors(address);
+      stageReportInput(all.map((entry) => ({ hash: entry.hash })));
+      router.push("/report");
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : t("dashboard.exportError"));
+      setTimeout(() => setExportError(null), 4000);
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -317,6 +338,12 @@ export default function DashboardClient() {
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.compare")}
+          </Link>
+          <Link
+            href="/report"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.report")}
           </Link>
         </div>
         {address ? (
@@ -615,6 +642,15 @@ export default function DashboardClient() {
                 {exporting === "json"
                   ? t("dashboard.exporting")
                   : t("dashboard.exportJSON")}
+              </button>
+              <button
+                onClick={() => void handleGenerateReport()}
+                disabled={reportLoading}
+                className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+              >
+                {reportLoading
+                  ? t("dashboard.exporting")
+                  : t("dashboard.generateReport")}
               </button>
             </div>
             {exportError && (

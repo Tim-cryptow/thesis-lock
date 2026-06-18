@@ -20,6 +20,7 @@ export const fr: Translations = {
       activity: "Activité",
       templates: "Modèles",
       compare: "Comparer",
+      report: "Rapport",
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
@@ -138,6 +139,10 @@ export const fr: Translations = {
       devtools: {
         title: "Outils pour développeurs",
         body: "Intégrez avec le SDK TypeScript, le CLI, l'action GitHub et l'API REST.",
+      },
+      reports: {
+        title: "Rapports de vérification",
+        body: "Générez un rapport d'audit formel multi-documents, exportable en HTML, JSON ou CSV.",
       },
     },
     contracts: {
@@ -394,6 +399,7 @@ export const fr: Translations = {
     exportError: "Échec de l'exportation.",
     selectAria: "Sélectionner l'ancre {hash} pour comparer",
     compareSelected: "Comparer la sélection",
+    generateReport: "Générer un rapport",
     compareHint: "Sélectionnez deux ancres pour les comparer côte à côte.",
   },
   feed: {
@@ -571,6 +577,7 @@ export const fr: Translations = {
       anchorSubmitted: "Ancre soumise.",
       appearOnConfirm: ". Elle apparaîtra ci-dessous une fois confirmée.",
       recentHeading: "Ancres récentes",
+      generateReport: "Générer un rapport",
       recentIntro:
         "Les ancres de groupe vivent dans le contrat thesislock-groups, indexées par groupe et par index. Copiez une empreinte pour la confirmer sur la chaîne par rapport à l'historique de ce groupe.",
       recentEmpty: "Aucun document ancré à ce groupe pour l'instant.",
@@ -614,6 +621,7 @@ export const fr: Translations = {
     exporting: "Exportation...",
     exportCSV: "Exporter en CSV",
     exportJSON: "Exporter en JSON",
+    generateReport: "Générer le rapport complet",
     sourceSingle: "Simple",
     sourceBatch: "Lot",
     sourceGroup: "Groupe",
@@ -640,6 +648,7 @@ export const fr: Translations = {
     actions: {
       export: "Exporter les résultats",
       clearAll: "Tout effacer",
+      generateReport: "Générer un rapport",
     },
     results: {
       heading: "Résultats",

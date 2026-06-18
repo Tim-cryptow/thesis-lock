@@ -43,6 +43,12 @@ export default function TemplatesPage() {
         >
           {t("common.nav.myAnchors")}
         </Link>
+        <Link
+          href="/report"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.report")}
+        </Link>
         <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.docs")}
         </Link>

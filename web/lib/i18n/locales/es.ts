@@ -20,6 +20,7 @@ export const es: Translations = {
       activity: "Actividad",
       templates: "Plantillas",
       compare: "Comparar",
+      report: "Informe",
       docs: "Documentación",
       api: "API",
       explorer: "Explorador",
@@ -138,6 +139,10 @@ export const es: Translations = {
       devtools: {
         title: "Herramientas para desarrolladores",
         body: "Intégrate con el SDK de TypeScript, la CLI, la GitHub Action y la API REST.",
+      },
+      reports: {
+        title: "Informes de verificación",
+        body: "Genera un informe de auditoría formal de varios documentos, exportable como HTML, JSON o CSV.",
       },
     },
     contracts: {
@@ -394,6 +399,7 @@ export const es: Translations = {
     exportError: "Error al exportar.",
     selectAria: "Seleccionar el anclaje {hash} para comparar",
     compareSelected: "Comparar seleccionados",
+    generateReport: "Generar informe",
     compareHint: "Selecciona dos anclajes para compararlos lado a lado.",
   },
   feed: {
@@ -571,6 +577,7 @@ export const es: Translations = {
       anchorSubmitted: "Anclaje enviado.",
       appearOnConfirm: ". Aparecerá abajo una vez confirmado.",
       recentHeading: "Anclajes recientes",
+      generateReport: "Generar informe",
       recentIntro:
         "Los anclajes de grupo viven en el contrato thesislock-groups, indexados por grupo e índice. Copia un hash para confirmarlo en la cadena contra el historial de este grupo.",
       recentEmpty: "Todavía no hay documentos anclados a este grupo.",
@@ -614,6 +621,7 @@ export const es: Translations = {
     exporting: "Exportando...",
     exportCSV: "Exportar CSV",
     exportJSON: "Exportar JSON",
+    generateReport: "Generar informe completo",
     sourceSingle: "Individual",
     sourceBatch: "Lote",
     sourceGroup: "Grupo",
@@ -640,6 +648,7 @@ export const es: Translations = {
     actions: {
       export: "Exportar resultados",
       clearAll: "Borrar todo",
+      generateReport: "Generar informe",
     },
     results: {
       heading: "Resultados",

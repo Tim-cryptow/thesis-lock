@@ -12,6 +12,7 @@ import {
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadExport, formatBulkVerifyCSV } from "@/lib/export";
+import { stageReportInput } from "@/lib/reportLink";
 
 type Source = "single" | "batch" | "proof";
 
@@ -341,6 +342,12 @@ export default function BulkVerifyClient() {
           >
             {t("common.nav.compare")}
           </Link>
+          <Link
+            href="/report"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.report")}
+          </Link>
         </div>
         {address ? (
           <button
@@ -432,6 +439,21 @@ export default function BulkVerifyClient() {
                 >
                   {t("bulkVerify.actions.export")}
                 </button>
+                {settledCount === total && (
+                  <Link
+                    href="/report"
+                    onClick={() =>
+                      stageReportInput(
+                        rows
+                          .filter((r) => r.hash)
+                          .map((r) => ({ hash: r.hash as string, filename: r.file.name })),
+                      )
+                    }
+                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                  >
+                    {t("bulkVerify.actions.generateReport")}
+                  </Link>
+                )}
                 <button
                   onClick={clearAll}
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"

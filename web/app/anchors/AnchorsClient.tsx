@@ -16,6 +16,7 @@ import {
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadCertificate } from "@/lib/downloadCertificate";
+import { stageReportInput } from "@/lib/reportLink";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import {
   downloadExport,
@@ -271,6 +272,12 @@ export default function AnchorsPage() {
           >
             {t("common.nav.activity")}
           </Link>
+          <Link
+            href="/report"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.report")}
+          </Link>
         </div>
         {address ? (
           <button
@@ -358,14 +365,29 @@ export default function AnchorsPage() {
             <p className="text-xs text-foreground/50">
               {t("anchors.compareHint")}
             </p>
-            {compareHref && (
-              <Link
-                href={compareHref}
-                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-              >
-                {t("anchors.compareSelected")} &rarr;
-              </Link>
-            )}
+            <div className="flex gap-2">
+              {visibleEntries.length > 0 && (
+                <Link
+                  href="/report"
+                  onClick={() =>
+                    stageReportInput(
+                      visibleEntries.map(({ entry }) => ({ hash: entry.hash })),
+                    )
+                  }
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  {t("anchors.generateReport")}
+                </Link>
+              )}
+              {compareHref && (
+                <Link
+                  href={compareHref}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  {t("anchors.compareSelected")} &rarr;
+                </Link>
+              )}
+            </div>
           </div>
           {visibleEntries.map(({ entry, parsed }, idx) => (
             <div
