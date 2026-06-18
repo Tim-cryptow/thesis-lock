@@ -14,7 +14,29 @@ import {
   generateReport,
   type HashInput,
   type ReportData,
+  type ReportEntry,
 } from "@/lib/report";
+import { verifyUrlFor } from "@/lib/reportRenderer";
+
+const SOURCE_LABELS: Record<string, string> = {
+  single: "Single anchor",
+  batch: "Batch anchor",
+  group: "Group anchor",
+  registry: "Registry",
+  proof: "Proof NFT",
+};
+
+function entryLabel(entry: ReportEntry): string {
+  if (!entry.label) return "(none)";
+  const fields = entry.template?.fields;
+  if (fields) {
+    const parts = Object.entries(fields)
+      .filter(([key]) => key !== "label")
+      .map(([key, value]) => `${key}: ${value}`);
+    if (parts.length > 0) return parts.join(", ");
+  }
+  return entry.label;
+}
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 const INPUT_KEY = "thesislock_report_input";
@@ -394,12 +416,58 @@ export default function ReportClient() {
           </button>
         </section>
 
-        {report ? (
-          <p className="mt-8 text-sm text-foreground/70">
-            Report ready: {report.summary.verified} of {report.summary.total}{" "}
-            documents verified.
-          </p>
+        {generating || statuses.length > 0 ? (
+          <section className="mt-8" aria-label="Verification progress">
+            <div className="flex items-center justify-between text-sm text-foreground/70">
+              <span>
+                {generating
+                  ? `Verifying ${progress.done} of ${progress.total} hashes...`
+                  : `Verified ${progress.total} hashes`}
+              </span>
+              <span>
+                {progress.total > 0
+                  ? Math.round((progress.done / progress.total) * 100)
+                  : 0}
+                %
+              </span>
+            </div>
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
+              <div
+                className="h-full bg-foreground transition-all"
+                style={{
+                  width: `${
+                    progress.total > 0
+                      ? (progress.done / progress.total) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+            <ul className="mt-3 flex flex-col gap-1">
+              {items.map((item, index) => {
+                const status = statuses[index] ?? "pending";
+                return (
+                  <li
+                    key={item.hash}
+                    className="flex items-center gap-3 text-xs"
+                  >
+                    <StatusIcon status={status} />
+                    <code className="font-mono text-foreground/60">
+                      {item.hash.slice(0, 18)}...
+                    </code>
+                    {item.filename ? (
+                      <span className="truncate text-foreground/50">
+                        {item.filename}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         ) : null}
+
+        {report ? <ReportPreview data={report} /> : null}
       </div>
       <Footer />
     </>
@@ -460,6 +528,142 @@ function MultiFileDrop({
           ? "Hashing files..."
           : "Drop files here, or click to choose. Files are hashed in your browser and never uploaded."}
       </p>
+    </div>
+  );
+}
+
+function StatusIcon({
+  status,
+}: {
+  status: "pending" | "verified" | "notfound";
+}) {
+  if (status === "verified") {
+    return <span className="text-emerald-600 dark:text-emerald-400" aria-label="Verified">✓</span>;
+  }
+  if (status === "notfound") {
+    return <span className="text-red-600 dark:text-red-400" aria-label="Not found">✕</span>;
+  }
+  return (
+    <span
+      className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground/70"
+      aria-label="Checking"
+    />
+  );
+}
+
+function ReportPreview({ data }: { data: ReportData }) {
+  const { summary } = data;
+  return (
+    <section className="mt-10" aria-label="Report preview">
+      <h2 className="text-lg mb-4">Report preview</h2>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Total" value={summary.total} tone="neutral" />
+        <Stat label="Verified" value={summary.verified} tone="ok" />
+        <Stat label="Not found" value={summary.notFound} tone="no" />
+        <Stat label="Sources" value={Object.keys(summary.sources).length} tone="neutral" />
+      </div>
+
+      {Object.keys(summary.sources).length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {Object.entries(summary.sources).map(([source, count]) => (
+            <span
+              key={source}
+              className="rounded bg-foreground/10 px-2 py-1 text-xs text-foreground/70"
+            >
+              {(SOURCE_LABELS[source] ?? source)}: {count}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-6 max-h-[32rem] overflow-y-auto rounded-lg border border-foreground/10 divide-y divide-foreground/10">
+        {data.hashes.map((entry, index) => (
+          <article key={`${entry.hash}-${index}`} className="p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-xs">
+                {index + 1}
+              </span>
+              {entry.verified ? (
+                <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  Verified
+                </span>
+              ) : (
+                <span className="rounded bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
+                  Not found
+                </span>
+              )}
+              {entry.filename ? (
+                <span className="truncate text-sm text-foreground/70">
+                  {entry.filename}
+                </span>
+              ) : null}
+            </div>
+            <code className="mt-2 block break-all font-mono text-xs text-foreground/70">
+              {entry.hash}
+            </code>
+            {entry.verified ? (
+              <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+                <Field label="Source" value={SOURCE_LABELS[entry.source ?? ""] ?? entry.source ?? "-"} />
+                <Field label="Stacks block" value={entry.block !== null ? String(entry.block) : "-"} />
+                <Field label="Label" value={entryLabel(entry)} />
+                <Field label="Proof NFT" value={entry.proofNFT !== null ? `#${entry.proofNFT}` : "None"} />
+                <Field label="Owner" value={entry.owner ?? "-"} mono />
+              </dl>
+            ) : null}
+            <a
+              href={verifyUrlFor(entry)}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-xs text-blue-600 underline hover:text-blue-500 dark:text-blue-400"
+            >
+              Verify on chain
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "neutral" | "ok" | "no";
+}) {
+  const color =
+    tone === "ok"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : tone === "no"
+        ? "text-red-600 dark:text-red-400"
+        : "text-foreground";
+  return (
+    <div className="rounded-lg border border-foreground/10 p-3 text-center">
+      <div className={`text-2xl font-semibold ${color}`}>{value}</div>
+      <div className="text-xs uppercase tracking-wide text-foreground/50">{label}</div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex gap-2">
+      <dt className="text-foreground/50">{label}:</dt>
+      <dd className={`min-w-0 break-all text-foreground/80 ${mono ? "font-mono text-xs" : ""}`}>
+        {value}
+      </dd>
     </div>
   );
 }
