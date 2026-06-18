@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "./ThemeProvider";
+import { useTour } from "./TourProvider";
 import {
   PALETTE_OPEN_EVENT,
+  SHORTCUTS_OPEN_EVENT,
   filterItems,
   getAllItems,
+  getRecentVisits,
+  pageItemForPath,
+  recordVisit,
   type PaletteItem,
   type PaletteSection,
 } from "@/lib/commandPalette";
@@ -32,6 +38,9 @@ function PaletteIcon({ name }: { name: string }) {
     compare: <path d="M12 3v18M5 7l-3 5 3 5M19 7l3 5-3 5" />,
     doc: <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /></>,
     code: <path d="m8 6-6 6 6 6M16 6l6 6-6 6" />,
+    theme: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19" /></>,
+    tour: <path d="m12 2 2.4 6.9H21l-5.3 4 2 6.9L12 16l-5.7 3.8 2-6.9L3 8.9h6.6z" />,
+    help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01" /></>,
   };
   return (
     <svg
@@ -51,9 +60,12 @@ function PaletteIcon({ name }: { name: string }) {
 
 export default function CommandPalette() {
   const router = useRouter();
+  const { cycle } = useTheme();
+  const { startTour } = useTour();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recentItems, setRecentItems] = useState<PaletteItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const close = useCallback(() => {
@@ -69,21 +81,32 @@ export default function CommandPalette() {
     return () => window.removeEventListener(PALETTE_OPEN_EVENT, onOpen);
   }, []);
 
-  // Focus the input each time the palette opens.
+  // Focus the input and refresh the Recent section each time the palette opens.
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (!open) return;
+    inputRef.current?.focus();
+    const recent = getRecentVisits()
+      .map((path) => {
+        const item = pageItemForPath(path);
+        return item
+          ? { ...item, id: `recent-${item.id}`, section: "recent" as const }
+          : null;
+      })
+      .filter((item): item is PaletteItem => item !== null);
+    setRecentItems(recent);
   }, [open]);
 
-  // The full catalog filtered by the query, then grouped and flattened in the
-  // section render order so arrow-key navigation matches what is on screen.
+  // The full catalog (recent + pages + actions) filtered by the query, then
+  // grouped and flattened in section render order so arrow-key navigation
+  // matches what is on screen.
   const ordered = useMemo(() => {
-    const filtered = filterItems(query, getAllItems());
+    const filtered = filterItems(query, [...recentItems, ...getAllItems()]);
     const out: PaletteItem[] = [];
     for (const section of SECTION_ORDER) {
       out.push(...filtered.filter((i) => i.section === section));
     }
     return out;
-  }, [query]);
+  }, [query, recentItems]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -93,14 +116,39 @@ export default function CommandPalette() {
     (item: PaletteItem | undefined) => {
       if (!item) return;
       if (item.path) {
+        recordVisit(item.path);
         router.push(item.path);
         close();
         return;
       }
-      item.action?.();
+      // Action items are resolved by id here, where the router, theme, and tour
+      // are in scope.
+      switch (item.id) {
+        case "new-anchor":
+          router.push("/anchor");
+          break;
+        case "new-group":
+          router.push("/groups");
+          break;
+        case "export-anchors":
+          router.push("/anchors");
+          break;
+        case "generate-report":
+          router.push("/report");
+          break;
+        case "toggle-theme":
+          cycle();
+          break;
+        case "start-tour":
+          startTour();
+          break;
+        case "open-shortcuts":
+          window.dispatchEvent(new Event(SHORTCUTS_OPEN_EVENT));
+          break;
+      }
       close();
     },
-    [router, close],
+    [router, cycle, startTour, close],
   );
 
   // Arrow/enter/escape handling while open.

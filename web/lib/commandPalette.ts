@@ -24,6 +24,13 @@ export type PaletteItem = {
 
 // Dispatched (by the keyboard handler) to toggle the palette open.
 export const PALETTE_OPEN_EVENT = "thesislock:open-palette";
+// Dispatched by the "Open shortcuts help" action; the keyboard shortcuts
+// component listens for it and opens its modal.
+export const SHORTCUTS_OPEN_EVENT = "thesislock:open-shortcuts";
+
+// sessionStorage key and cap for the Recent section.
+const RECENT_KEY = "thesislock_recent";
+const RECENT_MAX = 5;
 
 // Every navigable page, in a sensible default order.
 const PAGES: PaletteItem[] = [
@@ -45,9 +52,50 @@ const PAGES: PaletteItem[] = [
   { id: "embed", title: "Embed", description: "/embed", icon: "code", path: "/embed", section: "pages" },
 ];
 
-// All navigable pages. Actions are added by getAllItems below.
+// Common actions. These are run by the modal (which has the router, theme, and
+// tour in scope) by switching on their id, so they carry no live handler here.
+const ACTIONS: PaletteItem[] = [
+  { id: "new-anchor", title: "Create new anchor", description: "Anchor a new document", icon: "anchor", shortcut: "N", section: "actions" },
+  { id: "new-group", title: "Create new group", description: "Start a shared anchor group", icon: "group", section: "actions" },
+  { id: "export-anchors", title: "Export my anchors", description: "Open your anchor history to export", icon: "history", section: "actions" },
+  { id: "generate-report", title: "Generate report", description: "Build a verification report", icon: "doc", section: "actions" },
+  { id: "toggle-theme", title: "Toggle theme", description: "Switch light, dark, or system", icon: "theme", shortcut: ".", section: "actions" },
+  { id: "start-tour", title: "Start tour", description: "Take the guided walkthrough", icon: "tour", section: "actions" },
+  { id: "open-shortcuts", title: "Open shortcuts help", description: "Show all keyboard shortcuts", icon: "help", shortcut: "?", section: "actions" },
+];
+
+// All navigable pages plus the common actions.
 export function getAllItems(): PaletteItem[] {
-  return [...PAGES];
+  return [...PAGES, ...ACTIONS];
+}
+
+// Appends a visited path to the front of the recent list (deduped, capped).
+export function recordVisit(path: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const recent = getRecentVisits().filter((p) => p !== path);
+    recent.unshift(path);
+    window.sessionStorage.setItem(
+      RECENT_KEY,
+      JSON.stringify(recent.slice(0, RECENT_MAX)),
+    );
+  } catch {
+    // Non-fatal if sessionStorage is unavailable.
+  }
+}
+
+// Returns up to the last five visited paths, most recent first.
+export function getRecentVisits(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.sessionStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((p): p is string => typeof p === "string").slice(0, RECENT_MAX);
+  } catch {
+    return [];
+  }
 }
 
 // Resolves a previously visited path back to its page item for the Recent
