@@ -592,18 +592,26 @@ export default function AnchorPage() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
-          <Link href="/search" className="text-foreground/60 hover:text-foreground">
+          <Link
+            href="/search"
+            data-tour="search-nav"
+            className="text-foreground/60 hover:text-foreground"
+          >
             {t("common.nav.search")}
           </Link>
-          <span className="text-foreground font-medium">{t("common.nav.anchor")}</span>
+          <span data-tour="anchor-nav" className="text-foreground font-medium">
+            {t("common.nav.anchor")}
+          </span>
           <Link
             href="/anchors"
+            data-tour="anchors-nav"
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.myAnchors")}
           </Link>
           <Link
             href="/groups"
+            data-tour="groups-nav"
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.groups")}
@@ -616,6 +624,7 @@ export default function AnchorPage() {
           </Link>
           <Link
             href="/stats"
+            data-tour="stats-nav"
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.stats")}
@@ -628,6 +637,7 @@ export default function AnchorPage() {
           </Link>
           <Link
             href="/dashboard"
+            data-tour="dashboard-nav"
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.dashboard")}
@@ -943,6 +953,7 @@ export default function AnchorPage() {
         <button
           onClick={() => setMode("batch")}
           disabled={pending}
+          data-tour="batch-tab"
           aria-label={t("anchor.form.batchModeAria", { max: MAX_BATCH })}
           aria-pressed={mode === "batch"}
           className={`text-sm px-4 py-2 rounded transition ${
@@ -957,6 +968,7 @@ export default function AnchorPage() {
 
       {mode === "single" ? (
         <>
+          <div data-tour="drop-zone">
           <FileDropZone
             onFile={(f) => void onFileSelect(f)}
             disabled={pending}
@@ -975,6 +987,7 @@ export default function AnchorPage() {
               </p>
             )}
           </FileDropZone>
+          </div>
 
           {hashError && (
             <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -1014,7 +1027,7 @@ export default function AnchorPage() {
             </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6" data-tour="template-selector">
             <TemplateSelector
               selectedId={templateId}
               onSelect={onSelectTemplate}
@@ -1031,6 +1044,7 @@ export default function AnchorPage() {
               </label>
               <input
                 id="label"
+                data-tour="label-input"
                 value={label}
                 onChange={(e) => onLabelChange(e.target.value)}
                 placeholder={t("anchor.label.placeholder")}

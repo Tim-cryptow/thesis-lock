@@ -82,6 +82,7 @@ export const en = {
       buttonAria: "Keyboard shortcuts",
       items: {
         focusSearch: "Focus search",
+        commandPalette: "Command palette",
         newAnchor: "New anchor",
         groups: "Groups",
         anchorHistory: "Anchor history",

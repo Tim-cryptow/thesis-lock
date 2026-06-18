@@ -77,6 +77,7 @@ export const fr: Translations = {
       buttonAria: "Raccourcis clavier",
       items: {
         focusSearch: "Aller à la recherche",
+        commandPalette: "Palette de commandes",
         newAnchor: "Nouvelle ancre",
         groups: "Groupes",
         anchorHistory: "Historique des ancres",

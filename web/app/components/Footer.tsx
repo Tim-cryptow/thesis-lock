@@ -46,6 +46,7 @@ export default function Footer() {
           </Link>
           <Link
             href="/developers"
+            data-tour="developers-link"
             className="hover:text-foreground transition"
           >
             {t("common.footer.developers")}

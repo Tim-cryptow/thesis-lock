@@ -77,6 +77,7 @@ export const es: Translations = {
       buttonAria: "Atajos de teclado",
       items: {
         focusSearch: "Enfocar búsqueda",
+        commandPalette: "Paleta de comandos",
         newAnchor: "Nuevo anclaje",
         groups: "Grupos",
         anchorHistory: "Historial de anclajes",

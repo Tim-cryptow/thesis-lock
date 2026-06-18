@@ -85,14 +85,11 @@ export default function CommandPalette() {
   useEffect(() => {
     if (!open) return;
     inputRef.current?.focus();
-    const recent = getRecentVisits()
-      .map((path) => {
-        const item = pageItemForPath(path);
-        return item
-          ? { ...item, id: `recent-${item.id}`, section: "recent" as const }
-          : null;
-      })
-      .filter((item): item is PaletteItem => item !== null);
+    const recent: PaletteItem[] = [];
+    for (const path of getRecentVisits()) {
+      const item = pageItemForPath(path);
+      if (item) recent.push({ ...item, id: `recent-${item.id}`, section: "recent" });
+    }
     setRecentItems(recent);
   }, [open]);
 

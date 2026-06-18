@@ -5,6 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useI18n } from "./I18nProvider";
 import ShortcutsModal from "./ShortcutsModal";
+import {
+  PALETTE_OPEN_EVENT,
+  SHORTCUTS_OPEN_EVENT,
+} from "@/lib/commandPalette";
 
 // Dispatched when the search input should grab focus while already on /search.
 export const FOCUS_SEARCH_EVENT = "thesislock:focus-search";
@@ -16,7 +20,7 @@ export const FOCUS_SEARCH_FLAG = "thesislock.focusSearch";
 export type Shortcut = { keys: string[]; descriptionKey: string };
 
 export const SHORTCUTS: Shortcut[] = [
-  { keys: ["mod", "K"], descriptionKey: "focusSearch" },
+  { keys: ["mod", "K"], descriptionKey: "commandPalette" },
   { keys: ["/"], descriptionKey: "focusSearch" },
   { keys: ["mod", "N"], descriptionKey: "newAnchor" },
   { keys: ["mod", "G"], descriptionKey: "groups" },
@@ -66,7 +70,7 @@ export default function KeyboardShortcuts() {
         switch (e.key.toLowerCase()) {
           case "k":
             e.preventDefault();
-            focusSearch();
+            window.dispatchEvent(new Event(PALETTE_OPEN_EVENT));
             return;
           case "n":
             e.preventDefault();
@@ -109,10 +113,18 @@ export default function KeyboardShortcuts() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [router, cycle, focusSearch]);
 
+  // The command palette's "Open shortcuts help" action opens this modal.
+  useEffect(() => {
+    const onOpen = () => setHelpOpen(true);
+    window.addEventListener(SHORTCUTS_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(SHORTCUTS_OPEN_EVENT, onOpen);
+  }, []);
+
   return (
     <>
       <button
         type="button"
+        data-tour="shortcuts-help"
         onClick={() => setHelpOpen(true)}
         title={t("common.shortcuts.buttonTitle")}
         aria-label={t("common.shortcuts.buttonAria")}
