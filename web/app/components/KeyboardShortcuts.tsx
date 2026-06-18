@@ -63,15 +63,21 @@ export default function KeyboardShortcuts() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (isEditableTarget(e.target)) return;
       const mod = e.metaKey || e.ctrlKey;
+
+      // The command palette toggle works even from editable elements: users
+      // should be able to open it while typing in a field, and close it with
+      // the same chord from its own focused search input.
+      if (mod && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        window.dispatchEvent(new Event(PALETTE_OPEN_EVENT));
+        return;
+      }
+
+      if (isEditableTarget(e.target)) return;
 
       if (mod) {
         switch (e.key.toLowerCase()) {
-          case "k":
-            e.preventDefault();
-            window.dispatchEvent(new Event(PALETTE_OPEN_EVENT));
-            return;
           case "n":
             e.preventDefault();
             router.push("/anchor");

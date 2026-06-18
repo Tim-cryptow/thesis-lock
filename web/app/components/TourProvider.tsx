@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -45,16 +46,22 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isActive, setIsActive] = useState(false);
   const [index, setIndex] = useState(0);
+  // Set once the tour has been started or dismissed by any path (manual button,
+  // skip, finish, or the auto-start timer). The pending auto-start checks this
+  // so a quick manual start/skip is not clobbered when the timer later fires.
+  const hasStartedRef = useRef(false);
 
   const total = TOUR_STEPS.length;
   const currentStep = isActive ? TOUR_STEPS[index] ?? null : null;
 
   const startTour = useCallback(() => {
+    hasStartedRef.current = true;
     setIndex(0);
     setIsActive(true);
   }, []);
 
   const finish = useCallback(() => {
+    hasStartedRef.current = true;
     completeTour();
     setIsActive(false);
   }, []);
@@ -88,6 +95,10 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!shouldShowTour()) return;
     const timer = setTimeout(() => {
+      // Skip if the visitor already started or dismissed the tour in the
+      // meantime, so we never reset their progress or reopen after a skip.
+      if (hasStartedRef.current || !shouldShowTour()) return;
+      hasStartedRef.current = true;
       setIndex(0);
       setIsActive(true);
     }, AUTO_START_DELAY_MS);
