@@ -150,6 +150,17 @@ export default function ReportClient() {
 
   const clearItems = useCallback(() => setItems([]), []);
 
+  // A generated report describes one specific document list. If that list later
+  // changes (cleared, removed, or added to), drop the stale report and progress
+  // so the preview and the Download/Print/Share actions can never export results
+  // that no longer match what the builder shows. items is stable during
+  // generation, so this never clears a report mid-run.
+  useEffect(() => {
+    setReport(null);
+    setStatuses([]);
+    setProgress({ done: 0, total: 0 });
+  }, [items]);
+
   const loadAnchors = useCallback(async () => {
     if (!address) return;
     setAnchorsLoading(true);
@@ -389,8 +400,10 @@ export default function ReportClient() {
           </div>
           {items.length >= MAX_REPORT_HASHES ? (
             <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-              Limit of {MAX_REPORT_HASHES} documents reached. Remove some to add
-              more.
+              Limit of {MAX_REPORT_HASHES} documents reached. Any additional
+              hashes were not added, so this report covers only the first{" "}
+              {MAX_REPORT_HASHES}. Split the rest into separate reports to cover
+              them all.
             </p>
           ) : null}
           {items.length === 0 ? (
