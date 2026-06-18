@@ -15,7 +15,7 @@ export default function ApiKeys() {
       <Lead>
         The developer portal lets you create named API keys with scoped
         permissions. They model the integration flow of a real developer portal:
-        create a key, copy it once, and reference it from your app.
+        create a key, copy it, and reference it from your app.
       </Lead>
 
       <H2>How keys work today</H2>
@@ -43,8 +43,9 @@ export default function ApiKeys() {
           </>,
           <>Select Create new API key, name it, and choose permissions.</>,
           <>
-            Copy the key from the one-time reveal. It is shown once and cannot be
-            recovered, only revoked and replaced.
+            Copy the key from the reveal dialog and store it somewhere safe. The
+            full key also stays available from the key list on this browser
+            (it lives in local storage); revoke and replace it if it leaks.
           </>,
         ]}
       />

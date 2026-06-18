@@ -149,7 +149,7 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
             <div className="p-6 transition-opacity duration-200">
               <h2 className="text-xl">Your new API key</h2>
               <div className="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-                Save this key now. It won&apos;t be shown again.
+                Save this key now. Copy it and store it somewhere safe.
               </div>
 
               <div className="mt-4 flex items-stretch gap-2">
