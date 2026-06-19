@@ -7,6 +7,7 @@ import {
   renderReportHTML,
   renderReportJSON,
 } from "@/lib/reportRenderer";
+import SaveToCollectionButton from "@/app/components/SaveToCollectionButton";
 
 // Same Blob + object URL pattern as downloadCertificate: build the file in the
 // browser, click a temporary anchor, then revoke the URL.
@@ -149,6 +150,13 @@ export default function ReportActions({ data }: { data: ReportData }) {
         >
           {copied ? "Link copied!" : "Share"}
         </button>
+        <SaveToCollectionButton
+          triggerLabel="Save to collection"
+          items={data.hashes.map((h) => ({
+            hash: h.hash,
+            label: h.label ?? h.filename ?? "",
+          }))}
+        />
       </div>
       {!shareUrl ? (
         <p className="mt-2 text-xs text-foreground/50">

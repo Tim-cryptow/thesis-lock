@@ -14,6 +14,7 @@ import {
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadExport, formatBulkVerifyCSV } from "@/lib/export";
 import { stageReportInput } from "@/lib/reportLink";
+import SaveToCollectionButton from "@/app/components/SaveToCollectionButton";
 
 type Source = "single" | "batch" | "proof";
 
@@ -21,7 +22,10 @@ type RowStatus = "checking" | "verified" | "notfound" | "error";
 
 type Row = {
   id: string;
-  file: File;
+  // The dropped file, or null for a row seeded from a ?hashes= link.
+  file: File | null;
+  // Display name: the filename, or a truncated hash for file-less rows.
+  name: string;
   hash: string | null;
   status: RowStatus;
   source: Source | null;
@@ -208,6 +212,7 @@ export default function BulkVerifyClient() {
       const newRows: Row[] = files.map((file) => ({
         id: newId(file),
         file,
+        name: file.name,
         hash: null,
         status: "checking",
         source: null,
@@ -218,6 +223,7 @@ export default function BulkVerifyClient() {
       }));
       setRows((prev) => [...prev, ...newRows]);
       newRows.forEach((row) => {
+        if (!row.file) return;
         hashFile(row.file)
           .then((hash) => {
             setRows((cur) =>
@@ -238,6 +244,45 @@ export default function BulkVerifyClient() {
     },
     [resolve, t],
   );
+
+  // Seeds file-less rows from a list of already-known hashes, deduping against
+  // rows already present. Used by the ?hashes= link a collection's "Verify All"
+  // navigates to.
+  const addHashes = useCallback(
+    (hashes: string[]) => {
+      const existing = new Set(
+        rowsRef.current.map((r) => r.hash).filter((h): h is string => !!h),
+      );
+      const fresh = hashes
+        .map((h) => h.trim().toLowerCase().replace(/^0x/, ""))
+        .filter((h) => /^[0-9a-f]{64}$/.test(h))
+        .filter((h, i, arr) => arr.indexOf(h) === i && !existing.has(h));
+      if (fresh.length === 0) return;
+      const newRows: Row[] = fresh.map((hash) => ({
+        id: `${hash}-${Math.random().toString(36).slice(2, 8)}`,
+        file: null,
+        name: truncateHash(hash),
+        hash,
+        status: "checking",
+        source: null,
+        block: null,
+        owner: null,
+        checkedOwner: null,
+        message: null,
+      }));
+      setRows((prev) => [...prev, ...newRows]);
+      newRows.forEach((row) => void resolve(row.id, row.hash!));
+    },
+    [resolve],
+  );
+
+  // Read a ?hashes= link once on mount (a collection's "Verify All" lands here).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = new URLSearchParams(window.location.search).get("hashes");
+    if (raw) addHashes(raw.split(/[\s,]+/).filter(Boolean));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -264,7 +309,7 @@ export default function BulkVerifyClient() {
     if (rows.length === 0) return;
     const csv = formatBulkVerifyCSV(
       rows.map((r) => ({
-        filename: r.file.name,
+        filename: r.name,
         hash: r.hash,
         status: t(statusLabelKey(r.status)),
         source: r.source,
@@ -454,13 +499,21 @@ export default function BulkVerifyClient() {
                       stageReportInput(
                         rows
                           .filter((r) => r.hash)
-                          .map((r) => ({ hash: r.hash as string, filename: r.file.name })),
+                          .map((r) => ({ hash: r.hash as string, filename: r.name })),
                       )
                     }
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     {t("bulkVerify.actions.generateReport")}
                   </Link>
+                )}
+                {rows.some((r) => r.status === "verified" && r.hash) && (
+                  <SaveToCollectionButton
+                    triggerLabel="Save verified to collection"
+                    items={rows
+                      .filter((r) => r.status === "verified" && r.hash)
+                      .map((r) => ({ hash: r.hash as string, label: r.name }))}
+                  />
                 )}
                 <button
                   onClick={clearAll}
@@ -496,7 +549,7 @@ export default function BulkVerifyClient() {
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">
-                      {row.file.name}
+                      {row.name}
                     </div>
                     {row.hash ? (
                       <div className="mt-1 flex items-center gap-2">
@@ -563,7 +616,7 @@ export default function BulkVerifyClient() {
                               : `/v/${row.hash}`
                           }
                           aria-label={t("bulkVerify.row.verifyAria", {
-                            name: row.file.name,
+                            name: row.name,
                           })}
                           className="inline-flex text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                         >
