@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import { useParams } from "next/navigation";
@@ -254,6 +255,7 @@ export default function GroupDetailPage() {
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
         </div>
         {address ? (
           <button

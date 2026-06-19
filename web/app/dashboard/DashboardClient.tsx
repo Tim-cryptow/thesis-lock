@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import WatchlistWidget from "@/app/components/WatchlistWidget";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
@@ -354,6 +355,7 @@ export default function DashboardClient() {
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
         </div>
         {address ? (
           <button

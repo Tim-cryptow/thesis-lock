@@ -26,6 +26,7 @@ export const fr: Translations = {
       api: "API",
       explorer: "Explorateur",
       watchlist: "Liste de suivi",
+      collections: "Collections",
       github: "GitHub",
     },
     wallet: {
@@ -150,6 +151,10 @@ export const fr: Translations = {
       watchlist: {
         title: "Liste de suivi",
         body: "Surveillez des hachages, portefeuilles et groupes precis et voyez quand leur statut change.",
+      },
+      collections: {
+        title: "Collections",
+        body: "Organisez vos documents ancres en collections nommees et partageables, comme des playlists pour vos preuves.",
       },
     },
     contracts: {

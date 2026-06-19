@@ -31,6 +31,7 @@ export const en = {
       api: "API",
       explorer: "Explorer",
       watchlist: "Watchlist",
+      collections: "Collections",
       github: "GitHub",
     },
     wallet: {
@@ -155,6 +156,10 @@ export const en = {
       watchlist: {
         title: "Watchlist",
         body: "Monitor specific hashes, wallets, and groups and see when their status changes.",
+      },
+      collections: {
+        title: "Collections",
+        body: "Organize anchored documents into named, shareable collections, like playlists for your proofs.",
       },
     },
     contracts: {

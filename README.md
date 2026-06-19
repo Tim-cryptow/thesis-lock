@@ -28,7 +28,8 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Optional soulbound proof NFTs (SIP-009) as permanent in-wallet evidence of an anchor.
 - [Developer Portal](https://thesis-lock.vercel.app/developers) at `/developers` with an API playground, key management, and integration guides: pick any GET endpoint and send live requests with a copy-ready curl command, create scoped API keys (stored client-side), and copy ready-to-run examples for JavaScript, Python, cURL, GitHub Actions, and CI/CD.
 - Document and wallet watchlist with status monitoring at `/watchlist`: save document hashes, wallets, and groups, then track whether a hash has been anchored or a wallet or group has new anchors, with auto-check on load, manual refresh, and update badges on the nav link and dashboard widget. Stored entirely in the browser.
-- Interactive onboarding tour and command palette (Ctrl+K): a guided sixteen-step walkthrough that introduces the main features to first-time visitors and can be restarted any time, plus a keyboard-first command palette to jump to any page or run a common action with fuzzy search.
+- Document collections for organizing and sharing anchored documents at `/collections`: create named, color-coded folders, add anchors by hash, file, or from your wallet, reorder and annotate items, then verify all, generate a report, export, or share a collection as a link others can verify and import. Stored entirely in the browser.
+- Interactive onboarding tour and command palette (Ctrl+K): a guided seventeen-step walkthrough that introduces the main features to first-time visitors and can be restarted any time, plus a keyboard-first command palette to jump to any page or run a common action with fuzzy search.
 - On-chain contract explorer at `/explorer` with interactive read-only function calls: browse every contract's functions, maps, and data variables, watch recent on-chain calls, read an architecture diagram of how the five contracts relate, and call read-only functions directly from the UI. Exposed as JSON at `/api/explorer/<contract>`.
 
 ## Protocol
@@ -79,6 +80,7 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [Contracts](https://thesis-lock.vercel.app/docs/contracts): all five contracts, function signatures, and direct Hiro API calls.
 - [Contract Explorer](https://thesis-lock.vercel.app/docs/explorer): browse contracts in the app with recent calls, an architecture diagram, and an interactive read-only tester.
 - [Watchlist](https://thesis-lock.vercel.app/docs/watchlist): monitor specific hashes, wallets, and groups and track their status over time.
+- [Collections](https://thesis-lock.vercel.app/docs/collections): organize anchored documents into named, browser-local collections and share them as links.
 - [Web App Guide](https://thesis-lock.vercel.app/docs/web-app): anchoring, batches, groups, verification, and proof NFTs.
 - [API Reference](https://thesis-lock.vercel.app/docs/api): the JSON REST API for verification, search, stats, badges, and cards.
 - [SDK Guide](https://thesis-lock.vercel.app/docs/sdk): the `thesislock-sdk` TypeScript package ([`sdk/`](sdk/README.md)).

@@ -107,6 +107,15 @@ const FEATURES = [
       </>
     ),
   },
+  {
+    id: "collections",
+    href: "/collections",
+    icon: (
+      <>
+        <path d="M4 5a2 2 0 0 1 2-2h3l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      </>
+    ),
+  },
 ];
 
 const CONTRACTS = [
