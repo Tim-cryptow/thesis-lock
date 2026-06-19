@@ -156,6 +156,7 @@ export const es: Translations = {
       registry: "Indexa cada anclaje por billetera para búsquedas rápidas de historial.",
       proof: "Emite NFT de prueba SIP-009 intransferibles para documentos anclados.",
       groups: "Gestiona la membresía de grupos y el anclaje compartido entre varias billeteras.",
+      explore: "Explora nuestros contratos en la aplicación",
     },
     integrate: {
       heading: "Integra ThesisLock en tu flujo de trabajo",

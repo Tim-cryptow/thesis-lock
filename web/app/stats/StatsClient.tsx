@@ -137,11 +137,25 @@ export default function StatsClient() {
         >
           {t("common.nav.report")}
         </Link>
+        <Link
+          href="/explorer"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.explorer")}
+        </Link>
       </div>
 
       <h1 className="text-3xl mb-2">{t("stats.title")}</h1>
-      <p className="text-foreground/70 mb-8">
+      <p className="text-foreground/70 mb-2">
         {t("stats.subtitle")}
+      </p>
+      <p className="mb-8">
+        <Link
+          href="/explorer"
+          className="text-sm text-foreground/60 underline hover:text-foreground"
+        >
+          Explore the contracts behind these numbers &rarr;
+        </Link>
       </p>
 
       {error ? (

@@ -661,6 +661,12 @@ export default function AnchorPage() {
             {t("common.nav.report")}
           </Link>
           <Link
+            href="/explorer"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.explorer")}
+          </Link>
+          <Link
             href="/templates"
             className="text-foreground/60 hover:text-foreground"
           >

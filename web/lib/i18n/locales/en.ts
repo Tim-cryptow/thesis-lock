@@ -161,6 +161,7 @@ export const en = {
       registry: "Indexes every anchor per wallet for fast history lookups.",
       proof: "Issues soulbound SIP-009 proof NFTs for anchored documents.",
       groups: "Manages group membership and shared, multi-wallet anchoring.",
+      explore: "Explore our contracts in the app",
     },
     integrate: {
       heading: "Integrate ThesisLock in your workflow",

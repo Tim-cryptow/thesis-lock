@@ -32,6 +32,12 @@ export const DOCS: DocMeta[] = [
       "The five Clarity contracts, their mainnet addresses, function signatures, and direct Hiro API calls.",
   },
   {
+    slug: "explorer",
+    title: "Contract Explorer",
+    description:
+      "Browse all five contracts inside the app: functions grouped by access, maps and data variables, recent on-chain calls, an architecture diagram, and an interactive read-only function tester.",
+  },
+  {
     slug: "web-app",
     title: "Web App Guide",
     description:
