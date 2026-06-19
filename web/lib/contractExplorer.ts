@@ -459,9 +459,22 @@ type HiroTx = {
   contract_call?: { function_name?: string };
 };
 
+// Thrown when the Hiro API itself fails (a rejected fetch or a non-2xx
+// response), as opposed to a client/validation error. Lets callers map upstream
+// failures to a 502 and surface a retryable state rather than caching a false
+// empty result.
+export class ExplorerUpstreamError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ExplorerUpstreamError";
+  }
+}
+
 // Fetch recent contract-call transactions for a contract from the Hiro
 // extended API, newest first. The endpoint returns every transaction touching
 // the contract address (including its deploy); we keep only contract calls.
+// Throws ExplorerUpstreamError on a Hiro failure so callers don't mistake an
+// outage for "no recent calls".
 export async function fetchContractCalls(
   contractName: string,
   limit = 20,
@@ -472,7 +485,9 @@ export async function fetchContractCalls(
   const fetchLimit = Math.min(50, limit + 5);
   const url = `${HIRO_BASE}/extended/v1/address/${contractId}/transactions?limit=${fetchLimit}`;
   const res = await fetch(url, { next: { revalidate: 30 } });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    throw new ExplorerUpstreamError(`Hiro API returned ${res.status}`);
+  }
   const data = (await res.json()) as { results?: HiroTx[] };
   const results = Array.isArray(data.results) ? data.results : [];
   return results
@@ -543,16 +558,25 @@ export async function callReadOnly(
   );
 
   const url = `${HIRO_BASE}/v2/contracts/call-read/${EXPLORER_CONTRACT_ADDRESS}/${contractName}/${functionName}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sender: EXPLORER_CONTRACT_ADDRESS,
-      arguments: serialized,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sender: EXPLORER_CONTRACT_ADDRESS,
+        arguments: serialized,
+      }),
+    });
+  } catch (e) {
+    // A rejected fetch (timeout, connection reset) is an upstream failure, not
+    // a bad request.
+    throw new ExplorerUpstreamError(
+      e instanceof Error ? `Hiro API request failed: ${e.message}` : "Hiro API request failed",
+    );
+  }
   if (!res.ok) {
-    throw new Error(`Hiro API returned ${res.status}`);
+    throw new ExplorerUpstreamError(`Hiro API returned ${res.status}`);
   }
   const data = (await res.json()) as {
     okay?: boolean;

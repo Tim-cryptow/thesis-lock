@@ -1,4 +1,8 @@
-import { callReadOnly, getContract } from "@/lib/contractExplorer";
+import {
+  ExplorerUpstreamError,
+  callReadOnly,
+  getContract,
+} from "@/lib/contractExplorer";
 import { corsHeaders } from "@/lib/verify";
 
 export const runtime = "nodejs";
@@ -68,8 +72,9 @@ export async function GET(req: Request, { params }: RouteContext) {
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Read-only call failed";
-    // Upstream node failures are 502; everything else is a bad request.
-    const status = message.startsWith("Hiro API returned") ? 502 : 400;
+    // Upstream node failures (rejected fetch or non-2xx) are 502; validation and
+    // serialization errors are bad requests.
+    const status = e instanceof ExplorerUpstreamError ? 502 : 400;
     return jsonResponse({ error: message }, { status });
   }
 }
