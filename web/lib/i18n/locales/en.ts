@@ -30,6 +30,7 @@ export const en = {
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
+      watchlist: "Watchlist",
       github: "GitHub",
     },
     wallet: {

@@ -25,6 +25,7 @@ export const fr: Translations = {
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
+      watchlist: "Liste de suivi",
       github: "GitHub",
     },
     wallet: {

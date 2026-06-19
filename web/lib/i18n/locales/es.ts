@@ -25,6 +25,7 @@ export const es: Translations = {
       docs: "Documentación",
       api: "API",
       explorer: "Explorador",
+      watchlist: "Lista de seguimiento",
       github: "GitHub",
     },
     wallet: {
