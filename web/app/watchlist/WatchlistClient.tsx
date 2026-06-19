@@ -11,9 +11,17 @@ import {
   type WatchType,
   WATCHLIST_CHANGED_EVENT,
   addWatch,
+  checkAllWatches,
+  checkWatch,
   loadWatchlist,
   removeWatch,
+  saveWatchlist,
 } from "@/lib/watchlist";
+
+// Auto-check runs at most once per this interval, recorded in localStorage so a
+// quick succession of visits does not hammer the Hiro API.
+const AUTO_CHECK_KEY = "thesislock_watchlist_autocheck";
+const AUTO_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 const TYPE_LABELS: Record<WatchType, string> = {
   hash: "Hash",
@@ -114,9 +122,13 @@ function StatusIndicator({ item }: { item: WatchItem }) {
 function ItemCard({
   item,
   onRemove,
+  onCheck,
+  checking,
 }: {
   item: WatchItem;
   onRemove: (id: string) => void;
+  onCheck: (item: WatchItem) => void;
+  checking: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const copy = useCallback(async () => {
@@ -155,6 +167,14 @@ function ItemCard({
           Checked {relativeTime(item.lastChecked)}
         </span>
         <span className="ml-auto flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onCheck(item)}
+            disabled={checking}
+            className="text-foreground/70 hover:text-foreground disabled:opacity-50"
+          >
+            {checking ? "Checking..." : "Check now"}
+          </button>
           <Link
             href={viewHref(item)}
             className="text-foreground/70 underline hover:text-foreground"
@@ -181,6 +201,11 @@ export default function WatchlistClient() {
   const [value, setValue] = useState("");
   const [label, setLabel] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [checkingIds, setCheckingIds] = useState<Set<string>>(new Set());
+  const [checkingAll, setCheckingAll] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(
+    null,
+  );
 
   // Load once on mount and stay in sync with changes from elsewhere (watch
   // buttons on other pages, another tab).
@@ -194,6 +219,75 @@ export default function WatchlistClient() {
       window.removeEventListener("storage", sync);
     };
   }, []);
+
+  // Auto-check on load, throttled to once per interval so repeat visits do not
+  // re-check every time.
+  useEffect(() => {
+    const list = loadWatchlist();
+    if (list.length === 0) return;
+    let last = 0;
+    try {
+      last = Number(window.localStorage.getItem(AUTO_CHECK_KEY) ?? 0);
+    } catch {
+      last = 0;
+    }
+    if (Date.now() - last < AUTO_CHECK_INTERVAL_MS) return;
+    try {
+      window.localStorage.setItem(AUTO_CHECK_KEY, String(Date.now()));
+    } catch {
+      // Non-fatal; we just lose throttling for this session.
+    }
+    void checkAllWatches(list).then((next) => setItems(next));
+  }, []);
+
+  const checkOne = useCallback(async (item: WatchItem) => {
+    setCheckingIds((prev) => new Set(prev).add(item.id));
+    try {
+      const status = await checkWatch(item);
+      const updated = loadWatchlist().map((i) =>
+        i.id === item.id
+          ? { ...i, lastChecked: new Date().toISOString(), lastStatus: status }
+          : i,
+      );
+      saveWatchlist(updated);
+      setItems(updated);
+    } catch {
+      // Leave prior status in place on failure.
+    } finally {
+      setCheckingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  }, []);
+
+  // Manual Check All runs sequentially so we can show real X/Y progress, then
+  // persists once at the end.
+  const checkAll = useCallback(async () => {
+    const current = loadWatchlist();
+    if (current.length === 0 || checkingAll) return;
+    setCheckingAll(true);
+    setProgress({ done: 0, total: current.length });
+    const updated = [...current];
+    for (let i = 0; i < updated.length; i++) {
+      try {
+        const status = await checkWatch(updated[i]);
+        updated[i] = {
+          ...updated[i],
+          lastChecked: new Date().toISOString(),
+          lastStatus: status,
+        };
+      } catch {
+        updated[i] = { ...updated[i], lastChecked: new Date().toISOString() };
+      }
+      setProgress({ done: i + 1, total: updated.length });
+    }
+    saveWatchlist(updated);
+    setItems(updated);
+    setCheckingAll(false);
+    setProgress(null);
+  }, [checkingAll]);
 
   const submit = useCallback(
     (e: React.FormEvent) => {
@@ -322,6 +416,27 @@ export default function WatchlistClient() {
         </p>
       ) : (
         <div className="flex flex-col gap-8">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm text-foreground/55">
+              {items.length} watched {items.length === 1 ? "item" : "items"}
+            </span>
+            <button
+              type="button"
+              onClick={() => void checkAll()}
+              disabled={checkingAll}
+              className="inline-flex items-center gap-2 rounded-md border border-foreground/20 bg-card px-3 py-1.5 text-sm hover:border-foreground/40 disabled:opacity-50"
+            >
+              {checkingAll && (
+                <span
+                  aria-hidden
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-foreground/30 border-t-foreground"
+                />
+              )}
+              {checkingAll && progress
+                ? `Checking ${progress.done}/${progress.total}`
+                : "Check All"}
+            </button>
+          </div>
           {sections.map(
             (section) =>
               section.items.length > 0 && (
@@ -334,7 +449,13 @@ export default function WatchlistClient() {
                   </h2>
                   <div className="flex flex-col gap-3">
                     {section.items.map((item) => (
-                      <ItemCard key={item.id} item={item} onRemove={remove} />
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        onRemove={remove}
+                        onCheck={(it) => void checkOne(it)}
+                        checking={checkingIds.has(item.id)}
+                      />
                     ))}
                   </div>
                 </section>
