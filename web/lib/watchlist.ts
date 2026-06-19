@@ -13,7 +13,7 @@ import {
   readAnchor,
   readBatchAnchor,
 } from "./stacks";
-import { searchByHash } from "./search";
+import { type SearchResult, discoverBatchAndGroupAnchors } from "./search";
 
 const STORAGE_KEY = "thesislock_watchlist";
 
@@ -205,17 +205,36 @@ export function setWatchNotifications(id: string, on: boolean): void {
   );
 }
 
-// Resolves the current on-chain status of a single watch. The previous status
-// carried on the item is used as the baseline for newAnchors, so a freshly
-// added item never reports phantom updates on its first check.
-export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
-  const hadPrevious = item.lastStatus !== null;
+function newFlag(item: WatchItem, verified: boolean): number {
+  return item.lastStatus !== null && verified && !item.lastStatus?.verified
+    ? 1
+    : 0;
+}
 
+// Builds a verified status from a discovered batch/group anchor, carrying the
+// source keys so the item's context can be backfilled.
+function statusFromResult(item: WatchItem, result: SearchResult): WatchStatus {
+  const status: WatchStatus = {
+    verified: true,
+    source: result.source,
+    block: result.stacksBlock,
+    newAnchors: newFlag(item, true),
+  };
+  if (result.source === "batch") status.owner = result.owner;
+  if (result.source === "group") {
+    status.groupId = result.groupId;
+    status.groupIndex = result.groupIndex;
+  }
+  return status;
+}
+
+// Per-item resolution that avoids the expensive cross-contract event scan. For
+// a hash it tries the stored context and the hash-keyed single/proof contracts;
+// an unverified hash result means a batch/group event scan is still needed,
+// which callers can batch across items. Wallet and group checks are complete.
+async function checkWatchCheap(item: WatchItem): Promise<WatchStatus> {
   if (item.type === "hash") {
-    const newFlag = (verified: boolean) =>
-      hadPrevious && verified && !item.lastStatus?.verified ? 1 : 0;
     const ctx = item.context;
-
     // Prefer the source the hash was bookmarked from: batch and group anchors
     // need their extra keys and would otherwise read as not found.
     if (ctx?.owner) {
@@ -225,7 +244,8 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
           verified: true,
           source: "batch",
           block: batch.stacksBlock,
-          newAnchors: newFlag(true),
+          newAnchors: newFlag(item, true),
+          owner: ctx.owner,
         };
       }
     }
@@ -239,7 +259,9 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
           verified: true,
           source: "group",
           block: groupAnchor.stacksBlock,
-          newAnchors: newFlag(true),
+          newAnchors: newFlag(item, true),
+          groupId: ctx.groupId,
+          groupIndex: ctx.groupIndex,
         };
       }
     }
@@ -250,7 +272,7 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
         verified: true,
         source: "single",
         block: single.stacksBlock,
-        newAnchors: newFlag(true),
+        newAnchors: newFlag(item, true),
       };
     }
     const proof = await getProofByHash(item.value);
@@ -259,29 +281,8 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
         verified: true,
         source: "proof",
         block: proof.stacksBlock,
-        newAnchors: newFlag(true),
+        newAnchors: newFlag(item, true),
       };
-    }
-
-    // No stored context and not a hash-keyed anchor: fall back to a full
-    // cross-contract lookup so a later batch or group anchor of this bare hash
-    // is still detected. searchByHash discovers batch owners from registry
-    // events and group anchors from group events.
-    const found = await searchByHash(item.value, item.context?.owner);
-    if (found.length > 0) {
-      const best = found[0]; // newest first
-      const status: WatchStatus = {
-        verified: true,
-        source: best.source,
-        block: best.stacksBlock,
-        newAnchors: newFlag(true),
-      };
-      if (best.source === "batch") status.owner = best.owner;
-      if (best.source === "group") {
-        status.groupId = best.groupId;
-        status.groupIndex = best.groupIndex;
-      }
-      return status;
     }
     return { verified: false, newAnchors: 0 };
   }
@@ -313,6 +314,23 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
   };
 }
 
+// Resolves the current on-chain status of a single watch. The previous status
+// carried on the item is used as the baseline for newAnchors, so a freshly
+// added item never reports phantom updates on its first check. For a bare hash
+// with no anchor in the hash-keyed contracts, it falls back to a full
+// batch/group event scan. Prefer checkAllWatches for many items: it scans the
+// event streams once instead of per hash.
+export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
+  const cheap = await checkWatchCheap(item);
+  if (item.type !== "hash" || cheap.verified) return cheap;
+  const discovered = await discoverBatchAndGroupAnchors(
+    [item.value],
+    item.context?.owner ? { [item.value]: item.context.owner } : undefined,
+  );
+  const result = discovered.get(item.value);
+  return result ? statusFromResult(item, result) : cheap;
+}
+
 // Stamps a freshly checked item with its status and, for a context-less hash,
 // backfills the source keys the check discovered so its View link and later
 // checks target the exact record.
@@ -333,21 +351,57 @@ export function applyCheck(item: WatchItem, status: WatchStatus): WatchItem {
 }
 
 // Checks every item, stamping lastChecked and lastStatus, and persists the
-// result. An item whose check throws keeps its previous status but still has
-// lastChecked advanced so the UI reflects the attempt.
+// result. The cheap per-item checks run first; any bare hash that is still
+// unresolved is then resolved with a single shared batch/group event scan,
+// rather than one scan per hash. An item whose check throws keeps its previous
+// status but still has lastChecked advanced so the UI reflects the attempt. The
+// optional onProgress reports completed cheap checks for a progress indicator.
 export async function checkAllWatches(
   items: WatchItem[],
+  onProgress?: (done: number, total: number) => void,
 ): Promise<WatchItem[]> {
-  const checked = await Promise.all(
+  let done = 0;
+  const total = items.length;
+  const cheap = await Promise.all(
     items.map(async (item) => {
+      let status: WatchStatus | null;
       try {
-        const status = await checkWatch(item);
-        return applyCheck(item, status);
+        status = await checkWatchCheap(item);
       } catch {
-        return { ...item, lastChecked: nowIso() };
+        status = null;
       }
+      done += 1;
+      onProgress?.(done, total);
+      return { item, status };
     }),
   );
+
+  // One shared event scan resolves every unresolved bare hash at once.
+  const unresolved = cheap.filter(
+    (c) => c.status !== null && c.item.type === "hash" && !c.status.verified,
+  );
+  let discovered = new Map<string, SearchResult>();
+  if (unresolved.length > 0) {
+    const owners: Record<string, string> = {};
+    for (const u of unresolved) {
+      if (u.item.context?.owner) owners[u.item.value] = u.item.context.owner;
+    }
+    discovered = await discoverBatchAndGroupAnchors(
+      unresolved.map((u) => u.item.value),
+      owners,
+    ).catch(() => new Map<string, SearchResult>());
+  }
+
+  const checked = cheap.map(({ item, status }) => {
+    if (status === null) return { ...item, lastChecked: nowIso() };
+    let finalStatus = status;
+    if (item.type === "hash" && !status.verified) {
+      const result = discovered.get(item.value);
+      if (result) finalStatus = statusFromResult(item, result);
+    }
+    return applyCheck(item, finalStatus);
+  });
+
   // Merge back into whatever the list is now, not the snapshot we started with,
   // so a concurrent add or remove (another tab, a watch button) is not clobbered
   // when these async checks finish.

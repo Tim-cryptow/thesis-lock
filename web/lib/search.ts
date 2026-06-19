@@ -355,6 +355,100 @@ export async function searchByHash(
   return dedupe(results).sort((a, b) => b.stacksBlock - a.stacksBlock);
 }
 
+// Resolve batch and group anchors for many bare hashes with a single pass over
+// the registry and group event streams, instead of one full scan per hash.
+// Single and proof anchors are hash-keyed and cheap to read individually, so
+// they are intentionally left to the caller; this covers only the owner-keyed
+// (batch) and location-keyed (group) contracts that otherwise force an event
+// scan. Returns the newest matching anchor per hash.
+export async function discoverBatchAndGroupAnchors(
+  hashes: string[],
+  explicitOwners?: Record<string, string>,
+): Promise<Map<string, SearchResult>> {
+  const targets = new Set(
+    hashes.map((h) => stripHex(h).toLowerCase()).filter((h) => HEX_64.test(h)),
+  );
+  const out = new Map<string, SearchResult>();
+  if (targets.size === 0) return out;
+
+  const [groupEvents, registryEvents] = await Promise.all([
+    fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
+  ]);
+
+  const consider = (result: SearchResult) => {
+    if (!targets.has(result.hash)) return;
+    const existing = out.get(result.hash);
+    if (!existing || result.stacksBlock > existing.stacksBlock) {
+      out.set(result.hash, result);
+    }
+  };
+
+  // Group anchors are keyed by { group-id, index }, discoverable only via events.
+  for (const ev of groupEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "group-anchor-added" &&
+      targets.has(parsed.hash)
+    ) {
+      consider(toResult(parsed));
+    }
+  }
+
+  // Batch anchors are keyed by { hash, owner }. Candidate owners come from the
+  // registry events for the target hashes (every batch entry is also
+  // registered) plus any explicit owner the caller supplies; confirm each
+  // against the batch map.
+  const candidates: Array<{ hash: string; owner: string }> = [];
+  const seen = new Set<string>();
+  const addCandidate = (hash: string, owner: string) => {
+    const o = owner.toUpperCase();
+    if (!STX_PRINCIPAL.test(o)) return;
+    const key = `${hash}|${o}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    candidates.push({ hash, owner: o });
+  };
+  if (explicitOwners) {
+    for (const [hash, owner] of Object.entries(explicitOwners)) {
+      const h = stripHex(hash).toLowerCase();
+      if (targets.has(h)) addCandidate(h, owner);
+    }
+  }
+  for (const ev of registryEvents) {
+    const parsed = parseEvent(ev);
+    if (
+      parsed &&
+      parsed.event === "anchor-registered" &&
+      targets.has(parsed.hash)
+    ) {
+      addCandidate(parsed.hash, parsed.owner);
+    }
+  }
+
+  const batches = await mapWithConcurrency(
+    candidates,
+    async ({ hash, owner }) => {
+      const batch = await readBatchAnchor(hash, owner).catch(() => null);
+      return batch ? { hash, owner, batch } : null;
+    },
+  );
+  for (const entry of batches) {
+    if (!entry) continue;
+    consider({
+      hash: entry.hash,
+      label: entry.batch.label,
+      owner: entry.owner,
+      stacksBlock: entry.batch.stacksBlock,
+      source: "batch",
+      verifyUrl: buildVerifyUrl(entry.hash, "batch", entry.owner),
+    });
+  }
+
+  return out;
+}
+
 // Find everything a principal has anchored. The registry read supplies its most
 // recent entries fast; scanning registry print events by owner covers the full
 // history (the read returns only the last ten), and the other contracts' events

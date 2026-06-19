@@ -15,7 +15,6 @@ import {
   checkAllWatches,
   checkWatch,
   loadWatchlist,
-  mergeChecked,
   removeWatch,
   saveWatchlist,
 } from "@/lib/watchlist";
@@ -268,28 +267,18 @@ export default function WatchlistClient() {
     }
   }, []);
 
-  // Manual Check All runs sequentially so we can show real X/Y progress, then
-  // persists once at the end.
+  // Manual Check All delegates to checkAllWatches, which scans the batch/group
+  // event streams once for all unresolved hashes rather than per item, and
+  // reports progress through the cheap per-item phase.
   const checkAll = useCallback(async () => {
     const current = loadWatchlist();
     if (current.length === 0 || checkingAll) return;
     setCheckingAll(true);
     setProgress({ done: 0, total: current.length });
-    const updated = [...current];
-    for (let i = 0; i < updated.length; i++) {
-      try {
-        const status = await checkWatch(updated[i]);
-        updated[i] = applyCheck(updated[i], status);
-      } catch {
-        updated[i] = { ...updated[i], lastChecked: new Date().toISOString() };
-      }
-      setProgress({ done: i + 1, total: updated.length });
-    }
-    // Merge by id against the current list so a concurrent add/remove during the
-    // sequential check is not overwritten.
-    const merged = mergeChecked(updated);
-    saveWatchlist(merged);
-    setItems(merged);
+    const next = await checkAllWatches(current, (done, total) =>
+      setProgress({ done, total }),
+    );
+    setItems(next);
     setCheckingAll(false);
     setProgress(null);
   }, [checkingAll]);
