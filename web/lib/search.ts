@@ -371,9 +371,13 @@ export async function discoverBatchAndGroupAnchors(
   const out = new Map<string, SearchResult>();
   if (targets.size === 0) return out;
 
+  // Let a Hiro failure reject rather than coercing to empty: a caller that
+  // treats "no discovery" as "not found" would otherwise downgrade an existing
+  // batch/group watch on a transient outage. The caller decides how to handle a
+  // thrown error (preserve previous status / mark the check indeterminate).
   const [groupEvents, registryEvents] = await Promise.all([
-    fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
-    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllEvents(GROUPS_CONTRACT),
+    fetchAllEvents(REGISTRY_CONTRACT),
   ]);
 
   const consider = (result: SearchResult) => {

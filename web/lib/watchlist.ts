@@ -381,25 +381,35 @@ export async function checkAllWatches(
     (c) => c.status !== null && c.item.type === "hash" && !c.status.verified,
   );
   let discovered = new Map<string, SearchResult>();
+  // True if the shared event scan failed (a Hiro outage). When it did, an
+  // unresolved hash is indeterminate, not "not found": we keep its previous
+  // status rather than overwriting a verified batch/group watch.
+  let discoveryFailed = false;
   if (unresolved.length > 0) {
     const owners: Record<string, string> = {};
     for (const u of unresolved) {
       if (u.item.context?.owner) owners[u.item.value] = u.item.context.owner;
     }
-    discovered = await discoverBatchAndGroupAnchors(
-      unresolved.map((u) => u.item.value),
-      owners,
-    ).catch(() => new Map<string, SearchResult>());
+    try {
+      discovered = await discoverBatchAndGroupAnchors(
+        unresolved.map((u) => u.item.value),
+        owners,
+      );
+    } catch {
+      discoveryFailed = true;
+    }
   }
 
   const checked = cheap.map(({ item, status }) => {
+    // The cheap check itself failed: indeterminate, keep prior status.
     if (status === null) return { ...item, lastChecked: nowIso() };
-    let finalStatus = status;
     if (item.type === "hash" && !status.verified) {
       const result = discovered.get(item.value);
-      if (result) finalStatus = statusFromResult(item, result);
+      if (result) return applyCheck(item, statusFromResult(item, result));
+      // Scan failed, so we cannot conclude "not found": preserve prior status.
+      if (discoveryFailed) return { ...item, lastChecked: nowIso() };
     }
-    return applyCheck(item, finalStatus);
+    return applyCheck(item, status);
   });
 
   // Merge back into whatever the list is now, not the snapshot we started with,
