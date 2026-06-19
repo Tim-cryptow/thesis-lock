@@ -30,7 +30,7 @@ export default function GettingStartedTour() {
 
       <H2>What it covers</H2>
       <P>
-        The tour is a fifteen-step sequence. It highlights each target element on
+        The tour is a sixteen-step sequence. It highlights each target element on
         the page and explains it in a short tooltip, with Back, Next, and Skip
         controls and a step counter. When a step lives on another page, the
         tooltip offers a button that navigates there and continues. The steps
@@ -43,6 +43,7 @@ export default function GettingStartedTour() {
           <>Batch anchoring of up to ten files at once.</>,
           <>Your anchor history, cross-contract search, and groups.</>,
           <>Protocol-wide stats and your personal dashboard.</>,
+          <>The watchlist for monitoring hashes, wallets, and groups.</>,
           <>The theme toggle, the keyboard shortcuts, and the developer portal.</>,
         ]}
       />

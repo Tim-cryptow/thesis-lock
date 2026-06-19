@@ -56,6 +56,12 @@ export const DOCS: DocMeta[] = [
       "A unified per-wallet timeline of every contract interaction, with category filters and infinite scroll.",
   },
   {
+    slug: "watchlist",
+    title: "Watchlist",
+    description:
+      "Save document hashes, wallets, and groups you want to monitor, then track their on-chain status and new anchors in one place, with update badges across the app.",
+  },
+  {
     slug: "wallet-profiles",
     title: "Wallet Profiles",
     description:
