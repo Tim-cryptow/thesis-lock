@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
@@ -434,6 +435,10 @@ export default function SearchClient() {
                                 ? row.groupIndex
                                 : undefined
                             }
+                          />
+                          <AddToCollectionButton
+                            hash={row.hash}
+                            label={row.label}
                           />
                         </div>
                         <div className="text-sm mb-2">

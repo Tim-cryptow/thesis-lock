@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl } from "@/lib/stacks";
@@ -305,6 +306,10 @@ export default function FeedClient() {
                             ? entry.owner
                             : undefined
                         }
+                      />
+                      <AddToCollectionButton
+                        hash={entry.hash}
+                        label={entry.label}
                       />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">

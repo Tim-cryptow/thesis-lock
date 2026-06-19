@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   BATCH_CONTRACT_FULL_NAME,
@@ -431,6 +432,7 @@ export default function AnchorsPage() {
                     >
                       {copiedHash === entry.hash ? t("common.actions.copied") : t("common.actions.copy")}
                     </button>
+                    <AddToCollectionButton hash={entry.hash} label={entry.label} />
                   </div>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">

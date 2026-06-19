@@ -6,6 +6,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -535,6 +536,11 @@ export default function VerifyPage() {
               groupIndex={
                 preferGroup && groupAnchor ? groupAnchor.index : undefined
               }
+              showLabel
+            />
+            <AddToCollectionButton
+              hash={hash}
+              label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
               showLabel
             />
           </div>
