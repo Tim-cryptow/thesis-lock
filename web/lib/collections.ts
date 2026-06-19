@@ -368,27 +368,42 @@ export function importCollection(json: string): Collection {
   return collection;
 }
 
-// Encodes a collection into a URL-safe base64 string for a share link, and the
-// inverse for the shared viewer. Unicode-safe (collections hold emoji and free
-// text), so we round-trip through encodeURIComponent before btoa.
+// base64url (RFC 4648 §5) is URL-safe: no `+`, `/`, or `=`, which a query string
+// would otherwise mangle (URLSearchParams turns `+` into a space before we ever
+// reach atob). Encoding to base64url keeps share links round-tripping intact.
+function toBase64Url(b64: string): string {
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(s: string): string {
+  const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
+  // Standard atob/Buffer want padding; restore it. (Also tolerates a legacy
+  // standard-base64 payload, which has no `-`/`_` and arrives already padded.)
+  return b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+}
+
+// Encodes a collection into a URL-safe base64url string for a share link, and
+// the inverse for the shared viewer. Unicode-safe (collections hold emoji and
+// free text), so we round-trip the bytes through TextEncoder/TextDecoder.
 export function encodeCollection(collection: Collection): string {
   const json = JSON.stringify(collection);
   if (typeof window === "undefined") {
-    return Buffer.from(json, "utf-8").toString("base64");
+    return toBase64Url(Buffer.from(json, "utf-8").toString("base64"));
   }
   const bytes = new TextEncoder().encode(json);
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
-  return window.btoa(binary);
+  return toBase64Url(window.btoa(binary));
 }
 
 export function decodeCollection(encoded: string): Collection | null {
   try {
+    const padded = fromBase64Url(encoded);
     let json: string;
     if (typeof window === "undefined") {
-      json = Buffer.from(encoded, "base64").toString("utf-8");
+      json = Buffer.from(padded, "base64").toString("utf-8");
     } else {
-      const binary = window.atob(encoded);
+      const binary = window.atob(padded);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       json = new TextDecoder().decode(bytes);
