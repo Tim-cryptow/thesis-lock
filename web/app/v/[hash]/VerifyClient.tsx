@@ -527,7 +527,16 @@ export default function VerifyPage() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
-            <WatchlistButton type="hash" value={hash} showLabel />
+            <WatchlistButton
+              type="hash"
+              value={hash}
+              owner={preferBatch && batchOwner ? batchOwner : undefined}
+              groupId={preferGroup && groupAnchor ? groupAnchor.groupId : undefined}
+              groupIndex={
+                preferGroup && groupAnchor ? groupAnchor.index : undefined
+              }
+              showLabel
+            />
           </div>
         </div>
 

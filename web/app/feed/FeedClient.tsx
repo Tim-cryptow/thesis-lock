@@ -296,7 +296,13 @@ export default function FeedClient() {
                           ? t("common.actions.copied")
                           : t("common.actions.copy")}
                       </button>
-                      <WatchlistButton type="hash" value={entry.hash} />
+                      <WatchlistButton
+                        type="hash"
+                        value={entry.hash}
+                        owner={
+                          entry.source === "batch" ? entry.owner : undefined
+                        }
+                      />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

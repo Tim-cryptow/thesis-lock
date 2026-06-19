@@ -28,9 +28,14 @@ function statusText(item: WatchItem): string {
 }
 
 function viewHref(item: WatchItem): string {
-  if (item.type === "hash") return `/v/${item.value}`;
   if (item.type === "wallet") return `/u/${item.value}`;
-  return `/groups/${item.value}`;
+  if (item.type === "group") return `/groups/${item.value}`;
+  const ctx = item.context;
+  if (ctx?.owner) return `/v/${item.value}?owner=${ctx.owner}`;
+  if (typeof ctx?.groupId === "number" && typeof ctx?.groupIndex === "number") {
+    return `/v/${item.value}?group=${ctx.groupId}&gi=${ctx.groupIndex}`;
+  }
+  return `/v/${item.value}`;
 }
 
 // Compact, collapsible watchlist summary for the dashboard or a sidebar. Shows

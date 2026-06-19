@@ -14,6 +14,7 @@ import {
   checkAllWatches,
   checkWatch,
   loadWatchlist,
+  mergeChecked,
   removeWatch,
   saveWatchlist,
 } from "@/lib/watchlist";
@@ -60,9 +61,15 @@ function relativeTime(iso: string | null): string {
 }
 
 function viewHref(item: WatchItem): string {
-  if (item.type === "hash") return `/v/${item.value}`;
   if (item.type === "wallet") return `/u/${item.value}`;
-  return `/groups/${item.value}`;
+  if (item.type === "group") return `/groups/${item.value}`;
+  // Hash: carry the source keys so a batch or group anchor resolves on /v/.
+  const ctx = item.context;
+  if (ctx?.owner) return `/v/${item.value}?owner=${ctx.owner}`;
+  if (typeof ctx?.groupId === "number" && typeof ctx?.groupIndex === "number") {
+    return `/v/${item.value}?group=${ctx.groupId}&gi=${ctx.groupIndex}`;
+  }
+  return `/v/${item.value}`;
 }
 
 function validate(type: WatchType, value: string): string | null {
@@ -283,8 +290,11 @@ export default function WatchlistClient() {
       }
       setProgress({ done: i + 1, total: updated.length });
     }
-    saveWatchlist(updated);
-    setItems(updated);
+    // Merge by id against the current list so a concurrent add/remove during the
+    // sequential check is not overwritten.
+    const merged = mergeChecked(updated);
+    saveWatchlist(merged);
+    setItems(merged);
     setCheckingAll(false);
     setProgress(null);
   }, [checkingAll]);

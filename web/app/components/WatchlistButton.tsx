@@ -9,6 +9,10 @@ import {
   removeWatchByValue,
 } from "@/lib/watchlist";
 
+// Optional source keys for hash watches so a batch ({hash, owner}) or group
+// ({group-id, index}) anchor can be resolved and linked, not just probed by
+// the bare hash.
+
 // A compact toggle for adding the given hash, wallet, or group to the
 // watchlist. Reusable inline next to hashes and addresses across the app. Shows
 // a hollow bookmark when not watched and a filled one when watched; adding pops
@@ -17,12 +21,18 @@ export default function WatchlistButton({
   type,
   value,
   label,
+  owner,
+  groupId,
+  groupIndex,
   showLabel = false,
   className = "",
 }: {
   type: WatchType;
   value: string;
   label?: string;
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
   showLabel?: boolean;
   className?: string;
 }) {
@@ -58,11 +68,11 @@ export default function WatchlistButton({
       setWatched(false);
       flashToast("Removed from watchlist");
     } else {
-      addWatch(type, value, label);
+      addWatch(type, value, label, { owner, groupId, groupIndex });
       setWatched(true);
       flashToast("Added to watchlist");
     }
-  }, [watched, type, value, label, flashToast]);
+  }, [watched, type, value, label, owner, groupId, groupIndex, flashToast]);
 
   return (
     <span className="relative inline-flex">

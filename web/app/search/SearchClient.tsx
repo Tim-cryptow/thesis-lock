@@ -417,7 +417,19 @@ export default function SearchClient() {
                               ? t("common.actions.copied")
                               : t("common.actions.copy")}
                           </button>
-                          <WatchlistButton type="hash" value={row.hash} />
+                          <WatchlistButton
+                            type="hash"
+                            value={row.hash}
+                            owner={row.source === "batch" ? row.owner : undefined}
+                            groupId={
+                              row.source === "group" ? row.groupId : undefined
+                            }
+                            groupIndex={
+                              row.source === "group"
+                                ? row.groupIndex
+                                : undefined
+                            }
+                          />
                         </div>
                         <div className="text-sm mb-2">
                           <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

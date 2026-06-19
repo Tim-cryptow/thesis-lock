@@ -7,9 +7,11 @@
 import {
   getAnchorCount,
   getGroup,
+  getGroupAnchorAt,
   getGroupAnchorCount,
   getProofByHash,
   readAnchor,
+  readBatchAnchor,
 } from "./stacks";
 
 const STORAGE_KEY = "thesislock_watchlist";
@@ -29,11 +31,23 @@ export type WatchStatus = {
   newAnchors?: number;
 };
 
+// Source context for a hash watch. A batch anchor is keyed by { hash, owner }
+// and a group anchor by { group-id, index }, so the bare hash is not enough to
+// resolve them. When a hash is watched from a search or feed row that already
+// knows its source, we carry the extra keys so checkWatch can verify it and the
+// View link can point at the right record.
+export type WatchContext = {
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
+};
+
 export type WatchItem = {
   id: string;
   type: WatchType;
   value: string;
   label: string;
+  context?: WatchContext;
   // ISO timestamps.
   addedAt: string;
   lastChecked: string | null;
@@ -126,17 +140,20 @@ export function addWatch(
   type: WatchType,
   value: string,
   label?: string,
+  context?: WatchContext,
 ): WatchItem {
   const normalized = normalizeWatchValue(type, value);
   const items = loadWatchlist();
   const existing = items.find((i) => i.type === type && i.value === normalized);
   if (existing) return existing;
 
+  const cleanContext = normalizeContext(context);
   const item: WatchItem = {
     id: makeId(),
     type,
     value: normalized,
     label: label?.trim() || defaultLabel(type, normalized),
+    ...(cleanContext ? { context: cleanContext } : {}),
     addedAt: nowIso(),
     lastChecked: null,
     lastStatus: null,
@@ -144,6 +161,17 @@ export function addWatch(
   };
   saveWatchlist([item, ...items]);
   return item;
+}
+
+// Drops empty fields and uppercases the owner principal. Returns undefined when
+// nothing useful remains, so items without context stay clean.
+function normalizeContext(context?: WatchContext): WatchContext | undefined {
+  if (!context) return undefined;
+  const out: WatchContext = {};
+  if (context.owner) out.owner = context.owner.toUpperCase();
+  if (typeof context.groupId === "number") out.groupId = context.groupId;
+  if (typeof context.groupIndex === "number") out.groupIndex = context.groupIndex;
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 export function removeWatch(id: string): void {
@@ -177,13 +205,45 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
   const hadPrevious = item.lastStatus !== null;
 
   if (item.type === "hash") {
+    const newFlag = (verified: boolean) =>
+      hadPrevious && verified && !item.lastStatus?.verified ? 1 : 0;
+    const ctx = item.context;
+
+    // Prefer the source the hash was bookmarked from: batch and group anchors
+    // need their extra keys and would otherwise read as not found.
+    if (ctx?.owner) {
+      const batch = await readBatchAnchor(item.value, ctx.owner);
+      if (batch) {
+        return {
+          verified: true,
+          source: "batch",
+          block: batch.stacksBlock,
+          newAnchors: newFlag(true),
+        };
+      }
+    }
+    if (
+      typeof ctx?.groupId === "number" &&
+      typeof ctx?.groupIndex === "number"
+    ) {
+      const groupAnchor = await getGroupAnchorAt(ctx.groupId, ctx.groupIndex);
+      if (groupAnchor && groupAnchor.hash === item.value) {
+        return {
+          verified: true,
+          source: "group",
+          block: groupAnchor.stacksBlock,
+          newAnchors: newFlag(true),
+        };
+      }
+    }
+
     const single = await readAnchor(item.value);
     if (single) {
       return {
         verified: true,
         source: "single",
         block: single.stacksBlock,
-        newAnchors: hadPrevious && !item.lastStatus?.verified ? 1 : 0,
+        newAnchors: newFlag(true),
       };
     }
     const proof = await getProofByHash(item.value);
@@ -192,7 +252,7 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
         verified: true,
         source: "proof",
         block: proof.stacksBlock,
-        newAnchors: hadPrevious && !item.lastStatus?.verified ? 1 : 0,
+        newAnchors: newFlag(true),
       };
     }
     return { verified: false, newAnchors: 0 };
@@ -241,8 +301,20 @@ export async function checkAllWatches(
       }
     }),
   );
-  saveWatchlist(checked);
-  return checked;
+  // Merge back into whatever the list is now, not the snapshot we started with,
+  // so a concurrent add or remove (another tab, a watch button) is not clobbered
+  // when these async checks finish.
+  const merged = mergeChecked(checked);
+  saveWatchlist(merged);
+  return merged;
+}
+
+// Applies freshly checked items onto the current stored list by id. Items
+// removed during the check are dropped (absent from the current list); items
+// added during the check are preserved with their existing status.
+export function mergeChecked(checked: WatchItem[]): WatchItem[] {
+  const byId = new Map(checked.map((c) => [c.id, c]));
+  return loadWatchlist().map((current) => byId.get(current.id) ?? current);
 }
 
 // Number of watched items reporting something new since the previous check,
