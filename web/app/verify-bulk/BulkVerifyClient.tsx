@@ -13,11 +13,12 @@ import {
   readBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { discoverBatchAndGroupAnchors } from "@/lib/search";
 import { downloadExport, formatBulkVerifyCSV } from "@/lib/export";
 import { stageReportInput } from "@/lib/reportLink";
 import SaveToCollectionButton from "@/app/components/SaveToCollectionButton";
 
-type Source = "single" | "batch" | "proof";
+type Source = "single" | "batch" | "proof" | "group";
 
 type RowStatus = "checking" | "verified" | "notfound" | "error";
 
@@ -38,6 +39,9 @@ type Row = {
   // connected). A "not found" row is re-checked whenever the connected wallet
   // differs from this, since batch records are keyed by {hash, owner}.
   checkedOwner: string | null;
+  // Exact verify-page path discovered for a group or other-owner batch anchor,
+  // so its Verify link targets the precise on-chain row.
+  verifyUrl: string | null;
   message: string | null;
 };
 
@@ -205,6 +209,58 @@ export default function BulkVerifyClient() {
     pending.forEach((r) => void resolve(r.id, r.hash!));
   }, [address, resolve]);
 
+  // Hashes already swept through batch/group discovery, so the sweep below runs
+  // at most once per hash and does not loop when it updates rows.
+  const discoveredRef = useRef<Set<string>>(new Set());
+
+  // The per-row resolver above only covers global single/proof anchors and batch
+  // anchors owned by the connected wallet. Group anchors, and batch anchors owned
+  // by someone else (common when verifying a shared collection), need the event
+  // stream discovery used by search. Once every row has settled, sweep the
+  // not-found ones through one shared discovery scan and promote any that resolve.
+  useEffect(() => {
+    const stillResolving = rows.some(
+      (r) => r.status === "checking" || (r.file !== null && r.hash === null),
+    );
+    if (stillResolving) return;
+    const pending = rows.filter(
+      (r) =>
+        r.status === "notfound" &&
+        !!r.hash &&
+        !discoveredRef.current.has(r.hash),
+    );
+    if (pending.length === 0) return;
+    pending.forEach((r) => discoveredRef.current.add(r.hash!));
+    let cancelled = false;
+    void (async () => {
+      try {
+        const found = await discoverBatchAndGroupAnchors(
+          pending.map((r) => r.hash!),
+        );
+        if (cancelled || found.size === 0) return;
+        setRows((cur) =>
+          cur.map((r) => {
+            const res = r.hash ? found.get(r.hash) : undefined;
+            if (r.status !== "notfound" || !res) return r;
+            return {
+              ...r,
+              status: "verified",
+              source: res.source === "group" ? "group" : "batch",
+              block: res.stacksBlock,
+              owner: res.source === "batch" ? res.owner : null,
+              verifyUrl: res.verifyUrl,
+            };
+          }),
+        );
+      } catch {
+        // Discovery is best-effort; leave rows as not-found on a scan failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rows]);
+
   const addFiles = useCallback(
     (incoming: FileList | File[] | null) => {
       if (!incoming) return;
@@ -220,6 +276,7 @@ export default function BulkVerifyClient() {
         block: null,
         owner: null,
         checkedOwner: null,
+        verifyUrl: null,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
@@ -269,6 +326,7 @@ export default function BulkVerifyClient() {
         block: null,
         owner: null,
         checkedOwner: null,
+        verifyUrl: null,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
@@ -304,7 +362,10 @@ export default function BulkVerifyClient() {
     }
   };
 
-  const clearAll = () => setRows([]);
+  const clearAll = () => {
+    discoveredRef.current.clear();
+    setRows([]);
+  };
 
   const exportResults = () => {
     if (rows.length === 0) return;
@@ -613,9 +674,11 @@ export default function BulkVerifyClient() {
                       {row.status === "verified" && row.hash && (
                         <Link
                           href={
-                            row.source === "batch" && row.owner
-                              ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
-                              : `/v/${row.hash}`
+                            row.verifyUrl
+                              ? row.verifyUrl
+                              : row.source === "batch" && row.owner
+                                ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
+                                : `/v/${row.hash}`
                           }
                           aria-label={t("bulkVerify.row.verifyAria", {
                             name: row.name,
