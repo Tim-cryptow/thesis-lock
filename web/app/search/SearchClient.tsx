@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
@@ -414,6 +415,7 @@ export default function SearchClient() {
                               ? t("common.actions.copied")
                               : t("common.actions.copy")}
                           </button>
+                          <WatchlistButton type="hash" value={row.hash} />
                         </div>
                         <div className="text-sm mb-2">
                           <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

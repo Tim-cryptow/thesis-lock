@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -521,7 +522,10 @@ export default function VerifyPage() {
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             {t("verify.fields.hash")}
           </div>
-          <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
+          <div className="flex items-center gap-2 flex-wrap">
+            <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
+            <WatchlistButton type="hash" value={hash} showLabel />
+          </div>
         </div>
 
         <div role="status" aria-live="polite" aria-busy={loading || undefined}>

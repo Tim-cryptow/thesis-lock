@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import { useParams } from "next/navigation";
 import {
   addMember,
@@ -296,7 +297,15 @@ export default function GroupDetailPage() {
         </div>
       ) : (
         <>
-          <h1 className="text-3xl mb-2">{group.name}</h1>
+          <div className="flex items-center gap-3 flex-wrap mb-2">
+            <h1 className="text-3xl">{group.name}</h1>
+            <WatchlistButton
+              type="group"
+              value={String(groupId)}
+              label={group.name}
+              showLabel
+            />
+          </div>
           <div className="text-sm text-foreground/60 mb-8">
             {t("groups.detail.metaPrefix", { id: groupId })}{" "}
             <code className="font-mono">{truncateAddress(group.admin)}</code>{" "}

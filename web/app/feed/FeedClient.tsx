@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl } from "@/lib/stacks";
@@ -293,6 +294,7 @@ export default function FeedClient() {
                           ? t("common.actions.copied")
                           : t("common.actions.copy")}
                       </button>
+                      <WatchlistButton type="hash" value={entry.hash} />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
