@@ -147,6 +147,10 @@ export const es: Translations = {
         title: "Informes de verificación",
         body: "Genera un informe de auditoría formal de varios documentos, exportable como HTML, JSON o CSV.",
       },
+      watchlist: {
+        title: "Lista de seguimiento",
+        body: "Monitorea hashes, billeteras y grupos concretos y observa cuándo cambia su estado.",
+      },
     },
     contracts: {
       heading: "Construido sobre 5 contratos inteligentes en la mainnet de Stacks",

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
@@ -211,6 +212,7 @@ export default function FeedClient() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">

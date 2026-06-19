@@ -152,6 +152,10 @@ export const en = {
         title: "Verification Reports",
         body: "Generate a formal multi-document audit report, exportable as HTML, JSON, or CSV.",
       },
+      watchlist: {
+        title: "Watchlist",
+        body: "Monitor specific hashes, wallets, and groups and see when their status changes.",
+      },
     },
     contracts: {
       heading: "Built on 5 smart contracts on Stacks mainnet",

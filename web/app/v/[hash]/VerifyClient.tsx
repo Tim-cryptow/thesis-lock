@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import {
@@ -441,6 +442,7 @@ export default function VerifyPage() {
           >
             {t("common.nav.explorer")}
           </Link>
+          <WatchlistNavLink />
         </div>
         <h1 className="text-3xl mt-8 mb-2">{t("verify.invalidHash.title")}</h1>
         <p className="text-foreground/70">
@@ -514,6 +516,7 @@ export default function VerifyPage() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
       <h1 className="text-3xl mt-8 mb-6">{t("verify.recordTitle")}</h1>
 
@@ -679,6 +682,13 @@ export default function VerifyPage() {
               >
                 {t("verify.notAnchored.cta")}
               </Link>
+              <div className="mt-4 pt-4 border-t border-foreground/10 flex items-center gap-3 flex-wrap">
+                <p className="text-sm text-foreground/70">
+                  Want to know when this hash gets anchored? Add it to your
+                  watchlist.
+                </p>
+                <WatchlistButton type="hash" value={hash} showLabel />
+              </div>
             </div>
           )
         ) : (

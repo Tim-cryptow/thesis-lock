@@ -147,6 +147,10 @@ export const fr: Translations = {
         title: "Rapports de vérification",
         body: "Générez un rapport d'audit formel multi-documents, exportable en HTML, JSON ou CSV.",
       },
+      watchlist: {
+        title: "Liste de suivi",
+        body: "Surveillez des hachages, portefeuilles et groupes precis et voyez quand leur statut change.",
+      },
     },
     contracts: {
       heading: "Construit sur 5 contrats intelligents sur le mainnet Stacks",

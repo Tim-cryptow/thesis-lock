@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import {
@@ -259,6 +260,7 @@ export default function SearchClient() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <h1 className="text-3xl mb-2">{t("search.heading")}</h1>

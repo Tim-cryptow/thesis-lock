@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -310,6 +311,7 @@ export default function ComparePage() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <h1 className="text-3xl mt-8 mb-2">{t("compare.heading")}</h1>
