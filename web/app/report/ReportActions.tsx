@@ -155,6 +155,7 @@ export default function ReportActions({ data }: { data: ReportData }) {
           items={data.hashes.map((h) => ({
             hash: h.hash,
             label: h.label ?? h.filename ?? "",
+            verifyUrl: h.verifyUrl,
           }))}
         />
       </div>

@@ -12,7 +12,7 @@ import {
   resolveColor,
 } from "@/lib/collections";
 
-export type SaveItem = { hash: string; label?: string };
+export type SaveItem = { hash: string; label?: string; verifyUrl?: string };
 
 // Saves several hashes to one collection at once. Used after a bulk verify or a
 // report run: pick an existing collection or spin up a new one, and every item
@@ -69,7 +69,13 @@ export default function SaveToCollectionButton({
   const saveAll = useCallback(
     (collectionId: string, name: string) => {
       for (const item of items) {
-        addToCollection(collectionId, item.hash, item.label ?? "", "");
+        addToCollection(
+          collectionId,
+          item.hash,
+          item.label ?? "",
+          "",
+          item.verifyUrl,
+        );
       }
       setSavedTo(name);
       setTimeout(() => setSavedTo(null), 2500);

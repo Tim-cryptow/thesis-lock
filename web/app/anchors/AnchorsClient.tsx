@@ -434,7 +434,11 @@ export default function AnchorsPage() {
                     >
                       {copiedHash === entry.hash ? t("common.actions.copied") : t("common.actions.copy")}
                     </button>
-                    <AddToCollectionButton hash={entry.hash} label={entry.label} />
+                    <AddToCollectionButton
+                      hash={entry.hash}
+                      label={entry.label}
+                      verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
+                    />
                   </div>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">

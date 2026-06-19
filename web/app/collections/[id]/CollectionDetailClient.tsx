@@ -18,6 +18,7 @@ import {
   encodeCollection,
   exportCollection,
   getCollection,
+  itemVerifyHref,
   normalizeHash,
   removeFromCollection,
   reorderItem,
@@ -173,7 +174,7 @@ function ItemRow({
 
       <div className="mt-3 flex items-center gap-3 text-xs">
         <Link
-          href={`/v/${item.hash}`}
+          href={itemVerifyHref(item)}
           className="text-foreground/70 underline hover:text-foreground"
         >
           Verify
@@ -332,7 +333,7 @@ export default function CollectionDetailClient() {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const header = ["Hash", "Label", "Note", "Added", "Verify URL"];
     const rows = collection.items.map((i) =>
-      [i.hash, i.label, i.note, i.addedAt, `${origin}/v/${i.hash}`]
+      [i.hash, i.label, i.note, i.addedAt, `${origin}${itemVerifyHref(i)}`]
         .map(escapeCsv)
         .join(","),
     );
@@ -673,7 +674,13 @@ export default function CollectionDetailClient() {
                       type="button"
                       disabled={inCollection}
                       onClick={() =>
-                        addToCollection(collection.id, entry.hash, entry.label, "")
+                        addToCollection(
+                          collection.id,
+                          entry.hash,
+                          entry.label,
+                          "",
+                          `/v/${entry.hash}?owner=${encodeURIComponent(address)}`,
+                        )
                       }
                       className="shrink-0 rounded border border-foreground/15 px-2 py-1 text-xs hover:border-foreground/40 disabled:opacity-40"
                     >

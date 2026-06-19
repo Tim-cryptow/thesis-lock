@@ -575,7 +575,15 @@ export default function BulkVerifyClient() {
                     triggerLabel="Save verified to collection"
                     items={rows
                       .filter((r) => r.status === "verified" && r.hash)
-                      .map((r) => ({ hash: r.hash as string, label: r.name }))}
+                      .map((r) => ({
+                        hash: r.hash as string,
+                        label: r.name,
+                        verifyUrl:
+                          r.verifyUrl ??
+                          (r.source === "batch" && r.owner
+                            ? `/v/${r.hash}?owner=${encodeURIComponent(r.owner)}`
+                            : undefined),
+                      }))}
                   />
                 )}
                 <button

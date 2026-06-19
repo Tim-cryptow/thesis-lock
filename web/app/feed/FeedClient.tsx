@@ -312,6 +312,7 @@ export default function FeedClient() {
                       <AddToCollectionButton
                         hash={entry.hash}
                         label={entry.label}
+                        verifyUrl={verifyLinkFor(entry)}
                       />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">

@@ -21,11 +21,15 @@ import {
 export default function AddToCollectionButton({
   hash,
   label = "",
+  verifyUrl,
   showLabel = false,
   className = "",
 }: {
   hash: string;
   label?: string;
+  // Pinned verify path for an owner-keyed batch or specific group anchor, so a
+  // collected item reopens the exact record rather than a bare /v/<hash>.
+  verifyUrl?: string;
   showLabel?: boolean;
   className?: string;
 }) {
@@ -77,20 +81,20 @@ export default function AddToCollectionButton({
 
   const toggle = useCallback(
     (collection: Collection, checked: boolean) => {
-      if (checked) addToCollection(collection.id, hash, label, note);
+      if (checked) addToCollection(collection.id, hash, label, note, verifyUrl);
       else removeFromCollection(collection.id, hash);
     },
-    [hash, label, note],
+    [hash, label, note, verifyUrl],
   );
 
   const create = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
     const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON);
-    addToCollection(collection.id, hash, label, note);
+    addToCollection(collection.id, hash, label, note, verifyUrl);
     setNewName("");
     setCreating(false);
-  }, [newName, hash, label, note]);
+  }, [newName, hash, label, note, verifyUrl]);
 
   const normalized = hash.toLowerCase().replace(/^0x/, "");
 

@@ -18,6 +18,11 @@ export type CollectionItem = {
   // ISO timestamp.
   addedAt: string;
   note: string;
+  // The exact verify-page path this item was collected from, when the hash
+  // alone is not enough to reopen the right record: an owner-keyed batch anchor
+  // (/v/<hash>?owner=...) or a specific group anchor (/v/<hash>?group=..&gi=..).
+  // Always a same-site relative path; absent for plain single anchors.
+  verifyUrl?: string;
 };
 
 export type Collection = {
@@ -108,7 +113,27 @@ function coerceItem(value: unknown): CollectionItem | null {
     label: typeof v.label === "string" ? v.label : "",
     addedAt: typeof v.addedAt === "string" ? v.addedAt : nowIso(),
     note: typeof v.note === "string" ? v.note : "",
+    // Only accept a same-site /v/ path, so an imported or shared collection can
+    // never smuggle an off-site link into a Verify button.
+    ...(typeof v.verifyUrl === "string" && isVerifyPath(v.verifyUrl)
+      ? { verifyUrl: v.verifyUrl }
+      : {}),
   };
+}
+
+// True for a same-site verify path like /v/<hash> or /v/<hash>?owner=... We
+// require the leading "/v/" so a stored or imported value cannot be an absolute
+// or protocol-relative URL that a Link would treat as an external redirect.
+function isVerifyPath(url: string): boolean {
+  return /^\/v\/[0-9a-f]{64}(\?|$)/i.test(url);
+}
+
+// The path a Verify link or CSV row should use for an item: the pinned source
+// path when present and valid, otherwise the bare single-anchor page.
+export function itemVerifyHref(item: CollectionItem): string {
+  return item.verifyUrl && isVerifyPath(item.verifyUrl)
+    ? item.verifyUrl
+    : `/v/${item.hash}`;
 }
 
 // Validates and normalizes a parsed collection, returning null when it lacks the
@@ -217,17 +242,26 @@ export function addToCollection(
   hash: string,
   label: string,
   note?: string,
+  verifyUrl?: string,
 ): void {
   const normalized = normalizeHash(hash);
   if (!normalized) return;
+  const pinned =
+    verifyUrl && isVerifyPath(verifyUrl) ? verifyUrl : undefined;
   saveCollections(
     loadCollections().map((c) => {
       if (c.id !== collectionId) return c;
       const existing = c.items.find((i) => i.hash === normalized);
       if (existing) {
+        // Re-adding from another page can fill in a note or backfill the pinned
+        // verify path if the item was first added without one.
         const items = c.items.map((i) =>
           i.hash === normalized
-            ? { ...i, note: note?.trim() ? note.trim() : i.note }
+            ? {
+                ...i,
+                note: note?.trim() ? note.trim() : i.note,
+                ...(pinned && !i.verifyUrl ? { verifyUrl: pinned } : {}),
+              }
             : i,
         );
         return { ...c, items, updatedAt: nowIso() };
@@ -237,6 +271,7 @@ export function addToCollection(
         label: label.trim(),
         addedAt: nowIso(),
         note: note?.trim() ?? "",
+        ...(pinned ? { verifyUrl: pinned } : {}),
       };
       return { ...c, items: [item, ...c.items], updatedAt: nowIso() };
     }),

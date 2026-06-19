@@ -12,6 +12,7 @@ import {
   decodeCollection,
   exportCollection,
   importCollection,
+  itemVerifyHref,
   resolveColor,
 } from "@/lib/collections";
 
@@ -259,7 +260,7 @@ export default function SharedCollectionClient() {
               </div>
               <div className="mt-3 text-xs">
                 <Link
-                  href={`/v/${item.hash}`}
+                  href={itemVerifyHref(item)}
                   className="text-foreground/70 underline hover:text-foreground"
                 >
                   Verify

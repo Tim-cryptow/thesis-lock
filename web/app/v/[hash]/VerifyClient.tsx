@@ -544,6 +544,13 @@ export default function VerifyPage() {
             <AddToCollectionButton
               hash={hash}
               label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
+              verifyUrl={
+                preferBatch && batchOwner
+                  ? `/v/${hash}?owner=${batchOwner}`
+                  : preferGroup && groupAnchor
+                    ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
+                    : undefined
+              }
               showLabel
             />
           </div>

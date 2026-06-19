@@ -441,6 +441,7 @@ export default function SearchClient() {
                           <AddToCollectionButton
                             hash={row.hash}
                             label={row.label}
+                            verifyUrl={row.verifyUrl}
                           />
                         </div>
                         <div className="text-sm mb-2">
