@@ -143,7 +143,6 @@ export default function ExplorerClient() {
             <ContractDetail
               contract={selectedContract}
               callCount={counts[selectedContract.name]}
-              onSelect={setSelected}
             />
           ) : (
             <Overview counts={counts} onSelect={setSelected} />
