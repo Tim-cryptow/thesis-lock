@@ -41,6 +41,7 @@ const PAGES: PaletteItem[] = [
   { id: "feed", title: "Feed", description: "/feed", icon: "feed", path: "/feed", section: "pages" },
   { id: "stats", title: "Stats", description: "/stats", icon: "chart", path: "/stats", section: "pages" },
   { id: "explorer", title: "Contract Explorer", description: "/explorer", icon: "code", path: "/explorer", section: "pages" },
+  { id: "watchlist", title: "Watchlist", description: "/watchlist", icon: "shield", path: "/watchlist", section: "pages" },
   { id: "groups", title: "Groups", description: "/groups", icon: "group", path: "/groups", shortcut: "G", section: "pages" },
   { id: "dashboard", title: "Dashboard", description: "/dashboard", icon: "chart", path: "/dashboard", section: "pages" },
   { id: "activity", title: "Activity", description: "/activity", icon: "activity", path: "/activity", section: "pages" },

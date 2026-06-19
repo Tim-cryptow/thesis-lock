@@ -30,6 +30,7 @@ export const en = {
       docs: "Docs",
       api: "API",
       explorer: "Explorer",
+      watchlist: "Watchlist",
       github: "GitHub",
     },
     wallet: {
@@ -150,6 +151,10 @@ export const en = {
       reports: {
         title: "Verification Reports",
         body: "Generate a formal multi-document audit report, exportable as HTML, JSON, or CSV.",
+      },
+      watchlist: {
+        title: "Watchlist",
+        body: "Monitor specific hashes, wallets, and groups and see when their status changes.",
       },
     },
     contracts: {

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { explorerAddressUrl } from "@/lib/stacks";
@@ -191,6 +192,11 @@ export default function ProfileClient() {
                 {profile.address}
               </code>
               <CopyButton value={profile.address} label="Copy address" />
+              <WatchlistButton
+                type="wallet"
+                value={profile.address}
+                showLabel
+              />
               <a
                 href={explorerAddressUrl(profile.address)}
                 target="_blank"

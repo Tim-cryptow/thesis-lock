@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
@@ -258,6 +260,7 @@ export default function SearchClient() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <h1 className="text-3xl mb-2">{t("search.heading")}</h1>
@@ -414,6 +417,24 @@ export default function SearchClient() {
                               ? t("common.actions.copied")
                               : t("common.actions.copy")}
                           </button>
+                          <WatchlistButton
+                            type="hash"
+                            value={row.hash}
+                            owner={
+                              row.source === "batch" ||
+                              row.source === "registry"
+                                ? row.owner
+                                : undefined
+                            }
+                            groupId={
+                              row.source === "group" ? row.groupId : undefined
+                            }
+                            groupIndex={
+                              row.source === "group"
+                                ? row.groupIndex
+                                : undefined
+                            }
+                          />
                         </div>
                         <div className="text-sm mb-2">
                           <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

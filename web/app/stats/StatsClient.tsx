@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -143,6 +144,7 @@ export default function StatsClient() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <h1 className="text-3xl mb-2">{t("stats.title")}</h1>

@@ -25,6 +25,7 @@ export const fr: Translations = {
       docs: "Docs",
       api: "API",
       explorer: "Explorateur",
+      watchlist: "Liste de suivi",
       github: "GitHub",
     },
     wallet: {
@@ -145,6 +146,10 @@ export const fr: Translations = {
       reports: {
         title: "Rapports de vérification",
         body: "Générez un rapport d'audit formel multi-documents, exportable en HTML, JSON ou CSV.",
+      },
+      watchlist: {
+        title: "Liste de suivi",
+        body: "Surveillez des hachages, portefeuilles et groupes precis et voyez quand leur statut change.",
       },
     },
     contracts: {

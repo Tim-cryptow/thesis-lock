@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
@@ -354,6 +355,7 @@ export default function BulkVerifyClient() {
           >
             {t("common.nav.explorer")}
           </Link>
+          <WatchlistNavLink />
         </div>
         {address ? (
           <button

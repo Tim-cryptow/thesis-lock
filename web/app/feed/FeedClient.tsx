@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import WatchlistButton from "@/app/components/WatchlistButton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl } from "@/lib/stacks";
@@ -210,6 +212,7 @@ export default function FeedClient() {
         >
           {t("common.nav.explorer")}
         </Link>
+          <WatchlistNavLink />
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
@@ -293,6 +296,16 @@ export default function FeedClient() {
                           ? t("common.actions.copied")
                           : t("common.actions.copy")}
                       </button>
+                      <WatchlistButton
+                        type="hash"
+                        value={entry.hash}
+                        owner={
+                          entry.source === "batch" ||
+                          entry.source === "registry"
+                            ? entry.owner
+                            : undefined
+                        }
+                      />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

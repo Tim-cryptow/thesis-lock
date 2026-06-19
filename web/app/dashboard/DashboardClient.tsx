@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import WatchlistWidget from "@/app/components/WatchlistWidget";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -351,6 +353,7 @@ export default function DashboardClient() {
           >
             {t("common.nav.explorer")}
           </Link>
+          <WatchlistNavLink />
         </div>
         {address ? (
           <button
@@ -375,6 +378,10 @@ export default function DashboardClient() {
 
       <h1 className="text-3xl mb-2">{t("dashboard.title")}</h1>
       <p className="text-foreground/70 mb-8">{t("dashboard.subtitle")}</p>
+
+      <div className="mb-8">
+        <WatchlistWidget />
+      </div>
 
       {!address ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">

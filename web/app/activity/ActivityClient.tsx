@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
@@ -329,6 +330,7 @@ export default function ActivityClient() {
           >
             {t("common.nav.explorer")}
           </Link>
+          <WatchlistNavLink />
         </div>
         {address ? (
           <button

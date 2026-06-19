@@ -21,7 +21,7 @@ export type TourStep = {
   page?: string;
 };
 
-// The full 15-step sequence. Selectors target `data-tour` attributes added to
+// The full 16-step sequence. Selectors target `data-tour` attributes added to
 // the relevant elements; steps whose target is absent on the current page fall
 // back to a centered tooltip so the tour never dead-ends.
 export const TOUR_STEPS: TourStep[] = [
@@ -122,6 +122,15 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Your personal analytics",
     content:
       "The Dashboard turns your own anchoring activity into charts and summaries, scoped to your connected wallet.",
+    position: "bottom",
+    page: "/anchor",
+  },
+  {
+    id: "watchlist-nav",
+    target: '[data-tour="watchlist-nav"]',
+    title: "Monitor what matters to you",
+    content:
+      "Add document hashes, wallets, and groups to your watchlist to track when a hash gets anchored or a wallet or group gains new anchors. New updates show as a badge right here.",
     position: "bottom",
     page: "/anchor",
   },
