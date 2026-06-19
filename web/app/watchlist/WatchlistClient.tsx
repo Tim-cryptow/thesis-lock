@@ -11,6 +11,7 @@ import {
   type WatchType,
   WATCHLIST_CHANGED_EVENT,
   addWatch,
+  applyCheck,
   checkAllWatches,
   checkWatch,
   loadWatchlist,
@@ -252,9 +253,7 @@ export default function WatchlistClient() {
     try {
       const status = await checkWatch(item);
       const updated = loadWatchlist().map((i) =>
-        i.id === item.id
-          ? { ...i, lastChecked: new Date().toISOString(), lastStatus: status }
-          : i,
+        i.id === item.id ? applyCheck(i, status) : i,
       );
       saveWatchlist(updated);
       setItems(updated);
@@ -280,11 +279,7 @@ export default function WatchlistClient() {
     for (let i = 0; i < updated.length; i++) {
       try {
         const status = await checkWatch(updated[i]);
-        updated[i] = {
-          ...updated[i],
-          lastChecked: new Date().toISOString(),
-          lastStatus: status,
-        };
+        updated[i] = applyCheck(updated[i], status);
       } catch {
         updated[i] = { ...updated[i], lastChecked: new Date().toISOString() };
       }

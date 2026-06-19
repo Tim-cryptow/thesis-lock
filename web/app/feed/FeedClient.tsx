@@ -300,7 +300,10 @@ export default function FeedClient() {
                         type="hash"
                         value={entry.hash}
                         owner={
-                          entry.source === "batch" ? entry.owner : undefined
+                          entry.source === "batch" ||
+                          entry.source === "registry"
+                            ? entry.owner
+                            : undefined
                         }
                       />
                     </div>

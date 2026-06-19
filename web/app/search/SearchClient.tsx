@@ -420,7 +420,12 @@ export default function SearchClient() {
                           <WatchlistButton
                             type="hash"
                             value={row.hash}
-                            owner={row.source === "batch" ? row.owner : undefined}
+                            owner={
+                              row.source === "batch" ||
+                              row.source === "registry"
+                                ? row.owner
+                                : undefined
+                            }
                             groupId={
                               row.source === "group" ? row.groupId : undefined
                             }

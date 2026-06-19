@@ -13,6 +13,7 @@ import {
   readAnchor,
   readBatchAnchor,
 } from "./stacks";
+import { searchByHash } from "./search";
 
 const STORAGE_KEY = "thesislock_watchlist";
 
@@ -29,6 +30,12 @@ export type WatchStatus = {
   anchorCount?: number;
   // New anchors (or a fresh verification) observed since the previous check.
   newAnchors?: number;
+  // Source keys discovered for a hash during the check (the batch owner, or a
+  // group id and index). Used to backfill a context-less item so its View link
+  // and later checks target the exact record.
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
 };
 
 // Source context for a hash watch. A batch anchor is keyed by { hash, owner }
@@ -255,6 +262,27 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
         newAnchors: newFlag(true),
       };
     }
+
+    // No stored context and not a hash-keyed anchor: fall back to a full
+    // cross-contract lookup so a later batch or group anchor of this bare hash
+    // is still detected. searchByHash discovers batch owners from registry
+    // events and group anchors from group events.
+    const found = await searchByHash(item.value, item.context?.owner);
+    if (found.length > 0) {
+      const best = found[0]; // newest first
+      const status: WatchStatus = {
+        verified: true,
+        source: best.source,
+        block: best.stacksBlock,
+        newAnchors: newFlag(true),
+      };
+      if (best.source === "batch") status.owner = best.owner;
+      if (best.source === "group") {
+        status.groupId = best.groupId;
+        status.groupIndex = best.groupIndex;
+      }
+      return status;
+    }
     return { verified: false, newAnchors: 0 };
   }
 
@@ -285,6 +313,25 @@ export async function checkWatch(item: WatchItem): Promise<WatchStatus> {
   };
 }
 
+// Stamps a freshly checked item with its status and, for a context-less hash,
+// backfills the source keys the check discovered so its View link and later
+// checks target the exact record.
+export function applyCheck(item: WatchItem, status: WatchStatus): WatchItem {
+  const next: WatchItem = {
+    ...item,
+    lastChecked: nowIso(),
+    lastStatus: status,
+  };
+  if (item.type === "hash" && !item.context) {
+    const ctx: WatchContext = {};
+    if (status.owner) ctx.owner = status.owner;
+    if (typeof status.groupId === "number") ctx.groupId = status.groupId;
+    if (typeof status.groupIndex === "number") ctx.groupIndex = status.groupIndex;
+    if (Object.keys(ctx).length > 0) next.context = ctx;
+  }
+  return next;
+}
+
 // Checks every item, stamping lastChecked and lastStatus, and persists the
 // result. An item whose check throws keeps its previous status but still has
 // lastChecked advanced so the UI reflects the attempt.
@@ -295,7 +342,7 @@ export async function checkAllWatches(
     items.map(async (item) => {
       try {
         const status = await checkWatch(item);
-        return { ...item, lastChecked: nowIso(), lastStatus: status };
+        return applyCheck(item, status);
       } catch {
         return { ...item, lastChecked: nowIso() };
       }
