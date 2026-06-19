@@ -6,14 +6,21 @@
 
 import {
   bufferCV,
+  cvToJSON,
+  cvToValue,
+  deserializeCV,
   noneCV,
   principalCV,
+  serializeCV,
   someCV,
   stringAsciiCV,
   uintCV,
   type ClarityValue,
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
+
+const HIRO_BASE =
+  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 export const EXPLORER_CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -434,4 +441,131 @@ export function argToClarityValue(type: string, raw: unknown): ClarityValue {
   }
 
   throw new Error(`Unsupported argument type: ${type}`);
+}
+
+function withHexPrefix(hex: string): string {
+  return hex.startsWith("0x") ? hex : `0x${hex}`;
+}
+
+// Shape of a transaction in the Hiro extended transactions response we read.
+type HiroTx = {
+  tx_id?: string;
+  tx_type?: string;
+  tx_status?: string;
+  sender_address?: string;
+  block_height?: number;
+  burn_block_time_iso?: string;
+  block_time_iso?: string;
+  contract_call?: { function_name?: string };
+};
+
+// Fetch recent contract-call transactions for a contract from the Hiro
+// extended API, newest first. The endpoint returns every transaction touching
+// the contract address (including its deploy); we keep only contract calls.
+export async function fetchContractCalls(
+  contractName: string,
+  limit = 20,
+): Promise<ContractCall[]> {
+  const contractId = `${EXPLORER_CONTRACT_ADDRESS}.${contractName}`;
+  // Over-fetch a little so we still surface `limit` calls after dropping the
+  // deploy and any non-call transactions.
+  const fetchLimit = Math.min(50, limit + 5);
+  const url = `${HIRO_BASE}/extended/v1/address/${contractId}/transactions?limit=${fetchLimit}`;
+  const res = await fetch(url, { next: { revalidate: 30 } });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { results?: HiroTx[] };
+  const results = Array.isArray(data.results) ? data.results : [];
+  return results
+    .filter((tx) => tx.tx_type === "contract_call")
+    .slice(0, limit)
+    .map((tx) => ({
+      txId: tx.tx_id ?? "",
+      function: tx.contract_call?.function_name ?? "",
+      sender: tx.sender_address ?? "",
+      block: Number(tx.block_height ?? 0),
+      status: tx.tx_status ?? "",
+      timestamp: tx.burn_block_time_iso ?? tx.block_time_iso ?? "",
+    }));
+}
+
+// Total transactions touching a contract address, used as its call count. The
+// Hiro `total` counts every transaction including the single deploy, so we
+// subtract it. Returns 0 on any failure rather than throwing.
+export async function fetchContractCallCount(
+  contractName: string,
+): Promise<number> {
+  const contractId = `${EXPLORER_CONTRACT_ADDRESS}.${contractName}`;
+  const url = `${HIRO_BASE}/extended/v1/address/${contractId}/transactions?limit=1`;
+  try {
+    const res = await fetch(url, { next: { revalidate: 120 } });
+    if (!res.ok) return 0;
+    const data = (await res.json()) as { total?: number };
+    const total = Number(data.total ?? 0);
+    return total > 0 ? total - 1 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export type ReadOnlyResult = {
+  // Raw serialized Clarity value returned by the node.
+  raw: string;
+  // cvToJSON form: { type, value } with full Clarity type annotations.
+  json: unknown;
+  // cvToValue form: the decoded JavaScript value, easiest to read.
+  value: unknown;
+};
+
+// Call a read-only function through the Hiro API. Raw argument values are
+// serialized according to the function's declared types from the registry, so
+// callers pass plain values (a hex string, a principal, a number). Throws on an
+// unknown function, a serialization error, or a node-reported failure.
+export async function callReadOnly(
+  contractName: string,
+  functionName: string,
+  args: unknown[],
+): Promise<ReadOnlyResult> {
+  const contract = getContract(contractName);
+  if (!contract) throw new Error(`Unknown contract: ${contractName}`);
+  const fn = contract.functions.find((f) => f.name === functionName);
+  if (!fn) throw new Error(`Unknown function: ${functionName}`);
+  if (fn.access !== "read-only") {
+    throw new Error(`${functionName} is not read-only`);
+  }
+  if (args.length !== fn.args.length) {
+    throw new Error(
+      `Expected ${fn.args.length} argument(s), received ${args.length}`,
+    );
+  }
+
+  const serialized = fn.args.map((argDef, i) =>
+    withHexPrefix(serializeCV(argToClarityValue(argDef.type, args[i]))),
+  );
+
+  const url = `${HIRO_BASE}/v2/contracts/call-read/${EXPLORER_CONTRACT_ADDRESS}/${contractName}/${functionName}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sender: EXPLORER_CONTRACT_ADDRESS,
+      arguments: serialized,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Hiro API returned ${res.status}`);
+  }
+  const data = (await res.json()) as {
+    okay?: boolean;
+    result?: string;
+    cause?: string;
+  };
+  if (!data.okay || !data.result) {
+    throw new Error(data.cause ?? "Read-only call failed");
+  }
+  const cv = deserializeCV(data.result);
+  return {
+    raw: data.result,
+    json: cvToJSON(cv),
+    value: cvToValue(cv, true),
+  };
 }
