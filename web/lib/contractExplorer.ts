@@ -422,7 +422,7 @@ export function argToClarityValue(type: string, raw: unknown): ClarityValue {
 
   if (t === "uint") {
     const n = typeof raw === "bigint" ? raw : BigInt(String(raw).trim());
-    if (n < 0n) throw new Error("uint cannot be negative");
+    if (n < BigInt(0)) throw new Error("uint cannot be negative");
     return uintCV(n);
   }
 
