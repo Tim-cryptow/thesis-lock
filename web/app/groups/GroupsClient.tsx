@@ -127,6 +127,12 @@ export default function GroupsPage() {
           >
             {t("common.nav.compare")}
           </Link>
+          <Link
+            href="/explorer"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.explorer")}
+          </Link>
         </div>
         {address ? (
           <button

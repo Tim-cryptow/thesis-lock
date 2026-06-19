@@ -245,6 +245,12 @@ export default function GroupDetailPage() {
           >
             {t("common.nav.report")}
           </Link>
+          <Link
+            href="/explorer"
+            className="text-foreground/60 hover:text-foreground"
+          >
+            {t("common.nav.explorer")}
+          </Link>
         </div>
         {address ? (
           <button

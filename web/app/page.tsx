@@ -225,8 +225,16 @@ export default function Page() {
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-3">{t("landing.contracts.heading")}</h2>
-        <p className="text-foreground/70 mb-10 max-w-2xl">
+        <p className="text-foreground/70 mb-4 max-w-2xl">
           {t("landing.contracts.intro")}
+        </p>
+        <p className="mb-10">
+          <Link
+            href="/explorer"
+            className="text-sm text-foreground underline hover:text-foreground/70"
+          >
+            {t("landing.contracts.explore")} &rarr;
+          </Link>
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           <ul className="flex flex-col gap-3">

@@ -156,6 +156,7 @@ export const fr: Translations = {
       registry: "Indexe chaque ancre par portefeuille pour des recherches d'historique rapides.",
       proof: "Émet des NFT de preuve SIP-009 non transférables pour les documents ancrés.",
       groups: "Gère l'appartenance aux groupes et l'ancrage partagé multi-portefeuilles.",
+      explore: "Explorez nos contrats dans l'application",
     },
     integrate: {
       heading: "Intégrez ThesisLock dans votre flux de travail",

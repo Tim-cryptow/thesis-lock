@@ -304,6 +304,12 @@ export default function ComparePage() {
         >
           {t("common.nav.report")}
         </Link>
+        <Link
+          href="/explorer"
+          className="text-foreground/60 hover:text-foreground"
+        >
+          {t("common.nav.explorer")}
+        </Link>
       </div>
 
       <h1 className="text-3xl mt-8 mb-2">{t("compare.heading")}</h1>
