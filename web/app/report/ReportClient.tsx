@@ -86,7 +86,11 @@ export default function ReportClient() {
         const hash = normalize(item.hash);
         if (!HEX_64.test(hash) || seen.has(hash)) continue;
         seen.add(hash);
-        next.push({ hash, ...(item.filename ? { filename: item.filename } : {}) });
+        next.push({
+          hash,
+          ...(item.filename ? { filename: item.filename } : {}),
+          ...(item.owner ? { owner: item.owner } : {}),
+        });
       }
       return next;
     });

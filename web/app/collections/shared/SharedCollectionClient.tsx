@@ -12,9 +12,11 @@ import {
   decodeCollection,
   exportCollection,
   importCollection,
+  itemOwner,
   itemVerifyHref,
   resolveColor,
 } from "@/lib/collections";
+import { stageReportInput } from "@/lib/reportLink";
 
 type VerifyState = "checking" | "verified" | "notfound" | "error";
 
@@ -211,7 +213,19 @@ export default function SharedCollectionClient() {
             {count > 0 && (
               <button
                 type="button"
-                onClick={() => router.push(`/report?hashes=${hashes.join(",")}`)}
+                onClick={() => {
+                  stageReportInput(
+                    collection.items.map((i) => {
+                      const owner = itemOwner(i);
+                      return {
+                        hash: i.hash,
+                        ...(i.label ? { filename: i.label } : {}),
+                        ...(owner ? { owner } : {}),
+                      };
+                    }),
+                  );
+                  router.push("/report");
+                }}
                 className="rounded-md border border-foreground/20 px-3 py-1.5 hover:border-foreground/40"
               >
                 Generate Report

@@ -38,7 +38,12 @@ export type ReportData = {
   };
 };
 
-export type HashInput = { hash: string; filename?: string };
+// A per-item `owner` pins an owner-keyed batch record for this specific hash,
+// taking precedence over the report-level owner. Carried from sources (like a
+// collection) that know which wallet's record a hash was collected from, so the
+// report resolves that exact record rather than a global single anchor or a
+// different owner's batch for the same hash.
+export type HashInput = { hash: string; filename?: string; owner?: string };
 
 export const DEFAULT_REPORT_TITLE = "Verification Report";
 
@@ -97,6 +102,9 @@ export async function verifyReportEntry(
   owner?: string,
 ): Promise<ReportEntry> {
   const hash = normalizeHash(input.hash);
+  // A per-item owner takes precedence over the report-level owner so a hash
+  // collected as a specific wallet's batch record resolves to that record.
+  const effectiveOwner = input.owner ?? owner;
   const base: ReportEntry = {
     hash,
     ...(input.filename ? { filename: input.filename } : {}),
@@ -111,11 +119,11 @@ export async function verifyReportEntry(
   if (!HEX_64.test(hash)) return base;
 
   const [results, proof] = await Promise.all([
-    searchByHash(hash, owner).catch(() => [] as SearchResult[]),
+    searchByHash(hash, effectiveOwner).catch(() => [] as SearchResult[]),
     getProofByHash(hash).catch(() => null),
   ]);
 
-  const best = pickBest(results, owner);
+  const best = pickBest(results, effectiveOwner);
   if (!best && !proof) return base;
 
   const label = best?.label || proof?.label || "";

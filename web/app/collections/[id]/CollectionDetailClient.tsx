@@ -9,6 +9,7 @@ import { HEX_64 } from "@/lib/verify";
 import { hashFile, getRecentAnchors, type RegistryEntry } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadExport } from "@/lib/export";
+import { stageReportInput } from "@/lib/reportLink";
 import {
   type Collection,
   type CollectionItem,
@@ -18,6 +19,7 @@ import {
   encodeCollection,
   exportCollection,
   getCollection,
+  itemOwner,
   itemVerifyHref,
   normalizeHash,
   removeFromCollection,
@@ -370,9 +372,22 @@ export default function CollectionDetailClient() {
   }, [hashes, router]);
 
   const generateReport = useCallback(() => {
-    if (hashes.length === 0) return;
-    router.push(`/report?hashes=${hashes.join(",")}`);
-  }, [hashes, router]);
+    if (!collection || collection.items.length === 0) return;
+    // Stage per-item context (the pinned owner) rather than a bare ?hashes= URL,
+    // so the report resolves the exact record each item was collected from
+    // instead of a global single anchor or a different owner's record.
+    stageReportInput(
+      collection.items.map((i) => {
+        const owner = itemOwner(i);
+        return {
+          hash: i.hash,
+          ...(i.label ? { filename: i.label } : {}),
+          ...(owner ? { owner } : {}),
+        };
+      }),
+    );
+    router.push("/report");
+  }, [collection, router]);
 
   if (loaded && !collection) {
     return (

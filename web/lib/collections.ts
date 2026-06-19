@@ -108,32 +108,48 @@ function coerceItem(value: unknown): CollectionItem | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
   if (typeof v.hash !== "string" || !v.hash.trim()) return null;
+  const hash = normalizeHash(v.hash);
   return {
-    hash: normalizeHash(v.hash),
+    hash,
     label: typeof v.label === "string" ? v.label : "",
     addedAt: typeof v.addedAt === "string" ? v.addedAt : nowIso(),
     note: typeof v.note === "string" ? v.note : "",
-    // Only accept a same-site /v/ path, so an imported or shared collection can
-    // never smuggle an off-site link into a Verify button.
-    ...(typeof v.verifyUrl === "string" && isVerifyPath(v.verifyUrl)
+    // Only accept a same-site /v/ path whose hash matches this item's. A crafted
+    // share could otherwise show hash A's status on a row whose Verify link
+    // opens hash B, or smuggle an off-site link into a Verify button.
+    ...(typeof v.verifyUrl === "string" && verifyPathHash(v.verifyUrl) === hash
       ? { verifyUrl: v.verifyUrl }
       : {}),
   };
 }
 
-// True for a same-site verify path like /v/<hash> or /v/<hash>?owner=... We
-// require the leading "/v/" so a stored or imported value cannot be an absolute
-// or protocol-relative URL that a Link would treat as an external redirect.
-function isVerifyPath(url: string): boolean {
-  return /^\/v\/[0-9a-f]{64}(\?|$)/i.test(url);
+// The 64-hex hash of a same-site verify path like /v/<hash> or /v/<hash>?owner=,
+// or null when the value is not such a path. Requiring the leading "/v/" keeps a
+// stored or imported value from being an absolute or protocol-relative URL that
+// a Link would treat as an external redirect.
+function verifyPathHash(url: string): string | null {
+  const m = /^\/v\/([0-9a-f]{64})(?:\?|$)/i.exec(url);
+  return m ? m[1].toLowerCase() : null;
 }
 
 // The path a Verify link or CSV row should use for an item: the pinned source
-// path when present and valid, otherwise the bare single-anchor page.
+// path when present and matching this item's hash, otherwise the bare
+// single-anchor page.
 export function itemVerifyHref(item: CollectionItem): string {
-  return item.verifyUrl && isVerifyPath(item.verifyUrl)
+  return item.verifyUrl && verifyPathHash(item.verifyUrl) === item.hash
     ? item.verifyUrl
     : `/v/${item.hash}`;
+}
+
+// The owner principal encoded in an item's pinned verify path, if any. Used to
+// carry per-item context into the report builder so it resolves the same
+// owner-keyed batch record the item was collected from.
+export function itemOwner(item: CollectionItem): string | undefined {
+  if (!item.verifyUrl || verifyPathHash(item.verifyUrl) !== item.hash) {
+    return undefined;
+  }
+  const m = /[?&]owner=([^&]+)/.exec(item.verifyUrl);
+  return m ? decodeURIComponent(m[1]) : undefined;
 }
 
 // Validates and normalizes a parsed collection, returning null when it lacks the
@@ -247,7 +263,7 @@ export function addToCollection(
   const normalized = normalizeHash(hash);
   if (!normalized) return;
   const pinned =
-    verifyUrl && isVerifyPath(verifyUrl) ? verifyUrl : undefined;
+    verifyUrl && verifyPathHash(verifyUrl) === normalized ? verifyUrl : undefined;
   saveCollections(
     loadCollections().map((c) => {
       if (c.id !== collectionId) return c;
