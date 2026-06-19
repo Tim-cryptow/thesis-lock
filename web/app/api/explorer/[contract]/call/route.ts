@@ -1,4 +1,5 @@
 import { callReadOnly, getContract } from "@/lib/contractExplorer";
+import { corsHeaders } from "@/lib/verify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,15 +9,26 @@ type RouteContext = {
 };
 
 // JSON body may include bigints (cvToValue decodes uints as bigint); Response.json
-// would throw on them, so serialize manually with a bigint-aware replacer.
-function jsonResponse(body: unknown, init?: ResponseInit): Response {
+// would throw on them, so serialize manually with a bigint-aware replacer. Every
+// response carries the shared CORS headers so browser integrations can read it.
+function jsonResponse(
+  body: unknown,
+  init?: { status?: number; headers?: Record<string, string> },
+): Response {
   const text = JSON.stringify(body, (_k, v) =>
     typeof v === "bigint" ? v.toString() : v,
   );
   return new Response(text, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    status: init?.status,
+    headers: corsHeaders({
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    }),
   });
+}
+
+export function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders() });
 }
 
 // GET /api/explorer/<contract-name>/call?fn=<function>&args=<json-encoded-args>
