@@ -1,0 +1,405 @@
+// Client-side collections: a lightweight, browser-local way to organize the
+// document anchors a user cares about into named folders ("playlists for
+// anchors"). Unlike on-chain groups, collections are purely organizational and
+// never touch the chain or a server: they live in localStorage and can be
+// shared by encoding the whole collection into a link. Status of any hash is
+// still resolved through the same public Hiro API the rest of the app uses.
+
+const STORAGE_KEY = "thesislock_collections";
+
+// Dispatched on the window whenever the stored collections change, so the nav
+// link, add-to-collection buttons, and any open list stay in sync without a
+// shared store or prop drilling.
+export const COLLECTIONS_CHANGED_EVENT = "thesislock:collections-changed";
+
+export type CollectionItem = {
+  hash: string;
+  label: string;
+  // ISO timestamp.
+  addedAt: string;
+  note: string;
+};
+
+export type Collection = {
+  id: string;
+  name: string;
+  description: string;
+  // One of COLLECTION_COLORS keys.
+  color: string;
+  // One of COLLECTION_ICONS (an emoji).
+  icon: string;
+  items: CollectionItem[];
+  // ISO timestamps.
+  createdAt: string;
+  updatedAt: string;
+  isPublic: boolean;
+};
+
+// Eight preset colors. Each maps to the Tailwind classes used to render the
+// card's top border, icon chip, and accents, so the palette stays consistent
+// and no arbitrary color strings leak into the UI.
+export type CollectionColor = {
+  id: string;
+  name: string;
+  // Solid background (border bar, swatch).
+  bar: string;
+  // Tinted background for the icon chip.
+  chip: string;
+  // Text/accent color.
+  text: string;
+};
+
+export const COLLECTION_COLORS: CollectionColor[] = [
+  { id: "blue", name: "Blue", bar: "bg-blue-500", chip: "bg-blue-500/15", text: "text-blue-500" },
+  { id: "green", name: "Green", bar: "bg-green-500", chip: "bg-green-500/15", text: "text-green-500" },
+  { id: "red", name: "Red", bar: "bg-red-500", chip: "bg-red-500/15", text: "text-red-500" },
+  { id: "purple", name: "Purple", bar: "bg-purple-500", chip: "bg-purple-500/15", text: "text-purple-500" },
+  { id: "orange", name: "Orange", bar: "bg-orange-500", chip: "bg-orange-500/15", text: "text-orange-500" },
+  { id: "teal", name: "Teal", bar: "bg-teal-500", chip: "bg-teal-500/15", text: "text-teal-500" },
+  { id: "pink", name: "Pink", bar: "bg-pink-500", chip: "bg-pink-500/15", text: "text-pink-500" },
+  { id: "gray", name: "Gray", bar: "bg-gray-500", chip: "bg-gray-500/15", text: "text-gray-500" },
+];
+
+// Eight preset icons as emoji. Kept as plain strings so a shared collection
+// serializes cleanly and renders anywhere without an icon font.
+export const COLLECTION_ICONS = ["📄", "📁", "🔬", "⚖️", "💻", "🎓", "🏥", "📊"];
+
+export const DEFAULT_COLOR = COLLECTION_COLORS[0].id;
+export const DEFAULT_ICON = COLLECTION_ICONS[1];
+
+// Resolves a stored color id to its class set, falling back to the first preset
+// so an unknown or hand-edited color never renders blank.
+export function resolveColor(id: string): CollectionColor {
+  return COLLECTION_COLORS.find((c) => c.id === id) ?? COLLECTION_COLORS[0];
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+// Short opaque id, independent of the collection's name.
+function makeId(): string {
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    let out = "";
+    for (const b of bytes) out += b.toString(16).padStart(2, "0");
+    return out;
+  }
+  // Fallback for environments without web crypto; ids only need to be unique
+  // within one browser's list.
+  return `${nowIso()}-${String(Math.floor(performance.now()))}`;
+}
+
+// Hashes are normalized so the same document is never added twice under
+// different casing or with a 0x prefix.
+export function normalizeHash(hash: string): string {
+  return hash.trim().toLowerCase().replace(/^0x/, "");
+}
+
+// Validates one parsed item, dropping anything without a usable hash. Missing
+// optional fields are defaulted so older or hand-edited data stays renderable.
+function coerceItem(value: unknown): CollectionItem | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.hash !== "string" || !v.hash.trim()) return null;
+  return {
+    hash: normalizeHash(v.hash),
+    label: typeof v.label === "string" ? v.label : "",
+    addedAt: typeof v.addedAt === "string" ? v.addedAt : nowIso(),
+    note: typeof v.note === "string" ? v.note : "",
+  };
+}
+
+// Validates and normalizes a parsed collection, returning null when it lacks the
+// fields that make it usable. Used by both loadCollections and importCollection.
+function coerceCollection(value: unknown): Collection | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Record<string, unknown>;
+  if (typeof v.id !== "string" || typeof v.name !== "string") return null;
+  const items = Array.isArray(v.items)
+    ? v.items.map(coerceItem).filter((i): i is CollectionItem => i !== null)
+    : [];
+  return {
+    id: v.id,
+    name: v.name,
+    description: typeof v.description === "string" ? v.description : "",
+    color: typeof v.color === "string" ? v.color : DEFAULT_COLOR,
+    icon: typeof v.icon === "string" ? v.icon : DEFAULT_ICON,
+    items,
+    createdAt: typeof v.createdAt === "string" ? v.createdAt : nowIso(),
+    updatedAt: typeof v.updatedAt === "string" ? v.updatedAt : nowIso(),
+    isPublic: v.isPublic === true,
+  };
+}
+
+// localStorage is read defensively: it is unavailable during SSR and can throw
+// in private-mode browsers, so every access is guarded.
+export function loadCollections(): Collection[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map(coerceCollection)
+      .filter((c): c is Collection => c !== null);
+  } catch {
+    return [];
+  }
+}
+
+export function saveCollections(collections: Collection[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(collections));
+  } catch {
+    // Persistence is best-effort; callers keep the in-memory list.
+  }
+  try {
+    window.dispatchEvent(new CustomEvent(COLLECTIONS_CHANGED_EVENT));
+  } catch {
+    // CustomEvent may be unavailable in some environments; non-fatal.
+  }
+}
+
+export function getCollection(id: string): Collection | undefined {
+  return loadCollections().find((c) => c.id === id);
+}
+
+// Builds, persists, and returns a new (empty) collection. Newest first, matching
+// the rest of the app's lists.
+export function createCollection(
+  name: string,
+  description: string,
+  color: string,
+  icon: string,
+): Collection {
+  const ts = nowIso();
+  const collection: Collection = {
+    id: makeId(),
+    name: name.trim(),
+    description: description.trim(),
+    color: COLLECTION_COLORS.some((c) => c.id === color) ? color : DEFAULT_COLOR,
+    icon: COLLECTION_ICONS.includes(icon) ? icon : DEFAULT_ICON,
+    items: [],
+    createdAt: ts,
+    updatedAt: ts,
+    isPublic: false,
+  };
+  saveCollections([collection, ...loadCollections()]);
+  return collection;
+}
+
+// Applies a partial update to a collection by id, stamping updatedAt. Used for
+// inline name/description edits, color/icon changes, and the public toggle.
+export function updateCollection(
+  id: string,
+  patch: Partial<Omit<Collection, "id" | "items" | "createdAt">>,
+): void {
+  saveCollections(
+    loadCollections().map((c) =>
+      c.id === id ? { ...c, ...patch, updatedAt: nowIso() } : c,
+    ),
+  );
+}
+
+export function deleteCollection(id: string): void {
+  saveCollections(loadCollections().filter((c) => c.id !== id));
+}
+
+// Adds a hash to a collection. A hash already present is left in place but its
+// note is updated when a new one is given, so re-adding from a different page
+// can annotate without duplicating.
+export function addToCollection(
+  collectionId: string,
+  hash: string,
+  label: string,
+  note?: string,
+): void {
+  const normalized = normalizeHash(hash);
+  if (!normalized) return;
+  saveCollections(
+    loadCollections().map((c) => {
+      if (c.id !== collectionId) return c;
+      const existing = c.items.find((i) => i.hash === normalized);
+      if (existing) {
+        const items = c.items.map((i) =>
+          i.hash === normalized
+            ? { ...i, note: note?.trim() ? note.trim() : i.note }
+            : i,
+        );
+        return { ...c, items, updatedAt: nowIso() };
+      }
+      const item: CollectionItem = {
+        hash: normalized,
+        label: label.trim(),
+        addedAt: nowIso(),
+        note: note?.trim() ?? "",
+      };
+      return { ...c, items: [item, ...c.items], updatedAt: nowIso() };
+    }),
+  );
+}
+
+export function removeFromCollection(collectionId: string, hash: string): void {
+  const normalized = normalizeHash(hash);
+  saveCollections(
+    loadCollections().map((c) =>
+      c.id === collectionId
+        ? {
+            ...c,
+            items: c.items.filter((i) => i.hash !== normalized),
+            updatedAt: nowIso(),
+          }
+        : c,
+    ),
+  );
+}
+
+// Updates the free-form note on one item.
+export function setItemNote(
+  collectionId: string,
+  hash: string,
+  note: string,
+): void {
+  const normalized = normalizeHash(hash);
+  saveCollections(
+    loadCollections().map((c) =>
+      c.id === collectionId
+        ? {
+            ...c,
+            items: c.items.map((i) =>
+              i.hash === normalized ? { ...i, note } : i,
+            ),
+            updatedAt: nowIso(),
+          }
+        : c,
+    ),
+  );
+}
+
+// Moves one item between two collections in a single write, preserving its
+// label, note, and added time. A no-op if the source lacks the hash or the
+// destination already has it.
+export function moveItem(
+  fromCollectionId: string,
+  toCollectionId: string,
+  hash: string,
+): void {
+  const normalized = normalizeHash(hash);
+  if (fromCollectionId === toCollectionId) return;
+  const collections = loadCollections();
+  const from = collections.find((c) => c.id === fromCollectionId);
+  const item = from?.items.find((i) => i.hash === normalized);
+  if (!item) return;
+  saveCollections(
+    collections.map((c) => {
+      if (c.id === fromCollectionId) {
+        return {
+          ...c,
+          items: c.items.filter((i) => i.hash !== normalized),
+          updatedAt: nowIso(),
+        };
+      }
+      if (c.id === toCollectionId) {
+        if (c.items.some((i) => i.hash === normalized)) return c;
+        return { ...c, items: [item, ...c.items], updatedAt: nowIso() };
+      }
+      return c;
+    }),
+  );
+}
+
+// Shifts an item one slot up or down within its collection. Drag-to-reorder is
+// expressed as simple up/down moves so it works without a drag library.
+export function reorderItem(
+  collectionId: string,
+  hash: string,
+  direction: "up" | "down",
+): void {
+  const normalized = normalizeHash(hash);
+  saveCollections(
+    loadCollections().map((c) => {
+      if (c.id !== collectionId) return c;
+      const index = c.items.findIndex((i) => i.hash === normalized);
+      if (index < 0) return c;
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= c.items.length) return c;
+      const items = [...c.items];
+      [items[index], items[target]] = [items[target], items[index]];
+      return { ...c, items, updatedAt: nowIso() };
+    }),
+  );
+}
+
+// Ids of the collections that already contain a given hash. Drives the checked
+// state on the add-to-collection dropdown.
+export function collectionsContaining(hash: string): string[] {
+  const normalized = normalizeHash(hash);
+  return loadCollections()
+    .filter((c) => c.items.some((i) => i.hash === normalized))
+    .map((c) => c.id);
+}
+
+// Pretty-printed JSON of a single collection, for the Export action and as the
+// payload that gets base64-encoded into a share link.
+export function exportCollection(collection: Collection): string {
+  return JSON.stringify(collection, null, 2);
+}
+
+// Parses a collection from JSON, assigning a fresh id and timestamps so an
+// imported (or shared) collection never collides with or overwrites an existing
+// one, and persists it. Throws on malformed input so callers can show an error.
+export function importCollection(json: string): Collection {
+  const parsed: unknown = JSON.parse(json);
+  const coerced = coerceCollection(parsed);
+  if (!coerced) throw new Error("Not a valid collection.");
+  const ts = nowIso();
+  const collection: Collection = {
+    ...coerced,
+    id: makeId(),
+    createdAt: ts,
+    updatedAt: ts,
+    isPublic: false,
+  };
+  saveCollections([collection, ...loadCollections()]);
+  return collection;
+}
+
+// Encodes a collection into a URL-safe base64 string for a share link, and the
+// inverse for the shared viewer. Unicode-safe (collections hold emoji and free
+// text), so we round-trip through encodeURIComponent before btoa.
+export function encodeCollection(collection: Collection): string {
+  const json = JSON.stringify(collection);
+  if (typeof window === "undefined") {
+    return Buffer.from(json, "utf-8").toString("base64");
+  }
+  const bytes = new TextEncoder().encode(json);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return window.btoa(binary);
+}
+
+export function decodeCollection(encoded: string): Collection | null {
+  try {
+    let json: string;
+    if (typeof window === "undefined") {
+      json = Buffer.from(encoded, "base64").toString("utf-8");
+    } else {
+      const binary = window.atob(encoded);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      json = new TextDecoder().decode(bytes);
+    }
+    return coerceCollection(JSON.parse(json) as unknown);
+  } catch {
+    return null;
+  }
+}
+
+// Total item count across all collections. Drives the nav badge.
+export function totalItemCount(collections: Collection[]): number {
+  return collections.reduce((sum, c) => sum + c.items.length, 0);
+}
