@@ -167,6 +167,14 @@ export default function VerifyPage() {
   );
   const tagLabel =
     batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? "";
+  // The exact record this page is showing, so a tag added here links back to the
+  // same batch owner or group row rather than a bare /v/<hash>.
+  const tagVerifyUrl =
+    preferBatch && batchOwner
+      ? `/v/${hash}?owner=${batchOwner}`
+      : preferGroup && groupAnchor
+        ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
+        : `/v/${hash}`;
 
   // The compare link carries enough to resolve the same record on the compare
   // page. It mirrors the display precedence below: a batch record passes its
@@ -770,7 +778,7 @@ export default function VerifyPage() {
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
             Your tags
           </div>
-          <TagInput hash={hash} label={tagLabel} />
+          <TagInput hash={hash} label={tagLabel} verifyUrl={tagVerifyUrl} />
           <p className="mt-2 text-xs text-foreground/50">
             Tags are stored only in this browser and never published on chain.
           </p>

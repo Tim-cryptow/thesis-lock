@@ -547,6 +547,7 @@ export default function AnchorsPage() {
                     <TagInput
                       hash={entry.hash}
                       label={entry.label}
+                      verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
                       compact
                       onTagsChange={() => setTagTick((n) => n + 1)}
                     />

@@ -14,6 +14,7 @@ import {
   getTagColor,
   getTagsForHash,
   normalizeTag,
+  setTagContext,
   setTagsForHash,
   suggestTags,
 } from "@/lib/tags";
@@ -24,6 +25,9 @@ type TagInputProps = {
   initialTags?: string[];
   // The anchor's label, used to offer template and keyword suggestions.
   label?: string;
+  // The exact verify path for this record (e.g. an owner-keyed batch anchor or a
+  // group row), recorded so the tags page links to the right record.
+  verifyUrl?: string;
   onTagsChange?: (tags: string[]) => void;
   // Small pills and a tighter input, for inline use inside a list row.
   compact?: boolean;
@@ -47,6 +51,7 @@ export default function TagInput({
   hash,
   initialTags,
   label = "",
+  verifyUrl,
   onTagsChange,
   compact = false,
 }: TagInputProps) {
@@ -93,10 +98,13 @@ export default function TagInput({
   const commit = useCallback(
     (next: string[]) => {
       setTags(next);
+      // Record the pinned verify path before writing tags, so listeners that
+      // refresh on the tag-change event observe the context too.
+      if (verifyUrl && next.length > 0) setTagContext(hash, verifyUrl);
       setTagsForHash(hash, next);
       onTagsChange?.(next);
     },
-    [hash, onTagsChange],
+    [hash, onTagsChange, verifyUrl],
   );
 
   const addTags = useCallback(

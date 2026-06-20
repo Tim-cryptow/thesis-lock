@@ -899,7 +899,12 @@ export default function AnchorPage() {
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
                     Tags
                   </div>
-                  <TagInput hash={entry.hash} label={entry.label} compact />
+                  <TagInput
+                    hash={entry.hash}
+                    label={entry.label}
+                    verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}`}
+                    compact
+                  />
                 </div>
               </div>
             ))}

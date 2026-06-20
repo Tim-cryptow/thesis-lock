@@ -177,7 +177,12 @@ function ItemRow({
       </div>
 
       <div className="mt-3 border-t border-foreground/10 pt-3">
-        <TagInput hash={item.hash} label={item.label} compact />
+        <TagInput
+          hash={item.hash}
+          label={item.label}
+          verifyUrl={itemVerifyHref(item)}
+          compact
+        />
       </div>
 
       <div className="mt-3 flex items-center gap-3 text-xs">

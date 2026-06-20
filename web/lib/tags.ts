@@ -16,6 +16,10 @@ const COLORS_KEY = "thesislock_tag_colors";
 // First-seen timestamp per tag name, so the management page can show recently
 // added tags. Kept in sync from saveTags; the per-anchor shape stays untouched.
 const SEEN_KEY = "thesislock_tag_seen";
+// Optional pinned verify path per tagged hash, recorded when a tag is added from
+// a place that knows the exact record (an owner-keyed batch anchor or a group
+// row), so the tags page links to the right record instead of a bare /v/<hash>.
+const CONTEXT_KEY = "thesislock_tag_context";
 
 // Dispatched on the window whenever the stored tags change, so the nav link,
 // tag inputs, filters, and any open list stay in sync without a shared store.
@@ -184,6 +188,7 @@ export function saveTags(anchorTags: AnchorTags[]): void {
   const present = new Set<string>();
   for (const entry of pruned) for (const tag of entry.tags) present.add(tag);
   syncSeen(present);
+  syncContext(new Set(pruned.map((e) => e.hash)));
   try {
     window.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
   } catch {
@@ -235,6 +240,63 @@ function syncSeen(present: Set<string>): void {
     if (changed) window.localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
   } catch {
     // First-seen tracking is best-effort and never blocks a tag write.
+  }
+}
+
+// A stored verify path must be a same-site /v/<hash> path for this very hash, so
+// a hand-edited or stale value can never point a tag link off-site or at another
+// document.
+function isValidVerifyPath(hash: string, path: string): boolean {
+  const prefix = `/v/${normalizeHash(hash)}`;
+  return path === prefix || path.startsWith(`${prefix}?`);
+}
+
+// Records the pinned verify path for a tagged hash. Ignored unless the path is a
+// valid verify path for this hash.
+export function setTagContext(hash: string, verifyUrl: string): void {
+  if (typeof window === "undefined") return;
+  const key = normalizeHash(hash);
+  if (!isValidVerifyPath(key, verifyUrl)) return;
+  try {
+    const map = loadStringMap(CONTEXT_KEY);
+    if (map[key] === verifyUrl) return;
+    map[key] = verifyUrl;
+    window.localStorage.setItem(CONTEXT_KEY, JSON.stringify(map));
+  } catch {
+    // Best-effort; the tags page falls back to /v/<hash>.
+  }
+}
+
+// Pinned verify paths for the given hashes, for linking to the exact record from
+// the tags page. Only returns entries that still validate.
+export function getTagContexts(hashes: string[]): Map<string, string> {
+  const out = new Map<string, string>();
+  if (hashes.length === 0) return out;
+  const map = loadStringMap(CONTEXT_KEY);
+  for (const h of hashes) {
+    const key = normalizeHash(h);
+    const path = map[key];
+    if (path && isValidVerifyPath(key, path)) out.set(key, path);
+  }
+  return out;
+}
+
+// Drops pinned paths for hashes that no longer carry any tag, so the context map
+// never outlives the tags it supports.
+function syncContext(presentHashes: Set<string>): void {
+  if (typeof window === "undefined") return;
+  try {
+    const map = loadStringMap(CONTEXT_KEY);
+    let changed = false;
+    for (const key of Object.keys(map)) {
+      if (!presentHashes.has(key)) {
+        delete map[key];
+        changed = true;
+      }
+    }
+    if (changed) window.localStorage.setItem(CONTEXT_KEY, JSON.stringify(map));
+  } catch {
+    // Non-fatal.
   }
 }
 

@@ -14,6 +14,7 @@ import {
   getHashesByTag,
   getRecentTags,
   getTagColor,
+  getTagContexts,
   getTagsForHash,
   mergeTags,
   renameTag,
@@ -91,9 +92,11 @@ export default function TagsClient() {
 
   const topTags = tags.slice(0, 10);
   const activeHashes = activeTag ? getHashesByTag(activeTag) : [];
-  // Prefer a pinned verify path (batch owner or group row) recorded by a
-  // collection item, so a tagged batch/group anchor resolves correctly.
-  const activeVerifyHrefs = knownVerifyHrefs(activeHashes);
+  // Prefer a pinned verify path (batch owner or group row) for the tagged hash:
+  // first the one recorded when the tag was added, then one from a collection
+  // item, so a tagged batch or group anchor resolves to the right record.
+  const activeTagContexts = getTagContexts(activeHashes);
+  const activeCollectionHrefs = knownVerifyHrefs(activeHashes);
 
   return (
     <div className="flex-1 max-w-5xl mx-auto px-6 py-12 w-full">
@@ -199,7 +202,11 @@ export default function TagsClient() {
                   {activeHashes.map((hash) => (
                     <li key={hash}>
                       <Link
-                        href={activeVerifyHrefs.get(hash) ?? `/v/${hash}`}
+                        href={
+                          activeTagContexts.get(hash) ??
+                          activeCollectionHrefs.get(hash) ??
+                          `/v/${hash}`
+                        }
                         className="font-mono text-xs text-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
                       >
                         {truncateHash(hash)}
