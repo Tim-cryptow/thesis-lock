@@ -18,6 +18,11 @@ import { cvToValue, deserializeCV } from "@stacks/transactions";
 const HIRO_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
+// The configured single-anchor contract name. Its events are the primary
+// "anchor" kind; a custom deployment may point this at a non-default name.
+const SINGLE_CONTRACT_NAME =
+  process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
+
 const MAX_BACKOFF_MS = 60_000;
 // How many events to request on the first page of each poll. New activity is
 // usually sparse relative to the interval, so a small window is normally enough.
@@ -28,6 +33,10 @@ const EVENTS_PER_POLL = 5;
 const PAGE_CHASE_SIZE = 50;
 // Stop chasing after this many events so a long gap can never loop unbounded.
 const BURST_SAFETY_CAP = 200;
+// Stored as a contract's "last seen" id when its baseline poll found no events,
+// so a later first event is delivered instead of rebaselining on it. Real event
+// ids are never empty, so "" is a safe sentinel.
+const EMPTY_BASELINE = "";
 
 export type LiveEventKind =
   | "anchor"
@@ -107,7 +116,10 @@ function kindForContract(contractName: string): LiveEventKind {
   if (contractName.endsWith("-registry")) return "registry";
   if (contractName.endsWith("-proof")) return "proof";
   if (contractName.endsWith("-groups")) return "group";
-  if (contractName === "thesislock" || contractName.endsWith(".thesislock")) {
+  if (
+    contractName === SINGLE_CONTRACT_NAME ||
+    contractName.endsWith(`.${SINGLE_CONTRACT_NAME}`)
+  ) {
     return "anchor";
   }
   return "other";
@@ -173,8 +185,9 @@ export class LivePoller {
   private readonly onNewEvents: (events: LiveEvent[]) => void;
   private readonly onStatusChange?: (status: LiveStatus) => void;
 
-  // Newest event id seen per contract. undefined means "not yet baselined".
-  private lastSeen = new Map<string, string | undefined>();
+  // Newest event id seen per contract. A contract absent from this map has not
+  // been baselined yet; EMPTY_BASELINE marks one baselined with no events.
+  private lastSeen = new Map<string, string>();
   private running = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private consecutiveErrors = 0;
@@ -279,19 +292,25 @@ export class LivePoller {
   }
 
   private async pollContract(contractId: string): Promise<LiveEvent[]> {
-    const previous = this.lastSeen.get(contractId);
-
-    // First poll: baseline only. Record the newest event id and emit nothing
-    // so opening the app does not replay history.
-    if (previous === undefined) {
+    // First poll: baseline only. Record the newest event id, or an empty-baseline
+    // sentinel when the contract has no activity yet, and emit nothing so opening
+    // the app does not replay history. Keying off has() rather than an undefined
+    // value means a contract that baselines empty is not rebaselined on its first
+    // real event (which would otherwise be swallowed).
+    if (!this.lastSeen.has(contractId)) {
       const { events } = await this.fetchEventsPage(
         contractId,
         EVENTS_PER_POLL,
         0,
       );
-      if (events.length > 0) this.lastSeen.set(contractId, events[0].id);
+      this.lastSeen.set(
+        contractId,
+        events.length > 0 ? events[0].id : EMPTY_BASELINE,
+      );
       return [];
     }
+
+    const previous = this.lastSeen.get(contractId);
 
     // Results are newest-first. Page through until we find the previous cursor,
     // exhaust the source, or hit the safety cap, so a burst larger than one page

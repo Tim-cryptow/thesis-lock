@@ -117,14 +117,24 @@ export default function StatsClient() {
   }, [liveEvents]);
 
   const totalAnchors = (stats?.totalAnchors ?? 0) + liveAnchors;
-  // The activity chart's most recent bar is the current day; grow it live.
-  const anchorsByDay = stats
-    ? stats.anchorsByDay.map((d, i) =>
-        i === stats.anchorsByDay.length - 1
-          ? { ...d, count: d.count + liveAnchors }
-          : d,
-      )
-    : [];
+  // Layer live anchors onto the activity chart. /api/stats only returns days
+  // that already have activity, so the last bucket may be an earlier day (or
+  // there may be none yet). Grow today's bucket if it exists, otherwise append
+  // one, so live anchors always land on the correct UTC day instead of an older
+  // bar or vanishing while the total counter climbs.
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const anchorsByDay = (() => {
+    if (!stats) return [];
+    const days = stats.anchorsByDay;
+    if (liveAnchors === 0) return days;
+    const last = days[days.length - 1];
+    if (last && last.date === todayIso) {
+      return days.map((d, i) =>
+        i === days.length - 1 ? { ...d, count: d.count + liveAnchors } : d,
+      );
+    }
+    return [...days, { date: todayIso, count: liveAnchors }];
+  })();
 
   const maxDayCount = anchorsByDay.reduce(
     (max, d) => Math.max(max, d.count),
