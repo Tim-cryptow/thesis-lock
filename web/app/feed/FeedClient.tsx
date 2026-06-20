@@ -252,13 +252,18 @@ export default function FeedClient() {
     const nextLimit = requestedLimit + PAGE_SIZE;
     try {
       const grown = await fetchRecentAnchors(nextLimit);
-      if (grown.length <= entries.length) {
-        setHasMore(false);
-      } else {
-        setEntries(grown);
-        setRequestedLimit(nextLimit);
-        setHasMore(grown.length >= nextLimit);
-      }
+      // End-of-feed depends on the fetched page size, not entries.length, which
+      // live prepends inflate (and would otherwise hide the button early). A
+      // page shorter than requested means there are no older rows left.
+      setHasMore(grown.length >= nextLimit);
+      setRequestedLimit(nextLimit);
+      // Keep any live-prepended rows the fetched page does not yet include on
+      // top, so the visible list never shrinks on load more.
+      setEntries((prev) => {
+        const grownKeys = new Set(grown.map(entryKey));
+        const livePrepends = prev.filter((e) => !grownKeys.has(entryKey(e)));
+        return [...livePrepends, ...grown];
+      });
     } catch {
       setError(t("feed.errors.loadMore"));
     } finally {

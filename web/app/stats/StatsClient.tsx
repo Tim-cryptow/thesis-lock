@@ -9,7 +9,7 @@ import ErrorFallback from "@/app/components/ErrorFallback";
 import LiveBadge from "@/app/components/LiveBadge";
 import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
-import { explorerAddressUrl } from "@/lib/stacks";
+import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
 const CONTRACT_ADDRESS =
@@ -101,15 +101,16 @@ export default function StatsClient() {
 
   // Count newly anchored documents as they stream in from the live poller.
   // A single anchor emits both an anchor and a follow-up registry event for the
-  // same hash, and batch rows arrive only as registry events. Dedupe by
-  // hash|owner so each document counts once, matching how /api/stats derives
-  // totalAnchors (single anchors plus batch rows, registry calls excluded).
+  // same hash, and batch documents arrive only as registry events. Count anchor
+  // events directly and validate registry events against the batch contract,
+  // deduped by hash|owner, so each document counts once and matches how
+  // /api/stats derives totalAnchors (single anchors plus batch rows, bare
+  // registry calls excluded).
   useEffect(() => {
     // First run after mount sets the baseline. LiveProvider is global, so its
-    // buffer can already hold anchors observed on other pages, and the
-    // /api/stats fetch started on mount may already include them. Record
-    // everything present now without counting it, and only count events that
-    // arrive afterwards, so the total and today's bar are not inflated.
+    // buffer can already hold anchors observed on other pages that the
+    // /api/stats fetch started on mount may already include. Record everything
+    // present now without counting it, and only count events that arrive after.
     if (!seededRef.current) {
       seededRef.current = true;
       for (const ev of liveEvents) {
@@ -120,17 +121,58 @@ export default function StatsClient() {
       }
       return;
     }
-    let added = 0;
-    for (const ev of liveEvents) {
-      if (processedRef.current.has(ev.id)) continue;
-      processedRef.current.add(ev.id);
-      if ((ev.kind !== "anchor" && ev.kind !== "registry") || !ev.hash) continue;
-      const key = `${ev.hash}|${ev.owner ?? ""}`;
-      if (countedRef.current.has(key)) continue;
-      countedRef.current.add(key);
-      added += 1;
-    }
-    if (added > 0) setLiveAnchors((n) => n + added);
+
+    let cancelled = false;
+    const run = async () => {
+      // Stage mutations locally and commit only if this run is still current,
+      // so a poll arriving mid-validation cannot double-count or strand a key.
+      const processed = new Set<string>();
+      const counted = new Set(countedRef.current);
+      let added = 0;
+      for (const ev of liveEvents) {
+        if (processedRef.current.has(ev.id) || processed.has(ev.id)) continue;
+        const hash = ev.hash;
+        if (!hash) continue;
+        const key = `${hash}|${ev.owner ?? ""}`;
+        if (ev.kind === "anchor") {
+          // A single anchor counts directly, deduped by hash|owner.
+          processed.add(ev.id);
+          if (!counted.has(key)) {
+            counted.add(key);
+            added += 1;
+          }
+        } else if (ev.kind === "registry" && ev.owner) {
+          // A registry print counts only once it resolves to a real batch row.
+          // /api/stats excludes bare registry calls, and a single anchor's
+          // follow-up registry is already counted via its anchor event, so
+          // validate against the batch contract (as the feed does) to avoid
+          // inflating on a standalone register-anchor call.
+          if (counted.has(key)) {
+            processed.add(ev.id);
+            continue;
+          }
+          try {
+            const batch = await readBatchAnchor(hash, ev.owner);
+            if (cancelled) return;
+            processed.add(ev.id);
+            if (batch) {
+              counted.add(key);
+              added += 1;
+            }
+          } catch {
+            // Transient failure: leave unprocessed to retry on the next poll.
+          }
+        }
+      }
+      if (cancelled) return;
+      for (const id of processed) processedRef.current.add(id);
+      countedRef.current = counted;
+      if (added > 0) setLiveAnchors((n) => n + added);
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
   }, [liveEvents]);
 
   const totalAnchors = (stats?.totalAnchors ?? 0) + liveAnchors;
