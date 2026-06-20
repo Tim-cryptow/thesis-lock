@@ -14,6 +14,7 @@ import {
   type Rating,
   type VitalSummary,
   type WebVitalName,
+  PERF_FLUSH_EVENT,
   VITAL_NAMES,
   clearPerformanceData,
   getApiMetricsSummary,
@@ -109,6 +110,12 @@ export default function PerformanceClient() {
   );
 
   useEffect(() => {
+    // Ask the always-mounted tracker to flush the current session's LCP, CLS,
+    // and INP before reading. The listener runs synchronously, so the values
+    // are in the store by the time the summaries are computed below.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(PERF_FLUSH_EVENT));
+    }
     setVitals(getVitalsSummary(days));
     setPages(getPageMetricsSummary(days));
     setApis(getApiMetricsSummary(days));

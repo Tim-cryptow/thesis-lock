@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import {
+  PERF_FLUSH_EVENT,
   ratingFor,
   recordPageMetric,
   recordVital,
@@ -30,8 +31,9 @@ export default function PerformanceTracker() {
   }, [pathname]);
 
   // Web Vitals: set up observers once. FCP, TTFB, and FID report as soon as they
-  // are known; LCP, CLS, and INP accumulate and are finalized when the page is
-  // hidden or unmounted (a reasonable approximation of the official algorithm).
+  // are known; LCP, CLS, and INP accumulate and are flushed when the page is
+  // hidden, on unmount, or on demand when the dashboard opens (a reasonable
+  // approximation of the official algorithm).
   useEffect(() => {
     if (
       typeof window === "undefined" ||
@@ -90,10 +92,29 @@ export default function PerformanceTracker() {
       if (last) lcp = last.startTime;
     }, { type: "largest-contentful-paint", buffered: true });
 
+    // CLS is the largest "session window" of layout shifts, not the lifetime
+    // sum: shifts within 1s of each other and 5s of the window start belong to
+    // the same window, and CLS is the worst such window. Summing every shift
+    // would over-rate long-lived SPA sessions.
     let cls = 0;
+    let clsWindow = 0;
+    let clsFirst = 0;
+    let clsPrev = 0;
     observe((list) => {
       for (const entry of list.getEntries() as LayoutShiftEntry[]) {
-        if (!entry.hadRecentInput) cls += entry.value;
+        if (entry.hadRecentInput) continue;
+        if (
+          clsWindow !== 0 &&
+          entry.startTime - clsPrev < 1000 &&
+          entry.startTime - clsFirst < 5000
+        ) {
+          clsWindow += entry.value;
+        } else {
+          clsWindow = entry.value;
+          clsFirst = entry.startTime;
+        }
+        clsPrev = entry.startTime;
+        if (clsWindow > cls) cls = clsWindow;
       }
     }, { type: "layout-shift", buffered: true });
 
@@ -112,25 +133,41 @@ export default function PerformanceTracker() {
       { type: "event", buffered: true, durationThreshold: 40 } as PerformanceObserverInit,
     );
 
-    let finalized = false;
-    const finalize = () => {
-      if (finalized) return;
-      finalized = true;
-      if (lcp > 0) report("LCP", lcp);
-      report("CLS", cls);
-      if (inp > 0) report("INP", inp);
+    // LCP, CLS, and INP are not known to be final until the page is hidden, but
+    // this tracker never unmounts on SPA navigation, so a snapshot is also
+    // flushed on demand when the dashboard opens. Each value is recorded only
+    // when it changed since the last flush, so repeated flushes (open the
+    // dashboard, hide the tab, reopen) never duplicate samples.
+    let recordedLcp = -1;
+    let recordedCls = -1;
+    let recordedInp = -1;
+    const snapshot = () => {
+      if (lcp > 0 && lcp !== recordedLcp) {
+        report("LCP", lcp);
+        recordedLcp = lcp;
+      }
+      if (cls !== recordedCls) {
+        report("CLS", cls);
+        recordedCls = cls;
+      }
+      if (inp > 0 && inp !== recordedInp) {
+        report("INP", inp);
+        recordedInp = inp;
+      }
     };
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") finalize();
+      if (document.visibilityState === "hidden") snapshot();
     };
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", finalize);
+    window.addEventListener("pagehide", snapshot);
+    window.addEventListener(PERF_FLUSH_EVENT, snapshot);
 
     return () => {
       observers.forEach((o) => o.disconnect());
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", finalize);
-      finalize();
+      window.removeEventListener("pagehide", snapshot);
+      window.removeEventListener(PERF_FLUSH_EVENT, snapshot);
+      snapshot();
     };
   }, []);
 

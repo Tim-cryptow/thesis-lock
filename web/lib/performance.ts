@@ -50,6 +50,12 @@ export const VITAL_NAMES: WebVitalName[] = [
   "FID",
 ];
 
+// LCP, CLS, and INP are only known to be final once the page is hidden, but the
+// tracker lives for the whole SPA session and never unmounts on navigation. The
+// dashboard dispatches this event before it reads so the current session's
+// vitals are flushed to the store first, instead of showing no data.
+export const PERF_FLUSH_EVENT = "thesislock:perf-flush";
+
 // Google's Core Web Vitals thresholds: at or below `good` is good, at or below
 // `poor` needs improvement, above `poor` is poor.
 const THRESHOLDS: Record<WebVitalName, { good: number; poor: number }> = {
