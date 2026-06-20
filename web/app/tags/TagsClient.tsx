@@ -6,6 +6,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
+import { knownVerifyHrefs } from "@/lib/collections";
 import {
   TAGS_CHANGED_EVENT,
   deleteTag,
@@ -90,6 +91,9 @@ export default function TagsClient() {
 
   const topTags = tags.slice(0, 10);
   const activeHashes = activeTag ? getHashesByTag(activeTag) : [];
+  // Prefer a pinned verify path (batch owner or group row) recorded by a
+  // collection item, so a tagged batch/group anchor resolves correctly.
+  const activeVerifyHrefs = knownVerifyHrefs(activeHashes);
 
   return (
     <div className="flex-1 max-w-5xl mx-auto px-6 py-12 w-full">
@@ -195,7 +199,7 @@ export default function TagsClient() {
                   {activeHashes.map((hash) => (
                     <li key={hash}>
                       <Link
-                        href={`/v/${hash}`}
+                        href={activeVerifyHrefs.get(hash) ?? `/v/${hash}`}
                         className="font-mono text-xs text-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
                       >
                         {truncateHash(hash)}

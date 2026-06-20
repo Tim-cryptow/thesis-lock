@@ -415,6 +415,24 @@ export function collectionsContaining(hash: string): string[] {
     .map((c) => c.id);
 }
 
+// Pinned verify paths for the given hashes, drawn from any collection item that
+// recorded one (an owner-keyed batch anchor or an exact group row). Lets links
+// elsewhere, like the tags page, resolve the same record a bare /v/<hash> might
+// miss. Loads collections once for the whole set.
+export function knownVerifyHrefs(hashes: string[]): Map<string, string> {
+  const wanted = new Set(hashes.map(normalizeHash));
+  const out = new Map<string, string>();
+  if (wanted.size === 0) return out;
+  for (const c of loadCollections()) {
+    for (const item of c.items) {
+      if (wanted.has(item.hash) && item.verifyUrl && !out.has(item.hash)) {
+        out.set(item.hash, itemVerifyHref(item));
+      }
+    }
+  }
+  return out;
+}
+
 // Pretty-printed JSON of a single collection, for the Export action and as the
 // payload that gets base64-encoded into a share link.
 // A collection with each item's tags attached, so the JSON export and the
