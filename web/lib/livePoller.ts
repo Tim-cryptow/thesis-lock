@@ -19,10 +19,15 @@ const HIRO_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 const MAX_BACKOFF_MS = 60_000;
-// How many events to request per contract per poll. New activity is rare
-// relative to the poll interval, so a small window is enough to catch every
-// new event between two polls.
+// How many events to request on the first page of each poll. New activity is
+// usually sparse relative to the interval, so a small window is normally enough.
 const EVENTS_PER_POLL = 5;
+// When a burst (e.g. a ten-file batch registers ten events at once) pushes the
+// previous cursor off the first page, keep paging with a larger window until we
+// find it again. Hiro caps `limit` at 50.
+const PAGE_CHASE_SIZE = 50;
+// Stop chasing after this many events so a long gap can never loop unbounded.
+const BURST_SAFETY_CAP = 200;
 
 export type LiveEventKind =
   | "anchor"
@@ -250,8 +255,12 @@ export class LivePoller {
     }, this.currentDelay());
   }
 
-  private async pollContract(contractId: string): Promise<LiveEvent[]> {
-    const url = `${HIRO_BASE}/extended/v1/contract/${contractId}/events?limit=${EVENTS_PER_POLL}`;
+  private async fetchEventsPage(
+    contractId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ events: LiveEvent[]; rawCount: number }> {
+    const url = `${HIRO_BASE}/extended/v1/contract/${contractId}/events?limit=${limit}&offset=${offset}`;
     const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`events ${contractId}: ${res.status}`);
@@ -261,30 +270,62 @@ export class LivePoller {
     const contractName = contractNameOf(contractId);
     const now = Date.now();
 
-    const parsed: LiveEvent[] = [];
+    const events: LiveEvent[] = [];
     for (const raw of results) {
       const ev = parseEvent(raw, contractId, contractName, now);
-      if (ev) parsed.push(ev);
+      if (ev) events.push(ev);
     }
-    if (parsed.length === 0) return [];
+    return { events, rawCount: results.length };
+  }
 
+  private async pollContract(contractId: string): Promise<LiveEvent[]> {
     const previous = this.lastSeen.get(contractId);
-    // Record the newest event id for next time regardless of outcome.
-    const newest = parsed[0].id;
 
+    // First poll: baseline only. Record the newest event id and emit nothing
+    // so opening the app does not replay history.
     if (previous === undefined) {
-      // First poll: baseline only, emit nothing.
-      this.lastSeen.set(contractId, newest);
+      const { events } = await this.fetchEventsPage(
+        contractId,
+        EVENTS_PER_POLL,
+        0,
+      );
+      if (events.length > 0) this.lastSeen.set(contractId, events[0].id);
       return [];
     }
 
-    // Results are newest-first; collect everything ahead of the last seen id.
+    // Results are newest-first. Page through until we find the previous cursor,
+    // exhaust the source, or hit the safety cap, so a burst larger than one page
+    // does not strand the older new events.
     const fresh: LiveEvent[] = [];
-    for (const ev of parsed) {
-      if (ev.id === previous) break;
-      fresh.push(ev);
+    let newest: string | undefined;
+    let offset = 0;
+    let limit = EVENTS_PER_POLL;
+    while (offset < BURST_SAFETY_CAP) {
+      const { events, rawCount } = await this.fetchEventsPage(
+        contractId,
+        limit,
+        offset,
+      );
+      if (events.length === 0) break;
+      if (newest === undefined) newest = events[0].id;
+
+      let found = false;
+      for (const ev of events) {
+        if (ev.id === previous) {
+          found = true;
+          break;
+        }
+        fresh.push(ev);
+      }
+      if (found) break;
+      // A short page means the source is exhausted.
+      if (rawCount < limit) break;
+      offset += rawCount;
+      // Escalate the window while chasing so we close the gap quickly.
+      limit = PAGE_CHASE_SIZE;
     }
-    this.lastSeen.set(contractId, newest);
+
+    if (newest !== undefined) this.lastSeen.set(contractId, newest);
     // Oldest-first so callers can prepend in chronological order.
     return fresh.reverse();
   }

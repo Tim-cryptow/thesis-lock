@@ -12,11 +12,6 @@ import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
-// Live events that represent a newly anchored document, counted toward the
-// running totals. Single anchors and registry entries each carry a hash;
-// batch print events do not, so registry entries stand in for batch anchors.
-const COUNTED_KINDS = new Set(["anchor", "registry"]);
-
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
   "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
@@ -77,7 +72,10 @@ export default function StatsClient() {
   // fetched totals so the numbers move without a refetch.
   const [liveAnchors, setLiveAnchors] = useState(0);
   const { events: liveEvents } = useLive();
+  // Live event ids already inspected.
   const processedRef = useRef<Set<string>>(new Set());
+  // hash|owner of documents already counted, so each is counted once.
+  const countedRef = useRef<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -98,14 +96,22 @@ export default function StatsClient() {
     void load();
   }, [load]);
 
-  // Count new countable anchors as they stream in from the live poller.
+  // Count newly anchored documents as they stream in from the live poller.
+  // A single anchor emits both an anchor and a follow-up registry event for the
+  // same hash, and batch rows arrive only as registry events. Dedupe by
+  // hash|owner so each document counts once, matching how /api/stats derives
+  // totalAnchors (single anchors plus batch rows, registry calls excluded).
   useEffect(() => {
     if (liveEvents.length === 0) return;
     let added = 0;
     for (const ev of liveEvents) {
       if (processedRef.current.has(ev.id)) continue;
       processedRef.current.add(ev.id);
-      if (COUNTED_KINDS.has(ev.kind)) added += 1;
+      if ((ev.kind !== "anchor" && ev.kind !== "registry") || !ev.hash) continue;
+      const key = `${ev.hash}|${ev.owner ?? ""}`;
+      if (countedRef.current.has(key)) continue;
+      countedRef.current.add(key);
+      added += 1;
     }
     if (added > 0) setLiveAnchors((n) => n + added);
   }, [liveEvents]);

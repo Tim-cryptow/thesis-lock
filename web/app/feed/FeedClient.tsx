@@ -13,7 +13,7 @@ import LiveBadge from "@/app/components/LiveBadge";
 import { useLive } from "@/app/components/LiveProvider";
 import type { LiveEvent } from "@/lib/livePoller";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
-import { explorerTxUrl } from "@/lib/stacks";
+import { explorerTxUrl, readBatchAnchor } from "@/lib/stacks";
 import { truncateAddress } from "@/lib/wallet";
 
 const PAGE_SIZE = 20;
@@ -109,6 +109,10 @@ export default function FeedClient() {
   const { events: liveEvents } = useLive();
   // Live event ids already merged into the feed, so each is handled once.
   const processedRef = useRef<Set<string>>(new Set());
+  // Mirror of the current entries so the live merge can dedupe without
+  // depending on the entries state (which would re-run the merge on every
+  // prepend).
+  const entriesRef = useRef<FeedEntry[]>([]);
 
   const refresh = useCallback(
     async (n: number, silent = false) => {
@@ -139,27 +143,74 @@ export default function FeedClient() {
     return () => clearInterval(id);
   }, []);
 
-  // Merge live single-anchor events into the feed as they arrive, newest on
-  // top, with a brief glow. Batch and registry rows still come from the
-  // initial fetch; only single anchors carry a hash in their print event.
+  // Keep the entries mirror in sync for the live merge's dedupe.
+  useEffect(() => {
+    entriesRef.current = entries;
+  }, [entries]);
+
+  // Merge live events into the feed as they arrive, newest on top, with a brief
+  // glow. Single anchors map directly to a row. Batch documents arrive as
+  // registry events, so each is validated against the batch map (mirroring
+  // fetchRecentAnchors): a single-anchor re-index resolves to none and is
+  // dropped, a real batch row resolves and carries the authoritative block.
   useEffect(() => {
     if (liveEvents.length === 0) return;
-    setEntries((prev) => {
-      const existing = new Set(prev.map(entryKey));
-      const fresh: FeedEntry[] = [];
+    let cancelled = false;
+
+    const run = async () => {
+      const anchorFresh: FeedEntry[] = [];
+      const registryEvents: LiveEvent[] = [];
       for (const ev of liveEvents) {
-        if (ev.kind !== "anchor" || !ev.hash) continue;
         if (processedRef.current.has(ev.id)) continue;
-        processedRef.current.add(ev.id);
-        const entry = liveToFeedEntry(ev);
-        const key = entryKey(entry);
-        if (existing.has(key)) continue;
-        existing.add(key);
-        fresh.push(entry);
+        if (ev.kind === "anchor" && ev.hash) {
+          processedRef.current.add(ev.id);
+          anchorFresh.push(liveToFeedEntry(ev));
+        } else if (ev.kind === "registry" && ev.hash && ev.owner) {
+          registryEvents.push(ev);
+        }
       }
-      if (fresh.length === 0) return prev;
+
+      const validated: FeedEntry[] = [];
+      for (const ev of registryEvents) {
+        try {
+          const batch = await readBatchAnchor(
+            ev.hash as string,
+            ev.owner as string,
+          );
+          processedRef.current.add(ev.id);
+          if (batch) {
+            validated.push({
+              hash: ev.hash as string,
+              label: batch.label || ev.label || "",
+              owner: ev.owner as string,
+              stacksBlock: batch.stacksBlock,
+              timestamp: new Date(ev.receivedAt).toISOString(),
+              txId: ev.txId,
+              source: "batch",
+            });
+          }
+        } catch {
+          // Transient lookup failure: leave it unprocessed to retry next poll.
+        }
+      }
+
+      if (cancelled) return;
+
+      const incoming = [...anchorFresh, ...validated];
+      if (incoming.length === 0) return;
+      incoming.sort((a, b) => b.stacksBlock - a.stacksBlock);
+
+      const existing = new Set(entriesRef.current.map(entryKey));
+      const fresh = incoming.filter((e) => {
+        const k = entryKey(e);
+        if (existing.has(k)) return false;
+        existing.add(k);
+        return true;
+      });
+      if (fresh.length === 0) return;
 
       const keys = fresh.map(entryKey);
+      setEntries((prev) => [...fresh, ...prev]);
       setGlowKeys((g) => {
         const next = new Set(g);
         keys.forEach((k) => next.add(k));
@@ -177,8 +228,12 @@ export default function FeedClient() {
       if (typeof window !== "undefined" && window.scrollY > 200) {
         setNewBannerCount((c) => c + fresh.length);
       }
-      return [...fresh, ...prev];
-    });
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
   }, [liveEvents]);
 
   // Clear the "new anchors" banner once the user returns to the top.
