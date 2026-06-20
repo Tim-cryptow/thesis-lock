@@ -16,6 +16,9 @@ import CommandPalette from "./components/CommandPalette";
 import RouteVisitRecorder from "./components/RouteVisitRecorder";
 import { LiveProvider } from "./components/LiveProvider";
 import LiveTicker from "./components/LiveTicker";
+import { NotificationProvider } from "./components/NotificationProvider";
+import NotificationBell from "./components/NotificationBell";
+import NotificationSound from "./components/NotificationSound";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -113,18 +116,22 @@ export default function RootLayout({
               <ServiceWorkerRegistration />
               <KeyboardShortcuts />
               <LiveProvider>
-                <TourProvider>
-                  <LiveTicker />
-                  <main
-                    id="main-content"
-                    tabIndex={-1}
-                    className="flex-1 flex flex-col"
-                  >
-                    <ErrorBoundary>{children}</ErrorBoundary>
-                  </main>
-                  <CommandPalette />
-                  <RouteVisitRecorder />
-                </TourProvider>
+                <NotificationProvider>
+                  <TourProvider>
+                    <LiveTicker />
+                    <NotificationBell />
+                    <NotificationSound />
+                    <main
+                      id="main-content"
+                      tabIndex={-1}
+                      className="flex-1 flex flex-col"
+                    >
+                      <ErrorBoundary>{children}</ErrorBoundary>
+                    </main>
+                    <CommandPalette />
+                    <RouteVisitRecorder />
+                  </TourProvider>
+                </NotificationProvider>
               </LiveProvider>
               <TxToast />
               <InstallPrompt />

@@ -161,6 +161,10 @@ export const en = {
         title: "Collections",
         body: "Organize anchored documents into named, shareable collections, like playlists for your proofs.",
       },
+      notifications: {
+        title: "Notifications",
+        body: "A unified notification center for transaction confirmations, watchlist updates, new anchors, and group activity, with browser push and sound alerts.",
+      },
     },
     contracts: {
       heading: "Built on 5 smart contracts on Stacks mainnet",

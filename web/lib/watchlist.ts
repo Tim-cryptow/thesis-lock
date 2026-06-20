@@ -14,6 +14,7 @@ import {
   readBatchAnchor,
 } from "./stacks";
 import { type SearchResult, discoverBatchAndGroupAnchors } from "./search";
+import { addNotification } from "./notifications";
 
 const STORAGE_KEY = "thesislock_watchlist";
 
@@ -350,6 +351,68 @@ export function applyCheck(item: WatchItem, status: WatchStatus): WatchItem {
   return next;
 }
 
+function shortenValue(value: string): string {
+  if (value.length <= 16) return value;
+  return `${value.slice(0, 8)}...${value.slice(-4)}`;
+}
+
+// Builds the verify or detail link for a watched item, preferring source keys
+// discovered during the check so the link targets the exact record.
+function watchTargetUrl(item: WatchItem, status: WatchStatus): string {
+  if (item.type === "wallet") return `/u/${item.value}`;
+  if (item.type === "group") return `/groups/${item.value}`;
+  const groupId = status.groupId ?? item.context?.groupId;
+  const groupIndex = status.groupIndex ?? item.context?.groupIndex;
+  if (groupId !== undefined && groupIndex !== undefined) {
+    return `/v/${item.value}?group=${groupId}&gi=${groupIndex}`;
+  }
+  const owner = status.owner ?? item.context?.owner;
+  if (owner) return `/v/${item.value}?owner=${encodeURIComponent(owner)}`;
+  return `/v/${item.value}`;
+}
+
+// Emits a watchlist notification when an item's status changed meaningfully
+// since the previous check: a watched hash became anchored, or a watched wallet
+// or group gained anchors.
+function notifyWatchChange(
+  item: WatchItem,
+  prior: WatchStatus | null,
+  status: WatchStatus,
+): void {
+  const name = item.label || shortenValue(item.value);
+  if (item.type === "hash") {
+    // Only notify on a real transition observed while watching: require a prior
+    // check that was not yet verified. A first check that finds the hash already
+    // anchored is a baseline, not news.
+    if (status.verified && prior !== null && prior.verified !== true) {
+      addNotification({
+        type: "watchlist_update",
+        title: "Watched hash anchored",
+        message: `${name} is now anchored on chain.`,
+        icon: "watch",
+        priority: "medium",
+        actionUrl: watchTargetUrl(item, status),
+        actionLabel: "Verify",
+      });
+    }
+    return;
+  }
+  const gained = status.newAnchors ?? 0;
+  if (gained > 0) {
+    const noun = gained === 1 ? "anchor" : "anchors";
+    addNotification({
+      type: "watchlist_update",
+      title:
+        item.type === "group" ? "New group activity" : "New wallet activity",
+      message: `${name} has ${gained} new ${noun}.`,
+      icon: "watch",
+      priority: "low",
+      actionUrl: watchTargetUrl(item, status),
+      actionLabel: "View",
+    });
+  }
+}
+
 // Checks every item, stamping lastChecked and lastStatus, and persists the
 // result. The cheap per-item checks run first; any bare hash that is still
 // unresolved is then resolved with a single shared batch/group event scan,
@@ -400,17 +463,36 @@ export async function checkAllWatches(
     }
   }
 
+  // Track which items got a freshly computed status this run. Items whose
+  // status was preserved (a cheap-check or discovery failure) keep their old
+  // lastStatus and must not re-notify, or a transient Hiro outage would replay
+  // updates that were already reported.
+  const refreshed = new Set<string>();
   const checked = cheap.map(({ item, status }) => {
     // The cheap check itself failed: indeterminate, keep prior status.
     if (status === null) return { ...item, lastChecked: nowIso() };
     if (item.type === "hash" && !status.verified) {
       const result = discovered.get(item.value);
-      if (result) return applyCheck(item, statusFromResult(item, result));
+      if (result) {
+        refreshed.add(item.id);
+        return applyCheck(item, statusFromResult(item, result));
+      }
       // Scan failed, so we cannot conclude "not found": preserve prior status.
       if (discoveryFailed) return { ...item, lastChecked: nowIso() };
     }
+    refreshed.add(item.id);
     return applyCheck(item, status);
   });
+
+  // Surface meaningful status changes as notifications, but only for items
+  // refreshed in this run, comparing each item's fresh status against the
+  // snapshot this check started from.
+  const priorById = new Map(items.map((i) => [i.id, i.lastStatus ?? null]));
+  for (const item of checked) {
+    if (!refreshed.has(item.id)) continue;
+    if (item.notifications === false || !item.lastStatus) continue;
+    notifyWatchChange(item, priorById.get(item.id) ?? null, item.lastStatus);
+  }
 
   // Merge back into whatever the list is now, not the snapshot we started with,
   // so a concurrent add or remove (another tab, a watch button) is not clobbered

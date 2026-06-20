@@ -21,6 +21,7 @@ import {
   type GroupAnchor,
 } from "@/lib/stacks";
 import { fetchGroupMembers } from "@/lib/groups";
+import { addNotification } from "@/lib/notifications";
 import { stageReportInput } from "@/lib/reportLink";
 import { formatBytes } from "@/lib/format";
 import { truncateAddress, useWallet } from "@/lib/wallet";
@@ -127,6 +128,15 @@ export default function GroupDetailPage() {
       () => {
         setAddPending(false);
         setNewMember("");
+        addNotification({
+          type: "group_invite",
+          title: "Adding group member",
+          message: `You submitted a transaction to add ${truncateAddress(value)} to this group; it takes effect once confirmed.`,
+          icon: "group",
+          priority: "low",
+          actionUrl: `/groups/${groupId}`,
+          actionLabel: "View group",
+        });
       },
       () => setAddPending(false),
     );
