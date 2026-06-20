@@ -273,6 +273,9 @@ export default function AnchorsPage() {
             {t("common.nav.anchor")}
           </Link>
           <span className="text-foreground font-medium">{t("common.nav.myAnchors")}</span>
+          <Link href="/tags" className="text-foreground/60 hover:text-foreground">
+            Tags
+          </Link>
           {address && (
             <Link
               href={`/u/${address}`}

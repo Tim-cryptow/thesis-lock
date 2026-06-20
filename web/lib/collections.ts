@@ -5,6 +5,8 @@
 // shared by encoding the whole collection into a link. Status of any hash is
 // still resolved through the same public Hiro API the rest of the app uses.
 
+import { getTagsForHash, setTagsForHash } from "./tags";
+
 const STORAGE_KEY = "thesislock_collections";
 
 // Dispatched on the window whenever the stored collections change, so the nav
@@ -416,7 +418,32 @@ export function collectionsContaining(hash: string): string[] {
 // Pretty-printed JSON of a single collection, for the Export action and as the
 // payload that gets base64-encoded into a share link.
 export function exportCollection(collection: Collection): string {
-  return JSON.stringify(collection, null, 2);
+  // Include each item's tags so an exported collection round-trips them on
+  // import. Tags live in their own store keyed by hash, not on the item.
+  const withTags = {
+    ...collection,
+    items: collection.items.map((item) => ({
+      ...item,
+      tags: getTagsForHash(item.hash),
+    })),
+  };
+  return JSON.stringify(withTags, null, 2);
+}
+
+// Restores any tags carried by an imported collection's items, merging with
+// existing tags so an import never drops what the user already had.
+function applyImportedTags(parsed: unknown): void {
+  if (!parsed || typeof parsed !== "object") return;
+  const items = (parsed as { items?: unknown }).items;
+  if (!Array.isArray(items)) return;
+  for (const raw of items) {
+    if (!raw || typeof raw !== "object") continue;
+    const v = raw as Record<string, unknown>;
+    if (typeof v.hash !== "string" || !Array.isArray(v.tags)) continue;
+    const tags = v.tags.filter((t): t is string => typeof t === "string");
+    if (tags.length === 0) continue;
+    setTagsForHash(v.hash, [...getTagsForHash(v.hash), ...tags]);
+  }
 }
 
 // Parses a collection from JSON, assigning a fresh id and timestamps so an
@@ -426,6 +453,7 @@ export function importCollection(json: string): Collection {
   const parsed: unknown = JSON.parse(json);
   const coerced = coerceCollection(parsed);
   if (!coerced) throw new Error("Not a valid collection.");
+  applyImportedTags(parsed);
   const ts = nowIso();
   const collection: Collection = {
     ...coerced,

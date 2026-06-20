@@ -68,6 +68,9 @@ export default function Footer() {
           <Link href="/performance" className="hover:text-foreground transition">
             Performance
           </Link>
+          <Link href="/tags" className="hover:text-foreground transition">
+            Tags
+          </Link>
           <LiveBadge />
           <LanguageSwitcher />
           <ThemeToggle />

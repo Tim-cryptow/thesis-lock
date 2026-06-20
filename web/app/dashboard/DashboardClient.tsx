@@ -322,6 +322,9 @@ export default function DashboardClient() {
           >
             {t("common.nav.myAnchors")}
           </Link>
+          <Link href="/tags" className="text-foreground/60 hover:text-foreground">
+            Tags
+          </Link>
           {address && (
             <Link
               href={`/u/${address}`}
