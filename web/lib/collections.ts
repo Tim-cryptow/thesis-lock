@@ -141,15 +141,34 @@ export function itemVerifyHref(item: CollectionItem): string {
     : `/v/${item.hash}`;
 }
 
-// The owner principal encoded in an item's pinned verify path, if any. Used to
-// carry per-item context into the report builder so it resolves the same
-// owner-keyed batch record the item was collected from.
-export function itemOwner(item: CollectionItem): string | undefined {
-  if (!item.verifyUrl || verifyPathHash(item.verifyUrl) !== item.hash) {
-    return undefined;
+// The owner principal or specific group row pinned by an item's verify path.
+// Used to carry per-item context into the report builder and bulk verifier so
+// they resolve the exact record the item was collected from (an owner-keyed
+// batch anchor, or a precise { group-id, index } group row) instead of a global
+// single anchor that may describe a different owner/label/block for the hash.
+export type ItemVerifyContext = {
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
+};
+
+export function itemVerifyContext(item: CollectionItem): ItemVerifyContext {
+  if (!item.verifyUrl || verifyPathHash(item.verifyUrl) !== item.hash) return {};
+  const ctx: ItemVerifyContext = {};
+  const ownerMatch = /[?&]owner=([^&]+)/.exec(item.verifyUrl);
+  if (ownerMatch) ctx.owner = decodeURIComponent(ownerMatch[1]);
+  const groupMatch = /[?&]group=(\d+)(?:&|$)/.exec(item.verifyUrl);
+  const indexMatch = /[?&]gi=(\d+)(?:&|$)/.exec(item.verifyUrl);
+  if (groupMatch && indexMatch) {
+    ctx.groupId = Number(groupMatch[1]);
+    ctx.groupIndex = Number(indexMatch[1]);
   }
-  const m = /[?&]owner=([^&]+)/.exec(item.verifyUrl);
-  return m ? decodeURIComponent(m[1]) : undefined;
+  return ctx;
+}
+
+// Convenience accessor for the pinned owner principal alone.
+export function itemOwner(item: CollectionItem): string | undefined {
+  return itemVerifyContext(item).owner;
 }
 
 // Validates and normalizes a parsed collection, returning null when it lacks the

@@ -10,6 +10,7 @@ import { hashFile, getRecentAnchors, type RegistryEntry } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { downloadExport } from "@/lib/export";
 import { stageReportInput } from "@/lib/reportLink";
+import { stageBulkVerifyInput } from "@/lib/bulkVerifyLink";
 import {
   type Collection,
   type CollectionItem,
@@ -19,7 +20,7 @@ import {
   encodeCollection,
   exportCollection,
   getCollection,
-  itemOwner,
+  itemVerifyContext,
   itemVerifyHref,
   normalizeHash,
   removeFromCollection,
@@ -367,22 +368,46 @@ export default function CollectionDetailClient() {
   }, [collection]);
 
   const verifyAll = useCallback(() => {
-    if (hashes.length === 0) return;
-    router.push(`/verify-bulk?hashes=${hashes.join(",")}`);
-  }, [hashes, router]);
+    if (!collection || collection.items.length === 0) return;
+    // Stage per-item pinned context (owner-keyed batch or the exact group row)
+    // rather than a bare ?hashes= list, so the bulk verifier resolves the same
+    // record each item was collected from instead of a global single anchor that
+    // may describe a different owner/label/block for the same hash.
+    stageBulkVerifyInput(
+      collection.items.map((i) => {
+        const ctx = itemVerifyContext(i);
+        return {
+          hash: i.hash,
+          ...(i.label ? { name: i.label } : {}),
+          ...(ctx.owner ? { owner: ctx.owner } : {}),
+          ...(ctx.groupId !== undefined ? { groupId: ctx.groupId } : {}),
+          ...(ctx.groupIndex !== undefined
+            ? { groupIndex: ctx.groupIndex }
+            : {}),
+          ...(i.verifyUrl ? { verifyUrl: i.verifyUrl } : {}),
+        };
+      }),
+    );
+    router.push("/verify-bulk");
+  }, [collection, router]);
 
   const generateReport = useCallback(() => {
     if (!collection || collection.items.length === 0) return;
-    // Stage per-item context (the pinned owner) rather than a bare ?hashes= URL,
-    // so the report resolves the exact record each item was collected from
-    // instead of a global single anchor or a different owner's record.
+    // Stage per-item context (pinned owner or group row) rather than a bare
+    // ?hashes= URL, so the report resolves the exact record each item was
+    // collected from instead of a global single anchor, a different owner's
+    // batch, or a different group row for the same hash.
     stageReportInput(
       collection.items.map((i) => {
-        const owner = itemOwner(i);
+        const ctx = itemVerifyContext(i);
         return {
           hash: i.hash,
           ...(i.label ? { filename: i.label } : {}),
-          ...(owner ? { owner } : {}),
+          ...(ctx.owner ? { owner: ctx.owner } : {}),
+          ...(ctx.groupId !== undefined ? { groupId: ctx.groupId } : {}),
+          ...(ctx.groupIndex !== undefined
+            ? { groupIndex: ctx.groupIndex }
+            : {}),
         };
       }),
     );
