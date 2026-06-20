@@ -225,7 +225,10 @@ export function getApiMetricsSummary(
   }
   const out: Record<string, ApiSummary> = {};
   for (const [endpoint, list] of byEndpoint) {
-    const errors = list.filter((m) => m.status >= 400).length;
+    // status 0 marks a network-level failure (fetch rejected: offline, DNS,
+    // CORS, or a dropped connection), which must count as an error even though
+    // it is below 400, otherwise an outage can read as a 0% error rate.
+    const errors = list.filter((m) => m.status === 0 || m.status >= 400).length;
     const cached = list.filter((m) => m.cached).length;
     out[endpoint] = {
       avgResponse: average(list.map((m) => m.responseTime)),

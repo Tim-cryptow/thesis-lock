@@ -167,9 +167,23 @@ export default function PerformanceTracker() {
           // navigation timing unavailable; skip.
         }
       };
-      if (document.readyState === "complete") record();
-      else window.addEventListener("load", record, { once: true });
-      return;
+      if (document.readyState === "complete") {
+        // The load event has already fired, so loadEventEnd is populated.
+        record();
+        return;
+      }
+      // loadEventEnd is only set after the load event handler finishes, so
+      // reading it from inside the load listener yields 0. Defer by one task so
+      // a normal first page view does not store a 0 ms load time.
+      let timer: number | undefined;
+      const onLoad = () => {
+        timer = window.setTimeout(record, 0);
+      };
+      window.addEventListener("load", onLoad, { once: true });
+      return () => {
+        window.removeEventListener("load", onLoad);
+        if (timer !== undefined) window.clearTimeout(timer);
+      };
     }
 
     const start = performance.now();
