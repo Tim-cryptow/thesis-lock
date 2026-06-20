@@ -463,22 +463,33 @@ export async function checkAllWatches(
     }
   }
 
+  // Track which items got a freshly computed status this run. Items whose
+  // status was preserved (a cheap-check or discovery failure) keep their old
+  // lastStatus and must not re-notify, or a transient Hiro outage would replay
+  // updates that were already reported.
+  const refreshed = new Set<string>();
   const checked = cheap.map(({ item, status }) => {
     // The cheap check itself failed: indeterminate, keep prior status.
     if (status === null) return { ...item, lastChecked: nowIso() };
     if (item.type === "hash" && !status.verified) {
       const result = discovered.get(item.value);
-      if (result) return applyCheck(item, statusFromResult(item, result));
+      if (result) {
+        refreshed.add(item.id);
+        return applyCheck(item, statusFromResult(item, result));
+      }
       // Scan failed, so we cannot conclude "not found": preserve prior status.
       if (discoveryFailed) return { ...item, lastChecked: nowIso() };
     }
+    refreshed.add(item.id);
     return applyCheck(item, status);
   });
 
-  // Surface meaningful status changes as notifications, comparing each item's
-  // fresh status against the snapshot this check started from.
+  // Surface meaningful status changes as notifications, but only for items
+  // refreshed in this run, comparing each item's fresh status against the
+  // snapshot this check started from.
   const priorById = new Map(items.map((i) => [i.id, i.lastStatus ?? null]));
   for (const item of checked) {
+    if (!refreshed.has(item.id)) continue;
     if (item.notifications === false || !item.lastStatus) continue;
     notifyWatchChange(item, priorById.get(item.id) ?? null, item.lastStatus);
   }

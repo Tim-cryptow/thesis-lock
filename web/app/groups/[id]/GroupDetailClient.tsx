@@ -130,10 +130,10 @@ export default function GroupDetailPage() {
         setNewMember("");
         addNotification({
           type: "group_invite",
-          title: "Member added",
-          message: `You added ${truncateAddress(value)} to this group.`,
+          title: "Adding group member",
+          message: `You submitted a transaction to add ${truncateAddress(value)} to this group; it takes effect once confirmed.`,
           icon: "group",
-          priority: "medium",
+          priority: "low",
           actionUrl: `/groups/${groupId}`,
           actionLabel: "View group",
         });
