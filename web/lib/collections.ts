@@ -417,17 +417,21 @@ export function collectionsContaining(hash: string): string[] {
 
 // Pretty-printed JSON of a single collection, for the Export action and as the
 // payload that gets base64-encoded into a share link.
-export function exportCollection(collection: Collection): string {
-  // Include each item's tags so an exported collection round-trips them on
-  // import. Tags live in their own store keyed by hash, not on the item.
-  const withTags = {
+// A collection with each item's tags attached, so the JSON export and the
+// share-link payload both carry tags. Tags live in their own store keyed by
+// hash, not on the item, so they are read in here at serialize time.
+function collectionWithTags(collection: Collection) {
+  return {
     ...collection,
     items: collection.items.map((item) => ({
       ...item,
       tags: getTagsForHash(item.hash),
     })),
   };
-  return JSON.stringify(withTags, null, 2);
+}
+
+export function exportCollection(collection: Collection): string {
+  return JSON.stringify(collectionWithTags(collection), null, 2);
 }
 
 // Restores any tags carried by an imported collection's items, merging with
@@ -484,7 +488,7 @@ function fromBase64Url(s: string): string {
 // the inverse for the shared viewer. Unicode-safe (collections hold emoji and
 // free text), so we round-trip the bytes through TextEncoder/TextDecoder.
 export function encodeCollection(collection: Collection): string {
-  const json = JSON.stringify(collection);
+  const json = JSON.stringify(collectionWithTags(collection));
   if (typeof window === "undefined") {
     return toBase64Url(Buffer.from(json, "utf-8").toString("base64"));
   }
@@ -494,18 +498,28 @@ export function encodeCollection(collection: Collection): string {
   return toBase64Url(window.btoa(binary));
 }
 
-export function decodeCollection(encoded: string): Collection | null {
+// Decodes a share payload back to its raw JSON string, tags included. Importing
+// goes through this so the per-item tags that coerceCollection drops are not
+// lost before importCollection can apply them.
+export function decodeCollectionJson(encoded: string): string | null {
   try {
     const padded = fromBase64Url(encoded);
-    let json: string;
     if (typeof window === "undefined") {
-      json = Buffer.from(padded, "base64").toString("utf-8");
-    } else {
-      const binary = window.atob(padded);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      json = new TextDecoder().decode(bytes);
+      return Buffer.from(padded, "base64").toString("utf-8");
     }
+    const binary = window.atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+export function decodeCollection(encoded: string): Collection | null {
+  const json = decodeCollectionJson(encoded);
+  if (json === null) return null;
+  try {
     return coerceCollection(JSON.parse(json) as unknown);
   } catch {
     return null;

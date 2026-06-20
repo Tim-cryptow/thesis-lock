@@ -57,19 +57,16 @@ export default function TagInput({
   const [allTags, setAllTags] = useState<{ name: string; count: number }[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load the anchor's current tags after mount when the parent did not pass
-  // them, so the first server render stays empty and hydration matches. The
-  // parent's array is treated as a one-time default, so only its presence (not
-  // its identity) gates the load.
-  const hasInitial = initialTags !== undefined;
+  // After mount, and whenever tags change here, in another component, or in
+  // another tab, reload this anchor's tags and the known-tag list. Reloading the
+  // current hash keeps an open editor from committing stale state over a
+  // concurrent edit. The first render uses initialTags (or empty) so the server
+  // and client markup match before this runs.
   useEffect(() => {
-    if (!hasInitial) setTags(getTagsForHash(hash));
-  }, [hash, hasInitial]);
-
-  // Keep the autocomplete's known-tag list fresh across tabs and other inputs.
-  useEffect(() => {
-    const sync = () =>
+    const sync = () => {
+      setTags(getTagsForHash(hash));
       setAllTags(getAllTags().map((t) => ({ name: t.name, count: t.count })));
+    };
     sync();
     window.addEventListener(TAGS_CHANGED_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -77,7 +74,7 @@ export default function TagInput({
       window.removeEventListener(TAGS_CHANGED_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
-  }, []);
+  }, [hash]);
 
   // Close the dropdown when clicking outside the component.
   useEffect(() => {
