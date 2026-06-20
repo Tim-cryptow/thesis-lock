@@ -11,12 +11,14 @@ import {
 import {
   type Notification,
   type NotificationPreferences,
+  type NotificationType,
   addNotification as addNotificationStore,
   clearAll as clearAllStore,
   loadNotifications,
   loadPreferences,
   markAllRead as markAllReadStore,
   markRead as markReadStore,
+  removeNotification as removeNotificationStore,
   savePreferences,
   sendBrowserNotification,
   NOTIFICATIONS_CHANGED_EVENT,
@@ -25,6 +27,11 @@ import {
 
 type NewNotification = Omit<Notification, "id" | "timestamp" | "read">;
 
+// A patch can flip the master toggles and any subset of per-type toggles.
+type PreferencesPatch = Partial<Omit<NotificationPreferences, "types">> & {
+  types?: Partial<Record<NotificationType, boolean>>;
+};
+
 type NotificationContextValue = {
   notifications: Notification[];
   unreadCount: number;
@@ -32,8 +39,9 @@ type NotificationContextValue = {
   addNotification: (input: NewNotification) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
+  removeNotification: (id: string) => void;
   clearAll: () => void;
-  updatePreferences: (patch: Partial<NotificationPreferences>) => void;
+  updatePreferences: (patch: PreferencesPatch) => void;
 };
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
@@ -90,10 +98,14 @@ export function NotificationProvider({
 
   const markRead = useCallback((id: string) => markReadStore(id), []);
   const markAllRead = useCallback(() => markAllReadStore(), []);
+  const removeNotification = useCallback(
+    (id: string) => removeNotificationStore(id),
+    [],
+  );
   const clearAll = useCallback(() => clearAllStore(), []);
 
   const updatePreferences = useCallback(
-    (patch: Partial<NotificationPreferences>) => {
+    (patch: PreferencesPatch) => {
       setPreferences((prev) => {
         const next: NotificationPreferences = {
           ...prev,
@@ -120,6 +132,7 @@ export function NotificationProvider({
       addNotification,
       markRead,
       markAllRead,
+      removeNotification,
       clearAll,
       updatePreferences,
     }),
@@ -130,6 +143,7 @@ export function NotificationProvider({
       addNotification,
       markRead,
       markAllRead,
+      removeNotification,
       clearAll,
       updatePreferences,
     ],

@@ -206,6 +206,12 @@ export function clearAll(): void {
   saveNotifications([]);
 }
 
+export function removeNotification(id: string): void {
+  const list = loadNotifications();
+  if (!list.some((n) => n.id === id)) return;
+  saveNotifications(list.filter((n) => n.id !== id));
+}
+
 export function getUnreadCount(): number {
   return loadNotifications().filter((n) => !n.read).length;
 }
