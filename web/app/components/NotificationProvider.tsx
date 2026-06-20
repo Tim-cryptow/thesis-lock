@@ -148,18 +148,32 @@ export function NotificationProvider({
     for (const ev of liveEvents) {
       if (seenLiveRef.current.has(ev.id)) continue;
       seenLiveRef.current.add(ev.id);
-      if (ev.kind !== "anchor" || !ev.hash) continue;
-      addNotificationStore({
-        type: "new_anchor",
-        title: "New anchor",
-        message: ev.label
-          ? `New anchor: "${ev.label}"`
-          : "A new document was anchored on chain.",
-        icon: "anchor",
-        priority: "low",
-        actionUrl: `/v/${ev.hash}`,
-        actionLabel: "Verify",
-      });
+      if (!ev.hash) continue;
+      if (ev.kind === "anchor") {
+        addNotificationStore({
+          type: "new_anchor",
+          title: "New anchor",
+          message: ev.label
+            ? `New anchor: "${ev.label}"`
+            : "A new document was anchored on chain.",
+          icon: "anchor",
+          priority: "low",
+          actionUrl: `/v/${ev.hash}`,
+          actionLabel: "Verify",
+        });
+      } else if (ev.kind === "proof") {
+        addNotificationStore({
+          type: "proof_minted",
+          title: "Proof minted",
+          message: ev.label
+            ? `A proof NFT was minted: "${ev.label}"`
+            : "A proof NFT was minted on chain.",
+          icon: "proof",
+          priority: "low",
+          actionUrl: `/v/${ev.hash}`,
+          actionLabel: "Verify",
+        });
+      }
     }
   }, [liveEvents]);
 
