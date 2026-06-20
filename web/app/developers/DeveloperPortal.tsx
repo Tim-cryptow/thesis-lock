@@ -99,6 +99,16 @@ export default function DeveloperPortal() {
             API playground, key management, and integration guides for building
             on ThesisLock.
           </p>
+          <p className="text-foreground/70 max-w-2xl mt-2">
+            Optimizing or debugging? The{" "}
+            <Link
+              href="/performance"
+              className="underline hover:text-foreground"
+            >
+              performance dashboard
+            </Link>{" "}
+            tracks Web Vitals, page load, and API response times in your browser.
+          </p>
         </header>
 
         <div

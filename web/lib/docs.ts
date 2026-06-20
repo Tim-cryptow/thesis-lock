@@ -133,6 +133,12 @@ export const DOCS: DocMeta[] = [
     description:
       "Copy-ready examples for verifying anchors from JavaScript, Python, cURL, GitHub Actions, and any CI/CD pipeline.",
   },
+  {
+    slug: "performance",
+    title: "Performance Monitoring",
+    description:
+      "In-browser Web Vitals, page load, and API response metrics with a local dashboard and a debug overlay, for spotting bottlenecks without any external analytics.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

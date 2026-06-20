@@ -11,6 +11,7 @@ import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -84,7 +85,7 @@ export default function StatsClient() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stats");
+      const res = await instrumentedFetch("/api/stats");
       if (!res.ok) throw new Error(`stats fetch failed: ${res.status}`);
       const data = (await res.json()) as ProtocolStats;
       setStats(data);
