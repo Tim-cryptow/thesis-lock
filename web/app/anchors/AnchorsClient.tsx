@@ -8,6 +8,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
+import TagFilter from "@/app/components/TagFilter";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   BATCH_CONTRACT_FULL_NAME,
@@ -57,6 +58,11 @@ export default function AnchorsPage() {
   // Tags are edited inline per row. expandedTag is the hash whose editor is open;
   // tagTick refreshes the displayed pills when tags change here or in another tab.
   const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const toggleTagFilter = (name: string) =>
+    setSelectedTags((prev) =>
+      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name],
+    );
   // Bumping this state re-renders so the inline tag map below re-reads storage.
   const [, setTagTick] = useState(0);
   useEffect(() => {
@@ -240,6 +246,15 @@ export default function AnchorsPage() {
     tagsByHash.set(entry.hash, getTagsForHash(entry.hash));
   }
 
+  // Narrow the visible anchors to those carrying any selected tag.
+  const filteredEntries =
+    selectedTags.length === 0
+      ? visibleEntries
+      : visibleEntries.filter(({ entry }) => {
+          const tags = tagsByHash.get(entry.hash) ?? [];
+          return selectedTags.some((t) => tags.includes(t));
+        });
+
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
@@ -399,17 +414,21 @@ export default function AnchorsPage() {
               </select>
             </div>
           )}
+          <TagFilter
+            selectedTags={selectedTags}
+            onFilterChange={setSelectedTags}
+          />
           <div className="flex items-center justify-between gap-3 flex-wrap pb-1">
             <p className="text-xs text-foreground/50">
               {t("anchors.compareHint")}
             </p>
             <div className="flex gap-2">
-              {visibleEntries.length > 0 && (
+              {filteredEntries.length > 0 && (
                 <Link
                   href="/report"
                   onClick={() =>
                     stageReportInput(
-                      visibleEntries.map(({ entry }) => ({ hash: entry.hash })),
+                      filteredEntries.map(({ entry }) => ({ hash: entry.hash })),
                     )
                   }
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
@@ -427,7 +446,7 @@ export default function AnchorsPage() {
               )}
             </div>
           </div>
-          {visibleEntries.map(({ entry, parsed }, idx) => (
+          {filteredEntries.map(({ entry, parsed }, idx) => (
             <div
               key={`${entry.hash}-${idx}`}
               role="listitem"
@@ -540,18 +559,31 @@ export default function AnchorsPage() {
                   <div className="flex flex-wrap items-center gap-1.5">
                     {(tagsByHash.get(entry.hash) ?? []).map((name) => {
                       const color = getTagColor(name);
+                      const active = selectedTags.includes(name);
                       return (
-                        <span
+                        <button
                           key={name}
-                          className="rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                          style={{
-                            backgroundColor: `${color}1f`,
-                            color,
-                            borderColor: `${color}55`,
-                          }}
+                          type="button"
+                          onClick={() => toggleTagFilter(name)}
+                          aria-pressed={active}
+                          title={active ? "Remove tag filter" : "Filter by tag"}
+                          className="rounded-full border px-2 py-0.5 text-[11px] font-medium transition"
+                          style={
+                            active
+                              ? {
+                                  backgroundColor: color,
+                                  color: "#ffffff",
+                                  borderColor: color,
+                                }
+                              : {
+                                  backgroundColor: `${color}1f`,
+                                  color,
+                                  borderColor: `${color}55`,
+                                }
+                          }
                         >
                           {name}
-                        </span>
+                        </button>
                       );
                     })}
                     <button
@@ -568,6 +600,11 @@ export default function AnchorsPage() {
               </div>
             </div>
           ))}
+          {filteredEntries.length === 0 && selectedTags.length > 0 && (
+            <p className="text-center text-sm text-foreground/50">
+              No anchors match the selected tags.
+            </p>
+          )}
           <div className="flex flex-col items-center gap-3 pt-4">
             {count !== null && count > entries.length && (
               <p className="text-xs text-foreground/50 text-center">

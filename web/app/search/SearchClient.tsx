@@ -7,12 +7,18 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import TagFilter from "@/app/components/TagFilter";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
 } from "@/app/components/KeyboardShortcuts";
 import { explorerAddressUrl } from "@/lib/stacks";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
+import {
+  TAGS_CHANGED_EVENT,
+  getHashesByTag,
+  normalizeHash,
+} from "@/lib/tags";
 import { useI18n } from "@/app/components/I18nProvider";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
 
@@ -98,6 +104,8 @@ export default function SearchClient() {
   const [error, setError] = useState<string | null>(null);
   const [searchedFor, setSearchedFor] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [, setTagTick] = useState(0);
   const [recent, setRecent] = useState<string[]>([]);
   // Guards against a slow earlier request overwriting a newer one's results.
   const requestId = useRef(0);
@@ -192,9 +200,29 @@ export default function SearchClient() {
   };
 
   const effectiveType = type === "auto" ? detectType(query) : type;
+
+  // Refresh when tags change in another tab so the tag filter stays current.
+  useEffect(() => {
+    const bump = () => setTagTick((n) => n + 1);
+    window.addEventListener(TAGS_CHANGED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(TAGS_CHANGED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+
+  // Narrow results to those whose hash carries any selected tag.
+  const matchingHashes =
+    selectedTags.length > 0
+      ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag)))
+      : null;
+  const filteredResults = matchingHashes
+    ? results.filter((r) => matchingHashes.has(normalizeHash(r.hash)))
+    : results;
   const grouped = SOURCE_ORDER.map((source) => ({
     source,
-    rows: results.filter((r) => r.source === source),
+    rows: filteredResults.filter((r) => r.source === source),
   })).filter((g) => g.rows.length > 0);
 
   return (
@@ -314,6 +342,13 @@ export default function SearchClient() {
         })}
       </div>
 
+      <div className="mb-4">
+        <TagFilter
+          selectedTags={selectedTags}
+          onFilterChange={setSelectedTags}
+        />
+      </div>
+
       <p className="text-xs text-foreground/50 mb-8">
         {t("search.hint")}
         {query.trim() && type === "auto" && (
@@ -375,6 +410,11 @@ export default function SearchClient() {
         </div>
       ) : (
         <div className="space-y-8">
+          {searchedFor && selectedTags.length > 0 && grouped.length === 0 && (
+            <p className="rounded-lg border border-foreground/10 bg-card p-6 text-center text-sm text-foreground/50">
+              No results match the selected tags.
+            </p>
+          )}
           {grouped.map((group) => (
             <section key={group.source}>
               <h2 className="text-xs text-foreground/50 uppercase tracking-wide mb-3">

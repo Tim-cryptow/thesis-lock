@@ -8,6 +8,7 @@ import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import TagFilter from "@/app/components/TagFilter";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import LiveBadge from "@/app/components/LiveBadge";
 import { useLive } from "@/app/components/LiveProvider";
@@ -15,6 +16,11 @@ import type { LiveEvent } from "@/lib/livePoller";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl, readBatchAnchor } from "@/lib/stacks";
 import { truncateAddress } from "@/lib/wallet";
+import {
+  TAGS_CHANGED_EVENT,
+  getHashesByTag,
+  normalizeHash,
+} from "@/lib/tags";
 
 const PAGE_SIZE = 20;
 // Cadence for re-rendering relative timestamps. Fresh data now arrives through
@@ -95,6 +101,7 @@ export default function FeedClient() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   // Tick once a minute so relative timestamps update without refetching.
   const [, setTick] = useState(0);
   // Total entries the feed currently asks the API for. Load more grows this
@@ -287,6 +294,27 @@ export default function FeedClient() {
     }
   };
 
+  // Refresh when tags change in another tab so the filter reflects the latest.
+  useEffect(() => {
+    const bump = () => setTick((n) => n + 1);
+    window.addEventListener(TAGS_CHANGED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(TAGS_CHANGED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+
+  // Narrow the feed to entries whose hash carries any selected tag. Union the
+  // tagged hashes once per selected tag rather than reading storage per row.
+  const matchingHashes =
+    selectedTags.length > 0
+      ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag)))
+      : null;
+  const displayedEntries = matchingHashes
+    ? entries.filter((e) => matchingHashes.has(normalizeHash(e.hash)))
+    : entries;
+
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
@@ -423,8 +451,19 @@ export default function FeedClient() {
         </div>
       ) : (
         <>
+          <div className="mb-4">
+            <TagFilter
+              selectedTags={selectedTags}
+              onFilterChange={setSelectedTags}
+            />
+          </div>
+          {selectedTags.length > 0 && displayedEntries.length === 0 && (
+            <p className="rounded-lg border border-foreground/10 bg-card p-6 text-center text-sm text-foreground/50">
+              No feed entries match the selected tags.
+            </p>
+          )}
           <ul className="space-y-3">
-            {entries.map((entry) => (
+            {displayedEntries.map((entry) => (
               <li
                 key={entryKey(entry)}
                 className={`rounded-lg border border-foreground/10 bg-card p-5 ${
