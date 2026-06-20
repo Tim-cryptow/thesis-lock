@@ -158,12 +158,16 @@ export default function FeedClient() {
     let cancelled = false;
 
     const run = async () => {
+      // Stage processed ids locally and commit them only after the cancelled
+      // check below, so a poll or unmount mid-validation cannot mark an event
+      // processed without prepending its row (which would drop it permanently).
+      const processed = new Set<string>();
       const anchorFresh: FeedEntry[] = [];
       const registryEvents: LiveEvent[] = [];
       for (const ev of liveEvents) {
-        if (processedRef.current.has(ev.id)) continue;
+        if (processedRef.current.has(ev.id) || processed.has(ev.id)) continue;
         if (ev.kind === "anchor" && ev.hash) {
-          processedRef.current.add(ev.id);
+          processed.add(ev.id);
           anchorFresh.push(liveToFeedEntry(ev));
         } else if (ev.kind === "registry" && ev.hash && ev.owner) {
           registryEvents.push(ev);
@@ -177,7 +181,8 @@ export default function FeedClient() {
             ev.hash as string,
             ev.owner as string,
           );
-          processedRef.current.add(ev.id);
+          if (cancelled) return;
+          processed.add(ev.id);
           if (batch) {
             validated.push({
               hash: ev.hash as string,
@@ -195,6 +200,7 @@ export default function FeedClient() {
       }
 
       if (cancelled) return;
+      for (const id of processed) processedRef.current.add(id);
 
       const incoming = [...anchorFresh, ...validated];
       if (incoming.length === 0) return;
