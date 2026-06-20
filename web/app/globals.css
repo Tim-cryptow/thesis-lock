@@ -47,6 +47,71 @@ html, body {
   }
 }
 
+/* Live updates: a continuous right-to-left marquee for the event ticker. The
+   ticker content is rendered twice back to back so the loop is seamless; the
+   track scrolls exactly half its width before resetting. */
+@keyframes live-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.live-ticker-track {
+  animation: live-ticker-scroll 40s linear infinite;
+}
+
+.live-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Soft pulse for the "Live" status dot. */
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.live-dot-pulse {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+/* Brief glow applied to a freshly arrived item (feed rows, explorer calls). */
+@keyframes live-glow {
+  0% {
+    background-color: color-mix(in srgb, var(--heading) 14%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--heading) 30%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 1px transparent;
+  }
+}
+
+.live-glow {
+  animation: live-glow 2.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-ticker-track {
+    animation: none;
+  }
+  .live-dot-pulse {
+    animation: none;
+  }
+  .live-glow {
+    animation: none;
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   color: var(--heading);
   font-family: var(--font-serif);
