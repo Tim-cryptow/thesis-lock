@@ -4,11 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import {
+  type ApiSummary,
+  type PageSummary,
   type Rating,
   type VitalSummary,
   type WebVitalName,
   VITAL_NAMES,
   clearPerformanceData,
+  getApiMetricsSummary,
+  getPageMetricsSummary,
   getVitalsSummary,
 } from "@/lib/performance";
 
@@ -77,9 +81,18 @@ function formatVital(value: number, unit: "ms" | "score"): string {
   return unit === "score" ? value.toFixed(3) : `${Math.round(value)} ms`;
 }
 
+// Pages have no Web Vital threshold, so rate them by average load time.
+function pageRating(avgLoad: number): Rating {
+  if (avgLoad < 1000) return "good";
+  if (avgLoad < 2500) return "needs-improvement";
+  return "poor";
+}
+
 export default function PerformanceClient() {
   const [range, setRange] = useState<Range>("7d");
   const [vitals, setVitals] = useState<Record<string, VitalSummary>>({});
+  const [pages, setPages] = useState<Record<string, PageSummary>>({});
+  const [apis, setApis] = useState<Record<string, ApiSummary>>({});
   const [reloadKey, setReloadKey] = useState(0);
 
   const days = useMemo(
@@ -89,7 +102,18 @@ export default function PerformanceClient() {
 
   useEffect(() => {
     setVitals(getVitalsSummary(days));
+    setPages(getPageMetricsSummary(days));
+    setApis(getApiMetricsSummary(days));
   }, [days, reloadKey]);
+
+  const pageRows = useMemo(
+    () => Object.entries(pages).sort((a, b) => b[1].avgLoad - a[1].avgLoad),
+    [pages],
+  );
+  const apiRows = useMemo(
+    () => Object.entries(apis).sort((a, b) => b[1].avgResponse - a[1].avgResponse),
+    [apis],
+  );
 
   const clearAll = () => {
     clearPerformanceData();
@@ -187,6 +211,117 @@ export default function PerformanceClient() {
           );
         })}
       </div>
+
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">
+        Page Performance
+      </h2>
+      {pageRows.length === 0 ? (
+        <p className="mb-10 rounded-lg border border-foreground/10 bg-card p-6 text-sm text-foreground/60">
+          No page metrics yet.
+        </p>
+      ) : (
+        <div className="mb-10 overflow-x-auto rounded-lg border border-foreground/10 bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-foreground/10 text-left text-foreground/60">
+                <th className="px-4 py-2 font-medium">Page</th>
+                <th className="px-4 py-2 text-right font-medium">Avg load</th>
+                <th className="px-4 py-2 text-right font-medium">Avg render</th>
+                <th className="px-4 py-2 text-right font-medium">Visits</th>
+                <th className="px-4 py-2 font-medium">Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageRows.map(([path, s]) => {
+                const rating = pageRating(s.avgLoad);
+                return (
+                  <tr
+                    key={path}
+                    className={`border-b border-foreground/5 ${
+                      rating === "good" ? "" : "bg-amber-500/10"
+                    }`}
+                  >
+                    <td className="break-all px-4 py-2 font-mono">{path}</td>
+                    <td className="px-4 py-2 text-right">
+                      {Math.round(s.avgLoad)} ms
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      {Math.round(s.avgRender)} ms
+                    </td>
+                    <td className="px-4 py-2 text-right">{s.visits}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ratingBadgeClasses(
+                          rating,
+                        )}`}
+                      >
+                        {ratingLabel(rating)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">
+        API Performance
+      </h2>
+      {apiRows.length === 0 ? (
+        <p className="rounded-lg border border-foreground/10 bg-card p-6 text-sm text-foreground/60">
+          No API metrics yet.
+        </p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-foreground/10 bg-card">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-foreground/10 text-left text-foreground/60">
+                <th className="px-4 py-2 font-medium">Endpoint</th>
+                <th className="px-4 py-2 text-right font-medium">Avg response</th>
+                <th className="px-4 py-2 text-right font-medium">Error rate</th>
+                <th className="px-4 py-2 text-right font-medium">Calls</th>
+                <th className="px-4 py-2 text-right font-medium">Cached</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiRows.map(([endpoint, s]) => {
+                const highError = s.errorRate > 0.05;
+                const slow = s.avgResponse > 1000;
+                return (
+                  <tr
+                    key={endpoint}
+                    className={`border-b border-foreground/5 ${
+                      highError
+                        ? "bg-red-500/10"
+                        : slow
+                          ? "bg-amber-500/10"
+                          : ""
+                    }`}
+                  >
+                    <td className="break-all px-4 py-2 font-mono">{endpoint}</td>
+                    <td className="px-4 py-2 text-right">
+                      {Math.round(s.avgResponse)} ms
+                    </td>
+                    <td
+                      className={`px-4 py-2 text-right ${
+                        highError ? "text-red-600 dark:text-red-400" : ""
+                      }`}
+                    >
+                      {(s.errorRate * 100).toFixed(1)}%
+                    </td>
+                    <td className="px-4 py-2 text-right">{s.calls}</td>
+                    <td className="px-4 py-2 text-right">
+                      {Math.round(s.cachedRate * 100)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
