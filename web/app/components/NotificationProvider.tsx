@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -24,6 +25,7 @@ import {
   NOTIFICATIONS_CHANGED_EVENT,
   NOTIFICATION_ADDED_EVENT,
 } from "@/lib/notifications";
+import { useTx } from "@/app/components/TxProvider";
 
 type NewNotification = Omit<Notification, "id" | "timestamp" | "read">;
 
@@ -59,6 +61,8 @@ export function NotificationProvider({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [preferences, setPreferences] =
     useState<NotificationPreferences>(loadPreferences);
+  const { notifications: txNotifications } = useTx();
+  const seenTxRef = useRef<Set<string>>(new Set());
 
   // Hydrate from storage on mount and keep in sync with every change event.
   useEffect(() => {
@@ -91,6 +95,38 @@ export function NotificationProvider({
     window.addEventListener(NOTIFICATION_ADDED_EVENT, onAdded);
     return () => window.removeEventListener(NOTIFICATION_ADDED_EVENT, onAdded);
   }, []);
+
+  // Mirror transaction confirmations and failures into the notification center,
+  // once each (deduped by transaction id, which TxProvider uses as the id).
+  useEffect(() => {
+    for (const tx of txNotifications) {
+      if (seenTxRef.current.has(tx.id)) continue;
+      seenTxRef.current.add(tx.id);
+      if (tx.kind === "confirmed") {
+        addNotificationStore({
+          type: "tx_confirmed",
+          title: "Transaction confirmed",
+          message: tx.label
+            ? `"${tx.label}" is now anchored on chain.`
+            : "Your transaction is confirmed on chain.",
+          icon: "success",
+          priority: "medium",
+          actionUrl: tx.hash ? `/v/${tx.hash}` : undefined,
+          actionLabel: tx.hash ? "View anchor" : undefined,
+        });
+      } else {
+        addNotificationStore({
+          type: "tx_failed",
+          title: "Transaction failed",
+          message: tx.label
+            ? `"${tx.label}" did not confirm. Please try again.`
+            : "Your transaction did not confirm. Please try again.",
+          icon: "error",
+          priority: "high",
+        });
+      }
+    }
+  }, [txNotifications]);
 
   const addNotification = useCallback((input: NewNotification) => {
     addNotificationStore(input);
