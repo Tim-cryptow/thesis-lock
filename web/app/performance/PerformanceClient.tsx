@@ -5,6 +5,10 @@ import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { SparklineChart } from "@/app/components/performance/SparklineChart";
 import {
+  isPerfDebugEnabled,
+  setPerfDebugEnabled,
+} from "@/app/components/performance/PerformanceBanner";
+import {
   type ApiSummary,
   type PageSummary,
   type Rating,
@@ -96,6 +100,7 @@ export default function PerformanceClient() {
   const [pages, setPages] = useState<Record<string, PageSummary>>({});
   const [apis, setApis] = useState<Record<string, ApiSummary>>({});
   const [recent, setRecent] = useState<Record<string, number[]>>({});
+  const [debug, setDebug] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const days = useMemo(
@@ -128,6 +133,18 @@ export default function PerformanceClient() {
     setReloadKey((k) => k + 1);
   };
 
+  useEffect(() => {
+    setDebug(isPerfDebugEnabled());
+  }, []);
+
+  const toggleDebug = () => {
+    setDebug((prev) => {
+      const next = !prev;
+      setPerfDebugEnabled(next);
+      return next;
+    });
+  };
+
   return (
     <div className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
@@ -148,13 +165,23 @@ export default function PerformanceClient() {
 
       <div className="mb-2 flex items-center justify-between gap-4 flex-wrap">
         <h1 className="text-3xl">Performance</h1>
-        <button
-          type="button"
-          onClick={clearAll}
-          className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm hover:border-foreground/40 transition"
-        >
-          Clear data
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleDebug}
+            aria-pressed={debug}
+            className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm hover:border-foreground/40 transition"
+          >
+            {debug ? "Disable debug banner" : "Enable debug banner"}
+          </button>
+          <button
+            type="button"
+            onClick={clearAll}
+            className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm hover:border-foreground/40 transition"
+          >
+            Clear data
+          </button>
+        </div>
       </div>
       <p className="text-foreground/70 mb-6">
         Web Vitals, page load, and API timings measured in your browser. Stored
