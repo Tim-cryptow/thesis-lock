@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import TemplateSelector from "@/app/components/TemplateSelector";
 import TemplateFields from "@/app/components/TemplateFields";
+import TagInput from "@/app/components/TagInput";
 import {
   GENERIC_TEMPLATE,
   GENERIC_TEMPLATE_ID,
@@ -774,6 +775,12 @@ export default function AnchorPage() {
             )}
           </div>
           <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+            <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
+              Tags
+            </div>
+            <TagInput hash={singleSuccess.hash} label={singleSuccess.label} />
+          </div>
+          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
             <h2 className="text-lg mb-1">{t("anchor.proof.single.heading")}</h2>
             <p className="text-foreground/70 text-sm mb-4">
               {t("anchor.proof.single.description")}
@@ -888,6 +895,12 @@ export default function AnchorPage() {
                     {t("anchor.success.notConfirmed")}
                   </p>
                 )}
+                <div className="mt-3 pt-3 border-t border-foreground/10">
+                  <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
+                    Tags
+                  </div>
+                  <TagInput hash={entry.hash} label={entry.label} compact />
+                </div>
               </div>
             ))}
           </div>

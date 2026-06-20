@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import TagInput from "@/app/components/TagInput";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   BATCH_CONTRACT_FULL_NAME,
@@ -27,6 +28,11 @@ import {
   formatAnchorsJSON,
 } from "@/lib/export";
 import { getTemplate, parseLabel } from "@/lib/templates";
+import {
+  TAGS_CHANGED_EVENT,
+  getTagColor,
+  getTagsForHash,
+} from "@/lib/tags";
 
 // Sentinel filter value for anchors whose label is free-form (no template).
 const UNSTRUCTURED_FILTER = "__unstructured";
@@ -48,6 +54,20 @@ export default function AnchorsPage() {
   // Hashes ticked for side-by-side comparison. Capped at two: the compare page
   // takes exactly two documents.
   const [selected, setSelected] = useState<string[]>([]);
+  // Tags are edited inline per row. expandedTag is the hash whose editor is open;
+  // tagTick refreshes the displayed pills when tags change here or in another tab.
+  const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  // Bumping this state re-renders so the inline tag map below re-reads storage.
+  const [, setTagTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setTagTick((n) => n + 1);
+    window.addEventListener(TAGS_CHANGED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(TAGS_CHANGED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
 
   const toggleSelect = (hash: string) => {
     setSelected((prev) => {
@@ -212,6 +232,13 @@ export default function AnchorsPage() {
     if (effectiveFilter === UNSTRUCTURED_FILTER) return !parsed.templateId;
     return parsed.templateId === effectiveFilter;
   });
+
+  // Current tags per visible anchor. Recomputed each render (the list is the
+  // bounded recent set) and refreshed by the tag-change tick above.
+  const tagsByHash = new Map<string, string[]>();
+  for (const { entry } of visibleEntries) {
+    tagsByHash.set(entry.hash, getTagsForHash(entry.hash));
+  }
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -492,6 +519,53 @@ export default function AnchorsPage() {
                   {t("anchors.certError")}
                 </p>
               )}
+              <div className="mt-4 border-t border-foreground/10 pt-3">
+                {expandedTag === entry.hash ? (
+                  <div className="flex flex-col gap-2">
+                    <TagInput
+                      hash={entry.hash}
+                      label={entry.label}
+                      compact
+                      onTagsChange={() => setTagTick((n) => n + 1)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTag(null)}
+                      className="self-start text-xs text-foreground/60 hover:text-foreground"
+                    >
+                      Done
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {(tagsByHash.get(entry.hash) ?? []).map((name) => {
+                      const color = getTagColor(name);
+                      return (
+                        <span
+                          key={name}
+                          className="rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                          style={{
+                            backgroundColor: `${color}1f`,
+                            color,
+                            borderColor: `${color}55`,
+                          }}
+                        >
+                          {name}
+                        </span>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTag(entry.hash)}
+                      className="text-xs text-foreground/60 underline-offset-2 hover:text-foreground hover:underline"
+                    >
+                      {(tagsByHash.get(entry.hash) ?? []).length > 0
+                        ? "Edit tags"
+                        : "Add tags"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
           <div className="flex flex-col items-center gap-3 pt-4">

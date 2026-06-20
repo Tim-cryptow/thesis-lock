@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import TagInput from "@/app/components/TagInput";
 import { useI18n } from "@/app/components/I18nProvider";
 import { HEX_64 } from "@/lib/verify";
 import { hashFile, getRecentAnchors, type RegistryEntry } from "@/lib/stacks";
@@ -173,6 +174,10 @@ function ItemRow({
             {item.note ? item.note : <span className="text-foreground/40">Add a note</span>}
           </button>
         )}
+      </div>
+
+      <div className="mt-3 border-t border-foreground/10 pt-3">
+        <TagInput hash={item.hash} label={item.label} compact />
       </div>
 
       <div className="mt-3 flex items-center gap-3 text-xs">
