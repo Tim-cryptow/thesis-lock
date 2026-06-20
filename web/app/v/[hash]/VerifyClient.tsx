@@ -159,20 +159,33 @@ export default function VerifyPage() {
   // The connected wallet owns this hash when it anchored any matching record, so
   // tagging (a private, local action) is offered only then. The label seeds tag
   // suggestions.
+  // Which record the page is actually displaying, using the same precedence as
+  // the details below. Tag editing is gated on this record's owner (not any
+  // record sharing the hash), and the tag's label and verify link follow it, so
+  // viewing someone else's batch/group record never offers to tag it or pins a
+  // link to it.
+  const showingBatch = !preferGroup && preferBatch;
+  const showingGroup =
+    !showingBatch && (preferGroup || !anchor) && Boolean(groupAnchor);
   const ownsAnchor = Boolean(
     address &&
-      ((anchor && anchor.anchoredBy === address) ||
-        (batchAnchor && batchOwner === address) ||
-        (groupAnchor && groupAnchor.anchoredBy === address)),
+      (showingBatch
+        ? batchOwner === address
+        : showingGroup
+          ? groupAnchor?.anchoredBy === address
+          : anchor
+            ? anchor.anchoredBy === address
+            : false),
   );
-  const tagLabel =
-    batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? "";
-  // The exact record this page is showing, so a tag added here links back to the
-  // same batch owner or group row rather than a bare /v/<hash>.
+  const tagLabel = showingBatch
+    ? (batchAnchor?.label ?? "")
+    : showingGroup
+      ? (groupAnchor?.label ?? "")
+      : (anchor?.label ?? "");
   const tagVerifyUrl =
-    preferBatch && batchOwner
+    showingBatch && batchOwner
       ? `/v/${hash}?owner=${batchOwner}`
-      : preferGroup && groupAnchor
+      : showingGroup && groupAnchor
         ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
         : `/v/${hash}`;
 
