@@ -13,6 +13,9 @@ const STORAGE_KEY = "thesislock_tags";
 // can override the derived color with an editable swatch without rewriting the
 // per-anchor tag arrays.
 const COLORS_KEY = "thesislock_tag_colors";
+// First-seen timestamp per tag name, so the management page can show recently
+// added tags. Kept in sync from saveTags; the per-anchor shape stays untouched.
+const SEEN_KEY = "thesislock_tag_seen";
 
 // Dispatched on the window whenever the stored tags change, so the nav link,
 // tag inputs, filters, and any open list stay in sync without a shared store.
@@ -163,6 +166,9 @@ export function saveTags(anchorTags: AnchorTags[]): void {
   } catch {
     // Persistence is best-effort; callers keep the in-memory list.
   }
+  const present = new Set<string>();
+  for (const entry of pruned) for (const tag of entry.tags) present.add(tag);
+  syncSeen(present);
   try {
     window.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
   } catch {
@@ -170,20 +176,50 @@ export function saveTags(anchorTags: AnchorTags[]): void {
   }
 }
 
-function loadColorOverrides(): Record<string, string> {
+function loadStringMap(key: string): Record<string, string> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem(COLORS_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return {};
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return {};
     const out: Record<string, string> = {};
-    for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
-      if (typeof value === "string") out[key] = value;
+    for (const [k, value] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof value === "string") out[k] = value;
     }
     return out;
   } catch {
     return {};
+  }
+}
+
+function loadColorOverrides(): Record<string, string> {
+  return loadStringMap(COLORS_KEY);
+}
+
+// Records a first-seen timestamp for any newly used tag and drops timestamps for
+// tags no longer used, so the recently-added list reflects the live tag set.
+function syncSeen(present: Set<string>): void {
+  if (typeof window === "undefined") return;
+  try {
+    const seen = loadStringMap(SEEN_KEY);
+    const now = new Date().toISOString();
+    let changed = false;
+    for (const name of present) {
+      if (!seen[name]) {
+        seen[name] = now;
+        changed = true;
+      }
+    }
+    for (const name of Object.keys(seen)) {
+      if (!present.has(name)) {
+        delete seen[name];
+        changed = true;
+      }
+    }
+    if (changed) window.localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+  } catch {
+    // First-seen tracking is best-effort and never blocks a tag write.
   }
 }
 
@@ -237,6 +273,18 @@ export function getAllTags(): Tag[] {
   return Array.from(counts.entries())
     .map(([name, count]) => ({ name, color: getTagColor(name), count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+// The most recently added tags, newest first, for the management page. Limited
+// to tags still in use so a removed-then-pruned tag does not linger.
+export function getRecentTags(limit = 8): Tag[] {
+  const seen = loadStringMap(SEEN_KEY);
+  const byName = new Map(getAllTags().map((t) => [t.name, t]));
+  return Object.keys(seen)
+    .filter((name) => byName.has(name))
+    .sort((a, b) => (seen[a] < seen[b] ? 1 : seen[a] > seen[b] ? -1 : 0))
+    .slice(0, limit)
+    .map((name) => byName.get(name)!);
 }
 
 // The hashes carrying a given tag, for filtering lists and feeds by tag.
