@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { SparklineChart } from "@/app/components/performance/SparklineChart";
 import {
   type ApiSummary,
   type PageSummary,
@@ -13,6 +14,7 @@ import {
   clearPerformanceData,
   getApiMetricsSummary,
   getPageMetricsSummary,
+  getRecentVitalValues,
   getVitalsSummary,
 } from "@/lib/performance";
 
@@ -93,6 +95,7 @@ export default function PerformanceClient() {
   const [vitals, setVitals] = useState<Record<string, VitalSummary>>({});
   const [pages, setPages] = useState<Record<string, PageSummary>>({});
   const [apis, setApis] = useState<Record<string, ApiSummary>>({});
+  const [recent, setRecent] = useState<Record<string, number[]>>({});
   const [reloadKey, setReloadKey] = useState(0);
 
   const days = useMemo(
@@ -104,6 +107,11 @@ export default function PerformanceClient() {
     setVitals(getVitalsSummary(days));
     setPages(getPageMetricsSummary(days));
     setApis(getApiMetricsSummary(days));
+    const trends: Record<string, number[]> = {};
+    for (const name of VITAL_NAMES) {
+      trends[name] = getRecentVitalValues(name, 30, days);
+    }
+    setRecent(trends);
   }, [days, reloadKey]);
 
   const pageRows = useMemo(
@@ -196,8 +204,16 @@ export default function PerformanceClient() {
                   </span>
                 ) : null}
               </div>
-              <div className="mt-2 font-mono text-2xl">
-                {summary ? formatVital(summary.p75, info.unit) : "n/a"}
+              <div className="mt-2 flex items-end justify-between gap-2">
+                <span className="font-mono text-2xl">
+                  {summary ? formatVital(summary.p75, info.unit) : "n/a"}
+                </span>
+                {recent[name] && recent[name].length > 1 ? (
+                  <SparklineChart
+                    values={recent[name]}
+                    rating={summary?.rating ?? "good"}
+                  />
+                ) : null}
               </div>
               <p className="mt-2 text-xs text-foreground/55">
                 {info.description}
