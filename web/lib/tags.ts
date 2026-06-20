@@ -110,6 +110,21 @@ export function getTagColor(tag: string): string {
   return PALETTE[Math.abs(hash) % PALETTE.length];
 }
 
+// Sets or replaces a tag's color override, used by the editable swatch on the
+// management page, so the new color shows everywhere the tag renders.
+export function setTagColor(tag: string, color: string): void {
+  const name = normalizeTag(tag);
+  if (!name || typeof window === "undefined") return;
+  try {
+    const overrides = loadColorOverrides();
+    overrides[name] = color;
+    window.localStorage.setItem(COLORS_KEY, JSON.stringify(overrides));
+    window.dispatchEvent(new CustomEvent(TAGS_CHANGED_EVENT));
+  } catch {
+    // Color overrides are best-effort.
+  }
+}
+
 // Validates one parsed entry, dropping anything without a usable hash and
 // normalizing its tags, so older or hand-edited data stays renderable.
 function coerceEntry(value: unknown): AnchorTags | null {
@@ -259,6 +274,74 @@ export function removeTag(hash: string, tag: string): void {
     hash,
     current.filter((t) => t !== name),
   );
+}
+
+// Moves any color override from one tag name to another, so a rename or merge
+// keeps the chosen swatch on the surviving name.
+function moveColorOverride(from: string, to: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const overrides = loadColorOverrides();
+    if (!overrides[from]) return;
+    if (!overrides[to]) overrides[to] = overrides[from];
+    delete overrides[from];
+    window.localStorage.setItem(COLORS_KEY, JSON.stringify(overrides));
+  } catch {
+    // Non-fatal: the renamed tag just falls back to its derived color.
+  }
+}
+
+// Renames a tag across every anchor that carries it, de-duplicating where the
+// new name already coexists. A no-op for an empty or unchanged name.
+export function renameTag(oldName: string, newName: string): void {
+  const from = normalizeTag(oldName);
+  const to = normalizeTag(newName);
+  if (!from || !to || from === to) return;
+  const all = loadTags().map((e) =>
+    e.tags.includes(from)
+      ? {
+          hash: e.hash,
+          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(
+            0,
+            MAX_TAGS_PER_ANCHOR,
+          ),
+        }
+      : e,
+  );
+  moveColorOverride(from, to);
+  saveTags(all);
+}
+
+// Removes a tag from every anchor that carries it.
+export function deleteTag(tag: string): void {
+  const name = normalizeTag(tag);
+  if (!name) return;
+  const all = loadTags().map((e) =>
+    e.tags.includes(name)
+      ? { hash: e.hash, tags: e.tags.filter((t) => t !== name) }
+      : e,
+  );
+  saveTags(all);
+}
+
+// Merges one tag into another: every anchor tagged with source gains target and
+// loses source. The target's color is kept.
+export function mergeTags(source: string, target: string): void {
+  const from = normalizeTag(source);
+  const to = normalizeTag(target);
+  if (!from || !to || from === to) return;
+  const all = loadTags().map((e) =>
+    e.tags.includes(from)
+      ? {
+          hash: e.hash,
+          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(
+            0,
+            MAX_TAGS_PER_ANCHOR,
+          ),
+        }
+      : e,
+  );
+  saveTags(all);
 }
 
 // Every distinct tag in use, with its color and the number of anchors carrying

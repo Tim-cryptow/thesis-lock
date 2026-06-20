@@ -8,11 +8,15 @@ import { useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import {
   TAGS_CHANGED_EVENT,
+  deleteTag,
   getAllTags,
   getHashesByTag,
   getRecentTags,
   getTagColor,
   getTagsForHash,
+  mergeTags,
+  renameTag,
+  setTagColor,
   type Tag,
 } from "@/lib/tags";
 
@@ -28,6 +32,11 @@ export default function TagsClient() {
   const [recent, setRecent] = useState<Tag[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [untagged, setUntagged] = useState<number | null>(null);
+  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [mergeFrom, setMergeFrom] = useState("");
+  const [mergeInto, setMergeInto] = useState("");
 
   useEffect(() => {
     const sync = () => {
@@ -295,11 +304,62 @@ export default function TagsClient() {
             </div>
           </section>
 
-          {/* Management table */}
+          {/* Management */}
           <section className="rounded-lg border border-foreground/10 bg-card p-6">
             <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-foreground/50">
               Manage tags
             </h2>
+
+            {tags.length >= 2 && (
+              <div className="mb-6 flex flex-wrap items-end gap-3 rounded-md border border-foreground/10 p-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] text-foreground/50">Merge</label>
+                  <select
+                    value={mergeFrom}
+                    onChange={(e) => setMergeFrom(e.target.value)}
+                    aria-label="Tag to merge"
+                    className="rounded-md border border-foreground/15 bg-background px-2 py-1 text-sm"
+                  >
+                    <option value="">Select tag</option>
+                    {tags.map((tag) => (
+                      <option key={tag.name} value={tag.name}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <span className="pb-1.5 text-xs text-foreground/50">into</span>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] text-foreground/50">Target</label>
+                  <select
+                    value={mergeInto}
+                    onChange={(e) => setMergeInto(e.target.value)}
+                    aria-label="Target tag"
+                    className="rounded-md border border-foreground/15 bg-background px-2 py-1 text-sm"
+                  >
+                    <option value="">Select tag</option>
+                    {tags.map((tag) => (
+                      <option key={tag.name} value={tag.name}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  disabled={!mergeFrom || !mergeInto || mergeFrom === mergeInto}
+                  onClick={() => {
+                    mergeTags(mergeFrom, mergeInto);
+                    setMergeFrom("");
+                    setMergeInto("");
+                  }}
+                  className="rounded-md border border-foreground/20 px-3 py-1.5 text-sm hover:border-foreground/40 disabled:opacity-40"
+                >
+                  Merge
+                </button>
+              </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -312,32 +372,121 @@ export default function TagsClient() {
                 <tbody>
                   {tags.map((tag) => {
                     const color = getTagColor(tag.name);
+                    const editing = editingTag === tag.name;
                     return (
                       <tr
                         key={tag.name}
                         className="border-b border-foreground/5 last:border-0"
                       >
                         <td className="py-2 pr-4">
-                          <span className="inline-flex items-center gap-2">
-                            <span
-                              className="h-3 w-3 rounded-full"
-                              style={{ backgroundColor: color }}
-                              aria-hidden="true"
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={color}
+                              onChange={(e) =>
+                                setTagColor(tag.name, e.target.value)
+                              }
+                              aria-label={`Color for ${tag.name}`}
+                              className="h-5 w-5 cursor-pointer rounded border border-foreground/15 bg-transparent p-0"
                             />
-                            {tag.name}
-                          </span>
+                            {editing ? (
+                              <input
+                                type="text"
+                                value={draftName}
+                                autoFocus
+                                onChange={(e) => setDraftName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    renameTag(tag.name, draftName);
+                                    setEditingTag(null);
+                                  } else if (e.key === "Escape") {
+                                    setEditingTag(null);
+                                  }
+                                }}
+                                className="rounded-md border border-foreground/15 bg-background px-2 py-0.5 text-sm"
+                              />
+                            ) : (
+                              <span>{tag.name}</span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-2 pr-4 tabular-nums text-foreground/60">
                           {tag.count}
                         </td>
                         <td className="py-2">
-                          <button
-                            type="button"
-                            onClick={() => setActiveTag(tag.name)}
-                            className="text-xs text-foreground/60 hover:text-foreground"
-                          >
-                            View anchors
-                          </button>
+                          <div className="flex flex-wrap items-center gap-3 text-xs">
+                            {editing ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    renameTag(tag.name, draftName);
+                                    setEditingTag(null);
+                                  }}
+                                  className="text-foreground/70 hover:text-foreground"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingTag(null)}
+                                  className="text-foreground/50 hover:text-foreground"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingTag(tag.name);
+                                  setDraftName(tag.name);
+                                }}
+                                className="text-foreground/60 hover:text-foreground"
+                              >
+                                Rename
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setActiveTag(tag.name)}
+                              className="text-foreground/60 hover:text-foreground"
+                            >
+                              View
+                            </button>
+                            {confirmDelete === tag.name ? (
+                              <span className="inline-flex items-center gap-2">
+                                <span className="text-foreground/60">
+                                  Delete?
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    deleteTag(tag.name);
+                                    setConfirmDelete(null);
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDelete(null)}
+                                  className="text-foreground/50 hover:text-foreground"
+                                >
+                                  No
+                                </button>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDelete(tag.name)}
+                                className="text-foreground/55 hover:text-red-500"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
