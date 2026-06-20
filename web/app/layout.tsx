@@ -18,6 +18,7 @@ import { LiveProvider } from "./components/LiveProvider";
 import LiveTicker from "./components/LiveTicker";
 import { NotificationProvider } from "./components/NotificationProvider";
 import NotificationBell from "./components/NotificationBell";
+import NotificationSound from "./components/NotificationSound";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -119,6 +120,7 @@ export default function RootLayout({
                   <TourProvider>
                     <LiveTicker />
                     <NotificationBell />
+                    <NotificationSound />
                     <main
                       id="main-content"
                       tabIndex={-1}
