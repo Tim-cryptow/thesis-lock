@@ -349,7 +349,19 @@ const result = await client.verify(hash);`}</pre>
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-10">{t("landing.live.heading")}</h2>
+        <h2 className="text-3xl mb-3">{t("landing.live.heading")}</h2>
+        <p className="text-foreground/70 mb-10 max-w-2xl">
+          A live protocol feed streams new anchors as they land on chain. Watch
+          the activity ticker at the top of the page, or open the{" "}
+          <Link href="/feed" className="underline hover:text-foreground">
+            feed
+          </Link>{" "}
+          and{" "}
+          <Link href="/stats" className="underline hover:text-foreground">
+            stats
+          </Link>{" "}
+          to see them update in real time.
+        </p>
         <StatsBar />
       </section>
 

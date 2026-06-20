@@ -3,6 +3,7 @@
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
+import LiveBadge from "@/app/components/LiveBadge";
 import { useTour } from "@/app/components/TourProvider";
 import { resetTour } from "@/lib/onboarding";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -64,6 +65,7 @@ export default function Footer() {
           >
             {t("common.footer.developers")}
           </Link>
+          <LiveBadge />
           <LanguageSwitcher />
           <ThemeToggle />
         </div>

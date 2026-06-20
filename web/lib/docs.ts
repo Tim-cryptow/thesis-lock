@@ -56,6 +56,12 @@ export const DOCS: DocMeta[] = [
       "A unified per-wallet timeline of every contract interaction, with category filters and infinite scroll.",
   },
   {
+    slug: "live-updates",
+    title: "Live Updates",
+    description:
+      "How the real-time event ticker and auto-updating feed, stats, and explorer work, what they poll, and how to pause or resume live updates.",
+  },
+  {
     slug: "watchlist",
     title: "Watchlist",
     description:
