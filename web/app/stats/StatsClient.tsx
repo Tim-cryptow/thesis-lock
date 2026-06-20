@@ -1,14 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import LiveBadge from "@/app/components/LiveBadge";
+import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
+
+// Live events that represent a newly anchored document, counted toward the
+// running totals. Single anchors and registry entries each carry a hash;
+// batch print events do not, so registry entries stand in for batch anchors.
+const COUNTED_KINDS = new Set(["anchor", "registry"]);
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -37,13 +44,26 @@ function formatDateLabel(iso: string): string {
   });
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({
+  label,
+  value,
+  bumpKey,
+}: {
+  label: string;
+  value: string;
+  // Changing this value retriggers a brief tick-up flash on the number.
+  bumpKey?: number;
+}) {
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-6">
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
       </div>
-      <div className="text-3xl font-mono">{value}</div>
+      <div className="text-3xl font-mono">
+        <span key={bumpKey} className={bumpKey ? "live-bump inline-block" : ""}>
+          {value}
+        </span>
+      </div>
     </div>
   );
 }
@@ -53,6 +73,11 @@ export default function StatsClient() {
   const [stats, setStats] = useState<ProtocolStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Anchors observed live since this page loaded, layered on top of the
+  // fetched totals so the numbers move without a refetch.
+  const [liveAnchors, setLiveAnchors] = useState(0);
+  const { events: liveEvents } = useLive();
+  const processedRef = useRef<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,9 +98,32 @@ export default function StatsClient() {
     void load();
   }, [load]);
 
-  const maxDayCount = stats
-    ? stats.anchorsByDay.reduce((max, d) => Math.max(max, d.count), 0)
-    : 0;
+  // Count new countable anchors as they stream in from the live poller.
+  useEffect(() => {
+    if (liveEvents.length === 0) return;
+    let added = 0;
+    for (const ev of liveEvents) {
+      if (processedRef.current.has(ev.id)) continue;
+      processedRef.current.add(ev.id);
+      if (COUNTED_KINDS.has(ev.kind)) added += 1;
+    }
+    if (added > 0) setLiveAnchors((n) => n + added);
+  }, [liveEvents]);
+
+  const totalAnchors = (stats?.totalAnchors ?? 0) + liveAnchors;
+  // The activity chart's most recent bar is the current day; grow it live.
+  const anchorsByDay = stats
+    ? stats.anchorsByDay.map((d, i) =>
+        i === stats.anchorsByDay.length - 1
+          ? { ...d, count: d.count + liveAnchors }
+          : d,
+      )
+    : [];
+
+  const maxDayCount = anchorsByDay.reduce(
+    (max, d) => Math.max(max, d.count),
+    0,
+  );
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -149,7 +197,13 @@ export default function StatsClient() {
           <CollectionsNavLink />
       </div>
 
-      <h1 className="text-3xl mb-2">{t("stats.title")}</h1>
+      <div className="flex items-center gap-3 mb-2 flex-wrap">
+        <h1 className="text-3xl">{t("stats.title")}</h1>
+        <span className="inline-flex items-center gap-1.5 text-xs text-foreground/50">
+          Updated live
+          <LiveBadge showText={false} />
+        </span>
+      </div>
       <p className="text-foreground/70 mb-2">
         {t("stats.subtitle")}
       </p>
@@ -186,7 +240,8 @@ export default function StatsClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("stats.totalAnchors")}
-              value={formatNumber(stats.totalAnchors)}
+              value={formatNumber(totalAnchors)}
+              bumpKey={liveAnchors}
             />
             <StatCard
               label={t("stats.uniqueWallets")}
@@ -210,7 +265,7 @@ export default function StatsClient() {
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
               {t("stats.activityPerDay")}
             </h2>
-            {stats.anchorsByDay.length === 0 ? (
+            {anchorsByDay.length === 0 ? (
               <p className="text-sm text-foreground/60">{t("stats.noActivity")}</p>
             ) : (
               <div
@@ -218,7 +273,7 @@ export default function StatsClient() {
                 role="img"
                 aria-label={t("stats.chartAria")}
               >
-                {stats.anchorsByDay.map((d) => {
+                {anchorsByDay.map((d) => {
                   const pct = maxDayCount
                     ? Math.max(4, (d.count / maxDayCount) * 100)
                     : 0;
@@ -240,15 +295,11 @@ export default function StatsClient() {
                 })}
               </div>
             )}
-            {stats.anchorsByDay.length > 0 && (
+            {anchorsByDay.length > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
+                <span>{formatDateLabel(anchorsByDay[0].date)}</span>
                 <span>
-                  {formatDateLabel(stats.anchorsByDay[0].date)}
-                </span>
-                <span>
-                  {formatDateLabel(
-                    stats.anchorsByDay[stats.anchorsByDay.length - 1].date,
-                  )}
+                  {formatDateLabel(anchorsByDay[anchorsByDay.length - 1].date)}
                 </span>
               </div>
             )}
