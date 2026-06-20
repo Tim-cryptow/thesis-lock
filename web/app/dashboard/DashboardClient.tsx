@@ -11,6 +11,7 @@ import ErrorFallback from "@/app/components/ErrorFallback";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import { stageReportInput } from "@/lib/reportLink";
 import {
   downloadExport,
@@ -150,7 +151,7 @@ export default function DashboardClient() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
+      const res = await instrumentedFetch(
         `/api/analytics?address=${encodeURIComponent(owner)}`,
       );
       if (!res.ok) throw new Error(`analytics fetch failed: ${res.status}`);
@@ -191,7 +192,7 @@ export default function DashboardClient() {
       const collected: ActivityEvent[] = [];
       try {
         for (let page = 0; page < MAX_PREVIEW_PAGES; page += 1) {
-          const res = await fetch(
+          const res = await instrumentedFetch(
             `/api/activity?address=${encodeURIComponent(address)}&page=${page}&limit=${RECENT_FETCH}`,
           );
           if (!res.ok) break;
