@@ -30,6 +30,8 @@ ThesisLock is a hash-anchor service for academic and creative documents on the S
 - Clarity 3 syntax. Use `stacks-block-height` and `burn-block-height`. Never `block-height`.
 - TypeScript strict mode. Do not disable.
 - Conventional commits: `feat`, `fix`, `chore`, `docs`, `test`. Frequent meaningful commits, not bulk dumps.
+- Branch names use a conventional-commit prefix and kebab-case description, for example `feat/live-updates`, `fix/empty-baseline`, `chore/session-setup`.
+- No AI tool attribution anywhere: no `Co-Authored-By` trailers, and no AI tool or assistant names in commit messages, branch names, or code comments.
 - No em dashes anywhere in user-facing copy or code comments.
 - No emojis in UI.
 - Reads route through the public Hiro mainnet API. No private RPC.
