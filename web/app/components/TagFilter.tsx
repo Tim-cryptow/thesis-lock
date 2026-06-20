@@ -35,6 +35,16 @@ export default function TagFilter({
     };
   }, []);
 
+  // Drop selections for tags that no longer exist (e.g. the last anchor carrying
+  // a filtered tag was untagged), so the parent list does not keep filtering by a
+  // gone tag with no in-page way to recover.
+  useEffect(() => {
+    if (selectedTags.length === 0) return;
+    const names = new Set(allTags.map((t) => t.name));
+    const valid = selectedTags.filter((t) => names.has(t));
+    if (valid.length !== selectedTags.length) onFilterChange(valid);
+  }, [allTags, selectedTags, onFilterChange]);
+
   const selected = useMemo(() => new Set(selectedTags), [selectedTags]);
 
   const visible = useMemo(() => {
