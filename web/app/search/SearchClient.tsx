@@ -12,6 +12,7 @@ import {
   FOCUS_SEARCH_FLAG,
 } from "@/app/components/KeyboardShortcuts";
 import { explorerAddressUrl } from "@/lib/stacks";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import { useI18n } from "@/app/components/I18nProvider";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
 
@@ -152,7 +153,7 @@ export default function SearchClient() {
 
       try {
         const params = new URLSearchParams({ q: term, type: searchType });
-        const res = await fetch(`/api/search?${params.toString()}`);
+        const res = await instrumentedFetch(`/api/search?${params.toString()}`);
         if (!res.ok)
           throw new Error(t("search.fetchFailed", { status: res.status }));
         const data = (await res.json()) as SearchResult[];

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ProtocolStats } from "@/lib/stats";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import AnimatedCounter from "@/app/components/AnimatedCounter";
 import { useI18n } from "@/app/components/I18nProvider";
 
@@ -13,7 +14,7 @@ export default function StatsBar() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/stats")
+    instrumentedFetch("/api/stats")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ProtocolStats | null) => {
         if (active && data) setStats(data);

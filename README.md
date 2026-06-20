@@ -33,6 +33,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Document collections for organizing and sharing anchored documents at `/collections`: create named, color-coded folders, add anchors by hash, file, or from your wallet, reorder and annotate items, then verify all, generate a report, export, or share a collection as a link others can verify and import. Stored entirely in the browser.
 - Interactive onboarding tour and command palette (Ctrl+K): a guided seventeen-step walkthrough that introduces the main features to first-time visitors and can be restarted any time, plus a keyboard-first command palette to jump to any page or run a common action with fuzzy search.
 - On-chain contract explorer at `/explorer` with interactive read-only function calls: browse every contract's functions, maps, and data variables, watch recent on-chain calls, read an architecture diagram of how the five contracts relate, and call read-only functions directly from the UI. Exposed as JSON at `/api/explorer/<contract>`.
+- Built-in performance monitoring with Web Vitals and API metrics at `/performance`: a client-side dashboard tracking Core Web Vitals (LCP, INP, CLS, FCP, TTFB, FID) with ratings and sparklines, per-page load and render times, and per-endpoint API response times, error rates, and cache hits, plus an optional debug overlay. Captured with the browser's Performance APIs and stored entirely on the device, no external analytics.
 
 ## Protocol
 

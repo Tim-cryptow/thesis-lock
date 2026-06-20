@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ProtocolStats } from "@/lib/stats";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import { useI18n } from "@/app/components/I18nProvider";
 
 function formatNumber(n: number): string {
@@ -14,7 +15,7 @@ export default function HeroStats() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/stats")
+    instrumentedFetch("/api/stats")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ProtocolStats | null) => {
         if (active && data) setAnchors(data.totalAnchors);

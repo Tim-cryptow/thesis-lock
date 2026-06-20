@@ -8,6 +8,7 @@ import WatchlistButton from "@/app/components/WatchlistButton";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { explorerAddressUrl } from "@/lib/stacks";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import { getTemplate, parseLabel } from "@/lib/templates";
 import type { WalletProfile } from "@/lib/profile";
 
@@ -109,7 +110,7 @@ export default function ProfileClient() {
 
     (async () => {
       try {
-        const res = await fetch(`/api/profile/${address}`);
+        const res = await instrumentedFetch(`/api/profile/${address}`);
         if (!res.ok) throw new Error(`profile fetch failed: ${res.status}`);
         const data = (await res.json()) as WalletProfile;
         if (cancelled) return;

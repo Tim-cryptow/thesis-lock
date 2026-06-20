@@ -19,6 +19,8 @@ import LiveTicker from "./components/LiveTicker";
 import { NotificationProvider } from "./components/NotificationProvider";
 import NotificationBell from "./components/NotificationBell";
 import NotificationSound from "./components/NotificationSound";
+import PerformanceTracker from "./components/PerformanceTracker";
+import PerformanceBanner from "./components/performance/PerformanceBanner";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -115,6 +117,8 @@ export default function RootLayout({
               <SkipToContent />
               <ServiceWorkerRegistration />
               <KeyboardShortcuts />
+              <PerformanceTracker />
+              <PerformanceBanner />
               <LiveProvider>
                 <NotificationProvider>
                   <TourProvider>

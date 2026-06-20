@@ -4,6 +4,8 @@
 // The signature matches @stacks/common's FetchFn so it can be injected as the
 // network client's `fetch`, wrapping every read-only contract call.
 
+import { instrumentedFetch } from "./fetchInstrumented";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
 
 function wait(ms: number): Promise<void> {
@@ -20,7 +22,7 @@ export async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
-      const response = await fetch(url, options);
+      const response = await instrumentedFetch(url, options);
       // Retry server errors; client errors (4xx) are not transient.
       if (response.status >= 500 && attempt < retries) {
         console.warn(

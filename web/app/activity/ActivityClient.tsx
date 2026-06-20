@@ -8,6 +8,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { explorerTxUrl } from "@/lib/stacks";
+import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import {
   activityCategory,
   type ActivityCategory,
@@ -178,7 +179,7 @@ export default function ActivityClient() {
   const requestOwnerRef = useRef<string | null>(null);
 
   const fetchPage = useCallback(async (owner: string, page: number) => {
-    const res = await fetch(
+    const res = await instrumentedFetch(
       `/api/activity?address=${encodeURIComponent(owner)}&page=${page}&limit=${PAGE_SIZE}`,
     );
     if (!res.ok) throw new Error(`activity fetch failed: ${res.status}`);
