@@ -381,7 +381,10 @@ function notifyWatchChange(
 ): void {
   const name = item.label || shortenValue(item.value);
   if (item.type === "hash") {
-    if (status.verified && prior?.verified !== true) {
+    // Only notify on a real transition observed while watching: require a prior
+    // check that was not yet verified. A first check that finds the hash already
+    // anchored is a baseline, not news.
+    if (status.verified && prior !== null && prior.verified !== true) {
       addNotification({
         type: "watchlist_update",
         title: "Watched hash anchored",

@@ -115,7 +115,11 @@ export function NotificationProvider({
             : "Your transaction is confirmed on chain.",
           icon: "success",
           priority: "medium",
-          actionUrl: tx.hash ? `/v/${tx.hash}` : undefined,
+          actionUrl: tx.hash
+            ? tx.owner
+              ? `/v/${tx.hash}?owner=${encodeURIComponent(tx.owner)}`
+              : `/v/${tx.hash}`
+            : undefined,
           actionLabel: tx.hash ? "View anchor" : undefined,
         });
       } else {
