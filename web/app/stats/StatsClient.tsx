@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import LiveBadge from "@/app/components/LiveBadge";
+import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
-import { explorerAddressUrl } from "@/lib/stacks";
+import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 
 const CONTRACT_ADDRESS =
@@ -37,13 +39,26 @@ function formatDateLabel(iso: string): string {
   });
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({
+  label,
+  value,
+  bumpKey,
+}: {
+  label: string;
+  value: string;
+  // Changing this value retriggers a brief tick-up flash on the number.
+  bumpKey?: number;
+}) {
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-6">
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
       </div>
-      <div className="text-3xl font-mono">{value}</div>
+      <div className="text-3xl font-mono">
+        <span key={bumpKey} className={bumpKey ? "live-bump inline-block" : ""}>
+          {value}
+        </span>
+      </div>
     </div>
   );
 }
@@ -53,6 +68,17 @@ export default function StatsClient() {
   const [stats, setStats] = useState<ProtocolStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Anchors observed live since this page loaded, layered on top of the
+  // fetched totals so the numbers move without a refetch.
+  const [liveAnchors, setLiveAnchors] = useState(0);
+  const { events: liveEvents } = useLive();
+  // Live event ids already inspected.
+  const processedRef = useRef<Set<string>>(new Set());
+  // hash|owner of documents already counted, so each is counted once.
+  const countedRef = useRef<Set<string>>(new Set());
+  // Guards a one-time baseline so the buffer that already exists when this page
+  // mounts is not counted as new (it may already be in the fetched totals).
+  const seededRef = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -73,9 +99,106 @@ export default function StatsClient() {
     void load();
   }, [load]);
 
-  const maxDayCount = stats
-    ? stats.anchorsByDay.reduce((max, d) => Math.max(max, d.count), 0)
-    : 0;
+  // Count newly anchored documents as they stream in from the live poller.
+  // A single anchor emits both an anchor and a follow-up registry event for the
+  // same hash, and batch documents arrive only as registry events. Count anchor
+  // events directly and validate registry events against the batch contract,
+  // deduped by hash|owner, so each document counts once and matches how
+  // /api/stats derives totalAnchors (single anchors plus batch rows, bare
+  // registry calls excluded).
+  useEffect(() => {
+    // First run after mount sets the baseline. LiveProvider is global, so its
+    // buffer can already hold anchors observed on other pages that the
+    // /api/stats fetch started on mount may already include. Record everything
+    // present now without counting it, and only count events that arrive after.
+    if (!seededRef.current) {
+      seededRef.current = true;
+      for (const ev of liveEvents) {
+        processedRef.current.add(ev.id);
+        if ((ev.kind === "anchor" || ev.kind === "registry") && ev.hash) {
+          countedRef.current.add(`${ev.hash}|${ev.owner ?? ""}`);
+        }
+      }
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      // Stage mutations locally and commit only if this run is still current,
+      // so a poll arriving mid-validation cannot double-count or strand a key.
+      const processed = new Set<string>();
+      const counted = new Set(countedRef.current);
+      let added = 0;
+      for (const ev of liveEvents) {
+        if (processedRef.current.has(ev.id) || processed.has(ev.id)) continue;
+        const hash = ev.hash;
+        if (!hash) continue;
+        const key = `${hash}|${ev.owner ?? ""}`;
+        if (ev.kind === "anchor") {
+          // A single anchor counts directly, deduped by hash|owner.
+          processed.add(ev.id);
+          if (!counted.has(key)) {
+            counted.add(key);
+            added += 1;
+          }
+        } else if (ev.kind === "registry" && ev.owner) {
+          // A registry print counts only once it resolves to a real batch row.
+          // /api/stats excludes bare registry calls, and a single anchor's
+          // follow-up registry is already counted via its anchor event, so
+          // validate against the batch contract (as the feed does) to avoid
+          // inflating on a standalone register-anchor call.
+          if (counted.has(key)) {
+            processed.add(ev.id);
+            continue;
+          }
+          try {
+            const batch = await readBatchAnchor(hash, ev.owner);
+            if (cancelled) return;
+            processed.add(ev.id);
+            if (batch) {
+              counted.add(key);
+              added += 1;
+            }
+          } catch {
+            // Transient failure: leave unprocessed to retry on the next poll.
+          }
+        }
+      }
+      if (cancelled) return;
+      for (const id of processed) processedRef.current.add(id);
+      countedRef.current = counted;
+      if (added > 0) setLiveAnchors((n) => n + added);
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [liveEvents]);
+
+  const totalAnchors = (stats?.totalAnchors ?? 0) + liveAnchors;
+  // Layer live anchors onto the activity chart. /api/stats only returns days
+  // that already have activity, so the last bucket may be an earlier day (or
+  // there may be none yet). Grow today's bucket if it exists, otherwise append
+  // one, so live anchors always land on the correct UTC day instead of an older
+  // bar or vanishing while the total counter climbs.
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const anchorsByDay = (() => {
+    if (!stats) return [];
+    const days = stats.anchorsByDay;
+    if (liveAnchors === 0) return days;
+    const last = days[days.length - 1];
+    if (last && last.date === todayIso) {
+      return days.map((d, i) =>
+        i === days.length - 1 ? { ...d, count: d.count + liveAnchors } : d,
+      );
+    }
+    return [...days, { date: todayIso, count: liveAnchors }];
+  })();
+
+  const maxDayCount = anchorsByDay.reduce(
+    (max, d) => Math.max(max, d.count),
+    0,
+  );
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -149,7 +272,13 @@ export default function StatsClient() {
           <CollectionsNavLink />
       </div>
 
-      <h1 className="text-3xl mb-2">{t("stats.title")}</h1>
+      <div className="flex items-center gap-3 mb-2 flex-wrap">
+        <h1 className="text-3xl">{t("stats.title")}</h1>
+        <span className="inline-flex items-center gap-1.5 text-xs text-foreground/50">
+          Updated live
+          <LiveBadge showText={false} />
+        </span>
+      </div>
       <p className="text-foreground/70 mb-2">
         {t("stats.subtitle")}
       </p>
@@ -186,7 +315,8 @@ export default function StatsClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("stats.totalAnchors")}
-              value={formatNumber(stats.totalAnchors)}
+              value={formatNumber(totalAnchors)}
+              bumpKey={liveAnchors}
             />
             <StatCard
               label={t("stats.uniqueWallets")}
@@ -210,7 +340,7 @@ export default function StatsClient() {
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
               {t("stats.activityPerDay")}
             </h2>
-            {stats.anchorsByDay.length === 0 ? (
+            {anchorsByDay.length === 0 ? (
               <p className="text-sm text-foreground/60">{t("stats.noActivity")}</p>
             ) : (
               <div
@@ -218,7 +348,7 @@ export default function StatsClient() {
                 role="img"
                 aria-label={t("stats.chartAria")}
               >
-                {stats.anchorsByDay.map((d) => {
+                {anchorsByDay.map((d) => {
                   const pct = maxDayCount
                     ? Math.max(4, (d.count / maxDayCount) * 100)
                     : 0;
@@ -240,15 +370,11 @@ export default function StatsClient() {
                 })}
               </div>
             )}
-            {stats.anchorsByDay.length > 0 && (
+            {anchorsByDay.length > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
+                <span>{formatDateLabel(anchorsByDay[0].date)}</span>
                 <span>
-                  {formatDateLabel(stats.anchorsByDay[0].date)}
-                </span>
-                <span>
-                  {formatDateLabel(
-                    stats.anchorsByDay[stats.anchorsByDay.length - 1].date,
-                  )}
+                  {formatDateLabel(anchorsByDay[anchorsByDay.length - 1].date)}
                 </span>
               </div>
             )}

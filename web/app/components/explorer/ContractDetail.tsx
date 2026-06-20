@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ReadOnlyTester from "@/app/components/explorer/ReadOnlyTester";
+import { useLive } from "@/app/components/LiveProvider";
+import type { LiveEvent } from "@/lib/livePoller";
 import {
   type ContractCall,
   type ContractInfo,
@@ -14,6 +16,19 @@ import {
 } from "@/lib/contractExplorer";
 
 type Tab = "functions" | "calls" | "tryit";
+
+// A live print event for this contract, rendered as a provisional call row
+// until the next full fetch reconciles it.
+function liveEventToCall(ev: LiveEvent): ContractCall {
+  return {
+    txId: ev.txId,
+    function: ev.eventName || "call",
+    sender: ev.owner ?? "",
+    block: ev.stacksBlock ?? 0,
+    status: "success",
+    timestamp: new Date(ev.receivedAt).toISOString(),
+  };
+}
 
 function txUrl(txId: string): string {
   const id = txId.startsWith("0x") ? txId : `0x${txId}`;
@@ -47,11 +62,34 @@ export default function ContractDetail({
   callCount?: number;
 }) {
   const [tab, setTab] = useState<Tab>("functions");
+  // New live calls for this contract seen while the Recent Calls tab is not open.
+  const [newCallCount, setNewCallCount] = useState(0);
+  const { events: liveEvents } = useLive();
+  const processedRef = useRef<Set<string>>(new Set());
 
-  // Reset to the first tab whenever a different contract is selected.
+  // Reset to the first tab and clear live tracking whenever a different
+  // contract is selected.
   useEffect(() => {
     setTab("functions");
+    setNewCallCount(0);
+    processedRef.current = new Set();
   }, [contract.name]);
+
+  // Count new live events for this contract; opening the tab clears the badge.
+  useEffect(() => {
+    if (tab === "calls") {
+      setNewCallCount(0);
+      return;
+    }
+    let added = 0;
+    for (const ev of liveEvents) {
+      if (ev.contractName !== contract.name) continue;
+      if (processedRef.current.has(ev.id)) continue;
+      processedRef.current.add(ev.id);
+      added += 1;
+    }
+    if (added > 0) setNewCallCount((n) => n + added);
+  }, [liveEvents, tab, contract.name]);
 
   return (
     <div>
@@ -67,6 +105,11 @@ export default function ContractDetail({
         </TabButton>
         <TabButton active={tab === "calls"} onClick={() => setTab("calls")}>
           Recent Calls
+          {newCallCount > 0 && (
+            <span className="ml-1.5 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+              {newCallCount} new
+            </span>
+          )}
         </TabButton>
         <TabButton active={tab === "tryit"} onClick={() => setTab("tryit")}>
           Try It
@@ -328,6 +371,10 @@ function RecentCallsTab({ contract }: { contract: ContractInfo }) {
   const [calls, setCalls] = useState<ContractCall[] | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState("");
+  // Tx ids of rows that arrived live and should briefly glow.
+  const [glow, setGlow] = useState<Set<string>>(new Set());
+  const { events: liveEvents } = useLive();
+  const processedRef = useRef<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     try {
@@ -342,10 +389,46 @@ function RecentCallsTab({ contract }: { contract: ContractInfo }) {
   // Initial load plus a 30s auto-refresh so the table tracks new calls.
   useEffect(() => {
     setCalls(null);
+    processedRef.current = new Set();
     void load();
     const id = setInterval(() => void load(), 30_000);
     return () => clearInterval(id);
   }, [load]);
+
+  // Prepend new live events for this contract at the top of the table with a
+  // brief highlight, until the next fetch reconciles them.
+  useEffect(() => {
+    if (calls === null) return;
+    const fresh: ContractCall[] = [];
+    for (const ev of liveEvents) {
+      if (ev.contractName !== contract.name) continue;
+      if (processedRef.current.has(ev.id)) continue;
+      processedRef.current.add(ev.id);
+      fresh.push(liveEventToCall(ev));
+    }
+    if (fresh.length === 0) return;
+    setCalls((prev) => {
+      const base = prev ?? [];
+      const have = new Set(base.map((c) => c.txId));
+      const toAdd = fresh.filter((c) => !have.has(c.txId));
+      return toAdd.length === 0 ? prev : [...toAdd, ...base];
+    });
+    const ids = fresh.map((c) => c.txId);
+    setGlow((g) => {
+      const next = new Set(g);
+      ids.forEach((i) => next.add(i));
+      return next;
+    });
+    ids.forEach((i) =>
+      setTimeout(() => {
+        setGlow((g) => {
+          const next = new Set(g);
+          next.delete(i);
+          return next;
+        });
+      }, 2500),
+    );
+  }, [liveEvents, contract.name, calls]);
 
   const functionNames = useMemo(
     () => contract.functions.map((f) => f.name),
@@ -407,7 +490,9 @@ function RecentCallsTab({ contract }: { contract: ContractInfo }) {
               {visible.map((c) => (
                 <tr
                   key={c.txId}
-                  className="border-b border-foreground/5 last:border-0"
+                  className={`border-b border-foreground/5 last:border-0 ${
+                    glow.has(c.txId) ? "live-glow" : ""
+                  }`}
                 >
                   <td className="px-3 py-2 font-mono text-xs">{c.function}</td>
                   <td className="px-3 py-2">
