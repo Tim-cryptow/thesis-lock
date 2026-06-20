@@ -26,6 +26,7 @@ import {
   NOTIFICATION_ADDED_EVENT,
 } from "@/lib/notifications";
 import { useTx } from "@/app/components/TxProvider";
+import { useLive } from "@/app/components/LiveProvider";
 
 type NewNotification = Omit<Notification, "id" | "timestamp" | "read">;
 
@@ -63,6 +64,9 @@ export function NotificationProvider({
     useState<NotificationPreferences>(loadPreferences);
   const { notifications: txNotifications } = useTx();
   const seenTxRef = useRef<Set<string>>(new Set());
+  const { events: liveEvents } = useLive();
+  const seenLiveRef = useRef<Set<string>>(new Set());
+  const liveBaselinedRef = useRef(false);
 
   // Hydrate from storage on mount and keep in sync with every change event.
   useEffect(() => {
@@ -127,6 +131,33 @@ export function NotificationProvider({
       }
     }
   }, [txNotifications]);
+
+  // Turn new on-chain anchor events from the live poller into low-priority
+  // notifications. Baseline the buffer that already exists on mount so opening
+  // the app does not replay history; only events arriving afterwards notify.
+  useEffect(() => {
+    if (!liveBaselinedRef.current) {
+      liveBaselinedRef.current = true;
+      for (const ev of liveEvents) seenLiveRef.current.add(ev.id);
+      return;
+    }
+    for (const ev of liveEvents) {
+      if (seenLiveRef.current.has(ev.id)) continue;
+      seenLiveRef.current.add(ev.id);
+      if (ev.kind !== "anchor" || !ev.hash) continue;
+      addNotificationStore({
+        type: "new_anchor",
+        title: "New anchor",
+        message: ev.label
+          ? `New anchor: "${ev.label}"`
+          : "A new document was anchored on chain.",
+        icon: "anchor",
+        priority: "low",
+        actionUrl: `/v/${ev.hash}`,
+        actionLabel: "Verify",
+      });
+    }
+  }, [liveEvents]);
 
   const addNotification = useCallback((input: NewNotification) => {
     addNotificationStore(input);
