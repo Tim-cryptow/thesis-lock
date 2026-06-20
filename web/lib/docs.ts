@@ -62,6 +62,12 @@ export const DOCS: DocMeta[] = [
       "Save document hashes, wallets, and groups you want to monitor, then track their on-chain status and new anchors in one place, with update badges across the app.",
   },
   {
+    slug: "collections",
+    title: "Collections",
+    description:
+      "Organize anchored documents into named, browser-local collections. Create folders, add anchors by hash, file, or from your wallet, then share a collection as a link or import one someone sent you.",
+  },
+  {
     slug: "wallet-profiles",
     title: "Wallet Profiles",
     description:

@@ -3,25 +3,48 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
+  getGroupAnchorAt,
   getProofByHash,
   hashFile,
   readAnchor,
   readBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { discoverBatchAndGroupAnchors } from "@/lib/search";
 import { downloadExport, formatBulkVerifyCSV } from "@/lib/export";
 import { stageReportInput } from "@/lib/reportLink";
+import {
+  readBulkVerifyInput,
+  type BulkVerifyInput,
+} from "@/lib/bulkVerifyLink";
+import type { HashInput } from "@/lib/report";
+import SaveToCollectionButton from "@/app/components/SaveToCollectionButton";
 
-type Source = "single" | "batch" | "proof";
+type Source = "single" | "batch" | "proof" | "group";
 
 type RowStatus = "checking" | "verified" | "notfound" | "error";
 
+// Per-row pinned context carried from a collection's "Verify All": the exact
+// record this hash was collected from. Resolved before the global single anchor
+// so a different owner's batch or a specific group row is not shadowed by a
+// single anchor that happens to share the hash.
+type Pin = {
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
+  verifyUrl?: string;
+};
+
 type Row = {
   id: string;
-  file: File;
+  // The dropped file, or null for a row seeded from a ?hashes= link.
+  file: File | null;
+  // Display name: the filename, or a truncated hash for file-less rows.
+  name: string;
   hash: string | null;
   status: RowStatus;
   source: Source | null;
@@ -33,8 +56,24 @@ type Row = {
   // connected). A "not found" row is re-checked whenever the connected wallet
   // differs from this, since batch records are keyed by {hash, owner}.
   checkedOwner: string | null;
+  // Exact verify-page path discovered for a group or other-owner batch anchor,
+  // so its Verify link targets the precise on-chain row.
+  verifyUrl: string | null;
+  // Pinned context from a collection's "Verify All", resolved ahead of the
+  // global single anchor. Null for file drops and bare ?hashes= rows.
+  pin: Pin | null;
   message: string | null;
 };
+
+// Builds a Pin from a staged input, or null when it carries no pinned context.
+function pinFromInput(input: BulkVerifyInput): Pin | null {
+  const pin: Pin = {};
+  if (input.owner) pin.owner = input.owner;
+  if (input.groupId !== undefined) pin.groupId = input.groupId;
+  if (input.groupIndex !== undefined) pin.groupIndex = input.groupIndex;
+  if (input.verifyUrl) pin.verifyUrl = input.verifyUrl;
+  return Object.keys(pin).length > 0 ? pin : null;
+}
 
 function truncateHash(hash: string): string {
   if (hash.length <= 14) return hash;
@@ -88,8 +127,65 @@ export default function BulkVerifyClient() {
   // retry against the new owner before settling. The final notfound write
   // happens synchronously right after confirming the owner is stable, so
   // `checkedOwner` always matches the wallet in effect at settle time.
-  const resolve = useCallback(async (id: string, hash: string) => {
+  const resolve = useCallback(async (id: string, hash: string, pin?: Pin | null) => {
     try {
+      // A collection item can pin the exact record it was collected from: a
+      // specific group row, or another wallet's batch anchor. Resolve that
+      // first, because the global single anchor (checked below) may describe a
+      // different owner/label/block for the same hash and would shadow it.
+      if (pin) {
+        if (pin.groupId !== undefined && pin.groupIndex !== undefined) {
+          const groupAnchor = await getGroupAnchorAt(pin.groupId, pin.groupIndex);
+          if (
+            groupAnchor &&
+            groupAnchor.hash.toLowerCase().replace(/^0x/, "") === hash
+          ) {
+            setRows((cur) =>
+              cur.map((r) =>
+                r.id === id
+                  ? {
+                      ...r,
+                      status: "verified",
+                      source: "group",
+                      block: groupAnchor.stacksBlock,
+                      owner: null,
+                      checkedOwner: addressRef.current,
+                      verifyUrl:
+                        pin.verifyUrl ??
+                        `/v/${hash}?group=${pin.groupId}&gi=${pin.groupIndex}`,
+                    }
+                  : r,
+              ),
+            );
+            return;
+          }
+        }
+
+        if (pin.owner) {
+          const pinnedBatch = await readBatchAnchor(hash, pin.owner);
+          if (pinnedBatch) {
+            setRows((cur) =>
+              cur.map((r) =>
+                r.id === id
+                  ? {
+                      ...r,
+                      status: "verified",
+                      source: "batch",
+                      block: pinnedBatch.stacksBlock,
+                      owner: pin.owner!,
+                      checkedOwner: addressRef.current,
+                      verifyUrl:
+                        pin.verifyUrl ??
+                        `/v/${hash}?owner=${encodeURIComponent(pin.owner!)}`,
+                    }
+                  : r,
+              ),
+            );
+            return;
+          }
+        }
+      }
+
       for (;;) {
         const owner = addressRef.current;
 
@@ -197,8 +293,60 @@ export default function BulkVerifyClient() {
     setRows((cur) =>
       cur.map((r) => (needsRecheck(r) ? { ...r, status: "checking" } : r)),
     );
-    pending.forEach((r) => void resolve(r.id, r.hash!));
+    pending.forEach((r) => void resolve(r.id, r.hash!, r.pin));
   }, [address, resolve]);
+
+  // Hashes already swept through batch/group discovery, so the sweep below runs
+  // at most once per hash and does not loop when it updates rows.
+  const discoveredRef = useRef<Set<string>>(new Set());
+
+  // The per-row resolver above only covers global single/proof anchors and batch
+  // anchors owned by the connected wallet. Group anchors, and batch anchors owned
+  // by someone else (common when verifying a shared collection), need the event
+  // stream discovery used by search. Once every row has settled, sweep the
+  // not-found ones through one shared discovery scan and promote any that resolve.
+  useEffect(() => {
+    const stillResolving = rows.some(
+      (r) => r.status === "checking" || (r.file !== null && r.hash === null),
+    );
+    if (stillResolving) return;
+    const pending = rows.filter(
+      (r) =>
+        r.status === "notfound" &&
+        !!r.hash &&
+        !discoveredRef.current.has(r.hash),
+    );
+    if (pending.length === 0) return;
+    pending.forEach((r) => discoveredRef.current.add(r.hash!));
+    let cancelled = false;
+    void (async () => {
+      try {
+        const found = await discoverBatchAndGroupAnchors(
+          pending.map((r) => r.hash!),
+        );
+        if (cancelled || found.size === 0) return;
+        setRows((cur) =>
+          cur.map((r) => {
+            const res = r.hash ? found.get(r.hash) : undefined;
+            if (r.status !== "notfound" || !res) return r;
+            return {
+              ...r,
+              status: "verified",
+              source: res.source === "group" ? "group" : "batch",
+              block: res.stacksBlock,
+              owner: res.source === "batch" ? res.owner : null,
+              verifyUrl: res.verifyUrl,
+            };
+          }),
+        );
+      } catch {
+        // Discovery is best-effort; leave rows as not-found on a scan failure.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rows]);
 
   const addFiles = useCallback(
     (incoming: FileList | File[] | null) => {
@@ -208,16 +356,20 @@ export default function BulkVerifyClient() {
       const newRows: Row[] = files.map((file) => ({
         id: newId(file),
         file,
+        name: file.name,
         hash: null,
         status: "checking",
         source: null,
         block: null,
         owner: null,
         checkedOwner: null,
+        verifyUrl: null,
+        pin: null,
         message: null,
       }));
       setRows((prev) => [...prev, ...newRows]);
       newRows.forEach((row) => {
+        if (!row.file) return;
         hashFile(row.file)
           .then((hash) => {
             setRows((cur) =>
@@ -239,6 +391,89 @@ export default function BulkVerifyClient() {
     [resolve, t],
   );
 
+  // Seeds file-less rows from a list of already-known hashes, deduping against
+  // rows already present. Used by the ?hashes= link a collection's "Verify All"
+  // navigates to.
+  const addHashes = useCallback(
+    (hashes: string[]) => {
+      const existing = new Set(
+        rowsRef.current.map((r) => r.hash).filter((h): h is string => !!h),
+      );
+      const fresh = hashes
+        .map((h) => h.trim().toLowerCase().replace(/^0x/, ""))
+        .filter((h) => /^[0-9a-f]{64}$/.test(h))
+        .filter((h, i, arr) => arr.indexOf(h) === i && !existing.has(h));
+      if (fresh.length === 0) return;
+      const newRows: Row[] = fresh.map((hash) => ({
+        id: `${hash}-${Math.random().toString(36).slice(2, 8)}`,
+        file: null,
+        name: truncateHash(hash),
+        hash,
+        status: "checking",
+        source: null,
+        block: null,
+        owner: null,
+        checkedOwner: null,
+        verifyUrl: null,
+        pin: null,
+        message: null,
+      }));
+      setRows((prev) => [...prev, ...newRows]);
+      newRows.forEach((row) => void resolve(row.id, row.hash!));
+    },
+    [resolve],
+  );
+
+  // Seeds rows from staged collection items, each carrying pinned context (an
+  // owner-keyed batch or a specific group row) so "Verify All" resolves the
+  // exact record the item was collected from. Dedupes against existing rows.
+  const addInputs = useCallback(
+    (inputs: BulkVerifyInput[]) => {
+      const existing = new Set(
+        rowsRef.current.map((r) => r.hash).filter((h): h is string => !!h),
+      );
+      const seen = new Set<string>();
+      const fresh = inputs.filter((inp) => {
+        if (existing.has(inp.hash) || seen.has(inp.hash)) return false;
+        seen.add(inp.hash);
+        return true;
+      });
+      if (fresh.length === 0) return;
+      const newRows: Row[] = fresh.map((inp) => ({
+        id: `${inp.hash}-${Math.random().toString(36).slice(2, 8)}`,
+        file: null,
+        name: inp.name ?? truncateHash(inp.hash),
+        hash: inp.hash,
+        status: "checking",
+        source: null,
+        block: null,
+        owner: null,
+        checkedOwner: null,
+        verifyUrl: null,
+        pin: pinFromInput(inp),
+        message: null,
+      }));
+      setRows((prev) => [...prev, ...newRows]);
+      newRows.forEach((row) => void resolve(row.id, row.hash!, row.pin));
+    },
+    [resolve],
+  );
+
+  // On mount, seed from a collection's "Verify All" handoff if present (it
+  // stages per-item pinned context in sessionStorage), otherwise fall back to a
+  // bare ?hashes= link.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const staged = readBulkVerifyInput();
+    if (staged && staged.length > 0) {
+      addInputs(staged);
+      return;
+    }
+    const raw = new URLSearchParams(window.location.search).get("hashes");
+    if (raw) addHashes(raw.split(/[\s,]+/).filter(Boolean));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -258,13 +493,16 @@ export default function BulkVerifyClient() {
     }
   };
 
-  const clearAll = () => setRows([]);
+  const clearAll = () => {
+    discoveredRef.current.clear();
+    setRows([]);
+  };
 
   const exportResults = () => {
     if (rows.length === 0) return;
     const csv = formatBulkVerifyCSV(
       rows.map((r) => ({
-        filename: r.file.name,
+        filename: r.name,
         hash: r.hash,
         status: t(statusLabelKey(r.status)),
         source: r.source,
@@ -356,6 +594,7 @@ export default function BulkVerifyClient() {
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
         </div>
         {address ? (
           <button
@@ -454,13 +693,49 @@ export default function BulkVerifyClient() {
                       stageReportInput(
                         rows
                           .filter((r) => r.hash)
-                          .map((r) => ({ hash: r.hash as string, filename: r.file.name })),
+                          .map((r) => {
+                            const input: HashInput = {
+                              hash: r.hash as string,
+                              filename: r.name,
+                            };
+                            // Carry the resolved record's context so the report
+                            // pins the same row this verifier resolved, not a
+                            // global single anchor for the hash.
+                            if (r.source === "batch" && r.owner) {
+                              input.owner = r.owner;
+                            }
+                            if (r.verifyUrl) {
+                              const g = /[?&]group=(\d+)/.exec(r.verifyUrl);
+                              const gi = /[?&]gi=(\d+)/.exec(r.verifyUrl);
+                              if (g && gi) {
+                                input.groupId = Number(g[1]);
+                                input.groupIndex = Number(gi[1]);
+                              }
+                            }
+                            return input;
+                          }),
                       )
                     }
                     className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                   >
                     {t("bulkVerify.actions.generateReport")}
                   </Link>
+                )}
+                {rows.some((r) => r.status === "verified" && r.hash) && (
+                  <SaveToCollectionButton
+                    triggerLabel="Save verified to collection"
+                    items={rows
+                      .filter((r) => r.status === "verified" && r.hash)
+                      .map((r) => ({
+                        hash: r.hash as string,
+                        label: r.name,
+                        verifyUrl:
+                          r.verifyUrl ??
+                          (r.source === "batch" && r.owner
+                            ? `/v/${r.hash}?owner=${encodeURIComponent(r.owner)}`
+                            : undefined),
+                      }))}
+                  />
                 )}
                 <button
                   onClick={clearAll}
@@ -496,7 +771,7 @@ export default function BulkVerifyClient() {
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium truncate">
-                      {row.file.name}
+                      {row.name}
                     </div>
                     {row.hash ? (
                       <div className="mt-1 flex items-center gap-2">
@@ -558,12 +833,14 @@ export default function BulkVerifyClient() {
                       {row.status === "verified" && row.hash && (
                         <Link
                           href={
-                            row.source === "batch" && row.owner
-                              ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
-                              : `/v/${row.hash}`
+                            row.verifyUrl
+                              ? row.verifyUrl
+                              : row.source === "batch" && row.owner
+                                ? `/v/${row.hash}?owner=${encodeURIComponent(row.owner)}`
+                                : `/v/${row.hash}`
                           }
                           aria-label={t("bulkVerify.row.verifyAria", {
-                            name: row.file.name,
+                            name: row.name,
                           })}
                           className="inline-flex text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                         >

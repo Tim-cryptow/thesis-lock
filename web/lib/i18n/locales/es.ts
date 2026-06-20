@@ -26,6 +26,7 @@ export const es: Translations = {
       api: "API",
       explorer: "Explorador",
       watchlist: "Lista de seguimiento",
+      collections: "Colecciones",
       github: "GitHub",
     },
     wallet: {
@@ -150,6 +151,10 @@ export const es: Translations = {
       watchlist: {
         title: "Lista de seguimiento",
         body: "Monitorea hashes, billeteras y grupos concretos y observa cuándo cambia su estado.",
+      },
+      collections: {
+        title: "Colecciones",
+        body: "Organiza documentos anclados en colecciones con nombre que puedes compartir, como listas de reproducción para tus pruebas.",
       },
     },
     contracts: {

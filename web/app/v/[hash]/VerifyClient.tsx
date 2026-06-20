@@ -4,8 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -443,6 +445,7 @@ export default function VerifyPage() {
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
         </div>
         <h1 className="text-3xl mt-8 mb-2">{t("verify.invalidHash.title")}</h1>
         <p className="text-foreground/70">
@@ -517,6 +520,7 @@ export default function VerifyPage() {
           {t("common.nav.explorer")}
         </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
       </div>
       <h1 className="text-3xl mt-8 mb-6">{t("verify.recordTitle")}</h1>
 
@@ -534,6 +538,18 @@ export default function VerifyPage() {
               groupId={preferGroup && groupAnchor ? groupAnchor.groupId : undefined}
               groupIndex={
                 preferGroup && groupAnchor ? groupAnchor.index : undefined
+              }
+              showLabel
+            />
+            <AddToCollectionButton
+              hash={hash}
+              label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
+              verifyUrl={
+                preferBatch && batchOwner
+                  ? `/v/${hash}?owner=${batchOwner}`
+                  : preferGroup && groupAnchor
+                    ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
+                    : undefined
               }
               showLabel
             />

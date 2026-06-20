@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
@@ -261,6 +263,7 @@ export default function SearchClient() {
           {t("common.nav.explorer")}
         </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
       </div>
 
       <h1 className="text-3xl mb-2">{t("search.heading")}</h1>
@@ -434,6 +437,11 @@ export default function SearchClient() {
                                 ? row.groupIndex
                                 : undefined
                             }
+                          />
+                          <AddToCollectionButton
+                            hash={row.hash}
+                            label={row.label}
+                            verifyUrl={row.verifyUrl}
                           />
                         </div>
                         <div className="text-sm mb-2">

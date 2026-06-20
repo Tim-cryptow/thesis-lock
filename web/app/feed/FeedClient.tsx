@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
+import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl } from "@/lib/stacks";
@@ -213,6 +215,7 @@ export default function FeedClient() {
           {t("common.nav.explorer")}
         </Link>
           <WatchlistNavLink />
+          <CollectionsNavLink />
       </div>
 
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
@@ -305,6 +308,11 @@ export default function FeedClient() {
                             ? entry.owner
                             : undefined
                         }
+                      />
+                      <AddToCollectionButton
+                        hash={entry.hash}
+                        label={entry.label}
+                        verifyUrl={verifyLinkFor(entry)}
                       />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">

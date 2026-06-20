@@ -38,7 +38,19 @@ export type ReportData = {
   };
 };
 
-export type HashInput = { hash: string; filename?: string };
+// A per-item `owner` pins an owner-keyed batch record for this specific hash,
+// taking precedence over the report-level owner. `groupId`/`groupIndex` pin a
+// specific group row. Carried from sources (like a collection) that know which
+// record a hash was collected from, so the report resolves that exact record
+// rather than a global single anchor, a different owner's batch, or a different
+// group row for the same hash.
+export type HashInput = {
+  hash: string;
+  filename?: string;
+  owner?: string;
+  groupId?: number;
+  groupIndex?: number;
+};
 
 export const DEFAULT_REPORT_TITLE = "Verification Report";
 
@@ -68,11 +80,27 @@ const SOURCE_PRIORITY: Record<SearchSource, number> = {
 
 function pickBest(
   results: SearchResult[],
-  owner?: string,
+  pin?: { owner?: string; groupId?: number; groupIndex?: number },
 ): SearchResult | null {
   if (results.length === 0) return null;
-  const wanted = owner?.toUpperCase();
+  const wanted = pin?.owner?.toUpperCase();
+  const pinnedGroup =
+    pin?.groupId !== undefined && pin?.groupIndex !== undefined;
   return [...results].sort((a, b) => {
+    // A pinned group row (the exact { group-id, index } a hash was collected
+    // from) is the record being asked about, so it outranks everything,
+    // including a global single anchor for the same hash.
+    if (pinnedGroup) {
+      const aGroup =
+        a.source === "group" &&
+        a.groupId === pin!.groupId &&
+        a.groupIndex === pin!.groupIndex;
+      const bGroup =
+        b.source === "group" &&
+        b.groupId === pin!.groupId &&
+        b.groupIndex === pin!.groupIndex;
+      if (aGroup !== bGroup) return aGroup ? -1 : 1;
+    }
     // When the caller named an owner, that wallet's batch anchor is the record
     // they are asking about, so it outranks a global single anchor that may
     // describe a different owner, label, and block for the same hash. This
@@ -97,6 +125,9 @@ export async function verifyReportEntry(
   owner?: string,
 ): Promise<ReportEntry> {
   const hash = normalizeHash(input.hash);
+  // A per-item owner takes precedence over the report-level owner so a hash
+  // collected as a specific wallet's batch record resolves to that record.
+  const effectiveOwner = input.owner ?? owner;
   const base: ReportEntry = {
     hash,
     ...(input.filename ? { filename: input.filename } : {}),
@@ -111,11 +142,15 @@ export async function verifyReportEntry(
   if (!HEX_64.test(hash)) return base;
 
   const [results, proof] = await Promise.all([
-    searchByHash(hash, owner).catch(() => [] as SearchResult[]),
+    searchByHash(hash, effectiveOwner).catch(() => [] as SearchResult[]),
     getProofByHash(hash).catch(() => null),
   ]);
 
-  const best = pickBest(results, owner);
+  const best = pickBest(results, {
+    owner: effectiveOwner,
+    groupId: input.groupId,
+    groupIndex: input.groupIndex,
+  });
   if (!best && !proof) return base;
 
   const label = best?.label || proof?.label || "";
