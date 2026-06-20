@@ -62,6 +62,12 @@ export const DOCS: DocMeta[] = [
       "How the real-time event ticker and auto-updating feed, stats, and explorer work, what they poll, and how to pause or resume live updates.",
   },
   {
+    slug: "notifications",
+    title: "Notifications",
+    description:
+      "The unified notification center: how transaction, watchlist, protocol, and group events are aggregated, plus browser push, sound alerts, and per-type preferences.",
+  },
+  {
     slug: "watchlist",
     title: "Watchlist",
     description:

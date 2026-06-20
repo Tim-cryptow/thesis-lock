@@ -156,6 +156,10 @@ export const fr: Translations = {
         title: "Collections",
         body: "Organisez vos documents ancres en collections nommees et partageables, comme des playlists pour vos preuves.",
       },
+      notifications: {
+        title: "Notifications",
+        body: "Un centre de notifications unifie pour les confirmations de transaction, les mises a jour de la liste de suivi, les nouveaux ancrages et l'activite des groupes, avec notifications push du navigateur et alertes sonores.",
+      },
     },
     contracts: {
       heading: "Construit sur 5 contrats intelligents sur le mainnet Stacks",

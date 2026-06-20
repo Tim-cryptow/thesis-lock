@@ -144,6 +144,15 @@ export const TOUR_STEPS: TourStep[] = [
     page: "/anchor",
   },
   {
+    id: "notifications-nav",
+    target: '[data-tour="notifications-nav"]',
+    title: "Your notification center",
+    content:
+      "The bell gathers transaction confirmations, watchlist updates, new protocol anchors, and group activity in one place. Open it for recent items, or visit the notifications page to filter and set preferences.",
+    position: "left",
+    page: "/anchor",
+  },
+  {
     id: "theme-toggle",
     target: '[data-tour="theme-toggle"]',
     title: "Switch between light and dark",

@@ -156,6 +156,10 @@ export const es: Translations = {
         title: "Colecciones",
         body: "Organiza documentos anclados en colecciones con nombre que puedes compartir, como listas de reproducción para tus pruebas.",
       },
+      notifications: {
+        title: "Notificaciones",
+        body: "Un centro de notificaciones unificado para confirmaciones de transacciones, novedades de la lista de seguimiento, nuevos anclajes y actividad de grupos, con notificaciones push del navegador y alertas de sonido.",
+      },
     },
     contracts: {
       heading: "Construido sobre 5 contratos inteligentes en la mainnet de Stacks",
