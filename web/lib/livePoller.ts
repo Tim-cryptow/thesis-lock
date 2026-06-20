@@ -129,13 +129,37 @@ function kindForContract(contractName: string): LiveEventKind {
   return "other";
 }
 
+// cvToValue may return a plain tuple ({ hash: "0x.." }) or the verbose Clarity
+// form ({ value: { hash: { value: "0x.." } } }), and field values can arrive
+// wrapped as { type, value } even when the top level is plain, depending on the
+// @stacks/transactions version. These helpers read either shape (mirroring the
+// ones in lib/hiroAnchor.ts).
+function tupleFields(value: unknown): Record<string, unknown> {
+  if (
+    value &&
+    typeof value === "object" &&
+    "value" in value &&
+    typeof (value as { value: unknown }).value === "object"
+  ) {
+    return (value as { value: Record<string, unknown> }).value;
+  }
+  return value as Record<string, unknown>;
+}
+
+function fieldValue(field: unknown): unknown {
+  if (field && typeof field === "object" && "value" in field) {
+    return (field as { value: unknown }).value;
+  }
+  return field;
+}
+
 function decodePrintTuple(hex: string): Record<string, unknown> | null {
   if (!hex) return null;
   try {
     const cv = deserializeCV(stripHex(hex));
     const value = cvToValue(cv, true);
     if (value && typeof value === "object" && !Array.isArray(value)) {
-      return value as Record<string, unknown>;
+      return tupleFields(value);
     }
     return null;
   } catch {
@@ -157,21 +181,23 @@ function parseEvent(
   const eventIndex = asNumber(raw.event_index) ?? 0;
   const tuple = decodePrintTuple(raw.contract_log?.value?.hex ?? "");
 
-  const hashRaw =
-    asString(tuple?.["hash"]) ?? null;
+  const hashRaw = asString(fieldValue(tuple?.["hash"])) ?? null;
   const hash = hashRaw ? stripHex(hashRaw).toLowerCase() || null : null;
   const owner =
-    asString(tuple?.["anchored-by"]) ??
-    asString(tuple?.["owner"]) ??
-    asString(tuple?.["admin"]) ??
+    asString(fieldValue(tuple?.["anchored-by"])) ??
+    asString(fieldValue(tuple?.["owner"])) ??
+    asString(fieldValue(tuple?.["admin"])) ??
     null;
   const stacksBlock =
-    asNumber(tuple?.["stacks-block"]) ?? asNumber(tuple?.["anchored-at"]);
+    asNumber(fieldValue(tuple?.["stacks-block"])) ??
+    asNumber(fieldValue(tuple?.["anchored-at"]));
   const kind = kindForContract(contractName);
   // Group events carry their { group-id, index } location in the print tuple,
   // so the ticker can link to the exact group row instead of an owner guess.
-  const groupId = kind === "group" ? asNumber(tuple?.["group-id"]) : null;
-  const groupIndex = kind === "group" ? asNumber(tuple?.["index"]) : null;
+  const groupId =
+    kind === "group" ? asNumber(fieldValue(tuple?.["group-id"])) : null;
+  const groupIndex =
+    kind === "group" ? asNumber(fieldValue(tuple?.["index"])) : null;
 
   return {
     id: `${contractId}:${txId}:${eventIndex}`,
@@ -179,9 +205,9 @@ function parseEvent(
     contractName,
     txId,
     kind,
-    eventName: asString(tuple?.["event"]) ?? "",
+    eventName: asString(fieldValue(tuple?.["event"])) ?? "",
     hash,
-    label: asString(tuple?.["label"]),
+    label: asString(fieldValue(tuple?.["label"])),
     owner,
     stacksBlock,
     groupId,
