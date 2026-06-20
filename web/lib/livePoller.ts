@@ -59,6 +59,10 @@ export type LiveEvent = {
   label: string | null;
   owner: string | null;
   stacksBlock: number | null;
+  // Group anchor location { group-id, index } for group events, null otherwise.
+  // Lets the ticker link to the exact group row instead of an owner-keyed guess.
+  groupId: number | null;
+  groupIndex: number | null;
   // Client clock time (ms) when this event was first observed. The events
   // endpoint carries no timestamp, so relative "Ns ago" labels use this.
   receivedAt: number;
@@ -163,18 +167,25 @@ function parseEvent(
     null;
   const stacksBlock =
     asNumber(tuple?.["stacks-block"]) ?? asNumber(tuple?.["anchored-at"]);
+  const kind = kindForContract(contractName);
+  // Group events carry their { group-id, index } location in the print tuple,
+  // so the ticker can link to the exact group row instead of an owner guess.
+  const groupId = kind === "group" ? asNumber(tuple?.["group-id"]) : null;
+  const groupIndex = kind === "group" ? asNumber(tuple?.["index"]) : null;
 
   return {
     id: `${contractId}:${txId}:${eventIndex}`,
     contractId,
     contractName,
     txId,
-    kind: kindForContract(contractName),
+    kind,
     eventName: asString(tuple?.["event"]) ?? "",
     hash,
     label: asString(tuple?.["label"]),
     owner,
     stacksBlock,
+    groupId,
+    groupIndex,
     receivedAt,
   };
 }

@@ -76,6 +76,9 @@ export default function StatsClient() {
   const processedRef = useRef<Set<string>>(new Set());
   // hash|owner of documents already counted, so each is counted once.
   const countedRef = useRef<Set<string>>(new Set());
+  // Guards a one-time baseline so the buffer that already exists when this page
+  // mounts is not counted as new (it may already be in the fetched totals).
+  const seededRef = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -102,7 +105,21 @@ export default function StatsClient() {
   // hash|owner so each document counts once, matching how /api/stats derives
   // totalAnchors (single anchors plus batch rows, registry calls excluded).
   useEffect(() => {
-    if (liveEvents.length === 0) return;
+    // First run after mount sets the baseline. LiveProvider is global, so its
+    // buffer can already hold anchors observed on other pages, and the
+    // /api/stats fetch started on mount may already include them. Record
+    // everything present now without counting it, and only count events that
+    // arrive afterwards, so the total and today's bar are not inflated.
+    if (!seededRef.current) {
+      seededRef.current = true;
+      for (const ev of liveEvents) {
+        processedRef.current.add(ev.id);
+        if ((ev.kind === "anchor" || ev.kind === "registry") && ev.hash) {
+          countedRef.current.add(`${ev.hash}|${ev.owner ?? ""}`);
+        }
+      }
+      return;
+    }
     let added = 0;
     for (const ev of liveEvents) {
       if (processedRef.current.has(ev.id)) continue;

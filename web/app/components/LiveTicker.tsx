@@ -34,6 +34,15 @@ function verbFor(ev: LiveEvent): string {
 
 function linkFor(ev: LiveEvent): string {
   if (ev.hash) {
+    // Group anchors are keyed by { group-id, index }; link to that exact row.
+    // VerifyClient reads ?owner= as a batch selector, so a group event must not
+    // fall through to the owner link or it can resolve to an unrelated record.
+    if (ev.kind === "group") {
+      if (ev.groupId !== null && ev.groupIndex !== null) {
+        return `/v/${ev.hash}?group=${ev.groupId}&gi=${ev.groupIndex}`;
+      }
+      return `/v/${ev.hash}`;
+    }
     if (ev.owner && ev.kind !== "anchor") {
       return `/v/${ev.hash}?owner=${encodeURIComponent(ev.owner)}`;
     }
