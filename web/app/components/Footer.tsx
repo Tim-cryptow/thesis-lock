@@ -4,6 +4,7 @@ import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import LiveBadge from "@/app/components/LiveBadge";
+import FooterStatus from "@/app/components/FooterStatus";
 import { useTour } from "@/app/components/TourProvider";
 import { resetTour } from "@/lib/onboarding";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -74,6 +75,7 @@ export default function Footer() {
           <Link href="/audit" className="hover:text-foreground transition">
             Audit
           </Link>
+          <FooterStatus />
           <LiveBadge />
           <LanguageSwitcher />
           <ThemeToggle />
