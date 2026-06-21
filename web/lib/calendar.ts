@@ -198,6 +198,23 @@ export async function buildYearGrid(
   return Array.from(map.values());
 }
 
+// The most recent `days` days ending today (UTC), in chronological order. Spans
+// a year boundary cleanly, for the compact graphs on the dashboard and profiles.
+export async function buildRecentDays(
+  address: string,
+  days = 30,
+): Promise<CalendarDay[]> {
+  const entries = await collectAnchorEntries(address);
+  const map = new Map<string, CalendarDay>();
+  const now = new Date();
+  const endUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  for (let i = days - 1; i >= 0; i -= 1) {
+    seedDay(map, new Date(endUtc - i * DAY_MS).toISOString().slice(0, 10));
+  }
+  applyEntries(map, entries);
+  return Array.from(map.values());
+}
+
 // Consecutive-day streaks over the given days. The current streak counts back
 // from today; an inactive today is allowed once (the day is not over yet) so a
 // streak is not reported broken before the user has a chance to anchor.
