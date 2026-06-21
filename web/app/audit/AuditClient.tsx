@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import AuditReportGenerator from "./AuditReportGenerator";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   AUDIT_CATEGORIES,
@@ -369,6 +370,8 @@ export default function AuditClient() {
           </div>
         )}
       </section>
+
+      <AuditReportGenerator />
     </div>
   );
 }

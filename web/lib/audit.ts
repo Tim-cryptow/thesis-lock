@@ -341,7 +341,7 @@ export function getAuditLog(filters?: AuditFilters): AuditEntry[] {
   return filters ? entries.filter((e) => matchesFilters(e, filters)) : entries;
 }
 
-function toCsv(entries: AuditEntry[]): string {
+export function formatAuditCsv(entries: AuditEntry[]): string {
   const headers = [
     "id",
     "timestamp",
@@ -381,7 +381,7 @@ export function exportAuditLog(
 ): string {
   const entries = getAuditLog(filters);
   return format === "csv"
-    ? toCsv(entries)
+    ? formatAuditCsv(entries)
     : JSON.stringify(entries, null, 2);
 }
 
