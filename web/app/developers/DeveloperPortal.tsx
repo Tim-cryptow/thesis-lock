@@ -11,13 +11,15 @@ import IntegrationGuidesClient, {
   type GuideTabId,
 } from "./IntegrationGuidesClient";
 import QuickStartGuide from "./QuickStartGuide";
+import WebhooksClient from "./WebhooksClient";
 
-type PortalTab = "playground" | "keys" | "guides";
+type PortalTab = "playground" | "keys" | "guides" | "webhooks";
 
 const TABS: { id: PortalTab; label: string; hash: string }[] = [
   { id: "playground", label: "Playground", hash: "#playground" },
   { id: "keys", label: "API Keys", hash: "#keys" },
   { id: "guides", label: "Integration Guides", hash: "#guides" },
+  { id: "webhooks", label: "Webhooks", hash: "#webhooks" },
 ];
 
 const STORAGE_KEY = "thesislock_dev_tab";
@@ -96,8 +98,8 @@ export default function DeveloperPortal() {
         <header className="mt-8 mb-8">
           <h1 className="text-3xl mb-2">Developer Portal</h1>
           <p className="text-foreground/70 max-w-2xl">
-            API playground, key management, and integration guides for building
-            on ThesisLock.
+            API playground, key management, integration guides, and webhooks for
+            building on ThesisLock.
           </p>
           <p className="text-foreground/70 max-w-2xl mt-2">
             Optimizing or debugging? The{" "}
@@ -116,6 +118,40 @@ export default function DeveloperPortal() {
             </Link>{" "}
             records every action with a re-verifiable integrity hash and
             exportable chain-of-custody reports.
+          </p>
+          <p className="text-foreground/70 max-w-2xl mt-2">
+            Building an integration? Subscribe to protocol events with the{" "}
+            <a href="#webhooks" className="underline hover:text-foreground">
+              webhooks
+            </a>{" "}
+            tab, or follow the{" "}
+            <a
+              href="/api/feed/rss"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-foreground"
+            >
+              RSS
+            </a>
+            ,{" "}
+            <a
+              href="/api/feed/atom"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-foreground"
+            >
+              Atom
+            </a>
+            , and{" "}
+            <a
+              href="/api/feed/json"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-foreground"
+            >
+              JSON
+            </a>{" "}
+            feeds.
           </p>
         </header>
 
@@ -156,6 +192,7 @@ export default function DeveloperPortal() {
             />
           </div>
         ) : null}
+        {tab === "webhooks" ? <WebhooksClient /> : null}
       </div>
       <Footer />
     </>

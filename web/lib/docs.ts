@@ -163,6 +163,18 @@ export const DOCS: DocMeta[] = [
     description:
       "Your anchoring activity as a GitHub-style contribution graph and a monthly calendar, with current and longest streaks, per-day anchor detail, and report generation for any day.",
   },
+  {
+    slug: "feeds",
+    title: "Feeds",
+    description:
+      "Subscribe to protocol events in any reader: RSS 2.0, Atom 1.0, and JSON Feed endpoints, filterable by contract and wallet, with autodiscovery built in.",
+  },
+  {
+    slug: "webhooks",
+    title: "Webhooks",
+    description:
+      "Subscribe to protocol events programmatically: the event types, the signed JSON payload format, HMAC-SHA256 signature verification, and the developer portal manager and tester.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

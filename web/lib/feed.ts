@@ -31,6 +31,8 @@ type RawEvent = {
   };
 };
 
+export type { RawEvent };
+
 type EventsResponse = {
   limit: number;
   offset: number;
@@ -38,7 +40,7 @@ type EventsResponse = {
   results: RawEvent[];
 };
 
-async function fetchEvents(
+export async function fetchEvents(
   contractName: string,
   limit: number,
   offset: number,
@@ -109,7 +111,7 @@ function parseRegistryEvent(ev: RawEvent): FeedEntry | null {
   };
 }
 
-async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>> {
+export async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>> {
   const unique = Array.from(new Set(txIds));
   const results = await Promise.all(
     unique.map(async (id) => {
@@ -139,7 +141,7 @@ async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>> {
 const HIRO_PAGE = 50;
 const PAGINATE_SAFETY_CAP = 500;
 
-async function paginatedFetch(
+export async function paginatedFetch(
   contractName: string,
   target: number,
 ): Promise<RawEvent[]> {

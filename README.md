@@ -1,4 +1,4 @@
-![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg) ![Status](https://thesis-lock.vercel.app/api/status/badge)
+![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg) ![Status](https://thesis-lock.vercel.app/api/status/badge) [![RSS](https://img.shields.io/badge/RSS-feed-orange)](https://thesis-lock.vercel.app/api/feed/rss)
 
 # ThesisLock
 
@@ -38,6 +38,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Compliance-grade audit trail with integrity verification and exportable reports at `/audit`: every interaction is recorded in a tamper-evident, browser-local log with a re-verifiable SHA-256 integrity hash, filterable and paginated, with signed-style audit reports exportable as JSON, CSV, or printable HTML for academic and legal chain-of-custody. Stored entirely on the device.
 - Public status page with uptime monitoring and incident tracking at `/status`: live health of all five contracts, the API endpoints, and the Hiro and Stacks dependencies, with response times, 24-hour uptime bars, and automatic plus manual incident reporting, exposed as JSON at `/api/status` and as an embeddable status badge at `/api/status/badge`.
 - Calendar view with GitHub-style contribution graph and streak tracking at `/calendar`: your anchoring activity mapped to dates, with a year contribution graph, a monthly calendar, current and longest streaks, per-day anchor detail, and per-day report generation, plus a compact graph on the dashboard and on public wallet profiles. Built from your on-chain history.
+- RSS/Atom/JSON feeds and webhook subscriptions for protocol events: standards-based feeds at `/api/feed/rss`, `/api/feed/atom`, and `/api/feed/json` (filterable by `?contract`, `?address`, and `?limit`, with autodiscovery links in the page head), plus a webhook subscription manager and tester in the developer portal with a signed (HMAC-SHA256) JSON payload format for Slack, Zapier, CI, and monitoring integrations.
 
 ## Protocol
 
@@ -94,3 +95,5 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [CLI Guide](https://thesis-lock.vercel.app/docs/cli): the `thesislock-cli` terminal tool ([`cli/`](cli/README.md)).
 - [GitHub Action](https://thesis-lock.vercel.app/docs/github-action): gate a CI pipeline on an on-chain anchor ([`action/`](action/README.md)).
 - [System Status](https://thesis-lock.vercel.app/docs/status): the public status page, what it monitors, and the status JSON API and badge.
+- [Feeds](https://thesis-lock.vercel.app/docs/feeds): RSS, Atom, and JSON Feed endpoints for protocol events, with filtering and autodiscovery.
+- [Webhooks](https://thesis-lock.vercel.app/docs/webhooks): event types, the signed JSON payload format, and signature verification.

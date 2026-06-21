@@ -19,7 +19,7 @@ jobs:
       - name: Install Clarinet
         run: |
           set -euo pipefail
-          curl -fSL -o clarinet.tar.gz \
+          curl -fSL --retry 5 --retry-all-errors --retry-delay 5 -o clarinet.tar.gz \
             "https://github.com/hirosystems/clarinet/releases/download/${CLARINET_VERSION}/clarinet-linux-x64-glibc.tar.gz"
           tar -xzf clarinet.tar.gz
           chmod +x clarinet

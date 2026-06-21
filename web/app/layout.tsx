@@ -82,6 +82,14 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
+  alternates: {
+    types: {
+      "application/rss+xml": [{ url: "/api/feed/rss", title: "ThesisLock RSS" }],
+      "application/atom+xml": [
+        { url: "/api/feed/atom", title: "ThesisLock Atom" },
+      ],
+    },
+  },
   other: {
     "talentapp:project_verification":
       "20612ea82236e7d5496a497d1a0b8365db5f52e3f165bdddee934452fbd947eb23f319049f11231ba4059180e440ea794710df90c355964ab98385391d6a461e",
