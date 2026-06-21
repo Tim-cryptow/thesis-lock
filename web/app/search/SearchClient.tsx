@@ -19,6 +19,7 @@ import {
   getHashesByTag,
   normalizeHash,
 } from "@/lib/tags";
+import { auditSearch } from "@/lib/auditEvents";
 import { useI18n } from "@/app/components/I18nProvider";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
 
@@ -168,6 +169,7 @@ export default function SearchClient() {
         if (id !== requestId.current) return;
         setResults(Array.isArray(data) ? data : []);
         pushRecent(term);
+        auditSearch(term, searchType);
       } catch {
         if (id !== requestId.current) return;
         setError(t("search.error"));

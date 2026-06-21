@@ -21,6 +21,7 @@ import NotificationBell from "./components/NotificationBell";
 import NotificationSound from "./components/NotificationSound";
 import PerformanceTracker from "./components/PerformanceTracker";
 import PerformanceBanner from "./components/performance/PerformanceBanner";
+import AuditLogger from "./components/AuditLogger";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -119,6 +120,7 @@ export default function RootLayout({
               <KeyboardShortcuts />
               <PerformanceTracker />
               <PerformanceBanner />
+              <AuditLogger />
               <LiveProvider>
                 <NotificationProvider>
                   <TourProvider>

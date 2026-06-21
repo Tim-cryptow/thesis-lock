@@ -109,6 +109,14 @@ export default function DeveloperPortal() {
             </Link>{" "}
             tracks Web Vitals, page load, and API response times in your browser.
           </p>
+          <p className="text-foreground/70 max-w-2xl mt-2">
+            Need compliance evidence? The{" "}
+            <Link href="/audit" className="underline hover:text-foreground">
+              audit trail
+            </Link>{" "}
+            records every action with a re-verifiable integrity hash and
+            exportable chain-of-custody reports.
+          </p>
         </header>
 
         <div

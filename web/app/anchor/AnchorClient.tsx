@@ -29,6 +29,11 @@ import {
   submitBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import {
+  auditAnchor,
+  auditBatchAnchor,
+  auditProofMint,
+} from "@/lib/auditEvents";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -368,6 +373,7 @@ export default function AnchorPage() {
           label: submittingLabel,
           owner: submittingOwner,
         });
+        auditAnchor(submittingHash, { txId, label: submittingLabel });
         registerSequentially(
           [{ hash: submittingHash, label: submittingLabel }],
           0,
@@ -426,6 +432,7 @@ export default function AnchorPage() {
           label: entries[0]?.label,
           owner: submittingOwner,
         });
+        auditBatchAnchor(entries, txId);
         registerSequentially(
           entries,
           0,
@@ -487,6 +494,7 @@ export default function AnchorPage() {
       (txId) => {
         setMinting(false);
         setMintTxId(txId);
+        auditProofMint(entryHash, txId);
       },
       () => setMinting(false),
     );
@@ -505,6 +513,7 @@ export default function AnchorPage() {
         list[idx].label,
         (txId) => {
           setMintTxId(txId);
+          auditProofMint(list[idx].hash, txId);
           mintProofsSequentially(list, idx + 1);
         },
         () => {

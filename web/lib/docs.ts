@@ -145,6 +145,12 @@ export const DOCS: DocMeta[] = [
     description:
       "In-browser Web Vitals, page load, and API response metrics with a local dashboard and a debug overlay, for spotting bottlenecks without any external analytics.",
   },
+  {
+    slug: "audit",
+    title: "Audit Trail",
+    description:
+      "A tamper-evident, browser-local record of every action, with SHA-256 integrity verification, filtering, and exportable JSON, CSV, and printable HTML compliance reports for academic and legal chain-of-custody.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

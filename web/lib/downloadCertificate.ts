@@ -1,4 +1,5 @@
 import { generateCertificate, type CertificateData } from "./certificate";
+import { auditCertificateDownload } from "./auditEvents";
 
 export function downloadCertificate(data: CertificateData): void {
   const html = generateCertificate(data);
@@ -11,4 +12,5 @@ export function downloadCertificate(data: CertificateData): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  auditCertificateDownload(data.hash);
 }

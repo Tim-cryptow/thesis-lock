@@ -34,6 +34,7 @@ import {
   getTagColor,
   getTagsForHash,
 } from "@/lib/tags";
+import { auditExport } from "@/lib/auditEvents";
 
 // Sentinel filter value for anchors whose label is free-form (no template).
 const UNSTRUCTURED_FILTER = "__unstructured";
@@ -152,6 +153,7 @@ export default function AnchorsPage() {
           "application/json",
         );
       }
+      auditExport(format, { scope: "anchors" });
     } catch (e) {
       setExportError(e instanceof Error ? e.message : t("anchors.exportError"));
       setTimeout(() => setExportError(null), 4000);

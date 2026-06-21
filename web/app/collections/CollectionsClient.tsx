@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
+import { auditCollectionCreate } from "@/lib/auditEvents";
 import {
   type Collection,
   COLLECTION_COLORS,
@@ -168,6 +169,7 @@ export default function CollectionsClient() {
         return;
       }
       createCollection(name, description, color, icon);
+      auditCollectionCreate(name.trim());
       setCollections(loadCollections());
       resetForm();
     },

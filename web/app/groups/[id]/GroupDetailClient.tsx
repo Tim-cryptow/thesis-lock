@@ -25,6 +25,7 @@ import { addNotification } from "@/lib/notifications";
 import { stageReportInput } from "@/lib/reportLink";
 import { formatBytes } from "@/lib/format";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { dispatchAudit } from "@/lib/auditEvents";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 
@@ -125,7 +126,7 @@ export default function GroupDetailPage() {
     addMember(
       groupId,
       value,
-      () => {
+      (txId) => {
         setAddPending(false);
         setNewMember("");
         addNotification({
@@ -137,6 +138,7 @@ export default function GroupDetailPage() {
           actionUrl: `/groups/${groupId}`,
           actionLabel: "View group",
         });
+        dispatchAudit("member_add", "group", value, { groupId, txId });
       },
       () => setAddPending(false),
     );
@@ -148,7 +150,10 @@ export default function GroupDetailPage() {
     removeMember(
       groupId,
       principal,
-      () => setRemovingMember(null),
+      (txId) => {
+        setRemovingMember(null);
+        dispatchAudit("member_remove", "group", principal, { groupId, txId });
+      },
       () => setRemovingMember(null),
     );
   };
@@ -203,6 +208,7 @@ export default function GroupDetailPage() {
         setFile(null);
         setHash(null);
         setLabel("");
+        dispatchAudit("group_anchor", "group", hash, { groupId, txId });
       },
       () => setAnchorPending(false),
     );

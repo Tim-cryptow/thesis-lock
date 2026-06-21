@@ -28,6 +28,7 @@ import {
   type GroupAnchorMatch,
 } from "@/lib/groups";
 import { useWallet } from "@/lib/wallet";
+import { auditVerify } from "@/lib/auditEvents";
 import { isHiroAvailable } from "@/lib/fetchWithRetry";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -291,6 +292,12 @@ export default function VerifyPage() {
       if (showLoading) {
         setLoading(true);
         setError(null);
+        auditVerify(hash, {
+          ...(ownerParam ? { owner: ownerParam } : {}),
+          ...(groupLocation
+            ? { group: groupLocation.groupId, gi: groupLocation.index }
+            : {}),
+        });
       }
       try {
         const result = await readAnchor(hash);
