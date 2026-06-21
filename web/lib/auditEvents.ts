@@ -58,8 +58,11 @@ export function auditBatchAnchor(
   });
 }
 
-export function auditVerify(hash: string): void {
-  dispatchAudit("verify_check", "verify", hash);
+export function auditVerify(
+  hash: string,
+  metadata?: Record<string, unknown>,
+): void {
+  dispatchAudit("verify_check", "verify", hash, metadata);
 }
 
 export function auditProofMint(hash: string, txId?: string): void {

@@ -63,14 +63,17 @@ export default function AuditClient() {
     const computed = computeIntegrityHash(all);
     const stored = getStoredIntegrityHash();
     setIntegrity({
+      // Compare against the stored baseline first: an empty log with a surviving
+      // baseline is an erased history (tampered), not "nothing to verify". Only
+      // treat an empty log as empty when there is no baseline at all.
       status:
-        all.length === 0
-          ? "empty"
-          : stored === null
-            ? "missing"
-            : computed === stored
-              ? "ok"
-              : "tampered",
+        stored === null
+          ? all.length === 0
+            ? "empty"
+            : "missing"
+          : computed === stored
+            ? "ok"
+            : "tampered",
       computed,
       stored,
     });

@@ -292,7 +292,12 @@ export default function VerifyPage() {
       if (showLoading) {
         setLoading(true);
         setError(null);
-        auditVerify(hash);
+        auditVerify(hash, {
+          ...(ownerParam ? { owner: ownerParam } : {}),
+          ...(groupLocation
+            ? { group: groupLocation.groupId, gi: groupLocation.index }
+            : {}),
+        });
       }
       try {
         const result = await readAnchor(hash);
