@@ -76,12 +76,18 @@ function AnchorRow({
   const parsed = parseLabel(item.label);
   const template = parsed.templateId ? getTemplate(parsed.templateId) : undefined;
   const tags = getTagsForHash(item.hash);
-  // A batch record is keyed by { hash, owner }, so a bare /v/<hash> link can
-  // resolve to an unrelated global anchor. Scope batch rows to the owner.
+  // A bare /v/<hash> link can resolve to an unrelated record when the same hash
+  // exists in more than one place. A batch record is keyed by { hash, owner },
+  // and a group anchor by { group, index }, so scope those rows to the exact
+  // record they came from.
   const verifyHref =
     item.source === "batch" && owner
       ? `/v/${item.hash}?owner=${owner}`
-      : `/v/${item.hash}`;
+      : item.source === "group" &&
+          item.groupId !== undefined &&
+          item.groupIndex !== undefined
+        ? `/v/${item.hash}?group=${item.groupId}&gi=${item.groupIndex}`
+        : `/v/${item.hash}`;
   return (
     <li className="rounded-md border border-foreground/10 p-3">
       <div className="flex flex-wrap items-center gap-2 mb-1.5">

@@ -6,7 +6,14 @@
 
 import { fetchActivityLog, type ActivityEvent } from "./activityLog";
 
-export type CalendarHash = { hash: string; label: string; source: string };
+export type CalendarHash = {
+  hash: string;
+  label: string;
+  source: string;
+  // Present for group anchors, so a verify link can address the exact group row.
+  groupId?: number;
+  groupIndex?: number;
+};
 
 export type CalendarDay = {
   // UTC calendar date, YYYY-MM-DD.
@@ -40,7 +47,14 @@ const PAGE_SIZE = 50;
 // navigating months does not refetch the whole transaction history each time.
 const CACHE_TTL_MS = 60_000;
 
-type AnchorEntry = { date: string; hash: string; label: string; source: string };
+type AnchorEntry = {
+  date: string;
+  hash: string;
+  label: string;
+  source: string;
+  groupId?: number;
+  groupIndex?: number;
+};
 
 const entryCache = new Map<string, { at: number; entries: AnchorEntry[] }>();
 
@@ -125,7 +139,16 @@ function entriesFromEvent(event: ActivityEvent): AnchorEntry[] {
   const hash = typeof event.details.hash === "string" ? event.details.hash : null;
   if (!hash) return [];
   const label = typeof event.details.label === "string" ? event.details.label : "";
-  return [{ date, hash, label, source }];
+  const entry: AnchorEntry = { date, hash, label, source };
+  if (event.type === "group-anchor") {
+    if (typeof event.details.groupId === "number") {
+      entry.groupId = event.details.groupId;
+    }
+    if (typeof event.details.index === "number") {
+      entry.groupIndex = event.details.index;
+    }
+  }
+  return [entry];
 }
 
 // Pages through the wallet's activity and flattens it into dated anchor entries,
@@ -149,8 +172,25 @@ async function collectAnchorEntries(address: string): Promise<AnchorEntry[]> {
     if (!result.hasMore) break;
   }
 
-  entryCache.set(key, { at: Date.now(), entries });
-  return entries;
+  // The batch contract's map-insert silently skips a {hash, owner} that already
+  // exists, so a hash submitted twice in one batch, or re-submitted in a later
+  // batch, is written on chain only once. Entries arrive newest first, so keep
+  // the oldest occurrence of each batch hash (the one that actually wrote) and
+  // drop the rest, to avoid inflating counts. A duplicate single anchor reverts
+  // and is already filtered upstream, so only batch needs this.
+  const seenBatch = new Set<string>();
+  const deduped: AnchorEntry[] = [];
+  for (let i = entries.length - 1; i >= 0; i -= 1) {
+    const entry = entries[i];
+    if (entry.source === "batch") {
+      if (seenBatch.has(entry.hash)) continue;
+      seenBatch.add(entry.hash);
+    }
+    deduped.push(entry);
+  }
+
+  entryCache.set(key, { at: Date.now(), entries: deduped });
+  return deduped;
 }
 
 function seedDay(map: Map<string, CalendarDay>, date: string): void {
@@ -161,7 +201,13 @@ function applyEntries(map: Map<string, CalendarDay>, entries: AnchorEntry[]): vo
   for (const entry of entries) {
     const day = map.get(entry.date);
     if (!day) continue;
-    day.hashes.push({ hash: entry.hash, label: entry.label, source: entry.source });
+    day.hashes.push({
+      hash: entry.hash,
+      label: entry.label,
+      source: entry.source,
+      groupId: entry.groupId,
+      groupIndex: entry.groupIndex,
+    });
     day.count += 1;
   }
 }
@@ -238,19 +284,22 @@ export function getStreakInfo(days: CalendarDay[]): StreakInfo {
     }
   }
 
-  const todayKey = new Date().toISOString().slice(0, 10);
+  // The current streak is anchored to today's real date, not the last day of
+  // the supplied range. Walking calendar days back from today means viewing a
+  // past year (whose last day is its December 31) reports 0, not a stale run
+  // that merely ended on that year boundary.
+  const active = new Set(sorted.filter((d) => d.count > 0).map((d) => d.date));
+  const now = new Date();
+  let cursor = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  // Today not being over yet does not break the streak: if today has no anchor,
+  // start counting from yesterday.
+  if (!active.has(new Date(cursor).toISOString().slice(0, 10))) {
+    cursor -= DAY_MS;
+  }
   let currentStreak = 0;
-  let graceUsed = false;
-  for (let i = sorted.length - 1; i >= 0; i -= 1) {
-    const day = sorted[i];
-    if (day.date > todayKey) continue; // ignore future days
-    if (day.count > 0) {
-      currentStreak += 1;
-    } else if (!graceUsed && day.date === todayKey) {
-      graceUsed = true; // today is not over yet
-    } else {
-      break;
-    }
+  while (active.has(new Date(cursor).toISOString().slice(0, 10))) {
+    currentStreak += 1;
+    cursor -= DAY_MS;
   }
 
   return { currentStreak, longestStreak, totalActiveDays, totalAnchors };
