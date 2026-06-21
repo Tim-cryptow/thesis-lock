@@ -49,6 +49,7 @@ function entryRows(report: AuditReport): string {
       <tr class="detail">
         <td></td>
         <td colspan="5" class="detail-cell">
+          <span class="dk">timestamp</span> <span class="mono break">${escapeHtml(e.timestamp)}</span>
           <span class="dk">id</span> <span class="mono break">${escapeHtml(e.id)}</span>
           <span class="dk">session</span> <span class="mono break">${escapeHtml(e.sessionId)}</span>
           <span class="dk">ipHash</span> <span class="mono">${escapeHtml(e.ipHash ?? "null")}</span>
