@@ -266,11 +266,47 @@ function loadRaw(): AuditEntry[] {
   }
 }
 
-// SHA-256 over each entry's id and timestamp, in order. Any reorder, edit, or
-// removal of entries changes the digest, which is what makes the log tamper
-// evident when compared against the stored value.
+// Deterministic JSON with object keys sorted recursively, so metadata hashes the
+// same regardless of key insertion order.
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value) ?? "null";
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  const obj = value as Record<string, unknown>;
+  return `{${Object.keys(obj)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`)
+    .join(",")}}`;
+}
+
+// Every persisted field of an entry, in a fixed order. Hashing the JSON encoding
+// of these (rather than a separator-joined string) makes the digest collision
+// free: JSON quoting escapes any delimiter a value could contain, so no value
+// can forge a field or entry boundary.
+function entryFields(e: AuditEntry): unknown[] {
+  return [
+    e.id,
+    e.timestamp,
+    e.action,
+    e.category,
+    e.actor,
+    e.target,
+    e.sessionId,
+    e.ipHash,
+    e.userAgent,
+    e.metadata,
+  ];
+}
+
+// SHA-256 over a canonical serialization of every field of every entry, in
+// order. Any addition, removal, reorder, or edit to any field changes the
+// digest, which is what makes the log tamper evident when compared against the
+// stored value.
 export function computeIntegrityHash(entries: AuditEntry[]): string {
-  return sha256Hex(entries.map((e) => `${e.id}:${e.timestamp}`).join("|"));
+  return sha256Hex(stableStringify(entries.map(entryFields)));
 }
 
 export function getStoredIntegrityHash(): string | null {
@@ -299,11 +335,19 @@ export function logAudit(
   };
   if (typeof window === "undefined") return full;
   try {
-    const next = loadRaw();
-    next.push(full);
-    const capped = next.slice(-AUDIT_CAP);
+    const existing = loadRaw();
+    const stored = getStoredIntegrityHash();
+    // If a baseline exists and the current entries no longer match it, the log
+    // was edited out of band. Keep recording, but do not advance the baseline,
+    // so verification keeps reporting the tamper instead of normalizing it on
+    // the next action (such as the page_view from opening the audit page).
+    const tampered =
+      stored !== null && computeIntegrityHash(existing) !== stored;
+    const capped = [...existing, full].slice(-AUDIT_CAP);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
-    window.localStorage.setItem(INTEGRITY_KEY, computeIntegrityHash(capped));
+    if (!tampered) {
+      window.localStorage.setItem(INTEGRITY_KEY, computeIntegrityHash(capped));
+    }
   } catch {
     // Logging is best-effort and never blocks the action being recorded.
   }
