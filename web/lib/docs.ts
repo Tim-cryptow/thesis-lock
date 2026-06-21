@@ -151,6 +151,12 @@ export const DOCS: DocMeta[] = [
     description:
       "A tamper-evident, browser-local record of every action, with SHA-256 integrity verification, filtering, and exportable JSON, CSV, and printable HTML compliance reports for academic and legal chain-of-custody.",
   },
+  {
+    slug: "status",
+    title: "System Status",
+    description:
+      "The public status page: live health of all five contracts, the API endpoints, and the Hiro and Stacks dependencies, with response times, 24-hour uptime, incident tracking, a JSON API, and an embeddable status badge.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

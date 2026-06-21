@@ -1,4 +1,4 @@
-![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg) ![Status](https://thesis-lock.vercel.app/api/status/badge)
 
 # ThesisLock
 
@@ -36,6 +36,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - On-chain contract explorer at `/explorer` with interactive read-only function calls: browse every contract's functions, maps, and data variables, watch recent on-chain calls, read an architecture diagram of how the five contracts relate, and call read-only functions directly from the UI. Exposed as JSON at `/api/explorer/<contract>`.
 - Built-in performance monitoring with Web Vitals and API metrics at `/performance`: a client-side dashboard tracking Core Web Vitals (LCP, INP, CLS, FCP, TTFB, FID) with ratings and sparklines, per-page load and render times, and per-endpoint API response times, error rates, and cache hits, plus an optional debug overlay. Captured with the browser's Performance APIs and stored entirely on the device, no external analytics.
 - Compliance-grade audit trail with integrity verification and exportable reports at `/audit`: every interaction is recorded in a tamper-evident, browser-local log with a re-verifiable SHA-256 integrity hash, filterable and paginated, with signed-style audit reports exportable as JSON, CSV, or printable HTML for academic and legal chain-of-custody. Stored entirely on the device.
+- Public status page with uptime monitoring and incident tracking at `/status`: live health of all five contracts, the API endpoints, and the Hiro and Stacks dependencies, with response times, 24-hour uptime bars, and automatic plus manual incident reporting, exposed as JSON at `/api/status` and as an embeddable status badge at `/api/status/badge`.
 
 ## Protocol
 
@@ -91,3 +92,4 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [SDK Guide](https://thesis-lock.vercel.app/docs/sdk): the `thesislock-sdk` TypeScript package ([`sdk/`](sdk/README.md)).
 - [CLI Guide](https://thesis-lock.vercel.app/docs/cli): the `thesislock-cli` terminal tool ([`cli/`](cli/README.md)).
 - [GitHub Action](https://thesis-lock.vercel.app/docs/github-action): gate a CI pipeline on an on-chain anchor ([`action/`](action/README.md)).
+- [System Status](https://thesis-lock.vercel.app/docs/status): the public status page, what it monitors, and the status JSON API and badge.
