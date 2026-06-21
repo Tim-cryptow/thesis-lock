@@ -175,6 +175,12 @@ export const DOCS: DocMeta[] = [
     description:
       "Subscribe to protocol events programmatically: the event types, the signed JSON payload format, HMAC-SHA256 signature verification, and the developer portal manager and tester.",
   },
+  {
+    slug: "data-portability",
+    title: "Data Portability",
+    description:
+      "Back up everything ThesisLock stores in your browser to one JSON file, restore it on another device with merge or replace, review storage usage, clear data, and control privacy and preferences from the settings page.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
