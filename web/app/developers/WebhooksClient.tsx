@@ -126,14 +126,20 @@ export default function WebhooksClient() {
 
   const examples = useMemo(
     () =>
-      WEBHOOK_EVENTS.map((e) => ({
-        id: e.id,
-        json: JSON.stringify(
-          formatWebhookPayload(e.id, sampleEventData(e.id)),
-          null,
-          2,
-        ),
-      })),
+      WEBHOOK_EVENTS.map((e) => {
+        // The request body is { event, data, timestamp }; the signature is sent
+        // in the X-ThesisLock-Signature header, not in the body, so it is left
+        // out of the example a developer would copy.
+        const p = formatWebhookPayload(e.id, sampleEventData(e.id));
+        return {
+          id: e.id,
+          json: JSON.stringify(
+            { event: p.event, data: p.data, timestamp: p.timestamp },
+            null,
+            2,
+          ),
+        };
+      }),
     [],
   );
 

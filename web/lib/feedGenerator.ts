@@ -237,6 +237,12 @@ export function contractEventsToFeed(contractEvents: unknown[]): FeedEvent[] {
   return out;
 }
 
+// Whether a raw event would be surfaced as a feed event. Lets the data layer
+// page far enough to fill a requested limit despite interleaved non-feed rows.
+export function isFeedEvent(ev: unknown): boolean {
+  return contractEventsToFeed([ev]).length > 0;
+}
+
 // ---------------------------------------------------------------------------
 // Generators
 // ---------------------------------------------------------------------------

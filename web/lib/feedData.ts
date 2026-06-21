@@ -1,7 +1,8 @@
-import { fetchTxTimes, paginatedFetch, type RawEvent } from "./feed";
+import { fetchEvents, fetchTxTimes, type RawEvent } from "./feed";
 import {
   contractEventsToFeed,
   eventActor,
+  isFeedEvent,
   type FeedEvent,
   type FeedOptions,
 } from "./feedGenerator";
@@ -24,6 +25,11 @@ const FEED_CONTRACTS = [
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
+// Hiro caps a single events call at 50. Page up to this offset so a contract
+// that emits non-feed events (a proof mint emits an NFT event plus its print)
+// can still yield enough surfaced events to fill the requested limit.
+const HIRO_PAGE = 50;
+const OFFSET_CAP = 500;
 
 export type FeedQuery = {
   contract: string | null;
@@ -73,19 +79,37 @@ function resolveContracts(contract: string | null): string[] {
   );
 }
 
+// Pages a contract's events (newest first) until it has collected at least
+// `needed` surfaced (mappable) events or the source is exhausted, so non-feed
+// rows like NFT mint events do not starve the result.
+async function collectContractRaw(
+  name: string,
+  needed: number,
+): Promise<RawEvent[]> {
+  const collected: RawEvent[] = [];
+  let surfaced = 0;
+  for (let offset = 0; offset < OFFSET_CAP; offset += HIRO_PAGE) {
+    let page: RawEvent[];
+    try {
+      page = await fetchEvents(name, HIRO_PAGE, offset);
+    } catch {
+      break;
+    }
+    if (page.length === 0) break;
+    collected.push(...page);
+    for (const ev of page) if (isFeedEvent(ev)) surfaced += 1;
+    if (page.length < HIRO_PAGE || surfaced >= needed) break;
+  }
+  return collected;
+}
+
 export async function fetchFeedEvents(query: FeedQuery): Promise<FeedEvent[]> {
   const contracts = resolveContracts(query.contract);
   if (contracts.length === 0) return [];
 
-  // Each contract's events come back newest first. Page each one up to the
-  // requested limit (Hiro caps a single call at 50), so a busy contract can
-  // still contribute items beyond the first page and a single-contract feed can
-  // return the full requested count.
   const target = Math.max(query.limit, 20);
   const lists = await Promise.all(
-    contracts.map((name) =>
-      paginatedFetch(name, target).catch(() => [] as RawEvent[]),
-    ),
+    contracts.map((name) => collectContractRaw(name, target)),
   );
 
   let raw: RawEvent[] = lists.flat();
@@ -101,7 +125,9 @@ export async function fetchFeedEvents(query: FeedQuery): Promise<FeedEvent[]> {
     block_time: times.get(ev.tx_id) ?? 0,
   }));
 
-  // Most recent first across all contracts, then trim to the requested count.
-  enriched.sort((a, b) => (b.block_time ?? 0) - (a.block_time ?? 0));
-  return contractEventsToFeed(enriched.slice(0, query.limit));
+  // Map to feed events first so non-feed rows do not consume slots, then take
+  // the most recent across all contracts up to the requested count.
+  const events = contractEventsToFeed(enriched);
+  events.sort((a, b) => (b.pubDate || "").localeCompare(a.pubDate || ""));
+  return events.slice(0, query.limit);
 }
