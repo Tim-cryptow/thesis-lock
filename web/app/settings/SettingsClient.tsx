@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import DataManagement from "./DataManagement";
+import PreferencesSection from "./PreferencesSection";
 
 type SettingsTab = "data" | "preferences" | "privacy" | "about";
 
@@ -92,7 +93,7 @@ export default function SettingsClient() {
         </div>
 
         {tab === "data" ? <DataManagement /> : null}
-        {tab === "preferences" ? <ComingInThisUpdate name="Preferences" /> : null}
+        {tab === "preferences" ? <PreferencesSection /> : null}
         {tab === "privacy" ? <ComingInThisUpdate name="Privacy" /> : null}
         {tab === "about" ? <ComingInThisUpdate name="About" /> : null}
       </div>

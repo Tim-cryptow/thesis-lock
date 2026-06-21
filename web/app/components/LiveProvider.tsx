@@ -34,6 +34,29 @@ const CONTRACT_NAMES = [
 const BUFFER_SIZE = 50;
 
 const PAUSED_KEY = "thesislock.live.paused";
+const INTERVAL_KEY = "thesislock.live.interval";
+
+// Allowed polling intervals offered in settings, in milliseconds.
+export const LIVE_INTERVALS = [15_000, 30_000, 60_000];
+
+export function getLiveInterval(): number {
+  if (typeof window === "undefined") return LIVE_INTERVALS[0];
+  try {
+    const value = Number(window.localStorage.getItem(INTERVAL_KEY));
+    return LIVE_INTERVALS.includes(value) ? value : LIVE_INTERVALS[0];
+  } catch {
+    return LIVE_INTERVALS[0];
+  }
+}
+
+export function setLiveInterval(ms: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(INTERVAL_KEY, String(ms));
+  } catch {
+    // Non-fatal if persistence is unavailable.
+  }
+}
 
 // "live": polling and healthy. "error": last poll failed. "paused": user
 // disabled live updates.
@@ -111,6 +134,7 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
       contractAddresses: CONTRACT_NAMES.map(
         (name) => `${CONTRACT_ADDRESS}.${name}`,
       ),
+      interval: getLiveInterval(),
       onNewEvents: handleNewEvents,
       onStatusChange: (s) => setPollStatus(s),
     });
