@@ -1,4 +1,4 @@
-import type { AuditReport } from "./audit";
+import { integrityPayload, type AuditReport } from "./audit";
 
 // Renders an audit report as a self-contained, printable HTML document. All CSS
 // is inline so the file can be saved or emailed as a single artifact, matching
@@ -103,6 +103,9 @@ export function renderAuditReportHTML(report: AuditReport): string {
   .integrity{margin-top:12px;padding:16px;border:1px solid #e4e4e7;border-radius:6px;background:#fafafa}
   .integrity .hash{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:12px;word-break:break-all;color:#0a0a0a}
   .note{font-size:12px;color:#52525b;margin:8px 0 0}
+  details{margin-top:8px}
+  summary{cursor:pointer;font-size:12px;color:#52525b}
+  pre.canonical{margin-top:8px;padding:12px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:10px;white-space:pre-wrap;word-break:break-all;color:#27272a}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:8px 0 0}
   .stat{border:1px solid #e4e4e7;border-radius:6px;padding:14px}
   .stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#71717a}
@@ -138,10 +141,11 @@ export function renderAuditReportHTML(report: AuditReport): string {
       <div class="integrity">
         <div class="hash">${integrity}</div>
         <p class="note">
-          This SHA-256 digest is computed over every field of every entry below,
-          in order. Each entry's full set of fields is shown, so the digest can
-          be recomputed from this report; any addition, removal, reordering, or
-          edit changes it, which is what makes this log tamper evident.
+          This SHA-256 digest is the hash of the canonical data block at the end
+          of this report (every field of every entry, in order). Hashing that
+          block reproduces this digest exactly; any addition, removal,
+          reordering, or edit changes it, which is what makes this log tamper
+          evident.
         </p>
       </div>
 
@@ -150,6 +154,16 @@ export function renderAuditReportHTML(report: AuditReport): string {
         <thead><tr><th>#</th><th>Timestamp (UTC)</th><th>Action</th><th>Category</th><th>Actor</th><th>Target</th></tr></thead>
         <tbody>${entryRows(report)}</tbody>
       </table>
+
+      <h2>Canonical data</h2>
+      <p class="note">
+        The integrity hash above is the SHA-256 of the exact text below: a stable
+        serialization of every field of every entry, in order. To verify, hash
+        this block and compare it to the integrity hash. Placeholders in the
+        table above (such as "n/a") are for display only; this block carries the
+        raw values that were hashed.
+      </p>
+      <details><summary>Show canonical data</summary><pre class="canonical">${escapeHtml(integrityPayload(report.entries))}</pre></details>
     </div>
     <div class="foot">
       ThesisLock audit trail. All actions recorded client-side; this report was

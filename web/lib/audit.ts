@@ -317,12 +317,19 @@ function entryFields(e: AuditEntry): unknown[] {
   ];
 }
 
-// SHA-256 over a canonical serialization of every field of every entry, in
-// order. Any addition, removal, reorder, or edit to any field changes the
-// digest, which is what makes the log tamper evident when compared against the
-// stored value.
+// The exact canonical input the integrity digest is computed over: a stable JSON
+// serialization of every field of every entry, in order. Embedding this string
+// in a report lets a recipient recompute the digest exactly (the SHA-256 of it),
+// regardless of how individual fields are displayed.
+export function integrityPayload(entries: AuditEntry[]): string {
+  return stableStringify(entries.map(entryFields));
+}
+
+// SHA-256 over the canonical payload above. Any addition, removal, reorder, or
+// edit to any field changes the digest, which is what makes the log tamper
+// evident when compared against the stored value.
 export function computeIntegrityHash(entries: AuditEntry[]): string {
-  return sha256Hex(stableStringify(entries.map(entryFields)));
+  return sha256Hex(integrityPayload(entries));
 }
 
 export function getStoredIntegrityHash(): string | null {
