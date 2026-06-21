@@ -36,7 +36,10 @@ export default function AuditReportGenerator() {
     const filters: AuditFilters = {};
     if (dateFrom) filters.dateFrom = localDayStartIso(dateFrom);
     if (dateTo) filters.dateTo = localDayEndIso(dateTo);
-    const generated = generateAuditReport(getAuditLog(filters));
+    const generated = generateAuditReport(getAuditLog(filters), {
+      from: filters.dateFrom,
+      to: filters.dateTo,
+    });
     setReport(generated);
     // Record the report's creation after generating it, so the just-shown
     // report does not include its own generation event.

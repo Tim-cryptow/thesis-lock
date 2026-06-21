@@ -126,7 +126,7 @@ export default function GroupDetailPage() {
     addMember(
       groupId,
       value,
-      () => {
+      (txId) => {
         setAddPending(false);
         setNewMember("");
         addNotification({
@@ -138,7 +138,7 @@ export default function GroupDetailPage() {
           actionUrl: `/groups/${groupId}`,
           actionLabel: "View group",
         });
-        dispatchAudit("member_add", "group", value, { groupId });
+        dispatchAudit("member_add", "group", value, { groupId, txId });
       },
       () => setAddPending(false),
     );
@@ -150,9 +150,9 @@ export default function GroupDetailPage() {
     removeMember(
       groupId,
       principal,
-      () => {
+      (txId) => {
         setRemovingMember(null);
-        dispatchAudit("member_remove", "group", principal, { groupId });
+        dispatchAudit("member_remove", "group", principal, { groupId, txId });
       },
       () => setRemovingMember(null),
     );

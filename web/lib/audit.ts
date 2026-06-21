@@ -453,7 +453,10 @@ export function exportAuditLog(
 // Builds a self-contained report over the given entries: the period they span,
 // per-action counts, the number of distinct actors, and the integrity hash that
 // pins the exact set and order of entries.
-export function generateAuditReport(entries: AuditEntry[]): AuditReport {
+export function generateAuditReport(
+  entries: AuditEntry[],
+  period?: { from?: string; to?: string },
+): AuditReport {
   const sorted = [...entries].sort((a, b) =>
     a.timestamp.localeCompare(b.timestamp),
   );
@@ -466,9 +469,12 @@ export function generateAuditReport(entries: AuditEntry[]): AuditReport {
   return {
     id: randomId(),
     generatedAt: new Date().toISOString(),
+    // Prefer the requested bounds so the report records the interval the user
+    // asked for, even when it is empty or only partially covered; fall back to
+    // the span of the entries when a side was left open.
     period: {
-      from: sorted[0]?.timestamp ?? "",
-      to: sorted[sorted.length - 1]?.timestamp ?? "",
+      from: period?.from ?? sorted[0]?.timestamp ?? "",
+      to: period?.to ?? sorted[sorted.length - 1]?.timestamp ?? "",
     },
     totalActions: entries.length,
     actionBreakdown,
