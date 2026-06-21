@@ -220,6 +220,22 @@ export function generateSessionId(): string {
   }
 }
 
+// Converts a YYYY-MM-DD value from a date input (a local calendar date) to the
+// ISO instant at the start or end of that day in the user's time zone, so
+// filtering ISO timestamps matches the selected calendar days regardless of the
+// browser's offset from UTC.
+export function localDayStartIso(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  if (!y || !m || !d) return "";
+  return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+}
+
+export function localDayEndIso(date: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  if (!y || !m || !d) return "";
+  return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+}
+
 // Shortens a long value (a principal, hash, or session id) for table display.
 export function truncateMiddle(value: string, lead = 8, tail = 6): string {
   if (value.length <= lead + tail + 1) return value;

@@ -11,6 +11,8 @@ import {
   computeIntegrityHash,
   getAuditLog,
   getStoredIntegrityHash,
+  localDayEndIso,
+  localDayStartIso,
   truncateMiddle,
   type AuditEntry,
 } from "@/lib/audit";
@@ -110,8 +112,8 @@ export default function AuditClient() {
   );
 
   const filtered = useMemo(() => {
-    const from = dateFrom ? `${dateFrom}T00:00:00.000Z` : "";
-    const to = dateTo ? `${dateTo}T23:59:59.999Z` : "";
+    const from = dateFrom ? localDayStartIso(dateFrom) : "";
+    const to = dateTo ? localDayEndIso(dateTo) : "";
     const a = action.trim().toLowerCase();
     const who = actor.trim().toLowerCase();
     const rows = entries.filter((e) => {

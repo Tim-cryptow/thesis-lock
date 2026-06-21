@@ -432,7 +432,7 @@ export default function AnchorPage() {
           label: entries[0]?.label,
           owner: submittingOwner,
         });
-        auditBatchAnchor(entries.length);
+        auditBatchAnchor(entries, txId);
         registerSequentially(
           entries,
           0,

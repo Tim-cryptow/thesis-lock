@@ -46,8 +46,16 @@ export function auditAnchor(
   dispatchAudit("anchor_submit", "anchor", hash, metadata);
 }
 
-export function auditBatchAnchor(count: number): void {
-  dispatchAudit("batch_anchor", "anchor", null, { count });
+export function auditBatchAnchor(
+  entries: { hash: string; label: string }[],
+  txId?: string,
+): void {
+  dispatchAudit("batch_anchor", "anchor", null, {
+    count: entries.length,
+    hashes: entries.map((e) => e.hash),
+    labels: entries.map((e) => e.label),
+    txId,
+  });
 }
 
 export function auditVerify(hash: string): void {

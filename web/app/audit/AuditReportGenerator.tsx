@@ -5,6 +5,8 @@ import {
   formatAuditCsv,
   generateAuditReport,
   getAuditLog,
+  localDayEndIso,
+  localDayStartIso,
   truncateMiddle,
   type AuditFilters,
   type AuditReport,
@@ -31,8 +33,8 @@ export default function AuditReportGenerator() {
 
   const generate = () => {
     const filters: AuditFilters = {};
-    if (dateFrom) filters.dateFrom = `${dateFrom}T00:00:00.000Z`;
-    if (dateTo) filters.dateTo = `${dateTo}T23:59:59.999Z`;
+    if (dateFrom) filters.dateFrom = localDayStartIso(dateFrom);
+    if (dateTo) filters.dateTo = localDayEndIso(dateTo);
     setReport(generateAuditReport(getAuditLog(filters)));
   };
 
