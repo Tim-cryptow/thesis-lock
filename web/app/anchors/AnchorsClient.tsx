@@ -9,6 +9,8 @@ import ErrorFallback from "@/app/components/ErrorFallback";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
 import TagFilter from "@/app/components/TagFilter";
+import ContributionGraph from "@/app/components/calendar/ContributionGraph";
+import DayDetail from "@/app/components/calendar/DayDetail";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   BATCH_CONTRACT_FULL_NAME,
@@ -35,6 +37,7 @@ import {
   getTagsForHash,
 } from "@/lib/tags";
 import { auditExport } from "@/lib/auditEvents";
+import { buildYearGrid, type CalendarDay } from "@/lib/calendar";
 
 // Sentinel filter value for anchors whose label is free-form (no template).
 const UNSTRUCTURED_FILTER = "__unstructured";
@@ -53,6 +56,10 @@ export default function AnchorsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [templateFilter, setTemplateFilter] = useState<string>("all");
+  // Toggles the My Anchors body between the list and a calendar of the year.
+  const [view, setView] = useState<"list" | "calendar">("list");
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [calendarSelected, setCalendarSelected] = useState<string | null>(null);
   // Hashes ticked for side-by-side comparison. Capped at two: the compare page
   // takes exactly two documents.
   const [selected, setSelected] = useState<string[]>([]);
@@ -120,6 +127,23 @@ export default function AnchorsPage() {
     }
     void loadHistory(address);
   }, [address, loadHistory]);
+
+  // Loads the year grid the first time the calendar view is opened (and on year
+  // rollover). The calendar lib caches the underlying fetch, so toggling is cheap.
+  useEffect(() => {
+    if (!address || view !== "calendar") return;
+    let active = true;
+    buildYearGrid(address)
+      .then((days) => {
+        if (active) setCalendarDays(days);
+      })
+      .catch(() => {
+        if (active) setCalendarDays([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [address, view]);
 
   const copyHash = async (hash: string) => {
     await navigator.clipboard.writeText(hash);
@@ -392,7 +416,54 @@ export default function AnchorsPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-3" role="list">
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-foreground/50 uppercase tracking-wide mr-1">
+              View
+            </span>
+            <button
+              type="button"
+              onClick={() => setView("list")}
+              className={`text-sm px-3 py-1.5 rounded-md border transition ${
+                view === "list"
+                  ? "border-foreground/40 bg-foreground/10"
+                  : "border-foreground/15 hover:border-foreground/40"
+              }`}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("calendar")}
+              className={`text-sm px-3 py-1.5 rounded-md border transition ${
+                view === "calendar"
+                  ? "border-foreground/40 bg-foreground/10"
+                  : "border-foreground/15 hover:border-foreground/40"
+              }`}
+            >
+              Calendar view
+            </button>
+          </div>
+          {view === "calendar" ? (
+            <div className="rounded-lg border border-foreground/10 bg-card p-4 sm:p-6">
+              <ContributionGraph
+                days={calendarDays}
+                selectedDate={calendarSelected}
+                onSelectDay={(d) =>
+                  setCalendarSelected((c) => (c === d.date ? null : d.date))
+                }
+              />
+              <DayDetail
+                day={
+                  calendarSelected
+                    ? calendarDays.find((d) => d.date === calendarSelected) ?? null
+                    : null
+                }
+                onClose={() => setCalendarSelected(null)}
+              />
+            </div>
+          ) : (
+            <div className="space-y-3" role="list">
           {hasStructured && (
             <div className="flex items-center gap-2 pb-1">
               <label
@@ -637,7 +708,9 @@ export default function AnchorsPage() {
               <p className="text-xs text-amber-700 dark:text-amber-400">{exportError}</p>
             )}
           </div>
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
