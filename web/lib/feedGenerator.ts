@@ -114,7 +114,8 @@ export function eventActor(ev: unknown): string | null {
   const actor =
     asText(tuple["anchored-by"]) ||
     asText(tuple["owner"]) ||
-    asText(tuple["member"]);
+    asText(tuple["member"]) ||
+    asText(tuple["admin"]);
   return actor || null;
 }
 
