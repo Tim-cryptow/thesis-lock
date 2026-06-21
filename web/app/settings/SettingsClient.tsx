@@ -6,6 +6,7 @@ import Footer from "@/app/components/Footer";
 import DataManagement from "./DataManagement";
 import PreferencesSection from "./PreferencesSection";
 import PrivacySection from "./PrivacySection";
+import AboutSection from "./AboutSection";
 
 type SettingsTab = "data" | "preferences" | "privacy" | "about";
 
@@ -96,18 +97,9 @@ export default function SettingsClient() {
         {tab === "data" ? <DataManagement /> : null}
         {tab === "preferences" ? <PreferencesSection /> : null}
         {tab === "privacy" ? <PrivacySection /> : null}
-        {tab === "about" ? <ComingInThisUpdate name="About" /> : null}
+        {tab === "about" ? <AboutSection /> : null}
       </div>
       <Footer />
     </>
-  );
-}
-
-// Temporary stand-in for sections wired up later in this update.
-function ComingInThisUpdate({ name }: { name: string }) {
-  return (
-    <div className="rounded-lg border border-foreground/10 bg-card p-6 text-sm text-foreground/60">
-      {name} settings are part of this update.
-    </div>
   );
 }
