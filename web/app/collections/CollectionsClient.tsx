@@ -226,6 +226,9 @@ export default function CollectionsClient() {
         <span className="text-foreground font-medium">
           {t("common.nav.collections")}
         </span>
+        <Link href="/tags" className="text-foreground/60 hover:text-foreground">
+          Tags
+        </Link>
         <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.docs")}
         </Link>

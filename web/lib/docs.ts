@@ -80,6 +80,12 @@ export const DOCS: DocMeta[] = [
       "Organize anchored documents into named, browser-local collections. Create folders, add anchors by hash, file, or from your wallet, then share a collection as a link or import one someone sent you.",
   },
   {
+    slug: "tags",
+    title: "Tags",
+    description:
+      "Add flexible tags to any anchor and filter by tag across history, feed, and search. Auto-suggestions from templates, a tag cloud, usage stats, and rename, merge, recolor, and delete, all stored in your browser.",
+  },
+  {
     slug: "wallet-profiles",
     title: "Wallet Profiles",
     description:

@@ -8,6 +8,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import TagInput from "@/app/components/TagInput";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -154,6 +155,39 @@ export default function VerifyPage() {
   // An explicit group link asks about one specific group anchor, so show it
   // even when the same hash also has a single or batch anchor by someone else.
   const preferGroup = Boolean(groupLocation && groupAnchor);
+
+  // The connected wallet owns this hash when it anchored any matching record, so
+  // tagging (a private, local action) is offered only then. The label seeds tag
+  // suggestions.
+  // Which record the page is actually displaying, using the same precedence as
+  // the details below. Tag editing is gated on this record's owner (not any
+  // record sharing the hash), and the tag's label and verify link follow it, so
+  // viewing someone else's batch/group record never offers to tag it or pins a
+  // link to it.
+  const showingBatch = !preferGroup && preferBatch;
+  const showingGroup =
+    !showingBatch && (preferGroup || !anchor) && Boolean(groupAnchor);
+  const ownsAnchor = Boolean(
+    address &&
+      (showingBatch
+        ? batchOwner === address
+        : showingGroup
+          ? groupAnchor?.anchoredBy === address
+          : anchor
+            ? anchor.anchoredBy === address
+            : false),
+  );
+  const tagLabel = showingBatch
+    ? (batchAnchor?.label ?? "")
+    : showingGroup
+      ? (groupAnchor?.label ?? "")
+      : (anchor?.label ?? "");
+  const tagVerifyUrl =
+    showingBatch && batchOwner
+      ? `/v/${hash}?owner=${batchOwner}`
+      : showingGroup && groupAnchor
+        ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
+        : `/v/${hash}`;
 
   // The compare link carries enough to resolve the same record on the compare
   // page. It mirrors the display precedence below: a batch record passes its
@@ -751,6 +785,18 @@ export default function VerifyPage() {
         )}
         </div>
       </div>
+
+      {ownsAnchor && (
+        <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
+          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
+            Your tags
+          </div>
+          <TagInput hash={hash} label={tagLabel} verifyUrl={tagVerifyUrl} />
+          <p className="mt-2 text-xs text-foreground/50">
+            Tags are stored only in this browser and never published on chain.
+          </p>
+        </div>
+      )}
 
       {proof && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">

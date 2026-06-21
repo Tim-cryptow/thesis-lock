@@ -12,6 +12,12 @@ import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
+import {
+  TAGS_CHANGED_EVENT,
+  getAllTags,
+  getTagColor,
+  type Tag,
+} from "@/lib/tags";
 import { stageReportInput } from "@/lib/reportLink";
 import {
   downloadExport,
@@ -216,6 +222,17 @@ export default function DashboardClient() {
   const [exporting, setExporting] = useState<"csv" | "json" | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
+  const [topTags, setTopTags] = useState<Tag[]>([]);
+  useEffect(() => {
+    const sync = () => setTopTags(getAllTags().slice(0, 8));
+    sync();
+    window.addEventListener(TAGS_CHANGED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(TAGS_CHANGED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
   const router = useRouter();
 
   const handleExport = async (format: "csv" | "json") => {
@@ -304,6 +321,9 @@ export default function DashboardClient() {
             className="text-foreground/60 hover:text-foreground"
           >
             {t("common.nav.myAnchors")}
+          </Link>
+          <Link href="/tags" className="text-foreground/60 hover:text-foreground">
+            Tags
           </Link>
           {address && (
             <Link
@@ -457,6 +477,42 @@ export default function DashboardClient() {
               }
             />
           </div>
+
+          {topTags.length > 0 && (
+            <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h2 className="text-sm uppercase tracking-wide text-foreground/50">
+                  Top tags
+                </h2>
+                <Link
+                  href="/tags"
+                  className="text-xs text-foreground/60 hover:text-foreground"
+                >
+                  Manage tags
+                </Link>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {topTags.map((tag) => {
+                  const color = getTagColor(tag.name);
+                  return (
+                    <Link
+                      key={tag.name}
+                      href="/tags"
+                      className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
+                      style={{
+                        backgroundColor: `${color}1f`,
+                        color,
+                        borderColor: `${color}55`,
+                      }}
+                    >
+                      {tag.name}
+                      <span className="text-[10px] opacity-70">{tag.count}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">

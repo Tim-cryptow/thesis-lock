@@ -10,7 +10,7 @@ import { discoverBatchAndGroupAnchors } from "@/lib/search";
 import {
   type Collection,
   decodeCollection,
-  exportCollection,
+  decodeCollectionJson,
   importCollection,
   itemOwner,
   itemVerifyHref,
@@ -72,6 +72,7 @@ export default function SharedCollectionClient() {
   const { t } = useI18n();
   const router = useRouter();
   const [collection, setCollection] = useState<Collection | null>(null);
+  const [encoded, setEncoded] = useState<string | null>(null);
   const [decoded, setDecoded] = useState(false);
   const [statuses, setStatuses] = useState<Record<string, VerifyState>>({});
   const [imported, setImported] = useState(false);
@@ -82,6 +83,7 @@ export default function SharedCollectionClient() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const data = new URLSearchParams(window.location.search).get("data");
+    setEncoded(data);
     setCollection(data ? decodeCollection(data) : null);
     setDecoded(true);
   }, []);
@@ -123,10 +125,14 @@ export default function SharedCollectionClient() {
   }, [collection]);
 
   const importToMine = useCallback(() => {
-    if (!collection) return;
-    importCollection(exportCollection(collection));
+    if (!encoded) return;
+    // Import from the original payload (not the decoded collection, which drops
+    // per-item tags) so the sender's tags are preserved and applied.
+    const json = decodeCollectionJson(encoded);
+    if (!json) return;
+    importCollection(json);
     setImported(true);
-  }, [collection]);
+  }, [encoded]);
 
   if (!decoded) {
     return (

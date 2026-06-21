@@ -5,6 +5,8 @@
 // shared by encoding the whole collection into a link. Status of any hash is
 // still resolved through the same public Hiro API the rest of the app uses.
 
+import { getTagsForHash, setTagsForHash } from "./tags";
+
 const STORAGE_KEY = "thesislock_collections";
 
 // Dispatched on the window whenever the stored collections change, so the nav
@@ -413,10 +415,57 @@ export function collectionsContaining(hash: string): string[] {
     .map((c) => c.id);
 }
 
+// Pinned verify paths for the given hashes, drawn from any collection item that
+// recorded one (an owner-keyed batch anchor or an exact group row). Lets links
+// elsewhere, like the tags page, resolve the same record a bare /v/<hash> might
+// miss. Loads collections once for the whole set.
+export function knownVerifyHrefs(hashes: string[]): Map<string, string> {
+  const wanted = new Set(hashes.map(normalizeHash));
+  const out = new Map<string, string>();
+  if (wanted.size === 0) return out;
+  for (const c of loadCollections()) {
+    for (const item of c.items) {
+      if (wanted.has(item.hash) && item.verifyUrl && !out.has(item.hash)) {
+        out.set(item.hash, itemVerifyHref(item));
+      }
+    }
+  }
+  return out;
+}
+
 // Pretty-printed JSON of a single collection, for the Export action and as the
 // payload that gets base64-encoded into a share link.
+// A collection with each item's tags attached, so the JSON export and the
+// share-link payload both carry tags. Tags live in their own store keyed by
+// hash, not on the item, so they are read in here at serialize time.
+function collectionWithTags(collection: Collection) {
+  return {
+    ...collection,
+    items: collection.items.map((item) => ({
+      ...item,
+      tags: getTagsForHash(item.hash),
+    })),
+  };
+}
+
 export function exportCollection(collection: Collection): string {
-  return JSON.stringify(collection, null, 2);
+  return JSON.stringify(collectionWithTags(collection), null, 2);
+}
+
+// Restores any tags carried by an imported collection's items, merging with
+// existing tags so an import never drops what the user already had.
+function applyImportedTags(parsed: unknown): void {
+  if (!parsed || typeof parsed !== "object") return;
+  const items = (parsed as { items?: unknown }).items;
+  if (!Array.isArray(items)) return;
+  for (const raw of items) {
+    if (!raw || typeof raw !== "object") continue;
+    const v = raw as Record<string, unknown>;
+    if (typeof v.hash !== "string" || !Array.isArray(v.tags)) continue;
+    const tags = v.tags.filter((t): t is string => typeof t === "string");
+    if (tags.length === 0) continue;
+    setTagsForHash(v.hash, [...getTagsForHash(v.hash), ...tags]);
+  }
 }
 
 // Parses a collection from JSON, assigning a fresh id and timestamps so an
@@ -426,6 +475,7 @@ export function importCollection(json: string): Collection {
   const parsed: unknown = JSON.parse(json);
   const coerced = coerceCollection(parsed);
   if (!coerced) throw new Error("Not a valid collection.");
+  applyImportedTags(parsed);
   const ts = nowIso();
   const collection: Collection = {
     ...coerced,
@@ -456,7 +506,7 @@ function fromBase64Url(s: string): string {
 // the inverse for the shared viewer. Unicode-safe (collections hold emoji and
 // free text), so we round-trip the bytes through TextEncoder/TextDecoder.
 export function encodeCollection(collection: Collection): string {
-  const json = JSON.stringify(collection);
+  const json = JSON.stringify(collectionWithTags(collection));
   if (typeof window === "undefined") {
     return toBase64Url(Buffer.from(json, "utf-8").toString("base64"));
   }
@@ -466,18 +516,28 @@ export function encodeCollection(collection: Collection): string {
   return toBase64Url(window.btoa(binary));
 }
 
-export function decodeCollection(encoded: string): Collection | null {
+// Decodes a share payload back to its raw JSON string, tags included. Importing
+// goes through this so the per-item tags that coerceCollection drops are not
+// lost before importCollection can apply them.
+export function decodeCollectionJson(encoded: string): string | null {
   try {
     const padded = fromBase64Url(encoded);
-    let json: string;
     if (typeof window === "undefined") {
-      json = Buffer.from(padded, "base64").toString("utf-8");
-    } else {
-      const binary = window.atob(padded);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      json = new TextDecoder().decode(bytes);
+      return Buffer.from(padded, "base64").toString("utf-8");
     }
+    const binary = window.atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+export function decodeCollection(encoded: string): Collection | null {
+  const json = decodeCollectionJson(encoded);
+  if (json === null) return null;
+  try {
     return coerceCollection(JSON.parse(json) as unknown);
   } catch {
     return null;

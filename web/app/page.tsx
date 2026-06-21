@@ -249,6 +249,17 @@ export default function Page() {
               icon={feature.icon}
             />
           ))}
+          <FeatureCard
+            title="Tags"
+            body="Add flexible tags to any anchor, then filter by tag across your history, the feed, and search, with auto-suggestions, a tag cloud, and stats."
+            href="/tags"
+            icon={
+              <>
+                <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59A2 2 0 0 0 3.59 11l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
+                <circle cx="7.5" cy="7.5" r="1.5" />
+              </>
+            }
+          />
         </div>
       </section>
 
