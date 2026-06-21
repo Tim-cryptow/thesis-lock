@@ -8,7 +8,9 @@ import { useI18n } from "@/app/components/I18nProvider";
 import {
   AUDIT_CATEGORIES,
   AUDIT_CHANGED_EVENT,
+  computeIntegrityHash,
   getAuditLog,
+  getStoredIntegrityHash,
   truncateMiddle,
   type AuditEntry,
 } from "@/lib/audit";
@@ -48,6 +50,29 @@ export default function AuditClient() {
   const [dateTo, setDateTo] = useState("");
   const [sortDesc, setSortDesc] = useState(true);
   const [page, setPage] = useState(0);
+  const [integrity, setIntegrity] = useState<{
+    status: "ok" | "tampered" | "missing" | "empty";
+    computed: string;
+    stored: string | null;
+  } | null>(null);
+
+  const verifyIntegrity = () => {
+    const all = getAuditLog();
+    const computed = computeIntegrityHash(all);
+    const stored = getStoredIntegrityHash();
+    setIntegrity({
+      status:
+        all.length === 0
+          ? "empty"
+          : stored === null
+            ? "missing"
+            : computed === stored
+              ? "ok"
+              : "tampered",
+      computed,
+      stored,
+    });
+  };
 
   useEffect(() => {
     const sync = () => setEntries(getAuditLog());
@@ -207,6 +232,96 @@ export default function AuditClient() {
             )}
           </div>
         </div>
+      </section>
+
+      {/* Integrity */}
+      <section className="mb-8 rounded-lg border border-foreground/10 bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-medium">Log integrity</h2>
+            <p className="max-w-2xl text-xs text-foreground/60">
+              Recompute the log&apos;s SHA-256 and compare it to the value
+              stored on the last write, to confirm the log has not been modified
+              outside the app.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={verifyIntegrity}
+            className="shrink-0 rounded-md border border-foreground/15 px-3 py-2 text-sm hover:border-foreground/40"
+          >
+            Verify log integrity
+          </button>
+        </div>
+        {integrity && (
+          <div className="mt-4 space-y-2">
+            {integrity.status === "ok" && (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Integrity verified. The log matches its stored hash.
+              </div>
+            )}
+            {integrity.status === "tampered" && (
+              <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                </svg>
+                Integrity check failed. The log does not match its stored hash
+                and may have been modified outside the app.
+              </div>
+            )}
+            {integrity.status === "missing" && (
+              <div className="text-sm text-amber-600 dark:text-amber-400">
+                No stored integrity hash was found to compare against.
+              </div>
+            )}
+            {integrity.status === "empty" && (
+              <div className="text-sm text-foreground/60">
+                The log is empty; there is nothing to verify.
+              </div>
+            )}
+            <div className="rounded-md border border-foreground/10 bg-background p-3">
+              <div className="text-[11px] uppercase tracking-wide text-foreground/50">
+                Computed hash
+              </div>
+              <div className="mt-1 break-all font-mono text-xs">
+                {integrity.computed}
+              </div>
+              {integrity.stored && integrity.stored !== integrity.computed && (
+                <>
+                  <div className="mt-2 text-[11px] uppercase tracking-wide text-foreground/50">
+                    Stored hash
+                  </div>
+                  <div className="mt-1 break-all font-mono text-xs text-red-600 dark:text-red-400">
+                    {integrity.stored}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Filters */}
