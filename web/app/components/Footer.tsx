@@ -71,6 +71,9 @@ export default function Footer() {
           <Link href="/tags" className="hover:text-foreground transition">
             Tags
           </Link>
+          <Link href="/audit" className="hover:text-foreground transition">
+            Audit
+          </Link>
           <LiveBadge />
           <LanguageSwitcher />
           <ThemeToggle />
