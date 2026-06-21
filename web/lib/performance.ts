@@ -36,6 +36,26 @@ export type ApiMetric = {
 const VITALS_KEY = "thesislock.perf.vitals";
 const PAGES_KEY = "thesislock.perf.pages";
 const API_KEY = "thesislock.perf.api";
+// When disabled in settings, no metrics are recorded. Defaults to on.
+const TRACKING_KEY = "thesislock.perf.enabled";
+
+export function isPerfTrackingEnabled(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.localStorage.getItem(TRACKING_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+export function setPerfTrackingEnabled(enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(TRACKING_KEY, enabled ? "1" : "0");
+  } catch {
+    // Non-fatal if persistence is unavailable.
+  }
+}
 
 const VITALS_CAP = 500;
 const PAGES_CAP = 200;
@@ -93,6 +113,7 @@ function load<T>(key: string): T[] {
 
 function append<T>(key: string, item: T, cap: number): void {
   if (!canUseDom()) return;
+  if (!isPerfTrackingEnabled()) return;
   try {
     const arr = load<T>(key);
     arr.push(item);

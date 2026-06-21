@@ -5,6 +5,7 @@ import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import DataManagement from "./DataManagement";
 import PreferencesSection from "./PreferencesSection";
+import PrivacySection from "./PrivacySection";
 
 type SettingsTab = "data" | "preferences" | "privacy" | "about";
 
@@ -94,7 +95,7 @@ export default function SettingsClient() {
 
         {tab === "data" ? <DataManagement /> : null}
         {tab === "preferences" ? <PreferencesSection /> : null}
-        {tab === "privacy" ? <ComingInThisUpdate name="Privacy" /> : null}
+        {tab === "privacy" ? <PrivacySection /> : null}
         {tab === "about" ? <ComingInThisUpdate name="About" /> : null}
       </div>
       <Footer />
