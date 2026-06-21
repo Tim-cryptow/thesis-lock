@@ -353,15 +353,17 @@ export function logAudit(
   try {
     const existing = loadRaw();
     const stored = getStoredIntegrityHash();
-    // A non-empty log is treated as tampered when it no longer matches the
-    // stored hash, or when the baseline is missing entirely (e.g. the integrity
-    // key was deleted). In either case keep recording but do not advance the
-    // baseline, so the altered or missing state is preserved for verification
-    // rather than normalized by the next action. Only an empty log may establish
-    // a fresh baseline.
+    // Tamper detection. With a stored baseline, the log is tampered unless the
+    // current entries reproduce it, which covers edits, reorders, removals, and
+    // an erased log (an empty log cannot reproduce a non-empty baseline). With
+    // no baseline, only a genuinely empty log is a legitimate fresh start; a
+    // non-empty log means the integrity key was dropped. When tampered, keep
+    // recording but do not advance the baseline, so verification preserves the
+    // altered, missing, or erased state instead of normalizing it.
     const tampered =
-      existing.length > 0 &&
-      (stored === null || computeIntegrityHash(existing) !== stored);
+      stored === null
+        ? existing.length > 0
+        : computeIntegrityHash(existing) !== stored;
     const capped = [...existing, full].slice(-AUDIT_CAP);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
     if (!tampered) {
