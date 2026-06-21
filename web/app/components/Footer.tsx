@@ -82,6 +82,25 @@ export default function Footer() {
           >
             Calendar
           </Link>
+          <a
+            href="/api/feed/rss"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="RSS feed"
+            title="RSS feed"
+            className="hover:text-foreground transition"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-4 w-4"
+              aria-hidden="true"
+            >
+              <circle cx="6.18" cy="17.82" r="2.18" />
+              <path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83C19.56 11.4 12.6 4.44 4 4.44z" />
+              <path d="M4 10.1v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z" />
+            </svg>
+          </a>
           <FooterStatus />
           <LiveBadge />
           <LanguageSwitcher />
