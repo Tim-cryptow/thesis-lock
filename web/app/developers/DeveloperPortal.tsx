@@ -11,13 +11,15 @@ import IntegrationGuidesClient, {
   type GuideTabId,
 } from "./IntegrationGuidesClient";
 import QuickStartGuide from "./QuickStartGuide";
+import WebhooksClient from "./WebhooksClient";
 
-type PortalTab = "playground" | "keys" | "guides";
+type PortalTab = "playground" | "keys" | "guides" | "webhooks";
 
 const TABS: { id: PortalTab; label: string; hash: string }[] = [
   { id: "playground", label: "Playground", hash: "#playground" },
   { id: "keys", label: "API Keys", hash: "#keys" },
   { id: "guides", label: "Integration Guides", hash: "#guides" },
+  { id: "webhooks", label: "Webhooks", hash: "#webhooks" },
 ];
 
 const STORAGE_KEY = "thesislock_dev_tab";
@@ -156,6 +158,7 @@ export default function DeveloperPortal() {
             />
           </div>
         ) : null}
+        {tab === "webhooks" ? <WebhooksClient /> : null}
       </div>
       <Footer />
     </>
