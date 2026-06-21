@@ -20,9 +20,12 @@ function verify(rawBody, signatureHeader, secret) {
   const expected =
     "sha256=" +
     crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
-  return crypto.timingSafeEqual(
-    Buffer.from(signatureHeader),
-    Buffer.from(expected),
+  const received = Buffer.from(signatureHeader || "");
+  const expectedBuf = Buffer.from(expected);
+  // Equal lengths first: timingSafeEqual throws on a length mismatch.
+  return (
+    received.length === expectedBuf.length &&
+    crypto.timingSafeEqual(received, expectedBuf)
   );
 }`;
 

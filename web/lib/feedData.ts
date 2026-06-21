@@ -1,4 +1,4 @@
-import { fetchEvents, fetchTxTimes, type RawEvent } from "./feed";
+import { fetchTxTimes, paginatedFetch, type RawEvent } from "./feed";
 import {
   contractEventsToFeed,
   eventActor,
@@ -24,8 +24,6 @@ const FEED_CONTRACTS = [
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
-// Hiro caps the events endpoint at 50 per call.
-const HIRO_MAX = 50;
 
 export type FeedQuery = {
   contract: string | null;
@@ -79,12 +77,14 @@ export async function fetchFeedEvents(query: FeedQuery): Promise<FeedEvent[]> {
   const contracts = resolveContracts(query.contract);
   if (contracts.length === 0) return [];
 
-  // Each contract's events come back newest first; fetch a window at least as
-  // large as the requested limit (capped at the Hiro per-call maximum).
-  const perContract = Math.min(Math.max(query.limit, 20), HIRO_MAX);
+  // Each contract's events come back newest first. Page each one up to the
+  // requested limit (Hiro caps a single call at 50), so a busy contract can
+  // still contribute items beyond the first page and a single-contract feed can
+  // return the full requested count.
+  const target = Math.max(query.limit, 20);
   const lists = await Promise.all(
     contracts.map((name) =>
-      fetchEvents(name, perContract, 0).catch(() => [] as RawEvent[]),
+      paginatedFetch(name, target).catch(() => [] as RawEvent[]),
     ),
   );
 

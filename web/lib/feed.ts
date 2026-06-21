@@ -141,7 +141,7 @@ export async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>
 const HIRO_PAGE = 50;
 const PAGINATE_SAFETY_CAP = 500;
 
-async function paginatedFetch(
+export async function paginatedFetch(
   contractName: string,
   target: number,
 ): Promise<RawEvent[]> {
