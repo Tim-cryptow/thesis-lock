@@ -114,8 +114,11 @@ export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
     "Other interface preferences such as language and live updates.",
 };
 
-// Keys whose values are arrays we merge (rather than skip) during a merge import.
-const ARRAY_MERGE_KEYS = new Set(["thesislock_collections", "thesislock_tags"]);
+// Arrays are unioned on a merge import. The audit log is the one exception: its
+// integrity hash is computed over the exact log contents, so merging entries
+// from another device would break tamper detection. On merge it is kept as-is;
+// a replace import overwrites the log and its hash together.
+const NO_MERGE_KEYS = new Set(["thesislock_audit_log"]);
 
 // A few user-data categories live in sessionStorage rather than localStorage
 // (recent searches and the API request history). They are still part of the app
@@ -353,8 +356,10 @@ function safeParse(raw: string): unknown {
 
 /**
  * Restore a backup. "replace" wipes the namespace first and writes everything;
- * "merge" only writes keys that do not exist, except collections and tags whose
- * arrays are merged with what is already there. Returns a per-run summary.
+ * "merge" keeps existing data, writes keys that do not exist, and unions any
+ * array-valued key (collections, tags, watchlist, and the rest) with what is
+ * already there. The audit log is never merged so its integrity stays intact.
+ * Returns a per-run summary.
  */
 export function importAllData(
   data: UserDataExport,
@@ -390,10 +395,20 @@ export function importAllData(
       if (existing === null) {
         writeValue(key, value);
         result.imported++;
-      } else if (ARRAY_MERGE_KEYS.has(key)) {
-        writeValue(key, mergeArrays(safeParse(existing), value));
+        continue;
+      }
+      const existingValue = safeParse(existing);
+      if (
+        !NO_MERGE_KEYS.has(key) &&
+        Array.isArray(existingValue) &&
+        Array.isArray(value)
+      ) {
+        // Both sides are arrays: union them, combining rows that share an
+        // identity so existing data is kept and new items are added.
+        writeValue(key, mergeArrays(existingValue, value));
         result.imported++;
       } else {
+        // Existing scalar/object value, or a no-merge key: keep what is here.
         result.skipped++;
       }
     } catch (e) {
