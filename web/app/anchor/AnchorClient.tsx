@@ -494,7 +494,7 @@ export default function AnchorPage() {
       (txId) => {
         setMinting(false);
         setMintTxId(txId);
-        auditProofMint(entryHash);
+        auditProofMint(entryHash, txId);
       },
       () => setMinting(false),
     );
@@ -513,7 +513,7 @@ export default function AnchorPage() {
         list[idx].label,
         (txId) => {
           setMintTxId(txId);
-          auditProofMint(list[idx].hash);
+          auditProofMint(list[idx].hash, txId);
           mintProofsSequentially(list, idx + 1);
         },
         () => {

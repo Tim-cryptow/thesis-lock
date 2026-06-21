@@ -62,8 +62,8 @@ export function auditVerify(hash: string): void {
   dispatchAudit("verify_check", "verify", hash);
 }
 
-export function auditProofMint(hash: string): void {
-  dispatchAudit("proof_mint", "proof", hash);
+export function auditProofMint(hash: string, txId?: string): void {
+  dispatchAudit("proof_mint", "proof", hash, txId ? { txId } : undefined);
 }
 
 export function auditSearch(query: string, type?: string): void {
