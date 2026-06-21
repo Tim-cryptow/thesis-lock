@@ -471,7 +471,8 @@ export function clearAuditLog(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
-    window.localStorage.removeItem(SESSION_KEY);
+    // The session id lives in sessionStorage, unlike the log and integrity hash.
+    window.sessionStorage.removeItem(SESSION_KEY);
     window.localStorage.removeItem(INTEGRITY_KEY);
     window.dispatchEvent(new CustomEvent(AUDIT_CHANGED_EVENT));
   } catch {

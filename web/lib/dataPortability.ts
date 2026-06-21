@@ -117,6 +117,22 @@ export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
 // Keys whose values are arrays we merge (rather than skip) during a merge import.
 const ARRAY_MERGE_KEYS = new Set(["thesislock_collections", "thesislock_tags"]);
 
+// A few user-data categories live in sessionStorage rather than localStorage
+// (recent searches and the API request history). They are still part of the app
+// namespace, so they must be backed up, restored, and cleared from the right
+// store. Transient handoff keys and one-shot UI flags in sessionStorage are
+// deliberately excluded: they are not data worth porting.
+const SESSION_KEYS = new Set([
+  "thesislock.search.recent",
+  "thesislock_recent",
+  "thesislock.playground.history",
+]);
+
+// The Storage that actually holds a given key.
+function storeFor(key: string): Storage {
+  return SESSION_KEYS.has(key) ? window.sessionStorage : window.localStorage;
+}
+
 const KEY_TO_CATEGORY = new Map<string, Category>();
 for (const [category, keys] of Object.entries(CATEGORY_KEYS)) {
   for (const key of keys) KEY_TO_CATEGORY.set(key, category as Category);
@@ -152,7 +168,12 @@ function emptyData(): UserDataExport["data"] {
 // Parse a stored value back into JSON when possible, otherwise keep the raw
 // string (some values, such as the theme, are plain strings).
 function readValue(key: string): unknown {
-  const raw = window.localStorage.getItem(key);
+  let raw: string | null = null;
+  try {
+    raw = storeFor(key).getItem(key);
+  } catch {
+    return null;
+  }
   if (raw === null) return null;
   try {
     return JSON.parse(raw);
@@ -163,7 +184,7 @@ function readValue(key: string): unknown {
 
 function writeValue(key: string, value: unknown): void {
   const raw = typeof value === "string" ? value : JSON.stringify(value);
-  window.localStorage.setItem(key, raw);
+  storeFor(key).setItem(key, raw);
 }
 
 function safeAddress(): string | null {
@@ -198,19 +219,30 @@ function isCompatible(version: string): boolean {
   return majorVersion(version) === majorVersion(EXPORT_VERSION);
 }
 
-/** Every localStorage key in the ThesisLock namespace, both prefixes, sorted. */
+/**
+ * Every key in the ThesisLock namespace, both prefixes, sorted. Scans
+ * localStorage for all namespaced keys, plus the known session-backed data keys
+ * in sessionStorage, so a backup captures everything the app stores.
+ */
 export function getAllLocalStorageKeys(): string[] {
   if (typeof window === "undefined") return [];
-  const keys: string[] = [];
+  const keys = new Set<string>();
   try {
     for (let i = 0; i < window.localStorage.length; i++) {
       const key = window.localStorage.key(i);
-      if (key && isThesisLockKey(key)) keys.push(key);
+      if (key && isThesisLockKey(key)) keys.add(key);
     }
   } catch {
-    // localStorage may be unavailable (private mode); return what we have.
+    // localStorage may be unavailable (private mode); continue.
   }
-  return keys.sort();
+  try {
+    for (const key of SESSION_KEYS) {
+      if (window.sessionStorage.getItem(key) !== null) keys.add(key);
+    }
+  } catch {
+    // sessionStorage may be unavailable; continue.
+  }
+  return [...keys].sort();
 }
 
 /** Read every namespaced key into a single structured, versioned object. */
@@ -243,28 +275,72 @@ function flattenData(data: UserDataExport["data"]): Array<[string, unknown]> {
   return out;
 }
 
-function identityOf(item: unknown): string {
+// Identity for matching object rows across a merge: collections by id, tag rows
+// and collection items by hash, then name. Returns null for primitives (such as
+// tag strings), which are de-duped by value instead.
+function rowKey(item: unknown): string | null {
   if (item && typeof item === "object") {
     const obj = item as Record<string, unknown>;
     if (typeof obj.id === "string") return `id:${obj.id}`;
+    if (typeof obj.hash === "string") return `hash:${obj.hash}`;
     if (typeof obj.name === "string") return `name:${obj.name}`;
   }
-  return `v:${JSON.stringify(item)}`;
+  return null;
 }
 
+// Combine two matched object rows: union array-valued fields (collection items,
+// tag lists) and fill in fields the existing row is missing, otherwise keep the
+// existing scalar. This is what makes a same-id collection or same-hash tag row
+// actually merge rather than be skipped or duplicated.
+function mergeRow(
+  existing: Record<string, unknown>,
+  incoming: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...existing };
+  for (const [field, value] of Object.entries(incoming)) {
+    const current = out[field];
+    if (Array.isArray(current) && Array.isArray(value)) {
+      out[field] = mergeArrays(current, value);
+    } else if (current === undefined) {
+      out[field] = value;
+    }
+  }
+  return out;
+}
+
+// Union two arrays for a merge import. Object rows that share an identity are
+// merged field by field; keyless rows and primitives are de-duped by value.
 function mergeArrays(existing: unknown, incoming: unknown): unknown {
   if (!Array.isArray(existing)) return Array.isArray(incoming) ? incoming : existing;
   if (!Array.isArray(incoming)) return existing;
-  const merged = [...existing];
-  const seen = new Set(existing.map(identityOf));
+  const result: unknown[] = [...existing];
+  const indexByKey = new Map<string, number>();
+  const seenValues = new Set<string>();
+  result.forEach((item, i) => {
+    const key = rowKey(item);
+    if (key) indexByKey.set(key, i);
+    else seenValues.add(`v:${JSON.stringify(item)}`);
+  });
   for (const item of incoming) {
-    const id = identityOf(item);
-    if (!seen.has(id)) {
-      merged.push(item);
-      seen.add(id);
+    const key = rowKey(item);
+    if (key && indexByKey.has(key)) {
+      const at = indexByKey.get(key)!;
+      result[at] = mergeRow(
+        result[at] as Record<string, unknown>,
+        item as Record<string, unknown>,
+      );
+    } else if (key) {
+      indexByKey.set(key, result.length);
+      result.push(item);
+    } else {
+      const value = `v:${JSON.stringify(item)}`;
+      if (!seenValues.has(value)) {
+        seenValues.add(value);
+        result.push(item);
+      }
     }
   }
-  return merged;
+  return result;
 }
 
 function safeParse(raw: string): unknown {
@@ -310,7 +386,7 @@ export function importAllData(
         result.imported++;
         continue;
       }
-      const existing = window.localStorage.getItem(key);
+      const existing = storeFor(key).getItem(key);
       if (existing === null) {
         writeValue(key, value);
         result.imported++;
@@ -337,8 +413,9 @@ export function clearKeys(keys: string[]): { cleared: number } {
   let cleared = 0;
   for (const key of keys) {
     try {
-      if (window.localStorage.getItem(key) !== null) {
-        window.localStorage.removeItem(key);
+      const store = storeFor(key);
+      if (store.getItem(key) !== null) {
+        store.removeItem(key);
         cleared++;
       }
     } catch {
@@ -372,8 +449,14 @@ export function getStorageUsage(): {
   let totalSize = 0;
   if (typeof window !== "undefined") {
     for (const key of getAllLocalStorageKeys()) {
-      const raw = window.localStorage.getItem(key) ?? "";
-      // localStorage holds UTF-16, so two bytes per code unit is a fair estimate.
+      let raw = "";
+      try {
+        raw = storeFor(key).getItem(key) ?? "";
+      } catch {
+        raw = "";
+      }
+      // Browser storage holds UTF-16, so two bytes per code unit is a fair
+      // estimate of the space used.
       const size = (key.length + raw.length) * 2;
       breakdown.push({ key, size });
       totalSize += size;
