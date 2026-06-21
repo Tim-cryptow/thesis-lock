@@ -35,6 +35,9 @@ function breakdownRows(breakdown: Record<string, number>): string {
 function entryRows(report: AuditReport): string {
   return report.entries
     .map((e, i) => {
+      const meta = JSON.stringify(e.metadata);
+      // A detail row carries every remaining hashed field, so the report shows
+      // all fields the integrity digest covers and a recipient can recompute it.
       return `<tr>
         <td class="num">${i + 1}</td>
         <td class="mono">${escapeHtml(fmt(e.timestamp))}</td>
@@ -42,6 +45,16 @@ function entryRows(report: AuditReport): string {
         <td>${escapeHtml(e.category)}</td>
         <td class="mono break">${escapeHtml(e.actor ?? "n/a")}</td>
         <td class="mono break">${escapeHtml(e.target ?? "n/a")}</td>
+      </tr>
+      <tr class="detail">
+        <td></td>
+        <td colspan="5" class="detail-cell">
+          <span class="dk">id</span> <span class="mono break">${escapeHtml(e.id)}</span>
+          <span class="dk">session</span> <span class="mono break">${escapeHtml(e.sessionId)}</span>
+          <span class="dk">ipHash</span> <span class="mono">${escapeHtml(e.ipHash ?? "null")}</span>
+          <div><span class="dk">user agent</span> <span class="mono break">${escapeHtml(e.userAgent || "n/a")}</span></div>
+          <div><span class="dk">metadata</span> <span class="mono break">${escapeHtml(meta)}</span></div>
+        </td>
       </tr>`;
     })
     .join("");
@@ -81,6 +94,11 @@ export function renderAuditReportHTML(report: AuditReport): string {
   td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
   .mono{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:12px}
   .break{word-break:break-all}
+  tr.detail td{border-bottom:1px solid #f0f0f1;padding-top:0;padding-bottom:10px}
+  .detail-cell{font-size:11px;color:#52525b}
+  .detail-cell>div{margin-top:3px}
+  .dk{color:#a1a1aa;text-transform:uppercase;letter-spacing:.03em;font-size:10px;margin:0 4px 0 10px}
+  .detail-cell .dk:first-child{margin-left:0}
   .integrity{margin-top:12px;padding:16px;border:1px solid #e4e4e7;border-radius:6px;background:#fafafa}
   .integrity .hash{font-family:ui-monospace,Menlo,Monaco,Consolas,monospace;font-size:12px;word-break:break-all;color:#0a0a0a}
   .note{font-size:12px;color:#52525b;margin:8px 0 0}
@@ -119,10 +137,10 @@ export function renderAuditReportHTML(report: AuditReport): string {
       <div class="integrity">
         <div class="hash">${integrity}</div>
         <p class="note">
-          This SHA-256 digest is computed over the id and timestamp of every
-          entry below, in order. Recomputing it over the same entries reproduces
-          this value; any addition, removal, reordering, or edit changes it,
-          which is what makes this log tamper evident.
+          This SHA-256 digest is computed over every field of every entry below,
+          in order. Each entry's full set of fields is shown, so the digest can
+          be recomputed from this report; any addition, removal, reordering, or
+          edit changes it, which is what makes this log tamper evident.
         </p>
       </div>
 
