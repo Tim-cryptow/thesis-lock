@@ -18,6 +18,7 @@ import {
   type ReportEntry,
 } from "@/lib/report";
 import { verifyUrlFor } from "@/lib/reportRenderer";
+import { auditReportGenerate } from "@/lib/auditEvents";
 import { REPORT_INPUT_KEY } from "@/lib/reportLink";
 import ReportActions from "./ReportActions";
 
@@ -238,6 +239,7 @@ export default function ReportClient() {
     // Only publish if this run still describes the current inputs and wallet.
     if (generationId.current === runId) {
       setReport({ ...data, title: title.trim() || DEFAULT_REPORT_TITLE });
+      auditReportGenerate({ documents: items.length });
     }
     setGenerating(false);
   }, [items, generating, address, title]);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { connect, disconnect, getLocalStorage, isConnected } from "@stacks/connect";
+import { auditWalletConnect, auditWalletDisconnect } from "./auditEvents";
 
 export function truncateAddress(addr: string, head = 4, tail = 4): string {
   if (addr.length <= head + tail) return addr;
@@ -38,7 +39,9 @@ export function useWallet() {
     setError(null);
     try {
       await connect();
-      setAddress(readStxAddress());
+      const addr = readStxAddress();
+      setAddress(addr);
+      if (addr) auditWalletConnect(addr);
     } catch (e) {
       const message = e instanceof Error ? e.message : "";
       setError(
@@ -52,9 +55,11 @@ export function useWallet() {
   }, []);
 
   const disconnectWallet = useCallback(() => {
+    const prev = readStxAddress();
     disconnect();
     setAddress(null);
     setError(null);
+    auditWalletDisconnect(prev);
   }, []);
 
   return { address, connecting, error, connectWallet, disconnectWallet };

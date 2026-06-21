@@ -8,6 +8,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createGroup, explorerTxUrl } from "@/lib/stacks";
+import { auditGroupAction } from "@/lib/auditEvents";
 import { fetchMyGroups, type GroupSummary } from "@/lib/groups";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 
@@ -73,6 +74,7 @@ export default function GroupsPage() {
         setPending(false);
         setCreateTxId(txId);
         setName("");
+        auditGroupAction("group_create", trimmed, { txId });
       },
       () => setPending(false),
     );
