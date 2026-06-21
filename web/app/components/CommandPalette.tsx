@@ -38,6 +38,12 @@ function PaletteIcon({ name }: { name: string }) {
     compare: <path d="M12 3v18M5 7l-3 5 3 5M19 7l3 5-3 5" />,
     doc: <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /></>,
     code: <path d="m8 6-6 6 6 6M16 6l6 6-6 6" />,
+    calendar: (
+      <>
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
+      </>
+    ),
     theme: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19" /></>,
     tour: <path d="m12 2 2.4 6.9H21l-5.3 4 2 6.9L12 16l-5.7 3.8 2-6.9L3 8.9h6.6z" />,
     help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01" /></>,

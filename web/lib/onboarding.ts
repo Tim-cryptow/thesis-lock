@@ -144,6 +144,15 @@ export const TOUR_STEPS: TourStep[] = [
     page: "/anchor",
   },
   {
+    id: "calendar-nav",
+    target: '[data-tour="calendar-nav"]',
+    title: "Track your anchoring streak",
+    content:
+      "The calendar maps your anchoring activity to dates as a contribution graph, with a monthly view and a streak counter so you can see your patterns and keep your momentum.",
+    position: "top",
+    page: "/anchor",
+  },
+  {
     id: "notifications-nav",
     target: '[data-tour="notifications-nav"]',
     title: "Your notification center",

@@ -75,6 +75,13 @@ export default function Footer() {
           <Link href="/audit" className="hover:text-foreground transition">
             Audit
           </Link>
+          <Link
+            href="/calendar"
+            data-tour="calendar-nav"
+            className="hover:text-foreground transition"
+          >
+            Calendar
+          </Link>
           <FooterStatus />
           <LiveBadge />
           <LanguageSwitcher />
