@@ -17,6 +17,13 @@ function readStxAddress(): string | null {
   return stx[0].address;
 }
 
+// The connected Stacks address read live from wallet storage, for non-React
+// callers (such as the audit logger) that need the current actor at call time
+// rather than a per-hook snapshot.
+export function getStxAddress(): string | null {
+  return readStxAddress();
+}
+
 export function useWallet() {
   const [address, setAddress] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
