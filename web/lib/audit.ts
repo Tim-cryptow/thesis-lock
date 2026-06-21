@@ -220,6 +220,12 @@ export function generateSessionId(): string {
   }
 }
 
+// Shortens a long value (a principal, hash, or session id) for table display.
+export function truncateMiddle(value: string, lead = 8, tail = 6): string {
+  if (value.length <= lead + tail + 1) return value;
+  return `${value.slice(0, lead)}...${value.slice(-tail)}`;
+}
+
 function coerceEntry(value: unknown): AuditEntry | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
