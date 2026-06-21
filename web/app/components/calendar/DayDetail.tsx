@@ -6,6 +6,7 @@ import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import { getTemplate, parseLabel } from "@/lib/templates";
 import { getTagsForHash } from "@/lib/tags";
 import { stageReportInput } from "@/lib/reportLink";
+import type { HashInput } from "@/lib/report";
 import type { CalendarDay, CalendarHash } from "@/lib/calendar";
 
 // An expandable panel listing every anchor on a selected day, shared by both the
@@ -205,7 +206,23 @@ export default function DayDetail({
             <Link
               href="/report"
               onClick={() =>
-                stageReportInput(hashes.map((h) => ({ hash: h.hash })))
+                stageReportInput(
+                  hashes.map((h) => {
+                    // Carry the same scope as the verify links so the report
+                    // resolves each row to the exact record, not a global one.
+                    const input: HashInput = { hash: h.hash };
+                    if (h.source === "batch" && owner) input.owner = owner;
+                    if (
+                      h.source === "group" &&
+                      h.groupId !== undefined &&
+                      h.groupIndex !== undefined
+                    ) {
+                      input.groupId = h.groupId;
+                      input.groupIndex = h.groupIndex;
+                    }
+                    return input;
+                  }),
+                )
               }
               className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             >

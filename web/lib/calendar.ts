@@ -56,7 +56,10 @@ type AnchorEntry = {
   groupIndex?: number;
 };
 
-const entryCache = new Map<string, { at: number; entries: AnchorEntry[] }>();
+const entryCache = new Map<
+  string,
+  { at: number; promise: Promise<AnchorEntry[]> }
+>();
 
 // Maps an anchor-creating activity type to its source label. Batch anchors are
 // handled separately (they carry many hashes). Registry registrations and proof
@@ -152,12 +155,22 @@ function entriesFromEvent(event: ActivityEvent): AnchorEntry[] {
 }
 
 // Pages through the wallet's activity and flattens it into dated anchor entries,
-// caching the result per address for a short window.
-async function collectAnchorEntries(address: string): Promise<AnchorEntry[]> {
+// sharing one in-flight scan per address. Concurrent callers (for example the
+// year grid and the monthly view on first load) then walk the Hiro history once
+// rather than in parallel. A failed scan is evicted so a later call can retry.
+function collectAnchorEntries(address: string): Promise<AnchorEntry[]> {
   const key = address.toUpperCase();
   const cached = entryCache.get(key);
-  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.entries;
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.promise;
+  const promise = scanAnchorEntries(address).catch((error) => {
+    entryCache.delete(key);
+    throw error;
+  });
+  entryCache.set(key, { at: Date.now(), promise });
+  return promise;
+}
 
+async function scanAnchorEntries(address: string): Promise<AnchorEntry[]> {
   const entries: AnchorEntry[] = [];
   for (let page = 0; page < MAX_PAGES; page += 1) {
     let result;
@@ -189,7 +202,6 @@ async function collectAnchorEntries(address: string): Promise<AnchorEntry[]> {
     deduped.push(entry);
   }
 
-  entryCache.set(key, { at: Date.now(), entries: deduped });
   return deduped;
 }
 
@@ -263,10 +275,24 @@ export async function buildRecentDays(
   return Array.from(map.values());
 }
 
-// Consecutive-day streaks over the given days. The current streak counts back
-// from today; an inactive today is allowed once (the day is not over yet) so a
-// streak is not reported broken before the user has a chance to anchor.
-export function getStreakInfo(days: CalendarDay[]): StreakInfo {
+// The set of UTC dates the wallet anchored on, over its full available history.
+// Lets the current streak be computed independently of whatever bounded range a
+// view happens to show.
+export async function getActiveDates(address: string): Promise<Set<string>> {
+  const entries = await collectAnchorEntries(address);
+  return new Set(entries.map((e) => e.date));
+}
+
+// Consecutive-day streaks. Longest streak, active days, and total anchors are
+// taken over the supplied days (the viewed range). The current streak counts
+// back from today and uses the full history of active dates when provided, so a
+// run that crosses the start of the range (a new year, or the mini graph's
+// window) is not cut short; an inactive today is allowed once (the day is not
+// over yet) so the streak is not reported broken before the user can anchor.
+export function getStreakInfo(
+  days: CalendarDay[],
+  allActiveDates?: Set<string>,
+): StreakInfo {
   const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
 
   let longestStreak = 0;
@@ -284,11 +310,13 @@ export function getStreakInfo(days: CalendarDay[]): StreakInfo {
     }
   }
 
-  // The current streak is anchored to today's real date, not the last day of
-  // the supplied range. Walking calendar days back from today means viewing a
-  // past year (whose last day is its December 31) reports 0, not a stale run
-  // that merely ended on that year boundary.
-  const active = new Set(sorted.filter((d) => d.count > 0).map((d) => d.date));
+  // Anchored to today's real date, not the last day of the supplied range, so a
+  // past year reports 0 rather than a stale run that merely ended on its
+  // December 31. Uses the full active-date set when given so a streak is not cut
+  // at the range boundary; otherwise falls back to the supplied range.
+  const active =
+    allActiveDates ??
+    new Set(sorted.filter((d) => d.count > 0).map((d) => d.date));
   const now = new Date();
   let cursor = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   // Today not being over yet does not break the streak: if today has no anchor,

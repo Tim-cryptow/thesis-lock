@@ -5,6 +5,7 @@ import { useWallet } from "@/lib/wallet";
 import {
   buildCalendar,
   buildYearGrid,
+  getActiveDates,
   getStreakInfo,
   type CalendarDay,
   type CalendarMonth,
@@ -82,11 +83,11 @@ export default function CalendarClient() {
     if (!address) return;
     let active = true;
     setLoading(true);
-    buildYearGrid(address, year)
-      .then((days) => {
+    Promise.all([buildYearGrid(address, year), getActiveDates(address)])
+      .then(([days, activeDates]) => {
         if (!active) return;
         setYearDays(days);
-        setStats(getStreakInfo(days));
+        setStats(getStreakInfo(days, activeDates));
       })
       .catch(() => {
         if (!active) return;

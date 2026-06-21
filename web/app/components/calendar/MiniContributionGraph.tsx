@@ -6,6 +6,7 @@ import ContributionGraph from "./ContributionGraph";
 import {
   buildRecentDays,
   buildYearGrid,
+  getActiveDates,
   getStreakInfo,
   type CalendarDay,
 } from "@/lib/calendar";
@@ -31,20 +32,30 @@ export default function MiniContributionGraph({
   showStreak?: boolean;
 }) {
   const [data, setData] = useState<CalendarDay[]>([]);
+  const [activeDates, setActiveDates] = useState<Set<string> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!address) return;
     let active = true;
     setLoading(true);
-    const promise =
+    const dataPromise =
       mode === "year" ? buildYearGrid(address) : buildRecentDays(address, days);
-    promise
-      .then((result) => {
-        if (active) setData(result);
+    // The current streak needs the full history so it is not capped at the
+    // compact window; both calls share one underlying scan.
+    const datesPromise = showStreak
+      ? getActiveDates(address)
+      : Promise.resolve<Set<string> | null>(null);
+    Promise.all([dataPromise, datesPromise])
+      .then(([result, dates]) => {
+        if (!active) return;
+        setData(result);
+        setActiveDates(dates);
       })
       .catch(() => {
-        if (active) setData([]);
+        if (!active) return;
+        setData([]);
+        setActiveDates(null);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -52,9 +63,9 @@ export default function MiniContributionGraph({
     return () => {
       active = false;
     };
-  }, [address, mode, days]);
+  }, [address, mode, days, showStreak]);
 
-  const streak = showStreak ? getStreakInfo(data) : null;
+  const streak = showStreak ? getStreakInfo(data, activeDates ?? undefined) : null;
 
   return (
     <div>
