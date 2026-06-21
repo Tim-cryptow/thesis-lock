@@ -341,6 +341,28 @@ export function getStoredIntegrityHash(): string | null {
   }
 }
 
+// Normalizes metadata to the exact shape localStorage will persist and a later
+// read will parse back, so the value hashed for the integrity baseline matches
+// the value verification recomputes over. Without this, a metadata field set to
+// undefined (an optional txId left unset, say) is hashed as null when the
+// baseline is written but dropped by JSON.stringify on persist; the next read
+// then recomputes a different hash and reports an untouched log as tampered.
+// The round-trip is defensive: any value JSON cannot represent falls back to an
+// empty object so logging never throws and never blocks the action it records.
+function normalizeMetadata(
+  metadata: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  if (!metadata) return {};
+  try {
+    const parsed: unknown = JSON.parse(JSON.stringify(metadata));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
 export function logAudit(
   entry: Omit<AuditEntry, "id" | "timestamp" | "sessionId" | "userAgent">,
 ): AuditEntry {
@@ -350,7 +372,7 @@ export function logAudit(
     category: entry.category,
     actor: entry.actor ?? null,
     target: entry.target ?? null,
-    metadata: entry.metadata ?? {},
+    metadata: normalizeMetadata(entry.metadata),
     timestamp: new Date().toISOString(),
     sessionId: generateSessionId(),
     ipHash: entry.ipHash ?? null,
