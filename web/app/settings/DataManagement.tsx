@@ -7,10 +7,15 @@ import {
   CATEGORY_LABELS,
   type Category,
   type UserDataExport,
+  categoryForKey,
+  clearAllData,
+  clearCategory,
   daysSinceBackup,
   downloadExport,
   exportAllData,
+  formatBytes,
   getLastBackup,
+  getStorageUsage,
   importAllData,
   validateImport,
 } from "@/lib/dataPortability";
@@ -26,6 +31,22 @@ type Preview = {
 
 type ImportResult = { imported: number; skipped: number; errors: string[] };
 
+type Usage = {
+  totalKeys: number;
+  totalSize: number;
+  breakdown: Array<{ key: string; size: number }>;
+};
+
+type CategoryRow = {
+  category: Category;
+  label: string;
+  keys: number;
+  size: number;
+};
+
+// localStorage quotas vary by browser; 5 MB is the common conservative floor.
+const STORAGE_LIMIT = 5 * 1024 * 1024;
+
 function formatTimestamp(iso: string | null): string {
   if (!iso) return "never";
   const date = new Date(iso);
@@ -37,9 +58,46 @@ function categoryLabel(name: string): string {
   return CATEGORY_LABELS[name as Category] ?? name;
 }
 
+function toCategoryRows(
+  breakdown: Array<{ key: string; size: number }>,
+): CategoryRow[] {
+  const map = new Map<Category, CategoryRow>();
+  for (const { key, size } of breakdown) {
+    const category = categoryForKey(key);
+    const existing = map.get(category);
+    if (existing) {
+      existing.keys += 1;
+      existing.size += size;
+    } else {
+      map.set(category, {
+        category,
+        label: CATEGORY_LABELS[category],
+        keys: 1,
+        size,
+      });
+    }
+  }
+  return [...map.values()].sort((a, b) => b.size - a.size);
+}
+
+function usageColor(pct: number): { bar: string; text: string } {
+  if (pct < 50) {
+    return { bar: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" };
+  }
+  if (pct < 80) {
+    return { bar: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" };
+  }
+  return { bar: "bg-red-500", text: "text-red-600 dark:text-red-400" };
+}
+
 export default function DataManagement() {
   const [lastBackup, setLastBackup] = useState<string | null>(null);
   const [staleDays, setStaleDays] = useState<number | null>(null);
+  const [usage, setUsage] = useState<Usage>({
+    totalKeys: 0,
+    totalSize: 0,
+    breakdown: [],
+  });
 
   // Restore flow state.
   const [fileName, setFileName] = useState<string | null>(null);
@@ -51,9 +109,14 @@ export default function DataManagement() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
 
+  // Danger zone state.
+  const [deleteText, setDeleteText] = useState("");
+  const [clearedCount, setClearedCount] = useState<number | null>(null);
+
   const refresh = useCallback(() => {
     setLastBackup(getLastBackup());
     setStaleDays(daysSinceBackup());
+    setUsage(getStorageUsage());
   }, []);
 
   useEffect(() => {
@@ -114,7 +177,26 @@ export default function DataManagement() {
     setResult(null);
   }, []);
 
+  const onClearCategory = useCallback(
+    (category: Category) => {
+      clearCategory(category);
+      refresh();
+    },
+    [refresh],
+  );
+
+  const onClearAll = useCallback(() => {
+    const { cleared } = clearAllData();
+    setClearedCount(cleared);
+    setDeleteText("");
+    resetRestore();
+    refresh();
+  }, [refresh, resetRestore]);
+
   const reminderDue = staleDays === null || staleDays >= BACKUP_REMINDER_DAYS;
+  const rows = toCategoryRows(usage.breakdown);
+  const pct = STORAGE_LIMIT > 0 ? (usage.totalSize / STORAGE_LIMIT) * 100 : 0;
+  const color = usageColor(pct);
 
   return (
     <div className="flex flex-col gap-8">
@@ -122,6 +204,82 @@ export default function DataManagement() {
         Everything below lives only in this browser. Export a backup to keep a
         copy or move your data to another device, then restore it there.
       </p>
+
+      {/* Storage usage overview */}
+      <section
+        aria-labelledby="storage-heading"
+        className="rounded-lg border border-foreground/10 bg-card p-5"
+      >
+        <h2 id="storage-heading" className="text-xl mb-1">
+          Storage usage
+        </h2>
+        <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
+          How much of this browser&apos;s local storage ThesisLock is using,
+          broken down by category.
+        </p>
+
+        <div className="mb-2 flex items-baseline justify-between gap-3">
+          <span className={`text-sm font-medium ${color.text}`}>
+            {formatBytes(usage.totalSize)} used
+          </span>
+          <span className="text-sm text-foreground/55">
+            {pct.toFixed(1)}% of ~{formatBytes(STORAGE_LIMIT)}
+          </span>
+        </div>
+        <div
+          className="h-2 w-full overflow-hidden rounded-full bg-foreground/10"
+          role="progressbar"
+          aria-valuenow={Math.round(pct)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={`h-2 rounded-full ${color.bar}`}
+            style={{ width: `${Math.min(100, pct)}%` }}
+          />
+        </div>
+
+        {rows.length > 0 ? (
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-foreground/10 text-left text-foreground/55">
+                  <th className="py-2 pr-3 font-medium">Category</th>
+                  <th className="py-2 pr-3 font-medium">Keys</th>
+                  <th className="py-2 pr-3 font-medium">Size</th>
+                  <th className="py-2 font-medium">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.category} className="border-b border-foreground/5">
+                    <td className="py-2 pr-3">{row.label}</td>
+                    <td className="py-2 pr-3 text-foreground/65">{row.keys}</td>
+                    <td className="py-2 pr-3 text-foreground/65">
+                      {formatBytes(row.size)}
+                    </td>
+                    <td className="py-2 text-right">
+                      <button
+                        type="button"
+                        onClick={() => onClearCategory(row.category)}
+                        className="rounded border border-foreground/20 px-2 py-1 text-xs transition hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400"
+                      >
+                        Clear
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-foreground/55">
+            No ThesisLock data is stored in this browser yet.
+          </p>
+        )}
+      </section>
 
       {/* Backup */}
       <section
@@ -171,7 +329,10 @@ export default function DataManagement() {
           choose how to apply it before anything changes.
         </p>
 
-        <FileDropZone onFile={onFile} ariaLabel="Choose a backup file, or drop one here">
+        <FileDropZone
+          onFile={onFile}
+          ariaLabel="Choose a backup file, or drop one here"
+        >
           <p className="text-foreground/60">
             Drop a <span className="mono">.json</span> backup here, or click to
             choose one
@@ -290,6 +451,66 @@ export default function DataManagement() {
                 ))}
               </ul>
             ) : null}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-3 rounded-md border border-foreground/20 px-3 py-1.5 text-sm transition hover:border-foreground/40"
+            >
+              Reload to apply changes
+            </button>
+          </div>
+        ) : null}
+      </section>
+
+      {/* Danger zone */}
+      <section
+        aria-labelledby="danger-heading"
+        className="rounded-lg border border-red-500/30 bg-red-500/[0.04] p-5"
+      >
+        <h2 id="danger-heading" className="text-xl mb-1 text-red-700 dark:text-red-400">
+          Danger zone
+        </h2>
+        <p className="text-sm text-foreground/70 mb-3 max-w-2xl">
+          This permanently removes all ThesisLock data from this browser. It does
+          not affect anything anchored on the Stacks blockchain, but the local
+          data below cannot be recovered unless you have a backup.
+        </p>
+
+        <ul className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/60">
+          {(Object.keys(CATEGORY_LABELS) as Category[]).map((category) => (
+            <li key={category}>{CATEGORY_LABELS[category]}</li>
+          ))}
+        </ul>
+
+        <label
+          htmlFor="confirm-delete"
+          className="mb-1 block text-sm text-foreground/65"
+        >
+          Type <span className="mono font-semibold">DELETE</span> to confirm.
+        </label>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            id="confirm-delete"
+            type="text"
+            value={deleteText}
+            onChange={(e) => setDeleteText(e.target.value)}
+            placeholder="DELETE"
+            autoComplete="off"
+            className="rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm outline-none focus-visible:border-foreground/40"
+          />
+          <button
+            type="button"
+            onClick={onClearAll}
+            disabled={deleteText !== "DELETE"}
+            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Clear All Data
+          </button>
+        </div>
+
+        {clearedCount !== null ? (
+          <div className="mt-4 rounded-md border border-foreground/10 bg-background/40 p-4 text-sm">
+            <p className="font-medium">Cleared {clearedCount} items.</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
