@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   WEBHOOK_EVENTS,
-  formatWebhookPayload,
+  generateSignature,
   sampleEventData,
   type WebhookSubscription,
 } from "@/lib/webhookManager";
@@ -65,42 +65,30 @@ export default function WebhookTester({
   const selected = subscriptions.find((s) => s.id === selectedId) ?? null;
 
   const { body, signature, curl } = useMemo(() => {
-    const payload = formatWebhookPayload(
-      eventType,
-      sampleEventData(eventType),
-      selected?.secret,
-    );
     const bodyObj = {
-      event: payload.event,
-      data: payload.data,
-      timestamp: payload.timestamp,
+      event: eventType,
+      data: sampleEventData(eventType),
+      timestamp: new Date().toISOString(),
     };
-    const compact = JSON.stringify(bodyObj);
-    const pretty = JSON.stringify(bodyObj, null, 2);
+    // One exact string is displayed, signed, sent, and shown in curl, so a
+    // copied body plus the signature header verifies (whitespace is part of the
+    // signed bytes).
+    const text = JSON.stringify(bodyObj, null, 2);
+    const sig = selected?.secret ? generateSignature(text, selected.secret) : "";
     const url = selected?.url ?? "https://example.com/webhook";
     const curlCmd = [
       `curl -X POST '${url}' \\`,
       `  -H 'Content-Type: application/json' \\`,
-      `  -H 'X-ThesisLock-Event: ${payload.event}' \\`,
-      `  -H 'X-ThesisLock-Signature: sha256=${payload.signature}' \\`,
-      `  -d '${compact}'`,
+      `  -H 'X-ThesisLock-Event: ${eventType}' \\`,
+      `  -H 'X-ThesisLock-Signature: sha256=${sig}' \\`,
+      `  --data-binary '${text}'`,
     ].join("\n");
-    return { body: pretty, compactBody: compact, signature: payload.signature, curl: curlCmd };
+    return { body: text, signature: sig, curl: curlCmd };
   }, [eventType, selected]);
 
   const send = useCallback(async () => {
     if (!selected) return;
     setSending(true);
-    const payload = formatWebhookPayload(
-      eventType,
-      sampleEventData(eventType),
-      selected.secret,
-    );
-    const compact = JSON.stringify({
-      event: payload.event,
-      data: payload.data,
-      timestamp: payload.timestamp,
-    });
     const start =
       typeof performance !== "undefined" ? performance.now() : Date.now();
     const record = (partial: Omit<TestResult, "at" | "event" | "timeMs">) => {
@@ -125,10 +113,10 @@ export default function WebhookTester({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-ThesisLock-Event": payload.event,
-          "X-ThesisLock-Signature": `sha256=${payload.signature}`,
+          "X-ThesisLock-Event": eventType,
+          "X-ThesisLock-Signature": `sha256=${signature}`,
         },
-        body: compact,
+        body,
       });
       let text = "";
       try {
@@ -154,7 +142,7 @@ export default function WebhookTester({
     } finally {
       setSending(false);
     }
-  }, [selected, eventType]);
+  }, [selected, eventType, body, signature]);
 
   return (
     <div>
