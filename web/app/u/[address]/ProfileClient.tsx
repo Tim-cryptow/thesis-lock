@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { explorerAddressUrl } from "@/lib/stacks";
@@ -228,6 +229,15 @@ export default function ProfileClient() {
             <Stat value={profile.totalBatches} label="Batches" />
             <Stat value={profile.groupsCreated} label="Groups created" />
             <Stat value={profile.proofNFTs} label="Proof NFTs" />
+          </section>
+
+          {/* Contribution graph */}
+          <section className="mb-10">
+            <MiniContributionGraph
+              address={address}
+              mode="year"
+              title="Contribution graph"
+            />
           </section>
 
           {/* Document types */}

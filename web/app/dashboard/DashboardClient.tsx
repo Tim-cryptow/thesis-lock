@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import WatchlistWidget from "@/app/components/WatchlistWidget";
+import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -477,6 +478,18 @@ export default function DashboardClient() {
               }
             />
           </div>
+
+          {address && (
+            <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
+              <MiniContributionGraph
+                address={address}
+                mode="recent"
+                days={30}
+                title="Last 30 days"
+                showStreak
+              />
+            </section>
+          )}
 
           {topTags.length > 0 && (
             <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">

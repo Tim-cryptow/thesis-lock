@@ -238,6 +238,9 @@ function toEvent(tx: AddressTx): ActivityEvent | null {
       details.groupId = numberArg(tx, "group-id");
       details.hash = hashArg(tx);
       details.label = stringArg(tx, "label");
+      // anchor-to-group returns (ok <index>); capture it so links can address
+      // the exact group anchor row.
+      details.index = okUint(tx);
       break;
     }
   }

@@ -157,6 +157,12 @@ export const DOCS: DocMeta[] = [
     description:
       "The public status page: live health of all five contracts, the API endpoints, and the Hiro and Stacks dependencies, with response times, 24-hour uptime, incident tracking, a JSON API, and an embeddable status badge.",
   },
+  {
+    slug: "calendar",
+    title: "Calendar",
+    description:
+      "Your anchoring activity as a GitHub-style contribution graph and a monthly calendar, with current and longest streaks, per-day anchor detail, and report generation for any day.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
