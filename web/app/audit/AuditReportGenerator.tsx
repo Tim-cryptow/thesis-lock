@@ -13,6 +13,7 @@ import {
 } from "@/lib/audit";
 import { renderAuditReportHTML } from "@/lib/auditReportRenderer";
 import { downloadExport } from "@/lib/export";
+import { dispatchAudit } from "@/lib/auditEvents";
 
 const PREVIEW_LIMIT = 200;
 
@@ -35,7 +36,16 @@ export default function AuditReportGenerator() {
     const filters: AuditFilters = {};
     if (dateFrom) filters.dateFrom = localDayStartIso(dateFrom);
     if (dateTo) filters.dateTo = localDayEndIso(dateTo);
-    setReport(generateAuditReport(getAuditLog(filters)));
+    const generated = generateAuditReport(getAuditLog(filters));
+    setReport(generated);
+    // Record the report's creation after generating it, so the just-shown
+    // report does not include its own generation event.
+    dispatchAudit("audit_report_generate", "export", null, {
+      totalActions: generated.totalActions,
+      integrityHash: generated.integrityHash,
+      from: generated.period.from,
+      to: generated.period.to,
+    });
   };
 
   const downloadJson = () => {
@@ -49,8 +59,23 @@ export default function AuditReportGenerator() {
 
   const downloadCsv = () => {
     if (!report) return;
+    const esc = (v: string) =>
+      /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    // A metadata preamble (period, summary, and the integrity hash) so the CSV
+    // stands alone as a compliance artifact, like the JSON and HTML exports.
+    const preamble = [
+      ["Report ID", report.id],
+      ["Generated At", report.generatedAt],
+      ["Period From", report.period.from],
+      ["Period To", report.period.to],
+      ["Total Actions", String(report.totalActions)],
+      ["Unique Actors", String(report.uniqueActors)],
+      ["Integrity Hash", report.integrityHash],
+    ]
+      .map(([k, v]) => `${esc(k)},${esc(v)}`)
+      .join("\r\n");
     downloadExport(
-      formatAuditCsv(report.entries),
+      `${preamble}\r\n\r\n${formatAuditCsv(report.entries)}`,
       `audit-report-${stamp()}.csv`,
       "text/csv",
     );
