@@ -278,7 +278,11 @@ export default function CalendarClient() {
             )}
           </div>
 
-          <DayDetail day={selectedDay} onClose={() => setSelectedDate(null)} />
+          <DayDetail
+            day={selectedDay}
+            owner={address}
+            onClose={() => setSelectedDate(null)}
+          />
         </>
       )}
     </main>

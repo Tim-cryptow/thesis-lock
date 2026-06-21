@@ -459,6 +459,7 @@ export default function AnchorsPage() {
                     ? calendarDays.find((d) => d.date === calendarSelected) ?? null
                     : null
                 }
+                owner={address}
                 onClose={() => setCalendarSelected(null)}
               />
             </div>

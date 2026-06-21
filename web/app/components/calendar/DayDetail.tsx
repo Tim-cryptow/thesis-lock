@@ -66,10 +66,22 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-function AnchorRow({ item }: { item: CalendarHash }) {
+function AnchorRow({
+  item,
+  owner,
+}: {
+  item: CalendarHash;
+  owner?: string | null;
+}) {
   const parsed = parseLabel(item.label);
   const template = parsed.templateId ? getTemplate(parsed.templateId) : undefined;
   const tags = getTagsForHash(item.hash);
+  // A batch record is keyed by { hash, owner }, so a bare /v/<hash> link can
+  // resolve to an unrelated global anchor. Scope batch rows to the owner.
+  const verifyHref =
+    item.source === "batch" && owner
+      ? `/v/${item.hash}?owner=${owner}`
+      : `/v/${item.hash}`;
   return (
     <li className="rounded-md border border-foreground/10 p-3">
       <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -93,19 +105,23 @@ function AnchorRow({ item }: { item: CalendarHash }) {
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Link
-          href={`/v/${item.hash}`}
+          href={verifyHref}
           className="font-mono text-xs text-foreground/70 hover:text-foreground hover:underline break-all"
         >
           {truncateHash(item.hash)}
         </Link>
         <CopyButton value={item.hash} />
         <Link
-          href={`/v/${item.hash}`}
+          href={verifyHref}
           className="text-xs text-foreground/60 hover:text-foreground hover:underline"
         >
           Verify
         </Link>
-        <AddToCollectionButton hash={item.hash} label={item.label} />
+        <AddToCollectionButton
+          hash={item.hash}
+          label={item.label}
+          verifyUrl={verifyHref}
+        />
       </div>
       {tags.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-1">
@@ -126,9 +142,11 @@ function AnchorRow({ item }: { item: CalendarHash }) {
 export default function DayDetail({
   day,
   onClose,
+  owner,
 }: {
   day: CalendarDay | null;
   onClose: () => void;
+  owner?: string | null;
 }) {
   const [shown, setShown] = useState(false);
 
@@ -174,7 +192,7 @@ export default function DayDetail({
         <>
           <ul className="space-y-2">
             {hashes.map((item, i) => (
-              <AnchorRow key={`${item.hash}-${i}`} item={item} />
+              <AnchorRow key={`${item.hash}-${i}`} item={item} owner={owner} />
             ))}
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">

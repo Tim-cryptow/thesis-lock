@@ -44,13 +44,15 @@ type AnchorEntry = { date: string; hash: string; label: string; source: string }
 
 const entryCache = new Map<string, { at: number; entries: AnchorEntry[] }>();
 
-// Maps a single-hash activity type to the source label shown on the badge. Batch
-// anchors are handled separately because they carry many hashes.
+// Maps an anchor-creating activity type to its source label. Batch anchors are
+// handled separately (they carry many hashes). Registry registrations and proof
+// mints are deliberately excluded: anchoring through the app submits a
+// register-anchor for the same hash right after the single anchor, and a hash
+// may later get a proof mint, so counting those follow-ups would inflate a day's
+// count for what is really one anchored document.
 const SOURCE_BY_TYPE: Partial<Record<ActivityEvent["type"], string>> = {
   anchor: "single",
-  register: "registry",
   "group-anchor": "group",
-  "mint-proof": "proof",
 };
 
 // ---------------------------------------------------------------------------
