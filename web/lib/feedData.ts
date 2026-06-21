@@ -81,13 +81,16 @@ function resolveContracts(contract: string | null): string[] {
 
 // Pages a contract's events (newest first) until it has collected at least
 // `needed` surfaced (mappable) events or the source is exhausted, so non-feed
-// rows like NFT mint events do not starve the result.
+// rows like NFT mint events do not starve the result. When `matches` is given
+// (an address filter), only matching surfaced events count toward `needed`, so a
+// wallet whose events sit in later pages is not cut off.
 async function collectContractRaw(
   name: string,
   needed: number,
+  matches?: (ev: RawEvent) => boolean,
 ): Promise<RawEvent[]> {
   const collected: RawEvent[] = [];
-  let surfaced = 0;
+  let counted = 0;
   for (let offset = 0; offset < OFFSET_CAP; offset += HIRO_PAGE) {
     let page: RawEvent[];
     try {
@@ -97,8 +100,12 @@ async function collectContractRaw(
     }
     if (page.length === 0) break;
     collected.push(...page);
-    for (const ev of page) if (isFeedEvent(ev)) surfaced += 1;
-    if (page.length < HIRO_PAGE || surfaced >= needed) break;
+    for (const ev of page) {
+      if (!isFeedEvent(ev)) continue;
+      if (matches && !matches(ev)) continue;
+      counted += 1;
+    }
+    if (page.length < HIRO_PAGE || counted >= needed) break;
   }
   return collected;
 }
@@ -108,14 +115,17 @@ export async function fetchFeedEvents(query: FeedQuery): Promise<FeedEvent[]> {
   if (contracts.length === 0) return [];
 
   const target = Math.max(query.limit, 20);
+  const addr = query.address ? query.address.toUpperCase() : null;
+  const matches = addr
+    ? (ev: RawEvent) => (eventActor(ev) ?? "").toUpperCase() === addr
+    : undefined;
   const lists = await Promise.all(
-    contracts.map((name) => collectContractRaw(name, target)),
+    contracts.map((name) => collectContractRaw(name, target, matches)),
   );
 
   let raw: RawEvent[] = lists.flat();
 
-  if (query.address) {
-    const addr = query.address.toUpperCase();
+  if (addr) {
     raw = raw.filter((ev) => (eventActor(ev) ?? "").toUpperCase() === addr);
   }
 
