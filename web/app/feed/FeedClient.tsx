@@ -10,6 +10,7 @@ import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagFilter from "@/app/components/TagFilter";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import HelpText from "@/app/components/HelpText";
 import LiveBadge from "@/app/components/LiveBadge";
 import { useLive } from "@/app/components/LiveProvider";
 import type { LiveEvent } from "@/lib/livePoller";
@@ -491,6 +492,7 @@ export default function FeedClient() {
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
                         {t("feed.entry.label")}
+                        <HelpText term="Label" />
                       </span>
                       <code className="font-mono text-xs">
                         {entry.label || t("feed.entry.unlabeled")}
@@ -499,6 +501,7 @@ export default function FeedClient() {
                     <div className="text-sm text-foreground/80">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
                         {t("feed.entry.by")}
+                        <HelpText term="Principal" />
                       </span>
                       <TruncatedAddress address={entry.owner} />
                       <span className="mx-2 text-foreground/30">&middot;</span>

@@ -9,6 +9,7 @@ import MiniContributionGraph from "@/app/components/calendar/MiniContributionGra
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import HelpText from "@/app/components/HelpText";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
@@ -125,11 +126,14 @@ function StatCard({
   value,
   hint,
   title,
+  term,
 }: {
   label: string;
   value: string;
   hint?: string;
   title?: string;
+  // Optional glossary term explained by an info tooltip next to the label.
+  term?: string;
 }) {
   return (
     <div
@@ -138,6 +142,7 @@ function StatCard({
     >
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
+        {term ? <HelpText term={term} /> : null}
       </div>
       <div className="text-3xl font-mono">{value}</div>
       {hint ? (
@@ -446,6 +451,7 @@ export default function DashboardClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("dashboard.statTotalAnchors")}
+              term="Anchor"
               value={formatNumber(analytics.totalAnchors)}
               hint={t("dashboard.sourceBreakdown", {
                 single: formatNumber(analytics.anchorsBySource.single),
@@ -460,10 +466,12 @@ export default function DashboardClient() {
             />
             <StatCard
               label={t("dashboard.statProofNFTs")}
+              term="Proof NFT"
               value={formatNumber(analytics.proofNFTsMinted)}
             />
             <StatCard
               label={t("dashboard.statGroupsJoined")}
+              term="Group"
               value={formatNumber(analytics.totalGroups)}
             />
             <StatCard

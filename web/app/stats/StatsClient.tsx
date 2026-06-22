@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import HelpText from "@/app/components/HelpText";
 import LiveBadge from "@/app/components/LiveBadge";
 import ShareButtons from "@/app/components/ShareButtons";
 import { useLive } from "@/app/components/LiveProvider";
@@ -45,16 +46,20 @@ function StatCard({
   label,
   value,
   bumpKey,
+  term,
 }: {
   label: string;
   value: string;
   // Changing this value retriggers a brief tick-up flash on the number.
   bumpKey?: number;
+  // Optional glossary term explained by an info tooltip next to the label.
+  term?: string;
 }) {
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-6">
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
+        {term ? <HelpText term={term} /> : null}
       </div>
       <div className="text-3xl font-mono">
         <span key={bumpKey} className={bumpKey ? "live-bump inline-block" : ""}>
@@ -322,11 +327,13 @@ export default function StatsClient() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("stats.totalAnchors")}
+              term="Anchor"
               value={formatNumber(totalAnchors)}
               bumpKey={liveAnchors}
             />
             <StatCard
               label={t("stats.uniqueWallets")}
+              term="Principal"
               value={formatNumber(stats.uniqueWallets)}
             />
             <StatCard
@@ -335,6 +342,7 @@ export default function StatsClient() {
             />
             <StatCard
               label={t("stats.latestBlock")}
+              term="Stacks Block"
               value={
                 stats.latestAnchorBlock
                   ? formatNumber(stats.latestAnchorBlock)
