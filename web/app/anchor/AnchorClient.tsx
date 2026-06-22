@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { useConfirm } from "@/app/components/useConfirm";
 import HelpText from "@/app/components/HelpText";
 import TemplateSelector from "@/app/components/TemplateSelector";
 import TemplateFields from "@/app/components/TemplateFields";
@@ -107,6 +108,7 @@ export default function AnchorPage() {
   } = useWallet();
 
   const { trackTx, pendingCount } = useTx();
+  const confirm = useConfirm();
 
   const { t } = useI18n();
   const searchParams = useSearchParams();
@@ -425,12 +427,21 @@ export default function AnchorPage() {
     );
   const canSubmitBatch = allRowsReady && !!address && !pending;
 
-  const submitBatch = () => {
+  const submitBatch = async () => {
     if (!canSubmitBatch || !address) return;
     const entries = rows.map((r) => ({
       hash: r.hash!,
       label: buildLabel(getTemplate(r.templateId) ?? GENERIC_TEMPLATE, r.fieldValues),
     }));
+    if (entries.length >= 5) {
+      const ok = await confirm({
+        title: "Anchor multiple files",
+        message: `You're about to anchor ${entries.length} files. This will require ${entries.length + 1} wallet signatures. Continue?`,
+        confirmLabel: "Continue",
+        variant: "info",
+      });
+      if (!ok) return;
+    }
     const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
