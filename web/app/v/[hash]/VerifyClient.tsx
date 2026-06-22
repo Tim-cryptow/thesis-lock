@@ -6,6 +6,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import VerifySkeleton from "@/app/components/skeletons/VerifySkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
@@ -582,7 +583,7 @@ export default function VerifyPage() {
 
         <div role="status" aria-live="polite" aria-busy={loading || undefined}>
         {loading ? (
-          <p className="text-foreground/60">{t("verify.lookingUp")}</p>
+          <VerifySkeleton />
         ) : error ? (
           <div className="mt-4 pt-4 border-t border-foreground/10">
             <p className="text-red-600 dark:text-red-400" role="alert">
