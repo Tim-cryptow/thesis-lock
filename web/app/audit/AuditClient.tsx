@@ -7,9 +7,11 @@ import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import AuditReportGenerator from "./AuditReportGenerator";
 import { useI18n } from "@/app/components/I18nProvider";
+import { useConfirm } from "@/app/components/useConfirm";
 import {
   AUDIT_CATEGORIES,
   AUDIT_CHANGED_EVENT,
+  clearAuditLog,
   computeIntegrityHash,
   getAuditLog,
   getStoredIntegrityHash,
@@ -45,6 +47,7 @@ function startOfTodayIso(): string {
 
 export default function AuditClient() {
   const { t } = useI18n();
+  const confirm = useConfirm();
   const [entries, setEntries] = useState<AuditEntry[]>([]);
 
   const [category, setCategory] = useState("");
@@ -91,6 +94,20 @@ export default function AuditClient() {
       window.removeEventListener("storage", sync);
     };
   }, []);
+
+  // clearAuditLog dispatches AUDIT_CHANGED_EVENT, so the listener above refreshes
+  // the table once the log is wiped.
+  const clearLog = async () => {
+    const ok = await confirm({
+      title: "Clear audit log",
+      message:
+        "Clear the entire audit log on this device? This cannot be undone.",
+      confirmLabel: "Clear log",
+      variant: "warning",
+    });
+    if (!ok) return;
+    clearAuditLog();
+  };
 
   // Summary is always over the full log, independent of the table filters.
   const summary = useMemo(() => {
@@ -252,13 +269,24 @@ export default function AuditClient() {
               outside the app.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={verifyIntegrity}
-            className="shrink-0 rounded-md border border-foreground/15 px-3 py-2 text-sm hover:border-foreground/40"
-          >
-            Verify log integrity
-          </button>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={verifyIntegrity}
+              className="rounded-md border border-foreground/15 px-3 py-2 text-sm hover:border-foreground/40"
+            >
+              Verify log integrity
+            </button>
+            {summary.total > 0 ? (
+              <button
+                type="button"
+                onClick={clearLog}
+                className="rounded-md border border-red-500/40 px-3 py-2 text-sm text-red-600 transition hover:border-red-500 dark:text-red-400"
+              >
+                Clear log
+              </button>
+            ) : null}
+          </div>
         </div>
         {integrity && (
           <div className="mt-4 space-y-2">
