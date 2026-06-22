@@ -10,6 +10,8 @@ import {
   type ApiKeyRecord,
 } from "@/lib/apiKeys";
 import KeyCreationModal from "./KeyCreationModal";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import CopyButton from "@/app/components/CopyButton";
 
 function formatDate(iso: string | null): string {
@@ -100,11 +102,13 @@ export default function ApiKeysClient() {
       </div>
 
       {keys.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-foreground/15 px-6 py-12 text-center">
-          <p className="text-foreground/70">
-            No API keys yet. Create one to get started.
-          </p>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="key" />}
+          title="No API keys yet"
+          description="Create one to integrate ThesisLock into your apps."
+          actionLabel="Create API Key"
+          onAction={() => setCreating(true)}
+        />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-foreground/10">
           <table className="w-full min-w-[48rem] text-sm">
