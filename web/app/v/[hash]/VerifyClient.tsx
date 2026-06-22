@@ -13,6 +13,7 @@ import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
 import ShareButtons from "@/app/components/ShareButtons";
 import QRCode from "@/app/components/QRCode";
+import HelpText from "@/app/components/HelpText";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -552,6 +553,7 @@ export default function VerifyPage() {
         <div className="mb-4">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             {t("verify.fields.hash")}
+            <HelpText term="SHA-256 Hash" />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <TruncatedHash hash={hash} chars={16} />
@@ -740,6 +742,7 @@ export default function VerifyPage() {
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.anchoredBy")}
+                <HelpText term="Principal" />
               </div>
               <TruncatedAddress address={anchor.anchoredBy} />
             </div>
@@ -752,12 +755,14 @@ export default function VerifyPage() {
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.stacksBlock")}
+                <HelpText term="Stacks Block" />
               </div>
               <code className="font-mono text-sm">{anchor.stacksBlock}</code>
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.burnBlock")}
+                <HelpText term="Burn Block" />
               </div>
               <code className="font-mono text-sm">{anchor.burnBlock}</code>
             </div>
@@ -782,6 +787,7 @@ export default function VerifyPage() {
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
             {t("verify.proof.heading")}
+            <HelpText term="Proof NFT" />
           </div>
           <p className="text-sm text-foreground/80">
             {t("verify.proof.mintedByPrefix", { tokenId: proof.tokenId })}{" "}
