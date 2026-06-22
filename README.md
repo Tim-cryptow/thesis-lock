@@ -43,6 +43,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Share verification results via social media and QR codes: a compact row of share buttons (copy link, X, LinkedIn, Telegram) on verification pages, wallet profiles, group pages, and the stats page, plus an expandable, in-browser-generated QR code on verification pages that encodes the verification URL so anyone can scan and verify from their phone. No external library or image service.
 - Consistent copy interactions across the app: a standardized copy button (clipboard icon with a "Copied!" confirmation) plus shared truncated-hash and truncated-address components with hover-to-reveal full values, click-to-copy, and profile links, and a global toast that confirms every copy. Applied everywhere from verification pages and feeds to the developer portal.
 - Polished loading states: every page that fetches data shows a skeleton loader shaped like its final layout (anchor lists, stats cards, feed and search rows, the verify record, groups, the activity timeline, and the calendar grid) with a theme-aware shimmer that respects reduced-motion, instead of spinners or blank screens.
+- Wayfinding navigation across the app's 20-plus pages: an auto-generated breadcrumb trail below the nav on every page, a context-aware back button on nested pages that names the page you came from, and a recently visited menu (the clock icon in the corner) listing the last pages from this session with relative times. Navigation history stays in the browser tab and is never sent anywhere.
 
 ## Protocol
 
@@ -89,6 +90,7 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [Getting Started](https://thesis-lock.vercel.app/docs/getting-started): what ThesisLock is and how to anchor your first document.
 - [Getting Started Tour](https://thesis-lock.vercel.app/docs/getting-started-tour): the interactive onboarding tour, what it covers, and how to restart it.
 - [Command Palette](https://thesis-lock.vercel.app/docs/command-palette): the Ctrl+K command palette for jumping to any page or running a common action.
+- [Navigation](https://thesis-lock.vercel.app/docs/navigation): breadcrumbs, the context-aware back button, and the recently visited pages menu.
 - [Contracts](https://thesis-lock.vercel.app/docs/contracts): all five contracts, function signatures, and direct Hiro API calls.
 - [Contract Explorer](https://thesis-lock.vercel.app/docs/explorer): browse contracts in the app with recent calls, an architecture diagram, and an interactive read-only tester.
 - [Watchlist](https://thesis-lock.vercel.app/docs/watchlist): monitor specific hashes, wallets, and groups and track their status over time.
