@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { REPO_URL } from "@/lib/docs";
 import DocsSidebar from "./DocsSidebar";
 import EditOnGithub from "./EditOnGithub";
@@ -28,7 +29,10 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         <aside className="mb-8 md:mb-0">
           <DocsSidebar />
         </aside>
-        <article className="min-w-0 max-w-3xl">{children}</article>
+        <article className="min-w-0 max-w-3xl">
+          <Breadcrumbs />
+          {children}
+        </article>
       </div>
 
       <footer className="mt-auto border-t border-foreground/10 py-6 px-6 text-sm text-foreground/60">

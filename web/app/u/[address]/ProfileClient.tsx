@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import BackButton from "@/app/components/BackButton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -136,7 +138,7 @@ export default function ProfileClient() {
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-12 w-full">
-      <div className="flex items-center gap-4 text-sm flex-wrap mb-10">
+      <div className="flex items-center gap-4 text-sm flex-wrap mb-4">
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
@@ -149,6 +151,11 @@ export default function ProfileClient() {
         <div className="order-last ml-auto">
           <ThemeToggle />
         </div>
+      </div>
+
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+        <Breadcrumbs />
+        <BackButton />
       </div>
 
       {!valid ? (

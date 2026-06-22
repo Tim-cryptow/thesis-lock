@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import BackButton from "@/app/components/BackButton";
 import TagInput from "@/app/components/TagInput";
 import { useI18n } from "@/app/components/I18nProvider";
 import { HEX_64 } from "@/lib/verify";
@@ -464,6 +466,11 @@ export default function CollectionDetailClient() {
         >
           {t("common.nav.collections")}
         </Link>
+      </div>
+
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+        <Breadcrumbs overrides={{ [id]: collection.name }} />
+        <BackButton />
       </div>
 
       <div className="overflow-hidden rounded-lg border border-foreground/10 bg-card mb-8">
