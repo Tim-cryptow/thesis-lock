@@ -24,6 +24,7 @@ import {
   clearCategory,
   getAllLocalStorageKeys,
 } from "@/lib/dataPortability";
+import { useConfirm } from "@/app/components/useConfirm";
 
 function retentionLabel(days: number): string {
   return days === 0 ? "Unlimited" : `${days} days`;
@@ -86,6 +87,7 @@ export default function PrivacySection() {
     {},
   );
   const [message, setMessage] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const refreshKeys = useCallback(() => {
     const grouped: Record<string, string[]> = {};
@@ -104,12 +106,19 @@ export default function PrivacySection() {
   }, [refreshKeys]);
 
   const runClear = useCallback(
-    (label: string, run: () => void) => {
+    async (label: string, run: () => void) => {
+      const ok = await confirm({
+        title: "Clear data",
+        message: `Clear ${label.toLowerCase()}? This cannot be undone.`,
+        confirmLabel: "Clear",
+        variant: "warning",
+      });
+      if (!ok) return;
       run();
       refreshKeys();
       setMessage(`${label} cleared.`);
     },
-    [refreshKeys],
+    [refreshKeys, confirm],
   );
 
   const clearActions: { label: string; run: () => void }[] = [

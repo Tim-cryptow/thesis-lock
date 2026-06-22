@@ -36,12 +36,14 @@ import TruncatedAddress from "@/app/components/TruncatedAddress";
 import { dispatchAudit } from "@/lib/auditEvents";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
+import { useConfirm } from "@/app/components/useConfirm";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 export default function GroupDetailPage() {
   const { t } = useI18n();
+  const confirm = useConfirm();
   const params = useParams<{ id: string }>();
   const groupId = Number(params.id);
   const validId = Number.isInteger(groupId) && groupId > 0;
@@ -142,7 +144,14 @@ export default function GroupDetailPage() {
   };
 
   const [removingMember, setRemovingMember] = useState<string | null>(null);
-  const submitRemoveMember = (principal: string) => {
+  const submitRemoveMember = async (principal: string) => {
+    const ok = await confirm({
+      title: "Remove member",
+      message: `Remove ${truncateAddress(principal)} from this group?`,
+      confirmLabel: "Remove",
+      variant: "warning",
+    });
+    if (!ok) return;
     setRemovingMember(principal);
     removeMember(
       groupId,

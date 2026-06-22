@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { I18nProvider } from "./components/I18nProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
+import ConfirmProvider from "./components/ConfirmProvider";
 import TxToast from "./components/TxToast";
 import ClipboardToast from "./components/ClipboardToast";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
@@ -127,6 +128,7 @@ export default function RootLayout({
         <I18nProvider>
           <ThemeProvider>
             <TxProvider>
+              <ConfirmProvider>
               <OfflineIndicator />
               <SkipToContent />
               <ServiceWorkerRegistration />
@@ -159,6 +161,7 @@ export default function RootLayout({
               <TxToast />
               <ClipboardToast />
               <InstallPrompt />
+              </ConfirmProvider>
             </TxProvider>
           </ThemeProvider>
         </I18nProvider>

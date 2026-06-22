@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { useConfirm } from "@/app/components/useConfirm";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useNotifications } from "@/app/components/NotificationProvider";
@@ -244,6 +245,7 @@ export default function NotificationsClient() {
     updatePreferences,
   } = useNotifications();
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [filter, setFilter] = useState<Filter>("all");
   const [prefsOpen, setPrefsOpen] = useState(false);
@@ -331,7 +333,16 @@ export default function NotificationsClient() {
           </button>
           <button
             type="button"
-            onClick={clearAll}
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Clear all notifications",
+                message:
+                  "Clear all notifications? This removes them from this device.",
+                confirmLabel: "Clear all",
+                variant: "info",
+              });
+              if (ok) clearAll();
+            }}
             disabled={notifications.length === 0}
             className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm hover:border-foreground/40 transition disabled:opacity-40"
           >

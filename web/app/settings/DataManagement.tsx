@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import FileDropZone from "@/app/components/FileDropZone";
+import { useConfirm } from "@/app/components/useConfirm";
 import {
   BACKUP_REMINDER_DAYS,
   CATEGORY_LABELS,
@@ -110,8 +111,8 @@ export default function DataManagement() {
   const [result, setResult] = useState<ImportResult | null>(null);
 
   // Danger zone state.
-  const [deleteText, setDeleteText] = useState("");
   const [clearedCount, setClearedCount] = useState<number | null>(null);
+  const confirm = useConfirm();
 
   const refresh = useCallback(() => {
     setLastBackup(getLastBackup());
@@ -185,13 +186,21 @@ export default function DataManagement() {
     [refresh],
   );
 
-  const onClearAll = useCallback(() => {
+  const onClearAll = useCallback(async () => {
+    const ok = await confirm({
+      title: "Clear all data",
+      message:
+        "This permanently removes all ThesisLock data from this browser. It cannot be undone unless you have a backup.",
+      confirmLabel: "Clear All Data",
+      variant: "danger",
+      requireType: "DELETE",
+    });
+    if (!ok) return;
     const { cleared } = clearAllData();
     setClearedCount(cleared);
-    setDeleteText("");
     resetRestore();
     refresh();
-  }, [refresh, resetRestore]);
+  }, [refresh, resetRestore, confirm]);
 
   const reminderDue = staleDays === null || staleDays >= BACKUP_REMINDER_DAYS;
   const rows = toCategoryRows(usage.breakdown);
@@ -482,31 +491,13 @@ export default function DataManagement() {
           ))}
         </ul>
 
-        <label
-          htmlFor="confirm-delete"
-          className="mb-1 block text-sm text-foreground/65"
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700"
         >
-          Type <span className="mono font-semibold">DELETE</span> to confirm.
-        </label>
-        <div className="flex flex-wrap items-center gap-3">
-          <input
-            id="confirm-delete"
-            type="text"
-            value={deleteText}
-            onChange={(e) => setDeleteText(e.target.value)}
-            placeholder="DELETE"
-            autoComplete="off"
-            className="rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm outline-none focus-visible:border-foreground/40"
-          />
-          <button
-            type="button"
-            onClick={onClearAll}
-            disabled={deleteText !== "DELETE"}
-            className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Clear All Data
-          </button>
-        </div>
+          Clear All Data
+        </button>
 
         {clearedCount !== null ? (
           <div className="mt-4 rounded-md border border-foreground/10 bg-background/40 p-4 text-sm">

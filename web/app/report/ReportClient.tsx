@@ -21,6 +21,7 @@ import { verifyUrlFor } from "@/lib/reportRenderer";
 import { auditReportGenerate } from "@/lib/auditEvents";
 import { REPORT_INPUT_KEY } from "@/lib/reportLink";
 import ReportActions from "./ReportActions";
+import { useUnsavedChanges } from "@/app/components/useUnsavedChanges";
 
 const SOURCE_LABELS: Record<string, string> = {
   single: "Single anchor",
@@ -73,7 +74,17 @@ export default function ReportClient() {
   const [statuses, setStatuses] = useState<("pending" | "verified" | "notfound")[]>([]);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [report, setReport] = useState<ReportData | null>(null);
+  // Tracks whether the generated report has been exported (downloaded, printed,
+  // or shared) so we only warn about leaving with an unsaved report.
+  const [exported, setExported] = useState(false);
   const generationId = useRef(0);
+
+  useUnsavedChanges(report !== null && !exported, {
+    title: "Leave this page?",
+    message:
+      "You have a generated report that you have not downloaded. Leave anyway?",
+    confirmLabel: "Leave",
+  });
 
   // Adds hashes, skipping duplicates and anything not a valid 64-hex string, and
   // enforcing the same per-report cap as the API so the builder cannot stage a
@@ -239,6 +250,7 @@ export default function ReportClient() {
     // Only publish if this run still describes the current inputs and wallet.
     if (generationId.current === runId) {
       setReport({ ...data, title: title.trim() || DEFAULT_REPORT_TITLE });
+      setExported(false);
       auditReportGenerate({ documents: items.length });
     }
     setGenerating(false);
@@ -517,7 +529,9 @@ export default function ReportClient() {
         ) : null}
 
         {report ? <ReportPreview data={report} /> : null}
-        {report ? <ReportActions data={report} /> : null}
+        {report ? (
+          <ReportActions data={report} onExport={() => setExported(true)} />
+        ) : null}
       </div>
       <Footer />
     </>
