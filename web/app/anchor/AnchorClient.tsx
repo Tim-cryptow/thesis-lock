@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import HelpText from "@/app/components/HelpText";
 import TemplateSelector from "@/app/components/TemplateSelector";
 import TemplateFields from "@/app/components/TemplateFields";
 import TagInput from "@/app/components/TagInput";
@@ -798,7 +799,7 @@ export default function AnchorPage() {
             <TagInput hash={singleSuccess.hash} label={singleSuccess.label} />
           </div>
           <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">{t("anchor.proof.single.heading")}</h2>
+            <h2 className="text-lg mb-1">{t("anchor.proof.single.heading")}<HelpText term="Proof NFT" /></h2>
             <p className="text-foreground/70 text-sm mb-4">
               {t("anchor.proof.single.description")}
             </p>
@@ -927,7 +928,7 @@ export default function AnchorPage() {
             ))}
           </div>
           <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">{t("anchor.proof.batch.heading")}</h2>
+            <h2 className="text-lg mb-1">{t("anchor.proof.batch.heading")}<HelpText term="Proof NFT" /></h2>
             <p className="text-foreground/70 text-sm mb-4">
               {t("anchor.proof.batch.description")}
             </p>
@@ -984,10 +985,11 @@ export default function AnchorPage() {
         {t("anchor.form.intro")}
       </p>
 
+      <div className="flex items-center gap-2 mb-8">
       <div
         role="group"
         aria-label={t("anchor.form.modeGroupAria")}
-        className="inline-flex rounded-md border border-foreground/15 p-1 mb-8 bg-card"
+        className="inline-flex rounded-md border border-foreground/15 p-1 bg-card"
       >
         <button
           onClick={() => setMode("single")}
@@ -1016,6 +1018,8 @@ export default function AnchorPage() {
         >
           {t("anchor.form.batchMode", { max: MAX_BATCH })}
         </button>
+      </div>
+        <HelpText term="Batch Anchor" />
       </div>
 
       {mode === "single" ? (
@@ -1057,6 +1061,7 @@ export default function AnchorPage() {
             >
               <div className="block text-sm text-foreground/60 mb-2">
                 {t("anchor.single.sha256")}
+                <HelpText term="SHA-256 Hash" />
               </div>
               {hashing ? (
                 <p className="font-mono text-sm text-foreground/50">
@@ -1088,12 +1093,15 @@ export default function AnchorPage() {
 
           {isGenericTemplate ? (
             <div className="mt-6">
-              <label
-                htmlFor="label"
-                className="block text-sm text-foreground/60 mb-2"
-              >
-                {t("anchor.label.fieldLabel")}
-              </label>
+              <div className="flex items-center mb-2">
+                <label
+                  htmlFor="label"
+                  className="block text-sm text-foreground/60"
+                >
+                  {t("anchor.label.fieldLabel")}
+                </label>
+                <HelpText term="Label" />
+              </div>
               <input
                 id="label"
                 data-tour="label-input"
