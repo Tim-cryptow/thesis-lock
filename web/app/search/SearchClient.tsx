@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TruncatedHash from "@/app/components/TruncatedHash";
@@ -370,18 +371,7 @@ export default function SearchClient() {
       )}
 
       {loading ? (
-        <div className="space-y-3" aria-busy="true">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-foreground/10 bg-card p-5"
-            >
-              <div className="h-3 w-24 rounded bg-foreground/10 animate-pulse mb-3" />
-              <div className="h-3 w-3/4 rounded bg-foreground/10 animate-pulse mb-2" />
-              <div className="h-3 w-1/2 rounded bg-foreground/10 animate-pulse" />
-            </div>
-          ))}
-        </div>
+        <FeedSkeleton />
       ) : searchedFor && results.length === 0 && !error ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70">

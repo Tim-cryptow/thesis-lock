@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
@@ -393,7 +394,7 @@ export default function AnchorsPage() {
           </button>
         </div>
       ) : loading ? (
-        <p className="text-foreground/60">{t("anchors.loading")}</p>
+        <AnchorListSkeleton />
       ) : error ? (
         <ErrorFallback
           message={error}

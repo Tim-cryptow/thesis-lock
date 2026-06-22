@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { SkeletonCircle, SkeletonLine } from "@/app/components/Skeleton";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useWallet } from "@/lib/wallet";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
@@ -397,7 +398,17 @@ export default function ActivityClient() {
         // the observer pages forward until events appear or the stream ends,
         // instead of prematurely showing the empty state.
         <>
-          <p className="text-foreground/60">{t("anchors.loading")}</p>
+          <ul className="space-y-1" aria-busy="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <li key={i} className="flex gap-3 py-3">
+                <SkeletonCircle size="1.75rem" />
+                <div className="flex-1 space-y-2">
+                  <SkeletonLine width="70%" height="0.9rem" />
+                  <SkeletonLine width="40%" height="0.7rem" />
+                </div>
+              </li>
+            ))}
+          </ul>
           <div ref={sentinelRef} aria-hidden="true" className="h-px" />
         </>
       ) : events.length === 0 ? (

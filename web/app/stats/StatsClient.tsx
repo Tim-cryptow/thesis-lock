@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
+import { SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import LiveBadge from "@/app/components/LiveBadge";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -301,20 +303,10 @@ export default function StatsClient() {
       {error ? (
         <ErrorFallback message={error} onRetry={() => void load()} />
       ) : loading ? (
-        <div aria-busy="true">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-foreground/10 bg-card p-6"
-              >
-                <div className="h-3 w-20 rounded bg-foreground/10 animate-pulse mb-3" />
-                <div className="h-8 w-24 rounded bg-foreground/10 animate-pulse" />
-              </div>
-            ))}
-          </div>
+        <div className="space-y-8">
+          <StatsCardsSkeleton />
           <div className="rounded-lg border border-foreground/10 bg-card p-6">
-            <div className="h-40 w-full rounded bg-foreground/10 animate-pulse" />
+            <SkeletonBlock height="10rem" />
           </div>
         </div>
       ) : stats ? (

@@ -12,6 +12,7 @@ import {
   type StreakInfo,
 } from "@/lib/calendar";
 import ContributionGraph from "@/app/components/calendar/ContributionGraph";
+import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import MonthlyCalendar from "@/app/components/calendar/MonthlyCalendar";
 import DayDetail from "@/app/components/calendar/DayDetail";
 
@@ -252,9 +253,14 @@ export default function CalendarClient() {
 
           <div className="rounded-lg border border-foreground/10 bg-card p-4 sm:p-6">
             {loading ? (
-              <p className="text-sm text-foreground/50 py-10 text-center">
-                Loading your anchoring activity...
-              </p>
+              <div aria-busy="true" className="space-y-3">
+                <SkeletonLine width="12rem" height="1rem" />
+                <div className="grid grid-cols-7 gap-2">
+                  {Array.from({ length: 49 }).map((_, i) => (
+                    <SkeletonBlock key={i} height="1.5rem" />
+                  ))}
+                </div>
+              </div>
             ) : view === "graph" ? (
               <ContributionGraph
                 days={yearDays}

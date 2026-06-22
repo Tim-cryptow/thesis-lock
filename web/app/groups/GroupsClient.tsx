@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createGroup, explorerTxUrl } from "@/lib/stacks";
@@ -261,7 +262,20 @@ export default function GroupsPage() {
               onRetry={() => void loadGroups(address)}
             />
           ) : loading && groups.length === 0 ? (
-            <p className="text-foreground/60">{t("groups.list.loadingGroups")}</p>
+            <div className="space-y-3" aria-busy="true">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border border-foreground/10 bg-card p-5 flex items-start justify-between gap-4"
+                >
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <SkeletonLine width="40%" height="1.1rem" />
+                    <SkeletonLine width="60%" height="0.8rem" />
+                  </div>
+                  <SkeletonBlock width="4rem" height="2.25rem" />
+                </div>
+              ))}
+            </div>
           ) : groups.length === 0 ? (
             <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
               <p className="text-foreground/70">
