@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagFilter from "@/app/components/TagFilter";
@@ -410,18 +411,7 @@ export default function FeedClient() {
           onRetry={() => void refresh(requestedLimit)}
         />
       ) : loading ? (
-        <div className="space-y-3" aria-busy="true">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-foreground/10 bg-card p-5"
-            >
-              <div className="h-3 w-32 rounded bg-foreground/10 animate-pulse mb-3" />
-              <div className="h-3 w-3/4 rounded bg-foreground/10 animate-pulse mb-2" />
-              <div className="h-3 w-1/2 rounded bg-foreground/10 animate-pulse" />
-            </div>
-          ))}
-        </div>
+        <FeedSkeleton />
       ) : entries.length === 0 ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
           <p className="text-foreground/70 mb-6">
