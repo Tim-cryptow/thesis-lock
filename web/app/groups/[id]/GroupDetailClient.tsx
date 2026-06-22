@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import ShareButtons from "@/app/components/ShareButtons";
 import { useParams } from "next/navigation";
 import {
   addMember,
@@ -59,6 +60,7 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
 
   const copyHash = async (hash: string) => {
     try {
@@ -69,6 +71,10 @@ export default function GroupDetailPage() {
       // Clipboard can be unavailable in non-secure contexts; ignore.
     }
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
 
   const isAdmin = !!address && !!group && group.admin === address;
 
@@ -337,6 +343,13 @@ export default function GroupDetailPage() {
             {anchorCount === 1
               ? t("groups.anchorCountOne", { count: anchorCount })
               : t("groups.anchorCountOther", { count: anchorCount })}
+          </div>
+
+          <div className="mb-8">
+            <ShareButtons
+              url={origin ? `${origin}/groups/${groupId}` : ""}
+              title="Anchor group on ThesisLock"
+            />
           </div>
 
           {isAdmin && (

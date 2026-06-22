@@ -181,6 +181,12 @@ export const DOCS: DocMeta[] = [
     description:
       "Back up everything ThesisLock stores in your browser to one JSON file, restore it on another device with merge or replace, review storage usage, clear data, and control privacy and preferences from the settings page.",
   },
+  {
+    slug: "sharing",
+    title: "Sharing",
+    description:
+      "Share verification results, profiles, groups, and protocol stats on X, LinkedIn, and Telegram, copy links, and let people scan an in-browser QR code to verify on mobile.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
