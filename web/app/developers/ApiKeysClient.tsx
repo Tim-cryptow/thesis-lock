@@ -10,6 +10,7 @@ import {
   type ApiKeyRecord,
 } from "@/lib/apiKeys";
 import KeyCreationModal from "./KeyCreationModal";
+import CopyButton from "@/app/components/CopyButton";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
@@ -29,7 +30,6 @@ export default function ApiKeysClient() {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // localStorage is only available in the browser, so keys are loaded after
   // mount rather than during the initial (client-only) render.
@@ -75,16 +75,6 @@ export default function ApiKeysClient() {
     setEditingId(null);
     setEditName("");
   }, [editName, editingId]);
-
-  const copyKey = useCallback(async (key: ApiKeyRecord) => {
-    try {
-      await navigator.clipboard.writeText(key.key);
-      setCopiedId(key.id);
-      window.setTimeout(() => setCopiedId(null), 1500);
-    } catch {
-      // Clipboard can be blocked; nothing else to do.
-    }
-  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -182,13 +172,7 @@ export default function ApiKeysClient() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => copyKey(key)}
-                        className="text-foreground/60 hover:text-foreground"
-                      >
-                        {copiedId === key.id ? "Copied!" : "Copy"}
-                      </button>
+                      <CopyButton value={key.key} label="API key" size="sm" />
                       <button
                         type="button"
                         onClick={() => startEdit(key)}

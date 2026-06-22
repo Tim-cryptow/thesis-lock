@@ -8,6 +8,7 @@ import {
   generateKeyId,
   type ApiKeyRecord,
 } from "@/lib/apiKeys";
+import CopyButton from "@/app/components/CopyButton";
 
 type Props = {
   // Persists the newly created key. Called once, when the key is generated.
@@ -26,7 +27,6 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
     ...AVAILABLE_PERMISSIONS,
   ]);
   const [createdKey, setCreatedKey] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const trimmedName = name.trim();
   const canGenerate = trimmedName.length > 0 && permissions.length > 0;
@@ -55,16 +55,6 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
     setCreatedKey(key);
     setStep("reveal");
   }, [canGenerate, trimmedName, permissions, onCreate]);
-
-  const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(createdKey);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard can be blocked; the key stays visible for manual copy.
-    }
-  }, [createdKey]);
 
   // Escape only closes from the form step. During the reveal step the key must
   // be acknowledged explicitly so it is not lost by accident.
@@ -156,13 +146,7 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
                 <code className="min-w-0 flex-1 overflow-x-auto rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm">
                   {createdKey}
                 </code>
-                <button
-                  type="button"
-                  onClick={copy}
-                  className="shrink-0 rounded-md border border-foreground/15 px-3 py-2 text-sm hover:border-foreground/40"
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
+                <CopyButton value={createdKey} label="API key" />
               </div>
 
               <p className="mt-4 text-sm text-foreground/60">

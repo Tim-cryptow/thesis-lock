@@ -26,17 +26,14 @@ import { addNotification } from "@/lib/notifications";
 import { stageReportInput } from "@/lib/reportLink";
 import { formatBytes } from "@/lib/format";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import TruncatedHash from "@/app/components/TruncatedHash";
+import TruncatedAddress from "@/app/components/TruncatedAddress";
 import { dispatchAudit } from "@/lib/auditEvents";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
-
-function truncateHash(hash: string): string {
-  if (hash.length <= 14) return hash;
-  return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
-}
 
 export default function GroupDetailPage() {
   const { t } = useI18n();
@@ -59,18 +56,7 @@ export default function GroupDetailPage() {
   const [member, setMemberState] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
-
-  const copyHash = async (hash: string) => {
-    try {
-      await navigator.clipboard.writeText(hash);
-      setCopiedHash(hash);
-      setTimeout(() => setCopiedHash(null), 1500);
-    } catch {
-      // Clipboard can be unavailable in non-secure contexts; ignore.
-    }
-  };
 
   useEffect(() => {
     if (typeof window !== "undefined") setOrigin(window.location.origin);
@@ -286,7 +272,11 @@ export default function GroupDetailPage() {
             title={t("common.wallet.disconnect")}
             aria-label={t("common.wallet.disconnectAria")}
           >
-            {truncateAddress(address)}
+            <TruncatedAddress
+              address={address}
+              linkToProfile={false}
+              copyable={false}
+            />
           </button>
         ) : (
           <button
@@ -334,7 +324,7 @@ export default function GroupDetailPage() {
           </div>
           <div className="text-sm text-foreground/60 mb-8">
             {t("groups.detail.metaPrefix", { id: groupId })}{" "}
-            <code className="font-mono">{truncateAddress(group.admin)}</code>{" "}
+            <TruncatedAddress address={group.admin} copyable={false} />{" "}
             &middot;{" "}
             {members.length === 1
               ? t("groups.memberCountOne", { count: members.length })
@@ -394,10 +384,14 @@ export default function GroupDetailPage() {
                     key={m}
                     className="flex items-center justify-between gap-3 text-sm border-t border-foreground/10 pt-2"
                   >
-                    <code className="font-mono truncate">
-                      {truncateAddress(m, 6, 6)}
-                      {m === group.admin ? t("groups.detail.adminSuffix") : ""}
-                    </code>
+                    <span className="inline-flex items-center gap-1 min-w-0">
+                      <TruncatedAddress address={m} copyable={false} />
+                      {m === group.admin ? (
+                        <span className="text-foreground/50">
+                          {t("groups.detail.adminSuffix")}
+                        </span>
+                      ) : null}
+                    </span>
                     {m !== group.admin && (
                       <button
                         onClick={() => submitRemoveMember(m)}
@@ -575,17 +569,8 @@ export default function GroupDetailPage() {
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                         {t("groups.detail.hashFieldLabel")}
                       </div>
-                      <code className="font-mono text-sm">
-                        {truncateHash(anchor.hash)}
-                      </code>
+                      <TruncatedHash hash={anchor.hash} />
                     </div>
-                    <button
-                      onClick={() => void copyHash(anchor.hash)}
-                      aria-label={t("groups.detail.copyHashAria")}
-                      className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
-                    >
-                      {copiedHash === anchor.hash ? t("common.actions.copied") : t("groups.detail.copyHash")}
-                    </button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                     <div>
@@ -600,9 +585,10 @@ export default function GroupDetailPage() {
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                         {t("groups.detail.anchoredByLabel")}
                       </div>
-                      <code className="font-mono text-xs">
-                        {truncateAddress(anchor.anchoredBy)}
-                      </code>
+                      <TruncatedAddress
+                        address={anchor.anchoredBy}
+                        copyable={false}
+                      />
                     </div>
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">

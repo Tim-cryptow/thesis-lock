@@ -22,6 +22,7 @@ import {
   type RegistryEntry,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import TruncatedHash from "@/app/components/TruncatedHash";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import { stageReportInput } from "@/lib/reportLink";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
@@ -54,7 +55,6 @@ export default function AnchorsPage() {
   const [count, setCount] = useState<number | null>(null);
   const [entries, setEntries] = useState<RegistryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [templateFilter, setTemplateFilter] = useState<string>("all");
   // Toggles the My Anchors body between the list and a calendar of the year.
   const [view, setView] = useState<"list" | "calendar">("list");
@@ -144,12 +144,6 @@ export default function AnchorsPage() {
       active = false;
     };
   }, [address, view]);
-
-  const copyHash = async (hash: string) => {
-    await navigator.clipboard.writeText(hash);
-    setCopiedHash(hash);
-    setTimeout(() => setCopiedHash(null), 1500);
-  };
 
   const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
   const [certErrorHash, setCertErrorHash] = useState<string | null>(null);
@@ -547,16 +541,7 @@ export default function AnchorsPage() {
                     {t("anchors.hashLabel")}
                   </div>
                   <div className="flex items-center gap-2">
-                    <code className="font-mono text-sm">
-                      {truncateHash(entry.hash)}
-                    </code>
-                    <button
-                      onClick={() => void copyHash(entry.hash)}
-                      aria-label={t("anchors.copyHashAria")}
-                      className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition"
-                    >
-                      {copiedHash === entry.hash ? t("common.actions.copied") : t("common.actions.copy")}
-                    </button>
+                    <TruncatedHash hash={entry.hash} />
                     <AddToCollectionButton
                       hash={entry.hash}
                       label={entry.label}

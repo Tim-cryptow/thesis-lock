@@ -187,6 +187,12 @@ export const DOCS: DocMeta[] = [
     description:
       "Share verification results, profiles, groups, and protocol stats on X, LinkedIn, and Telegram, copy links, and let people scan an in-browser QR code to verify on mobile.",
   },
+  {
+    slug: "changelog",
+    title: "Changelog",
+    description:
+      "Notable changes and improvements to ThesisLock, including the standardized copy interactions, truncated hash and address components, and the global clipboard toast.",
+  },
 ];
 
 export const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";

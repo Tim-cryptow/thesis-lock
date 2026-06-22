@@ -15,7 +15,8 @@ import { useLive } from "@/app/components/LiveProvider";
 import type { LiveEvent } from "@/lib/livePoller";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl, readBatchAnchor } from "@/lib/stacks";
-import { truncateAddress } from "@/lib/wallet";
+import TruncatedHash from "@/app/components/TruncatedHash";
+import TruncatedAddress from "@/app/components/TruncatedAddress";
 import {
   TAGS_CHANGED_EVENT,
   getHashesByTag,
@@ -43,11 +44,6 @@ function liveToFeedEntry(ev: LiveEvent): FeedEntry {
     txId: ev.txId,
     source: "single",
   };
-}
-
-function truncateHash(h: string): string {
-  if (h.length <= 14) return h;
-  return `${h.slice(0, 8)}...${h.slice(-6)}`;
 }
 
 type Translate = (key: string, params?: Record<string, string | number>) => string;
@@ -100,7 +96,6 @@ export default function FeedClient() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   // Tick once a minute so relative timestamps update without refetching.
   const [, setTick] = useState(0);
@@ -281,16 +276,6 @@ export default function FeedClient() {
       setError(t("feed.errors.loadMore"));
     } finally {
       setLoadingMore(false);
-    }
-  };
-
-  const copyHash = async (hash: string) => {
-    try {
-      await navigator.clipboard.writeText(hash);
-      setCopiedHash(hash);
-      setTimeout(() => setCopiedHash(null), 1500);
-    } catch {
-      // ignore
     }
   };
 
@@ -486,17 +471,7 @@ export default function FeedClient() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <code className="font-mono text-sm">
-                        {truncateHash(entry.hash)}
-                      </code>
-                      <button
-                        onClick={() => void copyHash(entry.hash)}
-                        className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition"
-                      >
-                        {copiedHash === entry.hash
-                          ? t("common.actions.copied")
-                          : t("common.actions.copy")}
-                      </button>
+                      <TruncatedHash hash={entry.hash} />
                       <WatchlistButton
                         type="hash"
                         value={entry.hash}
@@ -525,12 +500,7 @@ export default function FeedClient() {
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
                         {t("feed.entry.by")}
                       </span>
-                      <Link
-                        href={`/u/${entry.owner}`}
-                        className="font-mono text-xs underline hover:no-underline"
-                      >
-                        {truncateAddress(entry.owner, 6, 6)}
-                      </Link>
+                      <TruncatedAddress address={entry.owner} />
                       <span className="mx-2 text-foreground/30">&middot;</span>
                       <a
                         href={explorerTxUrl(entry.txId)}

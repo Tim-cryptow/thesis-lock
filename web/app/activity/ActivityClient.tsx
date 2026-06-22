@@ -6,7 +6,8 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
-import { truncateAddress, useWallet } from "@/lib/wallet";
+import { useWallet } from "@/lib/wallet";
+import TruncatedAddress from "@/app/components/TruncatedAddress";
 import { explorerTxUrl } from "@/lib/stacks";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import {
@@ -341,7 +342,11 @@ export default function ActivityClient() {
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             title={t("common.wallet.disconnect")}
           >
-            {truncateAddress(address)}
+            <TruncatedAddress
+              address={address}
+              linkToProfile={false}
+              copyable={false}
+            />
           </button>
         ) : (
           <button

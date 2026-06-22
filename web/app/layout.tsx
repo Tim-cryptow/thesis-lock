@@ -7,6 +7,7 @@ import { I18nProvider } from "./components/I18nProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
 import TxToast from "./components/TxToast";
+import ClipboardToast from "./components/ClipboardToast";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ServiceWorkerRegistration from "./components/ServiceWorkerRegistration";
 import InstallPrompt from "./components/InstallPrompt";
@@ -152,6 +153,7 @@ export default function RootLayout({
                 </NotificationProvider>
               </LiveProvider>
               <TxToast />
+              <ClipboardToast />
               <InstallPrompt />
             </TxProvider>
           </ThemeProvider>
