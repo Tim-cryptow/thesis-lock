@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { useConfirm } from "@/app/components/useConfirm";
+import { useUnsavedChanges } from "@/app/components/useUnsavedChanges";
 import HelpText from "@/app/components/HelpText";
 import TemplateSelector from "@/app/components/TemplateSelector";
 import TemplateFields from "@/app/components/TemplateFields";
@@ -177,6 +178,16 @@ export default function AnchorPage() {
   const [singleSuccess, setSingleSuccess] = useState<SingleSuccess | null>(
     null,
   );
+
+  // Warn before navigating away while files are staged but not yet anchored.
+  const hasUnsavedWork =
+    (mode === "single" && file !== null && !singleSuccess) ||
+    (mode === "batch" && rows.length > 0 && !batchSuccess);
+  useUnsavedChanges(hasUnsavedWork, {
+    title: "Leave this page?",
+    message: "You have unanchored files. Leave anyway?",
+    confirmLabel: "Leave",
+  });
   const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
   const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
     null,

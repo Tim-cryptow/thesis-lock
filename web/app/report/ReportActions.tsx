@@ -54,7 +54,13 @@ function printHTML(html: string): void {
 // a link that some servers and clients will truncate.
 const MAX_SHARE_URL = 1900;
 
-export default function ReportActions({ data }: { data: ReportData }) {
+export default function ReportActions({
+  data,
+  onExport,
+}: {
+  data: ReportData;
+  onExport?: () => void;
+}) {
   const [copied, setCopied] = useState(false);
 
   const datePart = useMemo(() => {
@@ -94,46 +100,52 @@ export default function ReportActions({ data }: { data: ReportData }) {
         <button
           type="button"
           className={buttonClass}
-          onClick={() =>
+          onClick={() => {
             download(
               `thesislock-report-${datePart}.html`,
               renderReportHTML(data),
               "text/html;charset=utf-8",
-            )
-          }
+            );
+            onExport?.();
+          }}
         >
           Download HTML
         </button>
         <button
           type="button"
           className={buttonClass}
-          onClick={() =>
+          onClick={() => {
             download(
               `thesislock-report-${datePart}.json`,
               renderReportJSON(data),
               "application/json;charset=utf-8",
-            )
-          }
+            );
+            onExport?.();
+          }}
         >
           Download JSON
         </button>
         <button
           type="button"
           className={buttonClass}
-          onClick={() =>
+          onClick={() => {
             download(
               `thesislock-report-${datePart}.csv`,
               renderReportCSV(data),
               "text/csv;charset=utf-8",
-            )
-          }
+            );
+            onExport?.();
+          }}
         >
           Download CSV
         </button>
         <button
           type="button"
           className={buttonClass}
-          onClick={() => printHTML(renderReportHTML(data))}
+          onClick={() => {
+            printHTML(renderReportHTML(data));
+            onExport?.();
+          }}
         >
           Print
         </button>
