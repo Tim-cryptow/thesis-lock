@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
+import ShareButtons from "@/app/components/ShareButtons";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { explorerAddressUrl } from "@/lib/stacks";
@@ -222,6 +223,14 @@ export default function ProfileClient() {
               </p>
             )}
           </header>
+
+          {/* Share */}
+          <div className="mb-10">
+            <ShareButtons
+              url={origin ? profileUrl : ""}
+              title="Anchoring profile on ThesisLock"
+            />
+          </div>
 
           {/* Stats */}
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
