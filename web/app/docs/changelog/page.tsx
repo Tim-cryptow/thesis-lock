@@ -13,6 +13,13 @@ export default function ChangelogDocs() {
       <h1 className="text-3xl md:text-4xl">Changelog</h1>
       <Lead>Notable changes and improvements to ThesisLock, newest first.</Lead>
 
+      <H2>Polished loading skeletons</H2>
+      <P>
+        Pages now show skeleton loaders shaped like their final layout while
+        data loads, instead of spinners or blank screens. The shimmer is
+        theme-aware and respects reduced-motion.
+      </P>
+
       <H2>Standardized copy interactions</H2>
       <P>
         Copying hashes, addresses, API keys, and snippets now works the same way

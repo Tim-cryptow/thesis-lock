@@ -188,6 +188,12 @@ export const DOCS: DocMeta[] = [
       "Share verification results, profiles, groups, and protocol stats on X, LinkedIn, and Telegram, copy links, and let people scan an in-browser QR code to verify on mobile.",
   },
   {
+    slug: "loading-states",
+    title: "Loading States",
+    description:
+      "How ThesisLock shows skeleton loaders shaped like each page's final layout while data loads, with a theme-aware shimmer that respects reduced-motion.",
+  },
+  {
     slug: "changelog",
     title: "Changelog",
     description:
