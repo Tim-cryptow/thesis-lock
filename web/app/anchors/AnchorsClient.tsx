@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import HelpText from "@/app/components/HelpText";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
 import TagFilter from "@/app/components/TagFilter";
@@ -375,7 +376,10 @@ export default function AnchorsPage() {
         )}
       </div>
 
-      <h1 className="text-3xl mb-2">{t("anchors.heading")}</h1>
+      <h1 className="text-3xl mb-2">
+        {t("anchors.heading")}
+        <HelpText term="Anchor" />
+      </h1>
       <p className="text-foreground/70 mb-8">
         {t("anchors.intro")}
       </p>
@@ -540,6 +544,7 @@ export default function AnchorsPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                     {t("anchors.hashLabel")}
+                    <HelpText term="SHA-256 Hash" />
                   </div>
                   <div className="flex items-center gap-2">
                     <TruncatedHash hash={entry.hash} />
@@ -573,6 +578,7 @@ export default function AnchorsPage() {
                 <div>
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                     {t("anchors.labelLabel")}
+                    <HelpText term="Label" />
                   </div>
                   {parsed.templateId && (
                     <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-foreground/60 border border-foreground/15 rounded px-1.5 py-0.5 mb-1">
@@ -592,6 +598,7 @@ export default function AnchorsPage() {
                 <div>
                   <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                     {t("anchors.stacksBlockLabel")}
+                    <HelpText term="Stacks Block" />
                   </div>
                   <code className="font-mono text-xs">{entry.anchoredAt}</code>
                 </div>

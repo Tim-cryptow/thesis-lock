@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
+import HelpText from "@/app/components/HelpText";
 import { useI18n } from "@/app/components/I18nProvider";
 import { createGroup, explorerTxUrl } from "@/lib/stacks";
 import { auditGroupAction } from "@/lib/auditEvents";
@@ -161,7 +162,10 @@ export default function GroupsPage() {
         )}
       </div>
 
-      <h1 className="text-3xl mb-2">{t("groups.list.title")}</h1>
+      <h1 className="text-3xl mb-2">
+        {t("groups.list.title")}
+        <HelpText term="Group" />
+      </h1>
       <p className="text-foreground/70 mb-8">
         {t("groups.list.intro")}
       </p>

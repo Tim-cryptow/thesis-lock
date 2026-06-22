@@ -75,6 +75,9 @@ export default function Footer() {
           <Link href="/tags" className="hover:text-foreground transition">
             Tags
           </Link>
+          <Link href="/glossary" className="hover:text-foreground transition">
+            Glossary
+          </Link>
           <Link href="/audit" className="hover:text-foreground transition">
             Audit
           </Link>
