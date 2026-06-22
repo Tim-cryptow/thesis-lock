@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
@@ -376,13 +378,13 @@ export default function SearchClient() {
       {loading ? (
         <FeedSkeleton />
       ) : searchedFor && results.length === 0 && !error ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70">
-            {t("search.noResultsBefore")}{" "}
-            <code className="font-mono text-sm break-all">{searchedFor}</code>
-            {t("search.noResultsAfter")}
-          </p>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="search" />}
+          title="No results found"
+          description="Try a different hash, wallet address, or label."
+          secondaryLabel="Browse the feed"
+          secondaryHref="/feed"
+        />
       ) : (
         <div className="space-y-8">
           {searchedFor && selectedTags.length > 0 && grouped.length === 0 && (

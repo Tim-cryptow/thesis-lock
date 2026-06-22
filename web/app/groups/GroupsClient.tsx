@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import HelpText from "@/app/components/HelpText";
@@ -281,11 +283,13 @@ export default function GroupsPage() {
               ))}
             </div>
           ) : groups.length === 0 ? (
-            <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-              <p className="text-foreground/70">
-                {t("groups.list.empty")}
-              </p>
-            </div>
+            <EmptyState
+              icon={<EmptyStateIcon name="people" />}
+              title="No groups yet"
+              description="Create a group to organize anchors with your team or project."
+              actionLabel="Create a Group"
+              onAction={() => document.getElementById("group-name")?.focus()}
+            />
           ) : (
             <div className="space-y-3" role="list">
               {groups.map((group) => (
