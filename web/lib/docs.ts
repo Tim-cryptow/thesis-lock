@@ -38,6 +38,12 @@ export const DOCS: DocMeta[] = [
       "What you see when a page has no data yet: a clear explanation of what belongs there and a button toward the next step.",
   },
   {
+    slug: "confirmation-dialogs",
+    title: "Confirmation Dialogs",
+    description:
+      "How destructive and irreversible actions ask first, the danger, warning, and info variants, and the useConfirm hook.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
