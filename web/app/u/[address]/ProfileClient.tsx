@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BackButton from "@/app/components/BackButton";
+import CountUp from "@/app/components/CountUp";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -77,7 +78,9 @@ function AnchorLabel({ label }: { label: string }) {
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-5">
-      <div className="text-2xl md:text-3xl font-mono">{value}</div>
+      <div className="text-2xl md:text-3xl font-mono">
+        <CountUp value={value} />
+      </div>
       <div className="text-xs text-foreground/60 uppercase tracking-wide mt-1">
         {label}
       </div>

@@ -13,6 +13,7 @@ import HelpText from "@/app/components/HelpText";
 import LiveBadge from "@/app/components/LiveBadge";
 import ShareButtons from "@/app/components/ShareButtons";
 import FadeIn from "@/app/components/FadeIn";
+import CountUp from "@/app/components/CountUp";
 import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
@@ -49,13 +50,13 @@ function formatDateLabel(iso: string): string {
 function StatCard({
   label,
   value,
-  bumpKey,
+  count,
   term,
 }: {
   label: string;
-  value: string;
-  // Changing this value retriggers a brief tick-up flash on the number.
-  bumpKey?: number;
+  value?: string;
+  // When provided, the number animates up to this value.
+  count?: number;
   // Optional glossary term explained by an info tooltip next to the label.
   term?: string;
 }) {
@@ -66,9 +67,7 @@ function StatCard({
         {term ? <HelpText term={term} /> : null}
       </div>
       <div className="text-3xl font-mono">
-        <span key={bumpKey} className={bumpKey ? "live-bump inline-block" : ""}>
-          {value}
-        </span>
+        {count !== undefined ? <CountUp value={count} /> : value}
       </div>
     </div>
   );
@@ -324,26 +323,22 @@ export default function StatsClient() {
             <StatCard
               label={t("stats.totalAnchors")}
               term="Anchor"
-              value={formatNumber(totalAnchors)}
-              bumpKey={liveAnchors}
+              count={totalAnchors}
             />
             <StatCard
               label={t("stats.uniqueWallets")}
               term="Principal"
-              value={formatNumber(stats.uniqueWallets)}
+              count={stats.uniqueWallets}
             />
             <StatCard
               label={t("stats.contractsDeployed")}
-              value={formatNumber(stats.contractsDeployed)}
+              count={stats.contractsDeployed}
             />
             <StatCard
               label={t("stats.latestBlock")}
               term="Stacks Block"
-              value={
-                stats.latestAnchorBlock
-                  ? formatNumber(stats.latestAnchorBlock)
-                  : "-"
-              }
+              count={stats.latestAnchorBlock || undefined}
+              value="-"
             />
           </div>
           </FadeIn>
