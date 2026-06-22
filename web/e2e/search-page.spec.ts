@@ -32,7 +32,7 @@ test.describe("search page", () => {
     test.slow();
     const input = page.getByLabel("Search query");
     const searchButton = page.getByRole("button", { name: "Search" });
-    const noResults = page.getByText(/No results found for/);
+    const noResults = page.getByText("No results found");
 
     await input.fill("zzz-no-such-label-xyz-98765");
     await expect(async () => {

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { validateStacksAddress } from "@stacks/transactions";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
 import { HEX_64 } from "@/lib/verify";
 import {
@@ -404,10 +406,13 @@ export default function WatchlistClient() {
       </form>
 
       {items.length === 0 ? (
-        <p className="text-sm text-foreground/55">
-          Your watchlist is empty. Add a hash, wallet, or group above, or use the
-          watch buttons on verify, profile, group, search, and feed pages.
-        </p>
+        <EmptyState
+          icon={<EmptyStateIcon name="eye" />}
+          title="Your watchlist is empty"
+          description="Add hashes or wallets to monitor their status, or use the watch buttons on verify, profile, group, search, and feed pages."
+          secondaryLabel="Browse the feed"
+          secondaryHref="/feed"
+        />
       ) : (
         <div className="flex flex-col gap-8">
           <div className="flex items-center justify-between gap-3">

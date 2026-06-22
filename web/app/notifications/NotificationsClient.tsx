@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useNotifications } from "@/app/components/NotificationProvider";
 import { NotificationIcon } from "@/app/components/NotificationIcon";
 import {
@@ -29,6 +31,16 @@ const EMPTY_LABEL: Record<Filter, string> = {
   watchlist: "No watchlist notifications",
   protocol: "No protocol notifications",
   system: "No system notifications",
+};
+
+const EMPTY_DESCRIPTION: Record<Filter, string> = {
+  all: "Notifications appear here as your transactions confirm and the protocol updates.",
+  transactions:
+    "Confirmations for your anchor and group transactions will appear here.",
+  watchlist:
+    "Updates for the hashes, wallets, and groups you watch will appear here.",
+  protocol: "New anchors and proof mints across the protocol will appear here.",
+  system: "App and maintenance messages will appear here.",
 };
 
 // Groups the seven notification types into the five user-facing toggles.
@@ -346,9 +358,11 @@ export default function NotificationsClient() {
       </div>
 
       {visible.length === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center text-foreground/60">
-          {EMPTY_LABEL[filter]}
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="bell" />}
+          title={EMPTY_LABEL[filter]}
+          description={EMPTY_DESCRIPTION[filter]}
+        />
       ) : (
         <ul className="space-y-2">
           {visible.map((n) => (

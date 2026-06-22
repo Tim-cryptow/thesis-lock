@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BackButton from "@/app/components/BackButton";
 import { SkeletonLine } from "@/app/components/Skeleton";
@@ -573,11 +575,11 @@ export default function GroupDetailPage() {
           </p>
 
           {anchors.length === 0 ? (
-            <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-              <p className="text-foreground/70">
-                {t("groups.detail.recentEmpty")}
-              </p>
-            </div>
+            <EmptyState
+              icon={<EmptyStateIcon name="folder" />}
+              title="No documents anchored in this group"
+              description="Drop a file above to anchor it to this group."
+            />
           ) : (
             <div className="space-y-3" role="list">
               {anchors.map((anchor, idx) => (

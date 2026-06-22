@@ -12,6 +12,8 @@ import {
   type StreakInfo,
 } from "@/lib/calendar";
 import ContributionGraph from "@/app/components/calendar/ContributionGraph";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import MonthlyCalendar from "@/app/components/calendar/MonthlyCalendar";
 import DayDetail from "@/app/components/calendar/DayDetail";
@@ -251,8 +253,8 @@ export default function CalendarClient() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-foreground/10 bg-card p-4 sm:p-6">
-            {loading ? (
+          {loading ? (
+            <div className="rounded-lg border border-foreground/10 bg-card p-4 sm:p-6">
               <div aria-busy="true" className="space-y-3">
                 <SkeletonLine width="12rem" height="1rem" />
                 <div className="grid grid-cols-7 gap-2">
@@ -261,29 +263,41 @@ export default function CalendarClient() {
                   ))}
                 </div>
               </div>
-            ) : view === "graph" ? (
-              <ContributionGraph
-                days={yearDays}
-                selectedDate={selectedDate}
-                onSelectDay={toggleDay}
-              />
-            ) : monthData ? (
-              <MonthlyCalendar
-                year={year}
-                month={month}
-                days={monthData.days}
-                canGoNext={canGoNextMonth}
-                onPrev={goPrevMonth}
-                onNext={goNextMonth}
-                selectedDate={selectedDate}
-                onSelectDay={toggleDay}
-              />
-            ) : (
-              <p className="text-sm text-foreground/50 py-10 text-center">
-                Loading month...
-              </p>
-            )}
-          </div>
+            </div>
+          ) : stats.totalAnchors === 0 ? (
+            <EmptyState
+              icon={<EmptyStateIcon name="calendar" />}
+              title="No anchoring activity this year"
+              description="Anchor a document to start your streak."
+              actionLabel="Anchor a Document"
+              actionHref="/anchor"
+            />
+          ) : (
+            <div className="rounded-lg border border-foreground/10 bg-card p-4 sm:p-6">
+              {view === "graph" ? (
+                <ContributionGraph
+                  days={yearDays}
+                  selectedDate={selectedDate}
+                  onSelectDay={toggleDay}
+                />
+              ) : monthData ? (
+                <MonthlyCalendar
+                  year={year}
+                  month={month}
+                  days={monthData.days}
+                  canGoNext={canGoNextMonth}
+                  onPrev={goPrevMonth}
+                  onNext={goNextMonth}
+                  selectedDate={selectedDate}
+                  onSelectDay={toggleDay}
+                />
+              ) : (
+                <p className="text-sm text-foreground/50 py-10 text-center">
+                  Loading month...
+                </p>
+              )}
+            </div>
+          )}
 
           <DayDetail
             day={selectedDay}

@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import AuditReportGenerator from "./AuditReportGenerator";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
@@ -329,6 +331,14 @@ export default function AuditClient() {
         )}
       </section>
 
+      {entries.length === 0 ? (
+        <EmptyState
+          icon={<EmptyStateIcon name="audit" />}
+          title="No audit entries yet"
+          description="Actions will be logged here as you use the app."
+        />
+      ) : (
+        <>
       {/* Filters */}
       <section className="mb-4 flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-xs text-foreground/50">
@@ -453,9 +463,7 @@ export default function AuditClient() {
                     colSpan={6}
                     className="px-4 py-10 text-center text-sm text-foreground/50"
                   >
-                    {entries.length === 0
-                      ? "No actions have been logged yet."
-                      : "No entries match the filters."}
+                    No entries match the filters.
                   </td>
                 </tr>
               )}
@@ -490,6 +498,8 @@ export default function AuditClient() {
           </div>
         )}
       </section>
+        </>
+      )}
 
       <AuditReportGenerator />
     </div>

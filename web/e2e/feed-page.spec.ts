@@ -12,7 +12,7 @@ test.describe("feed page", () => {
     await page.goto("/feed");
 
     const firstEntry = page.getByRole("link", { name: /^Verify/ }).first();
-    const emptyState = page.getByText("No anchors found yet.");
+    const emptyState = page.getByText("No recent activity");
     await expect(firstEntry.or(emptyState)).toBeVisible();
 
     // When the live feed has entries, each row exposes the core anchor fields.

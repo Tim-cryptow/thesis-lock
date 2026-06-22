@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
 import { auditCollectionCreate } from "@/lib/auditEvents";
 import {
@@ -347,18 +349,13 @@ export default function CollectionsClient() {
       )}
 
       {collections.length === 0 && !creating ? (
-        <div className="rounded-lg border border-dashed border-foreground/20 bg-card p-10 text-center">
-          <p className="text-foreground/60 mb-4">
-            No collections yet. Create one to organize your anchored documents.
-          </p>
-          <button
-            type="button"
-            onClick={() => setCreating(true)}
-            className="rounded-md bg-heading px-4 py-2 text-sm text-background hover:opacity-90"
-          >
-            New Collection
-          </button>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="collections" />}
+          title="No collections yet"
+          description="Create a collection to organize your documents."
+          actionLabel="Create a Collection"
+          onAction={() => setCreating(true)}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {collections.map((c) => (
