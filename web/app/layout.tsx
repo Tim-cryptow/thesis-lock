@@ -24,6 +24,8 @@ import PerformanceTracker from "./components/PerformanceTracker";
 import PerformanceBanner from "./components/performance/PerformanceBanner";
 import AuditLogger from "./components/AuditLogger";
 import SettingsLink from "./components/SettingsLink";
+import RecentPages from "./components/RecentPages";
+import NavigationTracker from "./components/NavigationTracker";
 import BackupReminder from "./components/BackupReminder";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
@@ -139,6 +141,7 @@ export default function RootLayout({
                     <BackupReminder />
                     <NotificationBell />
                     <SettingsLink />
+                    <RecentPages />
                     <NotificationSound />
                     <main
                       id="main-content"
@@ -149,6 +152,7 @@ export default function RootLayout({
                     </main>
                     <CommandPalette />
                     <RouteVisitRecorder />
+                    <NavigationTracker />
                   </TourProvider>
                 </NotificationProvider>
               </LiveProvider>
