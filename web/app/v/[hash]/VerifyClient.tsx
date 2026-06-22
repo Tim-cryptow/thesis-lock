@@ -133,6 +133,7 @@ export default function VerifyPage() {
   const [shareUrl, setShareUrl] = useState("");
   const [txId, setTxId] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
+  const [showQr, setShowQr] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState<"markdown" | "html" | null>(
     null,
   );
@@ -872,7 +873,23 @@ export default function VerifyPage() {
             </button>
           </div>
           <div className="mt-4">
-            <QRCode value={publicVerifyUrl} size={120} />
+            <button
+              type="button"
+              onClick={() => setShowQr((v) => !v)}
+              aria-expanded={showQr}
+              disabled={!publicVerifyUrl}
+              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+            >
+              {showQr ? "Hide QR" : "Show QR"}
+            </button>
+            {showQr && publicVerifyUrl ? (
+              <div className="mt-3">
+                <QRCode value={publicVerifyUrl} size={140} />
+                <p className="mt-2 text-xs text-foreground/55">
+                  Scan to open this verification on another device.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       )}
