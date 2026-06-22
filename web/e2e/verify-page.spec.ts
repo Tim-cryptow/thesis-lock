@@ -71,9 +71,10 @@ test.describe("verify page", () => {
         page.getByRole("heading", { name: "Embed a badge" }),
       ).toBeVisible({ timeout: 5_000 });
     });
-    const copyLink = page.getByRole("button", {
-      name: "Copy verification link to clipboard",
-    });
+    const copyLink = page.getByRole("button", { name: "Copy link" });
     await expect(copyLink).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Share on X" }),
+    ).toBeVisible();
   });
 });
