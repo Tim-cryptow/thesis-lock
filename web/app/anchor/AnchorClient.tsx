@@ -13,6 +13,7 @@ import {
   GENERIC_TEMPLATE,
   GENERIC_TEMPLATE_ID,
   buildLabel,
+  getDefaultTemplateId,
   getTemplate,
   isTemplateValid,
 } from "@/lib/templates";
@@ -136,6 +137,13 @@ export default function AnchorPage() {
     const param = searchParams.get("template");
     if (param && getTemplate(param)) {
       setTemplateId(param);
+      setFieldValues({});
+      return;
+    }
+    // Otherwise fall back to the preferred default template chosen in settings.
+    const preferred = getDefaultTemplateId();
+    if (preferred !== GENERIC_TEMPLATE_ID && getTemplate(preferred)) {
+      setTemplateId(preferred);
       setFieldValues({});
     }
   }, [searchParams]);

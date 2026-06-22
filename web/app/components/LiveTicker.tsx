@@ -9,6 +9,29 @@ import { truncateAddress } from "@/lib/wallet";
 // Hide the whole bar once the freshest event is older than this.
 const STALE_MS = 5 * 60 * 1000;
 const COLLAPSED_KEY = "thesislock.live.ticker.collapsed";
+const HIDDEN_KEY = "thesislock.live.ticker.hidden";
+
+// Same-tab signal for the show/hide toggle (storage events only fire elsewhere).
+export const TICKER_VISIBILITY_EVENT = "thesislock:ticker-visibility-changed";
+
+export function isTickerHidden(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(HIDDEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setTickerHidden(hidden: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(HIDDEN_KEY, hidden ? "1" : "0");
+    window.dispatchEvent(new CustomEvent(TICKER_VISIBILITY_EVENT));
+  } catch {
+    // ignore
+  }
+}
 
 function relativeTime(ms: number): string {
   const sec = Math.max(0, Math.floor((Date.now() - ms) / 1000));
@@ -77,6 +100,7 @@ function TickerItem({ ev }: { ev: LiveEvent }) {
 export default function LiveTicker() {
   const { events, status, toggle } = useLive();
   const [collapsed, setCollapsed] = useState(false);
+  const [hidden, setHidden] = useState(false);
   // Re-render periodically so relative times and the stale check stay fresh.
   const [, setTick] = useState(0);
 
@@ -86,6 +110,18 @@ export default function LiveTicker() {
     } catch {
       // ignore
     }
+  }, []);
+
+  // Honor the show/hide preference from settings, live and across tabs.
+  useEffect(() => {
+    setHidden(isTickerHidden());
+    const sync = () => setHidden(isTickerHidden());
+    window.addEventListener("storage", sync);
+    window.addEventListener(TICKER_VISIBILITY_EVENT, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(TICKER_VISIBILITY_EVENT, sync);
+    };
   }, []);
 
   useEffect(() => {
@@ -105,6 +141,7 @@ export default function LiveTicker() {
     });
   };
 
+  if (hidden) return null;
   if (events.length === 0) return null;
   const newest = events[0].receivedAt;
   if (Date.now() - newest > STALE_MS) return null;

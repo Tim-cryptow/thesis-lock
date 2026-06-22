@@ -22,6 +22,8 @@ import NotificationSound from "./components/NotificationSound";
 import PerformanceTracker from "./components/PerformanceTracker";
 import PerformanceBanner from "./components/performance/PerformanceBanner";
 import AuditLogger from "./components/AuditLogger";
+import SettingsLink from "./components/SettingsLink";
+import BackupReminder from "./components/BackupReminder";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -133,7 +135,9 @@ export default function RootLayout({
                 <NotificationProvider>
                   <TourProvider>
                     <LiveTicker />
+                    <BackupReminder />
                     <NotificationBell />
+                    <SettingsLink />
                     <NotificationSound />
                     <main
                       id="main-content"

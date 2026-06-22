@@ -10,6 +10,49 @@ const SESSION_KEY = "thesislock_audit_session";
 // The integrity hash of the log as last written. Recomputing the hash over the
 // stored entries and comparing it to this value reveals out-of-band tampering.
 const INTEGRITY_KEY = "thesislock_audit_integrity";
+// Whether action tracking is on (default) and how long entries are kept.
+const ENABLED_KEY = "thesislock_audit_enabled";
+const RETENTION_KEY = "thesislock_audit_retention";
+
+// Retention windows offered in settings, in days. 0 means keep everything.
+export const AUDIT_RETENTION_OPTIONS = [7, 30, 90, 0];
+
+export function isAuditEnabled(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.localStorage.getItem(ENABLED_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+export function setAuditEnabled(enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(ENABLED_KEY, enabled ? "1" : "0");
+  } catch {
+    // Non-fatal if persistence is unavailable.
+  }
+}
+
+export function getAuditRetentionDays(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const value = Number(window.localStorage.getItem(RETENTION_KEY));
+    return AUDIT_RETENTION_OPTIONS.includes(value) ? value : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function setAuditRetentionDays(days: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(RETENTION_KEY, String(days));
+  } catch {
+    // Non-fatal if persistence is unavailable.
+  }
+}
 
 // Dispatched whenever the log changes, so the viewer and any summary stay live.
 export const AUDIT_CHANGED_EVENT = "thesislock:audit-changed";
@@ -363,6 +406,15 @@ function normalizeMetadata(
   }
 }
 
+// Drops entries older than the configured retention window, if any. Applied when
+// logging and when a new retention setting is saved.
+function applyRetention(entries: AuditEntry[]): AuditEntry[] {
+  const days = getAuditRetentionDays();
+  if (!days || days <= 0) return entries;
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return entries.filter((e) => new Date(e.timestamp).getTime() >= cutoff);
+}
+
 export function logAudit(
   entry: Omit<AuditEntry, "id" | "timestamp" | "sessionId" | "userAgent">,
 ): AuditEntry {
@@ -379,6 +431,9 @@ export function logAudit(
     userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
   };
   if (typeof window === "undefined") return full;
+  // When action tracking is disabled in settings, return the entry without
+  // persisting it. Nothing is written, so the integrity baseline is untouched.
+  if (!isAuditEnabled()) return full;
   try {
     const existing = loadRaw();
     const stored = getStoredIntegrityHash();
@@ -393,7 +448,7 @@ export function logAudit(
       stored === null
         ? existing.length > 0
         : computeIntegrityHash(existing) !== stored;
-    const capped = [...existing, full].slice(-AUDIT_CAP);
+    const capped = applyRetention([...existing, full].slice(-AUDIT_CAP));
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
     if (!tampered) {
       window.localStorage.setItem(INTEGRITY_KEY, computeIntegrityHash(capped));
@@ -407,6 +462,45 @@ export function logAudit(
     // CustomEvent may be unavailable; non-fatal.
   }
   return full;
+}
+
+// Remove the log, its session marker, and the integrity baseline together. An
+// empty log with no baseline is a legitimate fresh start, so this never trips
+// the tamper check on the next write.
+export function clearAuditLog(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+    // The session id lives in sessionStorage, unlike the log and integrity hash.
+    window.sessionStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(INTEGRITY_KEY);
+    window.dispatchEvent(new CustomEvent(AUDIT_CHANGED_EVENT));
+  } catch {
+    // Best effort.
+  }
+}
+
+// Prune entries outside the retention window now, advancing the integrity
+// baseline only when the log was not already tampered.
+export function applyAuditRetention(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = loadRaw();
+    const retained = applyRetention(existing);
+    if (retained.length === existing.length) return;
+    const stored = getStoredIntegrityHash();
+    const tampered =
+      stored === null
+        ? existing.length > 0
+        : computeIntegrityHash(existing) !== stored;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(retained));
+    if (!tampered) {
+      window.localStorage.setItem(INTEGRITY_KEY, computeIntegrityHash(retained));
+    }
+    window.dispatchEvent(new CustomEvent(AUDIT_CHANGED_EVENT));
+  } catch {
+    // Best effort.
+  }
 }
 
 function matchesFilters(entry: AuditEntry, filters: AuditFilters): boolean {

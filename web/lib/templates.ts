@@ -38,6 +38,29 @@ export const MAX_LABEL_LENGTH = 64;
 // the structured fields or the original single label input.
 export const GENERIC_TEMPLATE_ID = "generic";
 
+// The user's preferred default template for new anchors, chosen in settings.
+export const DEFAULT_TEMPLATE_KEY = "thesislock_default_template";
+
+export function getDefaultTemplateId(): string {
+  if (typeof window === "undefined") return GENERIC_TEMPLATE_ID;
+  try {
+    return (
+      window.localStorage.getItem(DEFAULT_TEMPLATE_KEY) ?? GENERIC_TEMPLATE_ID
+    );
+  } catch {
+    return GENERIC_TEMPLATE_ID;
+  }
+}
+
+export function setDefaultTemplateId(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DEFAULT_TEMPLATE_KEY, id);
+  } catch {
+    // Non-fatal if persistence is unavailable.
+  }
+}
+
 export const TEMPLATES: AnchorTemplate[] = [
   {
     id: "paper",

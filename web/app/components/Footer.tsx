@@ -66,6 +66,9 @@ export default function Footer() {
           >
             {t("common.footer.developers")}
           </Link>
+          <Link href="/settings" className="hover:text-foreground transition">
+            Settings
+          </Link>
           <Link href="/performance" className="hover:text-foreground transition">
             Performance
           </Link>
