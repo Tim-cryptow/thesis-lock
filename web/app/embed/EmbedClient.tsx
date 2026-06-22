@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import CopyButton from "@/app/components/CopyButton";
 import FileDropZone from "@/app/components/FileDropZone";
 import { hashFile } from "@/lib/stacks";
 
@@ -30,8 +31,6 @@ export default function EmbedClient() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [hashError, setHashError] = useState<string | null>(null);
   const [tab, setTab] = useState<SnippetTab>("markdown");
-  const [copied, setCopied] = useState<SnippetTab | null>(null);
-  const [copyFailed, setCopyFailed] = useState(false);
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -82,20 +81,6 @@ export default function EmbedClient() {
       setHashError(e instanceof Error ? e.message : "Could not hash this file.");
     } finally {
       setHashing(false);
-    }
-  };
-
-  const copy = async (id: SnippetTab) => {
-    const text = snippets[id];
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(id);
-      setCopyFailed(false);
-      setTimeout(() => setCopied(null), 1500);
-    } catch {
-      setCopyFailed(true);
-      setTimeout(() => setCopyFailed(false), 1500);
     }
   };
 
@@ -307,17 +292,11 @@ export default function EmbedClient() {
         <pre className="text-xs md:text-sm font-mono whitespace-pre-wrap break-all rounded-md border border-foreground/10 bg-foreground/5 p-3">
           {valid ? snippets[tab] : "Enter a valid hash to generate snippets."}
         </pre>
-        <button
-          onClick={() => void copy(tab)}
-          disabled={!valid}
-          className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
-        >
-          {copied === tab
-            ? "Copied"
-            : copyFailed
-              ? "Copy failed"
-              : "Copy snippet"}
-        </button>
+        {valid ? (
+          <div className="mt-3">
+            <CopyButton value={snippets[tab]} label="embed snippet" />
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">

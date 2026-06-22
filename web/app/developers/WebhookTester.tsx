@@ -7,6 +7,7 @@ import {
   sampleEventData,
   type WebhookSubscription,
 } from "@/lib/webhookManager";
+import CopyButton from "@/app/components/CopyButton";
 
 type TestResult = {
   at: string;
@@ -17,27 +18,6 @@ type TestResult = {
   bodyPreview: string;
   corsBlocked: boolean;
 };
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        } catch {
-          // Clipboard can be blocked.
-        }
-      }}
-      className="shrink-0 rounded-md border border-foreground/15 px-3 py-2 text-sm hover:border-foreground/40"
-    >
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
 
 export default function WebhookTester({
   subscriptions,
