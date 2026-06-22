@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import HelpText from "@/app/components/HelpText";
@@ -376,6 +377,7 @@ export default function AnchorsPage() {
         )}
       </div>
 
+      <Breadcrumbs />
       <h1 className="text-3xl mb-2">
         {t("anchors.heading")}
         <HelpText term="Anchor" />

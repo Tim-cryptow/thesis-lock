@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import DataManagement from "./DataManagement";
 import PreferencesSection from "./PreferencesSection";
 import PrivacySection from "./PrivacySection";
@@ -58,6 +59,8 @@ export default function SettingsClient() {
           </Link>
           <span className="text-foreground font-medium">Settings</span>
         </div>
+
+        <Breadcrumbs />
 
         <header className="mt-8 mb-8">
           <h1 className="text-3xl mb-2">Settings</h1>

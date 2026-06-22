@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
@@ -277,6 +278,8 @@ export default function SearchClient() {
           <WatchlistNavLink />
           <CollectionsNavLink />
       </div>
+
+      <Breadcrumbs />
 
       <h1 className="text-3xl mb-2">{t("search.heading")}</h1>
       <p className="text-foreground/70 mb-8">{t("search.intro")}</p>
