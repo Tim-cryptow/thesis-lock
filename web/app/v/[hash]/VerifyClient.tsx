@@ -6,6 +6,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import BackButton from "@/app/components/BackButton";
 import VerifySkeleton from "@/app/components/skeletons/VerifySkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
@@ -548,7 +550,11 @@ export default function VerifyPage() {
           <WatchlistNavLink />
           <CollectionsNavLink />
       </div>
-      <h1 className="text-3xl mt-8 mb-6">{t("verify.recordTitle")}</h1>
+      <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
+        <Breadcrumbs />
+        <BackButton />
+      </div>
+      <h1 className="text-3xl mb-6">{t("verify.recordTitle")}</h1>
 
       <div className="rounded-lg border border-foreground/10 bg-card p-6">
         <div className="mb-4">

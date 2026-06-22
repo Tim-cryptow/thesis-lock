@@ -26,6 +26,12 @@ export const DOCS: DocMeta[] = [
       "Open the command palette with Ctrl+K (Cmd+K on macOS) to jump to any page or run a common action with fuzzy search and the keyboard.",
   },
   {
+    slug: "navigation",
+    title: "Navigation",
+    description:
+      "Find your way around with breadcrumb trails, a context-aware back button, and a recently visited pages menu.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:

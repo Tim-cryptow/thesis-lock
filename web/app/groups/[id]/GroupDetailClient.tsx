@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import BackButton from "@/app/components/BackButton";
 import { SkeletonLine } from "@/app/components/Skeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import ShareButtons from "@/app/components/ShareButtons";
@@ -209,7 +211,7 @@ export default function GroupDetailPage() {
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-      <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
+      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
           <div className="order-last ml-auto"><ThemeToggle /></div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
@@ -288,6 +290,11 @@ export default function GroupDetailPage() {
             {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
+      </div>
+
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+        <Breadcrumbs overrides={group ? { [params.id]: group.name } : undefined} />
+        <BackButton />
       </div>
 
       {walletError && (

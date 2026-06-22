@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
@@ -374,6 +375,7 @@ export default function FeedClient() {
           <CollectionsNavLink />
       </div>
 
+      <Breadcrumbs />
       <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl">{t("feed.title")}</h1>

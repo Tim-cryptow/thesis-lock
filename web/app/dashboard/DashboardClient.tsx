@@ -8,6 +8,7 @@ import WatchlistWidget from "@/app/components/WatchlistWidget";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -407,6 +408,7 @@ export default function DashboardClient() {
         )}
       </div>
 
+      <Breadcrumbs />
       <h1 className="text-3xl mb-2">{t("dashboard.title")}</h1>
       <p className="text-foreground/70 mb-8">{t("dashboard.subtitle")}</p>
 

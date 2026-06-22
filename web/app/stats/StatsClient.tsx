@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
 import { SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -286,6 +287,7 @@ export default function StatsClient() {
           <CollectionsNavLink />
       </div>
 
+      <Breadcrumbs />
       <div className="flex items-center gap-3 mb-2 flex-wrap">
         <h1 className="text-3xl">{t("stats.title")}</h1>
         <span className="inline-flex items-center gap-1.5 text-xs text-foreground/50">

@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import HelpText from "@/app/components/HelpText";
 import TemplateSelector from "@/app/components/TemplateSelector";
 import TemplateFields from "@/app/components/TemplateFields";
@@ -733,6 +734,8 @@ export default function AnchorPage() {
         )}
         </div>
       </div>
+
+      <Breadcrumbs />
 
       {walletError && (
         <p className="mb-6 text-sm text-red-600 dark:text-red-400" role="alert">
