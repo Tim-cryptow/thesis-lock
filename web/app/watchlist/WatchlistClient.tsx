@@ -7,6 +7,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
+import { useConfirm } from "@/app/components/useConfirm";
 import { HEX_64 } from "@/lib/verify";
 import {
   type WatchItem,
@@ -135,7 +136,7 @@ function ItemCard({
   checking,
 }: {
   item: WatchItem;
-  onRemove: (id: string) => void;
+  onRemove: (id: string, value: string) => void;
   onCheck: (item: WatchItem) => void;
   checking: boolean;
 }) {
@@ -192,7 +193,7 @@ function ItemCard({
           </Link>
           <button
             type="button"
-            onClick={() => onRemove(item.id)}
+            onClick={() => onRemove(item.id, item.label?.trim() || truncateMiddle(item.value))}
             className="text-foreground/55 hover:text-red-500"
           >
             Remove
@@ -302,10 +303,22 @@ export default function WatchlistClient() {
     [type, value, label],
   );
 
-  const remove = useCallback((id: string) => {
-    removeWatch(id);
-    setItems(loadWatchlist());
-  }, []);
+  const confirm = useConfirm();
+
+  const remove = useCallback(
+    async (id: string, value: string) => {
+      const ok = await confirm({
+        title: "Remove from watchlist",
+        message: `Stop watching ${value}?`,
+        confirmLabel: "Remove",
+        variant: "warning",
+      });
+      if (!ok) return;
+      removeWatch(id);
+      setItems(loadWatchlist());
+    },
+    [confirm],
+  );
 
   const sections = useMemo(
     () =>

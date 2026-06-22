@@ -33,6 +33,7 @@ import {
   updateCollection,
 } from "@/lib/collections";
 import { ColorPicker, IconPicker } from "../CollectionsClient";
+import { useConfirm } from "@/app/components/useConfirm";
 
 function truncateMiddle(value: string, lead = 8, tail = 6): string {
   if (value.length <= lead + tail + 1) return value;
@@ -233,6 +234,8 @@ export default function CollectionDetailClient() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
+  const confirm = useConfirm();
+
   const refresh = useCallback(() => {
     setCollection(getCollection(id) ?? null);
     setLoaded(true);
@@ -274,17 +277,19 @@ export default function CollectionDetailClient() {
     setEditing(false);
   }, [collection, draftName, draftDesc, draftColor, draftIcon]);
 
-  const onDelete = useCallback(() => {
+  const onDelete = useCallback(async () => {
     if (!collection) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(`Delete "${collection.name}"? This cannot be undone.`)
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: "Delete collection",
+      message: `Delete "${collection.name}"? This cannot be undone.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+      requireType: "DELETE",
+    });
+    if (!ok) return;
     deleteCollection(collection.id);
     router.push("/collections");
-  }, [collection, router]);
+  }, [collection, router, confirm]);
 
   const addHash = useCallback(() => {
     if (!collection) return;

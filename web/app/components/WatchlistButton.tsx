@@ -8,6 +8,7 @@ import {
   isWatched,
   removeWatchByValue,
 } from "@/lib/watchlist";
+import { useConfirm } from "@/app/components/useConfirm";
 
 // Optional source keys for hash watches so a batch ({hash, owner}) or group
 // ({group-id, index}) anchor can be resolved and linked, not just probed by
@@ -38,6 +39,7 @@ export default function WatchlistButton({
 }) {
   const [watched, setWatched] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   // Reflect the stored state, and keep in sync with changes from elsewhere.
   useEffect(() => {
@@ -56,14 +58,18 @@ export default function WatchlistButton({
     setTimeout(() => setToast(null), 1800);
   }, []);
 
-  const toggle = useCallback(() => {
+  const toggle = useCallback(async () => {
     if (watched) {
-      if (
-        typeof window !== "undefined" &&
-        !window.confirm("Remove this from your watchlist?")
-      ) {
-        return;
-      }
+      const shown = label?.trim() || value;
+      const short =
+        shown.length > 28 ? `${shown.slice(0, 14)}...${shown.slice(-8)}` : shown;
+      const ok = await confirm({
+        title: "Remove from watchlist",
+        message: `Stop watching ${short}?`,
+        confirmLabel: "Remove",
+        variant: "warning",
+      });
+      if (!ok) return;
       removeWatchByValue(type, value);
       setWatched(false);
       flashToast("Removed from watchlist");
@@ -72,7 +78,17 @@ export default function WatchlistButton({
       setWatched(true);
       flashToast("Added to watchlist");
     }
-  }, [watched, type, value, label, owner, groupId, groupIndex, flashToast]);
+  }, [
+    watched,
+    type,
+    value,
+    label,
+    owner,
+    groupId,
+    groupIndex,
+    flashToast,
+    confirm,
+  ]);
 
   return (
     <span className="relative inline-flex">

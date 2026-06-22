@@ -13,6 +13,7 @@ import KeyCreationModal from "./KeyCreationModal";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import CopyButton from "@/app/components/CopyButton";
+import { useConfirm } from "@/app/components/useConfirm";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
@@ -32,6 +33,7 @@ export default function ApiKeysClient() {
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const confirm = useConfirm();
 
   // localStorage is only available in the browser, so keys are loaded after
   // mount rather than during the initial (client-only) render.
@@ -47,16 +49,19 @@ export default function ApiKeysClient() {
     });
   }, []);
 
-  const revoke = useCallback((id: string, name: string) => {
-    if (
-      !window.confirm(
-        `Revoke "${name}"? Any integration using this key will stop working.`,
-      )
-    ) {
-      return;
-    }
-    setKeys(deleteKey(id));
-  }, []);
+  const revoke = useCallback(
+    async (id: string, name: string) => {
+      const ok = await confirm({
+        title: "Revoke API key",
+        message: `Revoke "${name}"? Any integrations using it will stop working.`,
+        confirmLabel: "Revoke",
+        variant: "danger",
+      });
+      if (!ok) return;
+      setKeys(deleteKey(id));
+    },
+    [confirm],
+  );
 
   const startEdit = useCallback((key: ApiKeyRecord) => {
     setEditingId(key.id);
