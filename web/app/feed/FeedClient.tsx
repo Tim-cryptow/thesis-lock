@@ -6,6 +6,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FadeIn from "@/app/components/FadeIn";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
@@ -439,9 +440,11 @@ export default function FeedClient() {
             </p>
           )}
           <ul className="space-y-3">
-            {displayedEntries.map((entry) => (
-              <li
+            {displayedEntries.map((entry, i) => (
+              <FadeIn
+                as="li"
                 key={entryKey(entry)}
+                delay={Math.min(i, 12) * 50}
                 className={`rounded-lg border border-foreground/10 bg-card p-5 ${
                   glowKeys.has(entryKey(entry)) ? "live-glow" : ""
                 }`}
@@ -516,7 +519,7 @@ export default function FeedClient() {
                     {t("feed.entry.verify")}
                   </Link>
                 </div>
-              </li>
+              </FadeIn>
             ))}
           </ul>
           <div className="mt-6 text-center">

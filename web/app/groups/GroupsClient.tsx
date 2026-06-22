@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
@@ -292,6 +293,7 @@ export default function GroupsPage() {
             />
           ) : (
             <div className="space-y-3" role="list">
+              <StaggerList>
               {groups.map((group) => (
                 <div
                   key={group.id}
@@ -321,6 +323,7 @@ export default function GroupsPage() {
                   </Link>
                 </div>
               ))}
+              </StaggerList>
             </div>
           )}
         </>

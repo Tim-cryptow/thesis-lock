@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FadeIn from "@/app/components/FadeIn";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonCircle, SkeletonLine } from "@/app/components/Skeleton";
@@ -122,14 +123,16 @@ function groupByDay(
 function EventRow({
   event,
   t,
+  index,
 }: {
   event: ActivityEvent;
   t: (key: string, params?: Record<string, string | number>) => string;
+  index: number;
 }) {
   const { title, subtitle, icon } = describeActivity(event);
   const badge = CATEGORY_BADGE[activityCategory(event.type)];
   return (
-    <li className="flex gap-3 py-3">
+    <FadeIn as="li" className="flex gap-3 py-3" delay={Math.min(index, 12) * 50}>
       <span
         aria-hidden="true"
         className={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${badge}`}
@@ -157,7 +160,7 @@ function EventRow({
           {t("activity.viewTx")}
         </a>
       </div>
-    </li>
+    </FadeIn>
   );
 }
 
@@ -458,8 +461,8 @@ export default function ActivityClient() {
                     {group.label}
                   </h2>
                   <ul className="divide-y divide-foreground/10 border-l-2 border-foreground/10 pl-4">
-                    {group.events.map((event) => (
-                      <EventRow key={event.id} event={event} t={t} />
+                    {group.events.map((event, i) => (
+                      <EventRow key={event.id} index={i} event={event} t={t} />
                     ))}
                   </ul>
                 </section>

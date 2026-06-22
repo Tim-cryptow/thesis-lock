@@ -408,9 +408,11 @@ export default function SearchClient() {
                 {group.rows.length})
               </h2>
               <ul className="space-y-3">
-                {group.rows.map((row) => (
-                  <li
+                {group.rows.map((row, rowIndex) => (
+                  <FadeIn
+                    as="li"
                     key={`${row.source}|${row.hash}|${row.owner}|${row.groupId ?? ""}|${row.groupIndex ?? ""}`}
+                    delay={Math.min(rowIndex, 12) * 50}
                     className="rounded-lg border border-foreground/10 bg-card p-5"
                   >
                     <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -484,7 +486,7 @@ export default function SearchClient() {
                         {t("search.verify")}
                       </Link>
                     </div>
-                  </li>
+                  </FadeIn>
                 ))}
               </ul>
             </section>

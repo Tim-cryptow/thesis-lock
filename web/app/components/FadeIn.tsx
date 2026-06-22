@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  createElement,
+  useEffect,
+  useState,
+  type ElementType,
+  type ReactNode,
+} from "react";
 
 type Direction = "up" | "down" | "left" | "right" | "none";
 
@@ -13,6 +19,9 @@ type FadeInProps = {
   // The direction the content travels in from while fading in.
   direction?: Direction;
   className?: string;
+  // The element to render as. Defaults to a div; pass "li" to fade in a list
+  // row without nesting an invalid div inside a ul/ol.
+  as?: ElementType;
 };
 
 const HIDDEN_TRANSFORM: Record<Direction, string> = {
@@ -32,6 +41,7 @@ export default function FadeIn({
   duration = 300,
   direction = "up",
   className,
+  as = "div",
 }: FadeInProps) {
   const [visible, setVisible] = useState(false);
   const [instant, setInstant] = useState(false);
@@ -51,10 +61,11 @@ export default function FadeIn({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  return (
-    <div
-      className={className}
-      style={{
+  return createElement(
+    as,
+    {
+      className,
+      style: {
         opacity: visible ? 1 : 0,
         transform: visible ? "none" : HIDDEN_TRANSFORM[direction],
         transition: instant
@@ -62,9 +73,8 @@ export default function FadeIn({
           : `opacity ${duration}ms ease-out, transform ${duration}ms ease-out`,
         transitionDelay: instant ? "0ms" : `${delay}ms`,
         willChange: "opacity, transform",
-      }}
-    >
-      {children}
-    </div>
+      },
+    },
+    children,
   );
 }
