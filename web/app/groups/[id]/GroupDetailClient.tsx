@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import { SkeletonLine } from "@/app/components/Skeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import ShareButtons from "@/app/components/ShareButtons";
 import { useParams } from "next/navigation";
@@ -296,7 +297,21 @@ export default function GroupDetailPage() {
       )}
 
       {loading ? (
-        <p className="text-foreground/60">{t("groups.detail.loadingGroup")}</p>
+        <div className="space-y-6" aria-busy="true">
+          <SkeletonLine width="14rem" height="1.75rem" />
+          <SkeletonLine width="20rem" height="0.85rem" />
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-foreground/10 bg-card p-5 space-y-2.5"
+              >
+                <SkeletonLine width="60%" height="0.9rem" />
+                <SkeletonLine width="40%" height="0.8rem" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : loadError ? (
         <p className="text-red-600 dark:text-red-400">{loadError}</p>
       ) : !group ? (
