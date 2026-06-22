@@ -185,13 +185,13 @@ export default function Page() {
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             href="/anchor"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
+            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 press-scale"
           >
             {t("landing.hero.anchorCta")}
           </Link>
           <Link
             href="/search"
-            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 press-scale"
           >
             {t("landing.hero.verifyCta")}
           </Link>

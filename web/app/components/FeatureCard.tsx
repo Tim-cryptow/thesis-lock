@@ -12,7 +12,7 @@ export default function FeatureCard({ title, body, href, icon }: Props) {
   return (
     <Link
       href={href}
-      className="group rounded-lg border border-foreground/10 bg-card p-6 flex flex-col hover:border-foreground/40 transition"
+      className="group rounded-lg border border-foreground/10 bg-card p-6 flex flex-col hover:border-foreground/40 hover-lift"
     >
       <svg
         viewBox="0 0 24 24"

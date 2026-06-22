@@ -103,7 +103,7 @@ export default function CopyButton({
         onClick={() => void onCopy()}
         aria-label={ariaLabel}
         title={ariaLabel}
-        className={`inline-flex items-center justify-center rounded border border-foreground/15 text-foreground/60 transition hover:border-foreground/40 hover:text-foreground ${padding}`}
+        className={`inline-flex items-center justify-center rounded border border-foreground/15 text-foreground/60 press-scale hover:border-foreground/40 hover:text-foreground ${copied ? "copy-bounce" : ""} ${padding}`}
       >
         {copied ? (
           <CheckIcon className={`${iconSize} text-emerald-500`} />
