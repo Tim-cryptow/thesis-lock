@@ -32,6 +32,12 @@ export const DOCS: DocMeta[] = [
       "Find your way around with breadcrumb trails, a context-aware back button, and a recently visited pages menu.",
   },
   {
+    slug: "empty-states",
+    title: "Empty States",
+    description:
+      "What you see when a page has no data yet: a clear explanation of what belongs there and a button toward the next step.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
