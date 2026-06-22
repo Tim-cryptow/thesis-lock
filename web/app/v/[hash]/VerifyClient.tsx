@@ -9,6 +9,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
+import ShareButtons from "@/app/components/ShareButtons";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -129,8 +130,6 @@ export default function VerifyPage() {
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
   const [shareUrl, setShareUrl] = useState("");
-  const [copiedShare, setCopiedShare] = useState(false);
-  const [copyShareFailed, setCopyShareFailed] = useState(false);
   const [txId, setTxId] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const [copiedEmbed, setCopiedEmbed] = useState<"markdown" | "html" | null>(
@@ -232,25 +231,6 @@ export default function VerifyPage() {
     return shareUrl;
   }, [shareUrl, preferBatch, batchOwner, ownerParam]);
 
-  const copyShareUrl = async () => {
-    if (!publicVerifyUrl) return;
-    try {
-      await navigator.clipboard.writeText(publicVerifyUrl);
-      setCopiedShare(true);
-      setTimeout(() => setCopiedShare(false), 1500);
-    } catch {
-      setCopyShareFailed(true);
-      setTimeout(() => setCopyShareFailed(false), 1500);
-    }
-  };
-
-  const tweetIntent = (() => {
-    if (!publicVerifyUrl) return "";
-    const text = t("verify.tweetText");
-    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      text,
-    )}&url=${encodeURIComponent(publicVerifyUrl)}`;
-  })();
 
   // The badge endpoint resolves single anchors by hash alone, but a batch
   // record is keyed by {hash, owner}, so pass the owner when the page is
@@ -842,18 +822,10 @@ export default function VerifyPage() {
             {t("verify.share.body")}
           </p>
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={copyShareUrl}
-              disabled={!publicVerifyUrl}
-              aria-label={t("verify.share.copyLinkAria")}
-              className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
-            >
-              {copiedShare
-                ? t("verify.share.linkCopied")
-                : copyShareFailed
-                  ? t("verify.share.copyFailed")
-                  : t("verify.share.copyLink")}
-            </button>
+            <ShareButtons
+              url={publicVerifyUrl}
+              title="Document verified on ThesisLock"
+            />
             <button
               onClick={() => {
                 const verifyUrl = publicVerifyUrl || window.location.href;
@@ -897,23 +869,6 @@ export default function VerifyPage() {
             >
               {t("verify.share.downloadCert")}
             </button>
-            {publicVerifyUrl ? (
-              <a
-                href={tweetIntent}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 transition"
-              >
-                {t("verify.share.shareOnX")}
-              </a>
-            ) : (
-              <button
-                disabled
-                className="text-sm px-3 py-2 rounded-md bg-heading text-background opacity-50 cursor-not-allowed"
-              >
-                {t("verify.share.shareOnX")}
-              </button>
-            )}
           </div>
         </div>
       )}
