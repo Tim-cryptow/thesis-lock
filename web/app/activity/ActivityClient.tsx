@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonCircle, SkeletonLine } from "@/app/components/Skeleton";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useWallet } from "@/lib/wallet";
@@ -412,15 +414,13 @@ export default function ActivityClient() {
           <div ref={sentinelRef} aria-hidden="true" className="h-px" />
         </>
       ) : events.length === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">{t("activity.empty")}</p>
-          <Link
-            href="/anchor"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
-          >
-            {t("activity.emptyCta")}
-          </Link>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="clipboard" />}
+          title="No activity yet"
+          description="Anchor a document to start building your history."
+          actionLabel="Anchor a Document"
+          actionHref="/anchor"
+        />
       ) : (
         <>
           <div

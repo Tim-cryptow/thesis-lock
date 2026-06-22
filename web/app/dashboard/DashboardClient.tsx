@@ -8,6 +8,8 @@ import WatchlistWidget from "@/app/components/WatchlistWidget";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
@@ -417,20 +419,14 @@ export default function DashboardClient() {
       </div>
 
       {!address ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">
-            {t("dashboard.connectPrompt")}
-          </p>
-          <button
-            onClick={connectWallet}
-            disabled={connecting}
-            className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-50"
-          >
-            {connecting
-              ? t("common.wallet.opening")
-              : t("common.wallet.connect")}
-          </button>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="chart" />}
+          title="Connect your wallet to see your dashboard"
+          description="Your anchoring stats, recent activity, and trends will appear here once your wallet is connected."
+          actionLabel={connecting ? t("common.wallet.opening") : "Connect Wallet"}
+          onAction={connectWallet}
+          actionDisabled={connecting}
+        />
       ) : error ? (
         <ErrorFallback message={error} onRetry={() => void load(address)} />
       ) : loading || !analytics ? (
