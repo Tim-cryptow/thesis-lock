@@ -6,6 +6,8 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
@@ -416,17 +418,13 @@ export default function FeedClient() {
       ) : loading ? (
         <FeedSkeleton />
       ) : entries.length === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">
-            {t("feed.empty.message")}
-          </p>
-          <Link
-            href="/anchor"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
-          >
-            {t("feed.empty.cta")}
-          </Link>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="globe" />}
+          title="No recent activity"
+          description="The protocol feed shows recent anchoring activity across all users."
+          actionLabel="Anchor a Document"
+          actionHref="/anchor"
+        />
       ) : (
         <>
           <div className="mb-4">

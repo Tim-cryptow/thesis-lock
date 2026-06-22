@@ -5,6 +5,8 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import EmptyState from "@/app/components/EmptyState";
+import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -407,15 +409,13 @@ export default function AnchorsPage() {
           onRetry={() => void loadHistory(address)}
         />
       ) : count === 0 ? (
-        <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">{t("anchors.empty")}</p>
-          <Link
-            href="/anchor"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
-          >
-            {t("anchors.emptyCta")}
-          </Link>
-        </div>
+        <EmptyState
+          icon={<EmptyStateIcon name="document" />}
+          title="No anchors yet"
+          description="Anchor your first document to create a permanent on-chain timestamp."
+          actionLabel="Anchor a Document"
+          actionHref="/anchor"
+        />
       ) : (
         <>
           <div className="flex items-center gap-2 mb-4">
