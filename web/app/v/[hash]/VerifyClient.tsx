@@ -9,12 +9,13 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
+import TruncatedHash from "@/app/components/TruncatedHash";
+import TruncatedAddress from "@/app/components/TruncatedAddress";
 import ShareButtons from "@/app/components/ShareButtons";
 import QRCode from "@/app/components/QRCode";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
-  explorerAddressUrl,
   explorerTxUrl,
   getProofByHash,
   hashFile,
@@ -553,7 +554,7 @@ export default function VerifyPage() {
             {t("verify.fields.hash")}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <code className="font-mono text-xs md:text-sm break-all">{hash}</code>
+            <TruncatedHash hash={hash} chars={16} />
             <WatchlistButton
               type="hash"
               value={hash}
@@ -663,12 +664,7 @@ export default function VerifyPage() {
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                   {t("verify.fields.anchoredBy")}
                 </div>
-                <Link
-                  href={`/u/${groupAnchor.anchoredBy}`}
-                  className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
-                >
-                  {groupAnchor.anchoredBy}
-                </Link>
+                <TruncatedAddress address={groupAnchor.anchoredBy} />
               </div>
               <div>
                 <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -745,12 +741,7 @@ export default function VerifyPage() {
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
                 {t("verify.fields.anchoredBy")}
               </div>
-              <Link
-                href={`/u/${anchor.anchoredBy}`}
-                className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
-              >
-                {anchor.anchoredBy}
-              </Link>
+              <TruncatedAddress address={anchor.anchoredBy} />
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -794,14 +785,7 @@ export default function VerifyPage() {
           </div>
           <p className="text-sm text-foreground/80">
             {t("verify.proof.mintedByPrefix", { tokenId: proof.tokenId })}{" "}
-            <a
-              href={explorerAddressUrl(proof.anchoredBy)}
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
-            >
-              {proof.anchoredBy}
-            </a>
+            <TruncatedAddress address={proof.anchoredBy} />
           </p>
         </div>
       )}

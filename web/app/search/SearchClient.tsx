@@ -7,12 +7,13 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import TruncatedHash from "@/app/components/TruncatedHash";
+import TruncatedAddress from "@/app/components/TruncatedAddress";
 import TagFilter from "@/app/components/TagFilter";
 import {
   FOCUS_SEARCH_EVENT,
   FOCUS_SEARCH_FLAG,
 } from "@/app/components/KeyboardShortcuts";
-import { explorerAddressUrl } from "@/lib/stacks";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import {
   TAGS_CHANGED_EVENT,
@@ -59,16 +60,6 @@ function detectType(query: string): Exclude<SearchType, "auto"> {
   return "label";
 }
 
-function truncateHash(h: string): string {
-  if (h.length <= 14) return h;
-  return `${h.slice(0, 8)}...${h.slice(-6)}`;
-}
-
-function truncateAddress(addr: string): string {
-  if (addr.length <= 12) return addr;
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
-
 function sourceBadgeClass(source: SearchSource): string {
   if (source === "single") {
     return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900";
@@ -104,7 +95,6 @@ export default function SearchClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchedFor, setSearchedFor] = useState<string | null>(null);
-  const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [, setTagTick] = useState(0);
   const [recent, setRecent] = useState<string[]>([]);
@@ -189,16 +179,6 @@ export default function SearchClient() {
   const onChipClick = (term: string) => {
     setQuery(term);
     void runSearch(term, type);
-  };
-
-  const copyHash = async (hash: string) => {
-    try {
-      await navigator.clipboard.writeText(hash);
-      setCopiedHash(hash);
-      setTimeout(() => setCopiedHash(null), 1500);
-    } catch {
-      // ignore
-    }
   };
 
   const effectiveType = type === "auto" ? detectType(query) : type;
@@ -451,18 +431,7 @@ export default function SearchClient() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap mb-2">
-                          <code className="font-mono text-sm break-all">
-                            {truncateHash(row.hash)}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={() => void copyHash(row.hash)}
-                            className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition"
-                          >
-                            {copiedHash === row.hash
-                              ? t("common.actions.copied")
-                              : t("common.actions.copy")}
-                          </button>
+                          <TruncatedHash hash={row.hash} />
                           <WatchlistButton
                             type="hash"
                             value={row.hash}
@@ -500,14 +469,7 @@ export default function SearchClient() {
                             <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
                               {t("search.ownerHeading")}
                             </span>
-                            <a
-                              href={explorerAddressUrl(row.owner)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="font-mono text-xs text-foreground/80 hover:text-foreground underline decoration-foreground/20"
-                            >
-                              {truncateAddress(row.owner)}
-                            </a>
+                            <TruncatedAddress address={row.owner} />
                           </div>
                         )}
                       </div>
