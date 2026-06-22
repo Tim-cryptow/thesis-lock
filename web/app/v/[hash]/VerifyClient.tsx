@@ -10,6 +10,7 @@ import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagInput from "@/app/components/TagInput";
 import ShareButtons from "@/app/components/ShareButtons";
+import QRCode from "@/app/components/QRCode";
 import {
   BATCH_CONTRACT_FULL_NAME,
   SINGLE_CONTRACT_NAME,
@@ -869,6 +870,9 @@ export default function VerifyPage() {
             >
               {t("verify.share.downloadCert")}
             </button>
+          </div>
+          <div className="mt-4">
+            <QRCode value={publicVerifyUrl} size={120} />
           </div>
         </div>
       )}
