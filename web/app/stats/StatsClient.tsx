@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import LiveBadge from "@/app/components/LiveBadge";
+import ShareButtons from "@/app/components/ShareButtons";
 import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
@@ -69,6 +70,7 @@ export default function StatsClient() {
   const [stats, setStats] = useState<ProtocolStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [origin, setOrigin] = useState("");
   // Anchors observed live since this page loaded, layered on top of the
   // fetched totals so the numbers move without a refetch.
   const [liveAnchors, setLiveAnchors] = useState(0);
@@ -99,6 +101,10 @@ export default function StatsClient() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
 
   // Count newly anchored documents as they stream in from the live poller.
   // A single anchor emits both an anchor and a follow-up registry event for the
@@ -435,6 +441,13 @@ export default function StatsClient() {
               )}
             </div>
           </section>
+
+          <div className="mt-10">
+            <ShareButtons
+              url={origin ? `${origin}/stats` : ""}
+              title="ThesisLock protocol stats"
+            />
+          </div>
         </>
       ) : null}
     </div>
