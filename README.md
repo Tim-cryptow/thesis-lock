@@ -46,6 +46,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Wayfinding navigation across the app's 20-plus pages: an auto-generated breadcrumb trail below the nav on every page, a context-aware back button on nested pages that names the page you came from, and a recently visited menu (the clock icon in the corner) listing the last pages from this session with relative times. Navigation history stays in the browser tab and is never sent anywhere.
 - Guided empty states for new users: every page that can start out empty (anchors, feed, groups, search, dashboard, activity, watchlist, collections, calendar, notifications, the audit trail, and developer API keys) shows an icon, a short explanation of what belongs there, and a clear call to action, so a brand-new wallet always has an obvious next step instead of a blank "No data" screen.
 - Safe destructive actions: deletions, revocations, and data-clearing all ask first through a single confirmation dialog with danger, warning, and info variants. The most irreversible actions (Clear All Data, deleting a collection) require typing a word like DELETE to enable the confirm button, and the anchor and report pages warn before you navigate away from staged but unsaved work.
+- Polished motion: page sections fade in on load, lists reveal their rows in a staggered sequence, headline stats count up as they scroll into view, and buttons, cards, and nav links carry subtle micro-interactions. All of it is plain CSS with no animation library, and every effect respects the reduced-motion setting.
 
 ## Protocol
 
@@ -95,6 +96,7 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [Navigation](https://thesis-lock.vercel.app/docs/navigation): breadcrumbs, the context-aware back button, and the recently visited pages menu.
 - [Empty States](https://thesis-lock.vercel.app/docs/empty-states): the guided empty states that explain what belongs on each page and point to the next step.
 - [Confirmation Dialogs](https://thesis-lock.vercel.app/docs/confirmation-dialogs): how destructive actions ask first, the dialog variants, and the useConfirm hook.
+- [Animations](https://thesis-lock.vercel.app/docs/animations): the fade-in, stagger, and count-up components, the micro-interactions, and reduced-motion support.
 - [Contracts](https://thesis-lock.vercel.app/docs/contracts): all five contracts, function signatures, and direct Hiro API calls.
 - [Contract Explorer](https://thesis-lock.vercel.app/docs/explorer): browse contracts in the app with recent calls, an architecture diagram, and an interactive read-only tester.
 - [Watchlist](https://thesis-lock.vercel.app/docs/watchlist): monitor specific hashes, wallets, and groups and track their status over time.

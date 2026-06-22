@@ -33,18 +33,18 @@ export default function Footer() {
               resetTour();
               startTour();
             }}
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             Restart onboarding tour
           </button>
-          <Link href="/docs" className="hover:text-foreground transition">
+          <Link href="/docs" className="hover:text-foreground transition nav-underline">
             {t("common.footer.docs")}
           </Link>
           <a
             href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             {t("common.footer.github")}
           </a>
@@ -52,39 +52,39 @@ export default function Footer() {
             href={EXPLORER_URL}
             target="_blank"
             rel="noreferrer"
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             {t("common.footer.explorer")}
           </a>
-          <Link href="/docs/api" className="hover:text-foreground transition">
+          <Link href="/docs/api" className="hover:text-foreground transition nav-underline">
             {t("common.footer.api")}
           </Link>
           <Link
             href="/developers"
             data-tour="developers-link"
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             {t("common.footer.developers")}
           </Link>
-          <Link href="/settings" className="hover:text-foreground transition">
+          <Link href="/settings" className="hover:text-foreground transition nav-underline">
             Settings
           </Link>
-          <Link href="/performance" className="hover:text-foreground transition">
+          <Link href="/performance" className="hover:text-foreground transition nav-underline">
             Performance
           </Link>
-          <Link href="/tags" className="hover:text-foreground transition">
+          <Link href="/tags" className="hover:text-foreground transition nav-underline">
             Tags
           </Link>
-          <Link href="/glossary" className="hover:text-foreground transition">
+          <Link href="/glossary" className="hover:text-foreground transition nav-underline">
             Glossary
           </Link>
-          <Link href="/audit" className="hover:text-foreground transition">
+          <Link href="/audit" className="hover:text-foreground transition nav-underline">
             Audit
           </Link>
           <Link
             href="/calendar"
             data-tour="calendar-nav"
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             Calendar
           </Link>
@@ -94,7 +94,7 @@ export default function Footer() {
             rel="noreferrer"
             aria-label="RSS feed"
             title="RSS feed"
-            className="hover:text-foreground transition"
+            className="hover:text-foreground transition nav-underline"
           >
             <svg
               viewBox="0 0 24 24"

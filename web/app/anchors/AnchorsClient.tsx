@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
@@ -524,6 +525,7 @@ export default function AnchorsPage() {
               )}
             </div>
           </div>
+          <StaggerList>
           {filteredEntries.map(({ entry, parsed }, idx) => (
             <div
               key={`${entry.hash}-${idx}`}
@@ -673,6 +675,7 @@ export default function AnchorsPage() {
               </div>
             </div>
           ))}
+          </StaggerList>
           {filteredEntries.length === 0 && selectedTags.length > 0 && (
             <p className="text-center text-sm text-foreground/50">
               No anchors match the selected tags.

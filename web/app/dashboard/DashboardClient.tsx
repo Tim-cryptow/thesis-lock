@@ -12,6 +12,8 @@ import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
+import StaggerList from "@/app/components/StaggerList";
+import CountUp from "@/app/components/CountUp";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import HelpText from "@/app/components/HelpText";
@@ -129,12 +131,15 @@ function buildChartWindow(analytics: WalletAnalytics): ChartDay[] {
 function StatCard({
   label,
   value,
+  count,
   hint,
   title,
   term,
 }: {
   label: string;
-  value: string;
+  value?: string;
+  // When provided, the number animates up to this value.
+  count?: number;
   hint?: string;
   title?: string;
   // Optional glossary term explained by an info tooltip next to the label.
@@ -149,7 +154,9 @@ function StatCard({
         {label}
         {term ? <HelpText term={term} /> : null}
       </div>
-      <div className="text-3xl font-mono">{value}</div>
+      <div className="text-3xl font-mono">
+        {count !== undefined ? <CountUp value={count} /> : value}
+      </div>
       {hint ? (
         <div className="mt-2 text-xs text-foreground/50">{hint}</div>
       ) : null}
@@ -435,12 +442,12 @@ export default function DashboardClient() {
           <AnchorListSkeleton rows={3} />
         </div>
       ) : (
-        <>
+        <StaggerList staggerDelay={80}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("dashboard.statTotalAnchors")}
               term="Anchor"
-              value={formatNumber(analytics.totalAnchors)}
+              count={analytics.totalAnchors}
               hint={t("dashboard.sourceBreakdown", {
                 single: formatNumber(analytics.anchorsBySource.single),
                 batch: formatNumber(analytics.anchorsBySource.batch),
@@ -455,12 +462,12 @@ export default function DashboardClient() {
             <StatCard
               label={t("dashboard.statProofNFTs")}
               term="Proof NFT"
-              value={formatNumber(analytics.proofNFTsMinted)}
+              count={analytics.proofNFTsMinted}
             />
             <StatCard
               label={t("dashboard.statGroupsJoined")}
               term="Group"
-              value={formatNumber(analytics.totalGroups)}
+              count={analytics.totalGroups}
             />
             <StatCard
               label={t("dashboard.statActiveSince")}
@@ -740,7 +747,7 @@ export default function DashboardClient() {
               </p>
             )}
           </section>
-        </>
+        </StaggerList>
       )}
     </div>
   );

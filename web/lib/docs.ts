@@ -44,6 +44,12 @@ export const DOCS: DocMeta[] = [
       "How destructive and irreversible actions ask first, the danger, warning, and info variants, and the useConfirm hook.",
   },
   {
+    slug: "animations",
+    title: "Animations",
+    description:
+      "The fade-in, staggered list, and count-up animations, the micro-interactions, and how they respect reduced motion.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
