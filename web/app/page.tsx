@@ -6,6 +6,7 @@ import StatsBar from "@/app/components/StatsBar";
 import Footer from "@/app/components/Footer";
 import FeatureCard from "@/app/components/FeatureCard";
 import TourBanner from "@/app/components/TourBanner";
+import FadeIn from "@/app/components/FadeIn";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const CONTRACT_ADDRESS =
@@ -173,6 +174,7 @@ export default function Page() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <FadeIn delay={0}>
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 w-full">
         <h1 className="text-5xl md:text-6xl leading-tight">
           {t("landing.hero.title")}
@@ -197,7 +199,9 @@ export default function Page() {
         <HeroStats />
         <TourBanner />
       </section>
+      </FadeIn>
 
+      <FadeIn delay={80}>
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-10">{t("landing.steps.heading")}</h2>
         <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -233,7 +237,9 @@ export default function Page() {
           ))}
         </ol>
       </section>
+      </FadeIn>
 
+      <FadeIn delay={160}>
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-3">{t("landing.features.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
@@ -273,7 +279,9 @@ export default function Page() {
           />
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn delay={240}>
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-3">{t("landing.contracts.heading")}</h2>
         <p className="text-foreground/70 mb-4 max-w-2xl">
@@ -327,7 +335,9 @@ export default function Page() {
           </div>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn delay={320}>
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-3">{t("landing.integrate.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
@@ -379,7 +389,9 @@ const result = await client.verify(hash);`}</pre>
           </Link>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn delay={400}>
       <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
         <h2 className="text-3xl mb-3">{t("landing.live.heading")}</h2>
         <p className="text-foreground/70 mb-10 max-w-2xl">
@@ -396,6 +408,7 @@ const result = await client.verify(hash);`}</pre>
         </p>
         <StatsBar />
       </section>
+      </FadeIn>
 
       <Footer />
     </div>

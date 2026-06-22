@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FadeIn from "@/app/components/FadeIn";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
@@ -286,6 +287,7 @@ export default function SearchClient() {
       <h1 className="text-3xl mb-2">{t("search.heading")}</h1>
       <p className="text-foreground/70 mb-8">{t("search.intro")}</p>
 
+      <FadeIn>
       <form onSubmit={onSubmit} className="mb-3">
         <div className="flex gap-2">
           <input
@@ -308,6 +310,7 @@ export default function SearchClient() {
           </button>
         </div>
       </form>
+      </FadeIn>
 
       <div className="flex items-center gap-2 flex-wrap mb-2">
         {TYPE_OPTIONS.map((opt) => {

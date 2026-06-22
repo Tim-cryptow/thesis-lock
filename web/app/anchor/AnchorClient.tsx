@@ -7,6 +7,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import FadeIn from "@/app/components/FadeIn";
 import { useConfirm } from "@/app/components/useConfirm";
 import { useUnsavedChanges } from "@/app/components/useUnsavedChanges";
 import HelpText from "@/app/components/HelpText";
@@ -765,6 +766,7 @@ export default function AnchorPage() {
         </p>
       )}
 
+      <FadeIn>
       {singleSuccess ? (
         <>
           <h1 className="text-3xl mb-2">{t("anchor.success.single.heading")}</h1>
@@ -1343,6 +1345,7 @@ export default function AnchorPage() {
       )}
         </>
       )}
+      </FadeIn>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BackButton from "@/app/components/BackButton";
+import FadeIn from "@/app/components/FadeIn";
 import VerifySkeleton from "@/app/components/skeletons/VerifySkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
@@ -556,6 +557,7 @@ export default function VerifyPage() {
       </div>
       <h1 className="text-3xl mb-6">{t("verify.recordTitle")}</h1>
 
+      <FadeIn direction="up">
       <div className="rounded-lg border border-foreground/10 bg-card p-6">
         <div className="mb-4">
           <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
@@ -777,6 +779,7 @@ export default function VerifyPage() {
         )}
         </div>
       </div>
+      </FadeIn>
 
       {ownsAnchor && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">

@@ -12,6 +12,7 @@ import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import StatsCardsSkeleton from "@/app/components/skeletons/StatsCardsSkeleton";
+import StaggerList from "@/app/components/StaggerList";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
 import HelpText from "@/app/components/HelpText";
@@ -435,7 +436,7 @@ export default function DashboardClient() {
           <AnchorListSkeleton rows={3} />
         </div>
       ) : (
-        <>
+        <StaggerList staggerDelay={80}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("dashboard.statTotalAnchors")}
@@ -740,7 +741,7 @@ export default function DashboardClient() {
               </p>
             )}
           </section>
-        </>
+        </StaggerList>
       )}
     </div>
   );

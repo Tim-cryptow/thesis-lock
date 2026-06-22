@@ -12,6 +12,7 @@ import ErrorFallback from "@/app/components/ErrorFallback";
 import HelpText from "@/app/components/HelpText";
 import LiveBadge from "@/app/components/LiveBadge";
 import ShareButtons from "@/app/components/ShareButtons";
+import FadeIn from "@/app/components/FadeIn";
 import { useLive } from "@/app/components/LiveProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
@@ -318,6 +319,7 @@ export default function StatsClient() {
         </div>
       ) : stats ? (
         <>
+          <FadeIn>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
             <StatCard
               label={t("stats.totalAnchors")}
@@ -344,6 +346,7 @@ export default function StatsClient() {
               }
             />
           </div>
+          </FadeIn>
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-4">
