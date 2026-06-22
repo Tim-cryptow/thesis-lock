@@ -385,6 +385,12 @@ export default function SearchClient() {
           secondaryLabel="Browse the feed"
           secondaryHref="/feed"
         />
+      ) : !searchedFor ? (
+        <EmptyState
+          icon={<EmptyStateIcon name="search" />}
+          title="Search across all contracts"
+          description="Enter a document hash, wallet address, or label to find anchors."
+        />
       ) : (
         <div className="space-y-8">
           {searchedFor && selectedTags.length > 0 && grouped.length === 0 && (
