@@ -14,6 +14,15 @@ export async function copyToClipboard(value: string): Promise<boolean> {
   if (typeof navigator === "undefined" || !navigator.clipboard) return false;
   try {
     await navigator.clipboard.writeText(value);
+    try {
+      window.dispatchEvent(
+        new CustomEvent<ClipboardCopyDetail>(CLIPBOARD_COPY_EVENT, {
+          detail: { value },
+        }),
+      );
+    } catch {
+      // CustomEvent may be unavailable in exotic environments; non-fatal.
+    }
     return true;
   } catch {
     // Clipboard can be unavailable in insecure contexts; treat as a no-op.
