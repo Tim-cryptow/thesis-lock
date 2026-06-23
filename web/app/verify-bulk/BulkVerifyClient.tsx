@@ -5,6 +5,7 @@ import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import FilePreview from "@/app/components/FilePreview";
 import { useI18n } from "@/app/components/I18nProvider";
 import {
   getGroupAnchorAt,
@@ -770,28 +771,39 @@ export default function BulkVerifyClient() {
               >
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium truncate">
-                      {row.name}
-                    </div>
-                    {row.hash ? (
-                      <div className="mt-1 flex items-center gap-2">
-                        <code className="font-mono text-xs">
-                          {truncateHash(row.hash)}
-                        </code>
-                        <button
-                          onClick={() => void copyHash(row.hash!)}
-                          aria-label={t("bulkVerify.row.copyHashAria")}
-                          className="text-xs px-2 py-0.5 rounded border border-foreground/15 hover:border-foreground/40 transition"
-                        >
-                          {copiedHash === row.hash
-                            ? t("common.actions.copied")
-                            : t("common.actions.copy")}
-                        </button>
-                      </div>
+                    {row.file ? (
+                      <FilePreview
+                        file={row.file}
+                        hash={row.hash}
+                        hashing={!row.hash}
+                        compact
+                      />
                     ) : (
-                      <div className="mt-1 text-xs text-foreground/50 font-mono">
-                        {t("bulkVerify.row.hashing")}
-                      </div>
+                      <>
+                        <div className="text-sm font-medium truncate">
+                          {row.name}
+                        </div>
+                        {row.hash ? (
+                          <div className="mt-1 flex items-center gap-2">
+                            <code className="font-mono text-xs">
+                              {truncateHash(row.hash)}
+                            </code>
+                            <button
+                              onClick={() => void copyHash(row.hash!)}
+                              aria-label={t("bulkVerify.row.copyHashAria")}
+                              className="text-xs px-2 py-0.5 rounded border border-foreground/15 hover:border-foreground/40 transition"
+                            >
+                              {copiedHash === row.hash
+                                ? t("common.actions.copied")
+                                : t("common.actions.copy")}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-1 text-xs text-foreground/50 font-mono">
+                            {t("bulkVerify.row.hashing")}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="text-right text-sm">
