@@ -47,6 +47,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Guided empty states for new users: every page that can start out empty (anchors, feed, groups, search, dashboard, activity, watchlist, collections, calendar, notifications, the audit trail, and developer API keys) shows an icon, a short explanation of what belongs there, and a clear call to action, so a brand-new wallet always has an obvious next step instead of a blank "No data" screen.
 - Safe destructive actions: deletions, revocations, and data-clearing all ask first through a single confirmation dialog with danger, warning, and info variants. The most irreversible actions (Clear All Data, deleting a collection) require typing a word like DELETE to enable the confirm button, and the anchor and report pages warn before you navigate away from staged but unsaved work.
 - Polished motion: page sections fade in on load, lists reveal their rows in a staggered sequence, headline stats count up as they scroll into view, and buttons, cards, and nav links carry subtle micro-interactions. All of it is plain CSS with no animation library, and every effect respects the reduced-motion setting.
+- Favorites for quick access to frequently used items: star any hash, wallet, group, or page and reach it again from a collapsible favorites bar at the top of every page, a nav star with a count badge, and a dedicated favorites page grouped by type. Stored only in this browser.
 
 ## Protocol
 
@@ -101,6 +102,7 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [Contract Explorer](https://thesis-lock.vercel.app/docs/explorer): browse contracts in the app with recent calls, an architecture diagram, and an interactive read-only tester.
 - [Watchlist](https://thesis-lock.vercel.app/docs/watchlist): monitor specific hashes, wallets, and groups and track their status over time.
 - [Collections](https://thesis-lock.vercel.app/docs/collections): organize anchored documents into named, browser-local collections and share them as links.
+- [Favorites](https://thesis-lock.vercel.app/docs/favorites): star hashes, wallets, groups, and pages for quick access from the favorites bar and page.
 - [Web App Guide](https://thesis-lock.vercel.app/docs/web-app): anchoring, batches, groups, verification, and proof NFTs.
 - [API Reference](https://thesis-lock.vercel.app/docs/api): the JSON REST API for verification, search, stats, badges, and cards.
 - [SDK Guide](https://thesis-lock.vercel.app/docs/sdk): the `thesislock-sdk` TypeScript package ([`sdk/`](sdk/README.md)).

@@ -11,6 +11,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BackButton from "@/app/components/BackButton";
 import { SkeletonLine } from "@/app/components/Skeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import StarButton from "@/app/components/StarButton";
 import ShareButtons from "@/app/components/ShareButtons";
 import { useParams } from "next/navigation";
 import {
@@ -353,6 +354,11 @@ export default function GroupDetailPage() {
               value={String(groupId)}
               label={group.name}
               showLabel
+            />
+            <StarButton
+              type="group"
+              value={String(groupId)}
+              label={group.name}
             />
           </div>
           <div className="text-sm text-foreground/60 mb-8">

@@ -50,6 +50,12 @@ export const DOCS: DocMeta[] = [
       "The fade-in, staggered list, and count-up animations, the micro-interactions, and how they respect reduced motion.",
   },
   {
+    slug: "favorites",
+    title: "Favorites",
+    description:
+      "Star hashes, wallets, groups, and pages for quick access from the favorites bar and the favorites page.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:

@@ -12,6 +12,7 @@ import FadeIn from "@/app/components/FadeIn";
 import VerifySkeleton from "@/app/components/skeletons/VerifySkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
+import StarButton from "@/app/components/StarButton";
 import TagInput from "@/app/components/TagInput";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
@@ -575,6 +576,11 @@ export default function VerifyPage() {
                 preferGroup && groupAnchor ? groupAnchor.index : undefined
               }
               showLabel
+            />
+            <StarButton
+              type="hash"
+              value={hash}
+              label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
             />
             <AddToCollectionButton
               hash={hash}
