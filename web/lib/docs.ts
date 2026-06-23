@@ -68,6 +68,12 @@ export const DOCS: DocMeta[] = [
       "How fields validate hashes, addresses, labels, and names with clear errors, character counters, auto-formatting, and matching API checks.",
   },
   {
+    slug: "error-handling",
+    title: "Error Handling",
+    description:
+      "How missing routes, invalid parameters, runtime errors, rate limits, and offline use each get a consistent, helpful page that guides you back.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
