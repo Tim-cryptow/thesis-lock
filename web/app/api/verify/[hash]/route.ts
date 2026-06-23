@@ -1,4 +1,5 @@
-import { corsHeaders, HEX_64, verifyHash } from "@/lib/verify";
+import { corsHeaders, verifyHash } from "@/lib/verify";
+import { validateHash } from "@/lib/validators";
 
 export const dynamic = "force-dynamic";
 
@@ -8,11 +9,12 @@ type RouteContext = {
 
 export async function GET(req: Request, { params }: RouteContext) {
   const { hash: raw } = await params;
-  const hash = (raw ?? "").toLowerCase();
+  const hash = (raw ?? "").trim().replace(/^0x/i, "").toLowerCase();
 
-  if (!HEX_64.test(hash)) {
+  const check = validateHash(hash);
+  if (!check.valid) {
     return Response.json(
-      { verified: false, error: "Invalid hash. Expected 64 hex characters." },
+      { verified: false, error: check.error },
       { status: 400, headers: corsHeaders() },
     );
   }
