@@ -333,7 +333,8 @@ export default function CollectionsClient() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="rounded-md bg-heading px-4 py-2 text-sm text-background hover:opacity-90"
+                disabled={!name.trim()}
+                className="rounded-md bg-heading px-4 py-2 text-sm text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Create
               </button>

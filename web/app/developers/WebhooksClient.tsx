@@ -244,7 +244,8 @@ export default function WebhooksClient() {
         <button
           type="button"
           onClick={create}
-          className="mt-4 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
+          disabled={!name.trim() || !validateUrl(url).valid}
+          className="mt-4 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:cursor-not-allowed disabled:opacity-50"
         >
           Create subscription
         </button>

@@ -31,7 +31,8 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
   const [createdKey, setCreatedKey] = useState("");
 
   const trimmedName = name.trim();
-  const canGenerate = trimmedName.length > 0 && permissions.length > 0;
+  const canGenerate =
+    validateApiKeyName(name).valid && permissions.length > 0;
 
   const togglePermission = useCallback((permission: string) => {
     setPermissions((prev) =>
