@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ErrorPage from "@/app/components/ErrorPage";
 import { WrenchIcon } from "@/app/components/ErrorIcons";
+
+export const metadata: Metadata = {
+  title: "Maintenance",
+  description:
+    "ThesisLock is undergoing scheduled maintenance. Your anchored documents remain safe on the blockchain.",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/maintenance" },
+};
 
 export default function MaintenancePage() {
   return (

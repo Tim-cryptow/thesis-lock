@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ErrorPage from "@/app/components/ErrorPage";
 import { WifiOffIcon } from "@/app/components/ErrorIcons";
+
+export const metadata: Metadata = {
+  title: "Offline",
+  description:
+    "You are offline. File hashing still works in your browser; anchoring and verification need a connection.",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "/offline" },
+};
 
 const WORKS_OFFLINE = [
   "Hash a file. SHA-256 runs entirely in your browser.",
