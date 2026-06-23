@@ -29,6 +29,7 @@ import {
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import TruncatedHash from "@/app/components/TruncatedHash";
+import StarButton from "@/app/components/StarButton";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import { stageReportInput } from "@/lib/reportLink";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
@@ -557,6 +558,7 @@ export default function AnchorsPage() {
                       label={entry.label}
                       verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(address)}`}
                     />
+                    <StarButton type="hash" value={entry.hash} label={entry.label} />
                   </div>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto sm:shrink-0">

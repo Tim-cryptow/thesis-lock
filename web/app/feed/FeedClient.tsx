@@ -12,6 +12,7 @@ import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import StarButton from "@/app/components/StarButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TagFilter from "@/app/components/TagFilter";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -480,6 +481,11 @@ export default function FeedClient() {
                         hash={entry.hash}
                         label={entry.label}
                         verifyUrl={verifyLinkFor(entry)}
+                      />
+                      <StarButton
+                        type="hash"
+                        value={entry.hash}
+                        label={entry.label}
                       />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">

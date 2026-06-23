@@ -11,6 +11,7 @@ import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import FeedSkeleton from "@/app/components/skeletons/FeedSkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import StarButton from "@/app/components/StarButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
@@ -460,6 +461,11 @@ export default function SearchClient() {
                             hash={row.hash}
                             label={row.label}
                             verifyUrl={row.verifyUrl}
+                          />
+                          <StarButton
+                            type="hash"
+                            value={row.hash}
+                            label={row.label}
                           />
                         </div>
                         <div className="text-sm mb-2">
