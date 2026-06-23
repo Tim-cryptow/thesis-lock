@@ -29,6 +29,7 @@ import RecentPages from "./components/RecentPages";
 import NavigationTracker from "./components/NavigationTracker";
 import BackupReminder from "./components/BackupReminder";
 import FavoritesBar from "./components/FavoritesBar";
+import Footer from "./components/Footer";
 import FavoritesNavLink from "./components/FavoritesNavLink";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
@@ -156,6 +157,7 @@ export default function RootLayout({
                     >
                       <ErrorBoundary>{children}</ErrorBoundary>
                     </main>
+                    <Footer />
                     <CommandPalette />
                     <RouteVisitRecorder />
                     <NavigationTracker />
