@@ -51,7 +51,10 @@ test.describe("search page", () => {
     test.slow();
     const input = page.getByLabel("Search query");
     const searchButton = page.getByRole("button", { name: "Search" });
-    const verifyLink = page.getByRole("link", { name: /^Verify/ }).first();
+    const verifyLink = page
+      .getByRole("main")
+      .getByRole("link", { name: /^Verify/ })
+      .first();
 
     await input.fill(KNOWN_ANCHORED_HASH);
     await expect(async () => {

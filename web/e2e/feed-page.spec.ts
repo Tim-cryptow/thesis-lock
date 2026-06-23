@@ -11,7 +11,10 @@ test.describe("feed page", () => {
   test("shows anchor entries or an empty state", async ({ page }) => {
     await page.goto("/feed");
 
-    const firstEntry = page.getByRole("link", { name: /^Verify/ }).first();
+    const firstEntry = page
+      .getByRole("main")
+      .getByRole("link", { name: /^Verify/ })
+      .first();
     const emptyState = page.getByText("No recent activity");
     await expect(firstEntry.or(emptyState)).toBeVisible();
 
