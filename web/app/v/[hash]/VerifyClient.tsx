@@ -13,6 +13,7 @@ import VerifySkeleton from "@/app/components/skeletons/VerifySkeleton";
 import WatchlistButton from "@/app/components/WatchlistButton";
 import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import StarButton from "@/app/components/StarButton";
+import HashMatcher from "@/app/components/HashMatcher";
 import TagInput from "@/app/components/TagInput";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
@@ -786,6 +787,22 @@ export default function VerifyPage() {
         </div>
       </div>
       </FadeIn>
+
+      <section className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
+        <h2 className="mb-2 text-xl">Verify your file matches</h2>
+        <p className="mb-4 text-sm text-foreground/70">
+          Drop your file to confirm its SHA-256 hash matches this anchored hash.
+          Hashing happens in your browser; the file never leaves your device.
+        </p>
+        <HashMatcher
+          leftMode="hash"
+          rightMode="file"
+          initialLeftHash={hash}
+          lockLeft
+          leftLabel="Anchored hash"
+          rightLabel="Your file"
+        />
+      </section>
 
       {ownsAnchor && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">

@@ -56,6 +56,12 @@ export const DOCS: DocMeta[] = [
       "Star hashes, wallets, groups, and pages for quick access from the favorites bar and the favorites page.",
   },
   {
+    slug: "hash-matching",
+    title: "Hash Matching",
+    description:
+      "File previews with thumbnails, and the hash matcher that confirms a file matches an anchored hash for integrity checks.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
