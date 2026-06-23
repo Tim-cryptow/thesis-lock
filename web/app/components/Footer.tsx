@@ -78,6 +78,9 @@ export default function Footer() {
           <Link href="/glossary" className="hover:text-foreground transition nav-underline">
             Glossary
           </Link>
+          <Link href="/match" className="hover:text-foreground transition nav-underline">
+            Hash Matcher
+          </Link>
           <Link href="/audit" className="hover:text-foreground transition nav-underline">
             Audit
           </Link>
