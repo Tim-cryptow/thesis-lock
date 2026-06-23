@@ -57,12 +57,12 @@ const SECTIONS: { heading: string; links: FooterLink[] }[] = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-foreground/10 bg-card/40">
+    <footer className="mt-auto border-t border-foreground/10 bg-card/60">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {SECTIONS.map((section) => (
             <nav key={section.heading} aria-label={section.heading}>
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground/50">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground/60">
                 {section.heading}
               </h2>
               <ul className="space-y-2 text-sm">
