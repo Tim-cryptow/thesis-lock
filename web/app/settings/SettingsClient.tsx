@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import Footer from "@/app/components/Footer";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import DataManagement from "./DataManagement";
 import PreferencesSection from "./PreferencesSection";
@@ -102,7 +101,6 @@ export default function SettingsClient() {
         {tab === "privacy" ? <PrivacySection /> : null}
         {tab === "about" ? <AboutSection /> : null}
       </div>
-      <Footer />
     </>
   );
 }

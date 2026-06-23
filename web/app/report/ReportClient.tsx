@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
-import Footer from "@/app/components/Footer";
 import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { hashFile } from "@/lib/stacks";
@@ -533,7 +532,6 @@ export default function ReportClient() {
           <ReportActions data={report} onExport={() => setExported(true)} />
         ) : null}
       </div>
-      <Footer />
     </>
   );
 }

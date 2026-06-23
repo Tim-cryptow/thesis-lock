@@ -3,7 +3,6 @@
 import Link from "next/link";
 import HeroStats from "@/app/components/HeroStats";
 import StatsBar from "@/app/components/StatsBar";
-import Footer from "@/app/components/Footer";
 import FeatureCard from "@/app/components/FeatureCard";
 import TourBanner from "@/app/components/TourBanner";
 import FadeIn from "@/app/components/FadeIn";
@@ -409,8 +408,6 @@ const result = await client.verify(hash);`}</pre>
         <StatsBar />
       </section>
       </FadeIn>
-
-      <Footer />
     </div>
   );
 }
