@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { validateStacksAddress } from "@stacks/transactions";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import HashInput from "@/app/components/HashInput";
+import AddressInput from "@/app/components/AddressInput";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useConfirm } from "@/app/components/useConfirm";
 import { HEX_64 } from "@/lib/verify";
+import { validateHash, validateAddress } from "@/lib/validators";
 import {
   type WatchItem,
   type WatchType,
@@ -393,12 +396,45 @@ export default function WatchlistClient() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={TYPE_PLACEHOLDERS[type]}
-            className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:border-foreground/50"
-          />
+          <div
+            onPasteCapture={(e) => {
+              // Detect whether the pasted text is a hash or an address and
+              // switch the watch type to match, after sanitizing it.
+              const text = e.clipboardData.getData("text");
+              if (!text) return;
+              const asHash = text
+                .replace(/\s+/g, "")
+                .replace(/^0x/i, "")
+                .toLowerCase();
+              const asAddress = text.replace(/\s+/g, "").toUpperCase();
+              if (validateHash(asHash).valid) {
+                e.preventDefault();
+                setType("hash");
+                setValue(asHash);
+              } else if (validateAddress(asAddress).valid) {
+                e.preventDefault();
+                setType("wallet");
+                setValue(asAddress);
+              }
+            }}
+          >
+            {type === "hash" ? (
+              <HashInput label="Hash to watch" value={value} onChange={setValue} />
+            ) : type === "wallet" ? (
+              <AddressInput
+                label="Wallet to watch"
+                value={value}
+                onChange={setValue}
+              />
+            ) : (
+              <input
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={TYPE_PLACEHOLDERS[type]}
+                className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:border-foreground/50"
+              />
+            )}
+          </div>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}

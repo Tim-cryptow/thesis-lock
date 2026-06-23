@@ -38,6 +38,7 @@ import { dispatchAudit } from "@/lib/auditEvents";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useConfirm } from "@/app/components/useConfirm";
+import AddressInput from "@/app/components/AddressInput";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
@@ -384,30 +385,19 @@ export default function GroupDetailPage() {
           {isAdmin && (
             <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
               <h2 className="text-lg mb-3">{t("groups.detail.membersHeading")}</h2>
-              <label
-                htmlFor="new-member"
-                className="block text-sm text-foreground/60 mb-2"
+              <AddressInput
+                id="new-member"
+                label={t("groups.detail.addMemberLabel")}
+                value={newMember}
+                onChange={setNewMember}
+              />
+              <button
+                onClick={submitAddMember}
+                disabled={addPending || !newMember.trim()}
+                className="mt-2 text-sm px-4 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-40 transition"
               >
-                {t("groups.detail.addMemberLabel")}
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                <input
-                  id="new-member"
-                  value={newMember}
-                  onChange={(e) => setNewMember(e.target.value)}
-                  placeholder={t("groups.detail.principalPlaceholder")}
-                  disabled={addPending}
-                  aria-invalid={memberError ? true : undefined}
-                  className="flex-1 min-w-0 px-3 py-2 rounded-md border border-foreground/15 bg-card font-mono text-sm focus:outline-none focus:border-foreground/50 disabled:opacity-60"
-                />
-                <button
-                  onClick={submitAddMember}
-                  disabled={addPending || !newMember.trim()}
-                  className="text-sm px-4 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-40 transition"
-                >
-                  {addPending ? t("groups.detail.signing") : t("groups.detail.add")}
-                </button>
-              </div>
+                {addPending ? t("groups.detail.signing") : t("groups.detail.add")}
+              </button>
               {memberError && (
                 <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
                   {memberError}

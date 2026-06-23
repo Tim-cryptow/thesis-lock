@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import WebhookTester from "./WebhookTester";
+import ValidatedInput from "@/app/components/ValidatedInput";
+import { validateUrl } from "@/lib/validators";
 import {
   WEBHOOK_EVENTS,
   createSubscription,
@@ -180,26 +182,23 @@ export default function WebhooksClient() {
       <section>
         <h3 className="text-lg font-medium">Create a subscription</h3>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Name
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Slack notifier"
-              className="mt-1.5 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
-            />
-          </label>
-          <label className="block text-sm font-medium">
-            Endpoint URL
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com/webhooks/thesislock"
-              className="mt-1.5 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
-            />
-          </label>
+          <ValidatedInput
+            label="Name"
+            value={name}
+            onChange={setName}
+            placeholder="Slack notifier"
+            maxLength={48}
+            required
+          />
+          <ValidatedInput
+            label="Endpoint URL"
+            value={url}
+            onChange={setUrl}
+            validator={validateUrl}
+            placeholder="https://example.com/webhooks/thesislock"
+            type="url"
+            required
+          />
         </div>
 
         <div className="mt-4">
@@ -245,7 +244,8 @@ export default function WebhooksClient() {
         <button
           type="button"
           onClick={create}
-          className="mt-4 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background"
+          disabled={!name.trim() || !validateUrl(url).valid}
+          className="mt-4 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:cursor-not-allowed disabled:opacity-50"
         >
           Create subscription
         </button>

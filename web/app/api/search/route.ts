@@ -1,6 +1,7 @@
 import { after } from "next/server";
 import { corsHeaders } from "@/lib/verify";
 import { runSearch, type SearchType } from "@/lib/search";
+import { validateHash, validateAddress } from "@/lib/validators";
 import { processPendingWebhooks } from "@/lib/webhooks";
 
 export const runtime = "nodejs";
@@ -27,6 +28,25 @@ export async function GET(req: Request) {
       { error: "Missing query. Provide ?q=<hash|principal|label>." },
       { status: 400, headers: corsHeaders() },
     );
+  }
+
+  // When the caller fixes the type, validate the query matches that format.
+  if (type === "hash") {
+    const check = validateHash(query);
+    if (!check.valid) {
+      return Response.json(
+        { error: check.error },
+        { status: 400, headers: corsHeaders() },
+      );
+    }
+  } else if (type === "principal") {
+    const check = validateAddress(query);
+    if (!check.valid) {
+      return Response.json(
+        { error: check.error },
+        { status: 400, headers: corsHeaders() },
+      );
+    }
   }
 
   try {

@@ -6,6 +6,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import CopyButton from "@/app/components/CopyButton";
 import FileDropZone from "@/app/components/FileDropZone";
 import { hashFile } from "@/lib/stacks";
+import HashInput from "@/app/components/HashInput";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
@@ -118,26 +119,13 @@ export default function EmbedClient() {
       </p>
 
       <div className="rounded-lg border border-foreground/10 bg-card p-6">
-        <label
-          htmlFor="hash-input"
-          className="block text-xs text-foreground/60 uppercase tracking-wide mb-1"
-        >
-          Document hash (SHA-256)
-        </label>
-        <input
+        <HashInput
           id="hash-input"
+          label="Document hash (SHA-256)"
           value={hashInput}
-          onChange={(e) => setHashInput(e.target.value)}
-          placeholder="64 hex characters"
-          spellCheck={false}
-          autoComplete="off"
-          className="w-full font-mono text-sm rounded-md border border-foreground/15 bg-transparent px-3 py-2 outline-none focus:border-foreground/40"
+          onChange={setHashInput}
+          helpText="Or drop a file below to hash it."
         />
-        {hashInput && !valid && (
-          <p className="mt-2 text-sm text-foreground/60">
-            Enter a valid 64-character hex hash, or drop a file below.
-          </p>
-        )}
 
         <label
           htmlFor="owner-input"
