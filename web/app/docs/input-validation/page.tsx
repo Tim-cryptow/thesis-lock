@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/input-validation" },
   title: { absolute: "Input Validation | ThesisLock Docs" },
   description:
     "How ThesisLock validates hashes, addresses, labels, and names with clear errors, character counters, auto-formatting, and matching API checks.",

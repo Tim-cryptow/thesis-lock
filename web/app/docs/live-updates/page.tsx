@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/live-updates" },
   title: { absolute: "Live Updates | ThesisLock Docs" },
   description:
     "How ThesisLock's real-time live updates work: the event ticker, auto-updating feed, stats, and explorer, what they poll, and how to pause or resume.",

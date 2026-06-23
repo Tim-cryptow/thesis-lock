@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/data-portability" },
   title: { absolute: "Data Portability | ThesisLock Docs" },
   description:
     "Back up, restore, and move all of your ThesisLock data between browsers and devices, and control exactly what is stored, from the settings page.",

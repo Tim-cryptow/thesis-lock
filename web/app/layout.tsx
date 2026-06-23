@@ -66,6 +66,33 @@ export const metadata: Metadata = {
     template: "%s | ThesisLock",
   },
   description: SITE_DESCRIPTION,
+  applicationName: "ThesisLock",
+  authors: [{ name: "ThesisLock" }],
+  creator: "ThesisLock",
+  publisher: "ThesisLock",
+  category: "technology",
+  keywords: [
+    "document timestamping",
+    "proof of existence",
+    "Stacks blockchain",
+    "Bitcoin",
+    "SHA-256",
+    "document verification",
+    "blockchain notarization",
+    "Clarity smart contract",
+  ],
+  formatDetection: { telephone: false, address: false, email: false },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -82,6 +109,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "ThesisLock",
+    locale: "en_US",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     url: "/",

@@ -1,16 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DOCS } from "@/lib/docs";
+import JsonLd from "@/app/components/JsonLd";
 
 export const metadata: Metadata = {
   title: { absolute: "Documentation | ThesisLock Docs" },
   description:
     "Guides and reference for ThesisLock: contracts, web app, REST API, SDK, CLI, and GitHub Action.",
+  alternates: { canonical: "/docs" },
+};
+
+const techArticleSchema = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: "ThesisLock Documentation",
+  description:
+    "Guides and reference for ThesisLock: contracts, web app, REST API, SDK, CLI, and GitHub Action.",
+  author: { "@type": "Organization", name: "ThesisLock" },
 };
 
 export default function DocsHome() {
   return (
     <div>
+      <JsonLd data={techArticleSchema} />
       <h1 className="text-3xl md:text-4xl">ThesisLock Documentation</h1>
       <p className="mt-4 text-lg text-foreground/80 leading-relaxed">
         ThesisLock anchors a SHA-256 hash of any document on the Stacks

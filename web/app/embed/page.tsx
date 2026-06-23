@@ -8,6 +8,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
+  alternates: { canonical: "/embed" },
   openGraph: {
     type: "website",
     siteName: "ThesisLock",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, H3, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/explorer" },
   title: { absolute: "Contract Explorer | ThesisLock Docs" },
   description:
     "How to use the in-app contract explorer: browse functions, maps, and data variables, watch recent on-chain calls, read the architecture diagram, and call read-only functions interactively.",

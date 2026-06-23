@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, H3, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/web-app" },
   title: { absolute: "Web App Guide | ThesisLock Docs" },
   description:
     "Anchor single files and batches, use groups, verify, run bulk checks, export history, and mint proof NFTs from the ThesisLock web app.",

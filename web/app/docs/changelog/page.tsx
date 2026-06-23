@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/changelog" },
   title: { absolute: "Changelog | ThesisLock Docs" },
   description:
     "Notable changes and improvements to ThesisLock, including the standardized copy interactions across the app.",

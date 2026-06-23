@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/api-keys" },
   title: { absolute: "API Keys | ThesisLock Docs" },
   description:
     "Create and manage ThesisLock API keys in the developer portal, how they are stored, and what they are for.",

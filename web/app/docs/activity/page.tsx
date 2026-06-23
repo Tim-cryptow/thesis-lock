@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/activity" },
   title: { absolute: "Activity Log | ThesisLock Docs" },
   description:
     "A unified per-wallet timeline of every ThesisLock contract interaction, with category filters, infinite scroll, and a JSON API.",

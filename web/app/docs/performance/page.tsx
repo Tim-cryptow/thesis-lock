@@ -3,6 +3,7 @@ import Link from "next/link";
 import { H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/performance" },
   title: { absolute: "Performance Monitoring | ThesisLock Docs" },
   description:
     "How ThesisLock's in-browser performance monitoring works: Web Vitals, page load, and API response metrics, the dashboard, and the debug banner, all stored locally.",

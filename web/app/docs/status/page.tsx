@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/status" },
   title: { absolute: "System Status | ThesisLock Docs" },
   description:
     "ThesisLock's public status page: how contract, API, and dependency health is measured, how uptime and incidents are tracked, and the status JSON API and badge.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/watchlist" },
   title: { absolute: "Watchlist | ThesisLock Docs" },
   description:
     "Monitor specific document hashes, wallets, and groups over time with the ThesisLock watchlist: save what you care about and track verification status and new anchors in one place.",

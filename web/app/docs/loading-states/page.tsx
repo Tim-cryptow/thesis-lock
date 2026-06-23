@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/loading-states" },
   title: { absolute: "Loading States | ThesisLock Docs" },
   description:
     "ThesisLock uses skeleton loaders that match the final layout while data loads, giving instant visual feedback instead of spinners or blank screens.",

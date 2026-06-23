@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/audit" },
   title: { absolute: "Audit Trail | ThesisLock Docs" },
   description:
     "ThesisLock's compliance-grade audit trail: how every action is recorded in a tamper-evident local log, how integrity verification works, and how to generate chain-of-custody reports.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/reports" },
   title: { absolute: "Verification Reports | ThesisLock Docs" },
   description:
     "Generate formal, multi-document verification reports proving a set of hashes were anchored on Stacks, exportable as HTML, JSON, or CSV.",

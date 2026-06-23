@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/empty-states" },
   title: { absolute: "Empty States | ThesisLock Docs" },
   description:
     "What you see when a page has no data yet: a clear explanation of what belongs there and a button that points you to the next step.",

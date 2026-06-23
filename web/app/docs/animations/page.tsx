@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/animations" },
   title: { absolute: "Animations | ThesisLock Docs" },
   description:
     "The subtle motion in ThesisLock: fade-ins, staggered lists, count-up stats, and micro-interactions, all of which respect reduced motion.",

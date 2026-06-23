@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/command-palette" },
   title: { absolute: "Command Palette | ThesisLock Docs" },
   description:
     "Open the ThesisLock command palette with Ctrl+K (Cmd+K on macOS) to jump to any page or run a common action with fuzzy search and the keyboard.",

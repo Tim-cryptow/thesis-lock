@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/compare" },
   title: { absolute: "Anchor Comparison | ThesisLock Docs" },
   description:
     "Compare two anchored documents side by side: which was anchored first, the estimated time gap, and how their owner, label, source, and metadata differ, with shareable comparison links.",

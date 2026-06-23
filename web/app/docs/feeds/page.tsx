@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/feeds" },
   title: { absolute: "Feeds | ThesisLock Docs" },
   description:
     "Subscribe to ThesisLock protocol events with RSS 2.0, Atom 1.0, and JSON Feed endpoints, filterable by contract and wallet.",
