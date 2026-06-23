@@ -6,6 +6,7 @@ import StatsBar from "@/app/components/StatsBar";
 import FeatureCard from "@/app/components/FeatureCard";
 import TourBanner from "@/app/components/TourBanner";
 import FadeIn from "@/app/components/FadeIn";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const CONTRACT_ADDRESS =
@@ -173,6 +174,9 @@ export default function Page() {
 
   return (
     <div className="flex-1 flex flex-col">
+      <div className="flex justify-end px-6 pt-6">
+        <ThemeToggle />
+      </div>
       <FadeIn delay={0}>
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 w-full">
         <h1 className="text-5xl md:text-6xl leading-tight">
