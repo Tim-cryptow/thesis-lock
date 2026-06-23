@@ -5,6 +5,7 @@ import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import FooterStatus from "@/app/components/FooterStatus";
 import SocialLinks from "@/app/components/SocialLinks";
 import FooterStats from "@/app/components/FooterStats";
+import BackToTop from "@/app/components/BackToTop";
 
 const YEAR = 2026;
 
@@ -113,6 +114,7 @@ export default function Footer() {
           <FooterStats />
         </div>
       </div>
+      <BackToTop />
     </footer>
   );
 }
