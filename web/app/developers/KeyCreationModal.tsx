@@ -9,6 +9,8 @@ import {
   type ApiKeyRecord,
 } from "@/lib/apiKeys";
 import CopyButton from "@/app/components/CopyButton";
+import ValidatedInput from "@/app/components/ValidatedInput";
+import { validateApiKeyName } from "@/lib/validators";
 
 type Props = {
   // Persists the newly created key. Called once, when the key is generated.
@@ -82,17 +84,18 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
                 Name the key and choose which API surfaces it can call.
               </p>
 
-              <label className="mt-6 block text-sm font-medium">
-                Key name
-                <input
-                  type="text"
+              <div className="mt-6">
+                <ValidatedInput
+                  label="Key name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="My Research App"
-                  autoFocus
-                  className="mt-1.5 w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
+                  onChange={setName}
+                  validator={validateApiKeyName}
+                  placeholder="my-research-app"
+                  maxLength={32}
+                  helpText="Letters, numbers, and dashes."
+                  required
                 />
-              </label>
+              </div>
 
               <fieldset className="mt-5">
                 <legend className="text-sm font-medium">Permissions</legend>
