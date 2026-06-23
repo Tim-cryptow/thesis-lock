@@ -9,6 +9,8 @@ export type ErrorSuggestion = {
 };
 
 type ErrorPageProps = {
+  // An optional icon shown in a circle above the code and title.
+  icon?: ReactNode;
   // A short status code shown large and faint above the title, e.g. "404".
   code?: string;
   title: string;
@@ -27,6 +29,7 @@ type ErrorPageProps = {
 // server while client error boundaries can render it too; the only interactive
 // piece, the search box, is its own client island.
 export default function ErrorPage({
+  icon,
   code,
   title,
   description,
@@ -36,6 +39,14 @@ export default function ErrorPage({
 }: ErrorPageProps) {
   return (
     <div className="flex-1 w-full max-w-2xl mx-auto px-6 py-16 sm:py-24 text-center">
+      {icon ? (
+        <div className="mb-6 flex justify-center">
+          <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-foreground/5 text-foreground/50">
+            {icon}
+          </span>
+        </div>
+      ) : null}
+
       {code ? (
         <p
           aria-hidden="true"

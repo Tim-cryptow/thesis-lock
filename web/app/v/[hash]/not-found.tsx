@@ -1,4 +1,5 @@
 import ErrorPage, { type ErrorSuggestion } from "@/app/components/ErrorPage";
+import { FileIcon } from "@/app/components/ErrorIcons";
 
 const SUGGESTIONS: ErrorSuggestion[] = [
   {
@@ -16,9 +17,10 @@ const SUGGESTIONS: ErrorSuggestion[] = [
 export default function VerifyNotFound() {
   return (
     <ErrorPage
+      icon={<FileIcon />}
       code="404"
-      title="Invalid document hash"
-      description="Hashes must be 64 hexadecimal characters. Check the link and try again."
+      title="Invalid hash format."
+      description="A valid hash is 64 lowercase hex characters."
       suggestions={SUGGESTIONS}
     />
   );

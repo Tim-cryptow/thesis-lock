@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ErrorPage from "./ErrorPage";
+import { ClockIcon } from "./ErrorIcons";
 
 type RateLimitErrorProps = {
   // Seconds to count down before automatically retrying.
@@ -34,6 +35,7 @@ export default function RateLimitError({
 
   return (
     <ErrorPage
+      icon={<ClockIcon />}
       code="429"
       title="Too many requests"
       description="The blockchain API is rate limited. Please wait a moment and try again."

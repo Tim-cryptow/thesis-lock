@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import ErrorPage from "./ErrorPage";
 import RateLimitError from "./RateLimitError";
+import { AlertTriangleIcon } from "./ErrorIcons";
 
 const RATE_LIMIT = /\b429\b|rate.?limit|too many requests/i;
 
@@ -37,6 +38,7 @@ export default function RouteError({
 
   return (
     <ErrorPage
+      icon={<AlertTriangleIcon />}
       title={title}
       description="We could not load this right now. The blockchain API may be busy. Try again in a moment."
     >

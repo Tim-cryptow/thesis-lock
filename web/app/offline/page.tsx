@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ErrorPage from "@/app/components/ErrorPage";
+import { WifiOffIcon } from "@/app/components/ErrorIcons";
 
 const WORKS_OFFLINE = [
   "Hash a file. SHA-256 runs entirely in your browser.",
@@ -54,6 +55,7 @@ function CrossIcon() {
 export default function OfflinePage() {
   return (
     <ErrorPage
+      icon={<WifiOffIcon />}
       title="You're offline"
       description="No internet connection right now. Your anchored documents are safe on the blockchain, and the core hashing tools still run on your device."
     >

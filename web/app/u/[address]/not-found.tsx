@@ -1,4 +1,5 @@
 import ErrorPage, { type ErrorSuggestion } from "@/app/components/ErrorPage";
+import { WalletIcon } from "@/app/components/ErrorIcons";
 
 const SUGGESTIONS: ErrorSuggestion[] = [
   {
@@ -12,6 +13,7 @@ const SUGGESTIONS: ErrorSuggestion[] = [
 export default function ProfileNotFound() {
   return (
     <ErrorPage
+      icon={<WalletIcon />}
       code="404"
       title="Invalid wallet address"
       description="Stacks addresses start with SP or ST and pass a checksum. Check the address and try again."

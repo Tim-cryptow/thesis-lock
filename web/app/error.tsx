@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import ErrorPage from "./components/ErrorPage";
+import { AlertTriangleIcon } from "./components/ErrorIcons";
 
 const ISSUES_URL = "https://github.com/Tim-cryptow/thesis-lock/issues/new";
 
@@ -19,6 +20,7 @@ export default function Error({
 
   return (
     <ErrorPage
+      icon={<AlertTriangleIcon />}
       title="Something went wrong"
       description="An unexpected error occurred. You can try again, or head back home."
     >
