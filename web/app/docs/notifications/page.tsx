@@ -3,6 +3,7 @@ import Link from "next/link";
 import { H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/notifications" },
   title: { absolute: "Notifications | ThesisLock Docs" },
   description:
     "How the ThesisLock notification center works: the sources it aggregates, the corner bell, browser push, sound alerts, and per-type preferences, all stored in your browser.",

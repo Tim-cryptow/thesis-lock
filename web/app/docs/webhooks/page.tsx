@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/webhooks" },
   title: { absolute: "Webhooks | ThesisLock Docs" },
   description:
     "The ThesisLock webhook format: event types, the signed JSON payload, and HMAC-SHA256 signature verification in Node.js and Python.",

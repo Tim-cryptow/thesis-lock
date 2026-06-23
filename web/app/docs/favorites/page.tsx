@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/favorites" },
   title: { absolute: "Favorites | ThesisLock Docs" },
   description:
     "Star hashes, wallets, groups, and pages for quick access from the favorites bar and the favorites page.",

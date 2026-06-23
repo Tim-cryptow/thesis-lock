@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, H3, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/api" },
   title: { absolute: "API Reference | ThesisLock Docs" },
   description:
     "The ThesisLock JSON REST API: verification, search, stats, badges, social cards, NFT metadata, webhooks, and health.",

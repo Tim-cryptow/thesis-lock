@@ -3,6 +3,7 @@ import Link from "next/link";
 import { H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/getting-started-tour" },
   title: { absolute: "Getting Started Tour | ThesisLock Docs" },
   description:
     "The interactive onboarding tour walks first-time visitors through ThesisLock's main features. Learn what it covers and how to restart it.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/github-action" },
   title: { absolute: "GitHub Action | ThesisLock Docs" },
   description:
     "Gate any CI pipeline on a document being anchored on Stacks, with the ThesisLock verify action: inputs, outputs, and example workflows.",

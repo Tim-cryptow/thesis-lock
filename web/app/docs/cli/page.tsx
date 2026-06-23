@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, H3, Lead, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/cli" },
   title: { absolute: "CLI Guide | ThesisLock Docs" },
   description:
     "Verify, hash, search, and check status of ThesisLock anchors from the terminal or a CI pipeline with the thesislock-cli package.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/navigation" },
   title: { absolute: "Navigation | ThesisLock Docs" },
   description:
     "Find your way around ThesisLock with breadcrumb trails, a context-aware back button, and a recently visited pages menu.",

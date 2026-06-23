@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, H3, Lead, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/sdk" },
   title: { absolute: "SDK Guide | ThesisLock Docs" },
   description:
     "Install the thesislock-sdk TypeScript package, create a client, and call every verification, history, and proof-NFT method.",

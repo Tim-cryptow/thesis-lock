@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/calendar" },
   title: { absolute: "Calendar | ThesisLock Docs" },
   description:
     "ThesisLock's calendar view: a GitHub-style contribution graph, a monthly calendar, and streak tracking built from your on-chain anchoring history.",

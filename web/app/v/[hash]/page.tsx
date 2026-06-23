@@ -41,6 +41,7 @@ export async function generateMetadata({
     return {
       title: notFoundTitle,
       description: notFoundDescription,
+      alternates: { canonical: `/v/${hash}` },
       openGraph: {
         type: "website",
         siteName: "ThesisLock",
@@ -86,6 +87,7 @@ export async function generateMetadata({
     return {
       title,
       description,
+      alternates: { canonical },
       openGraph: {
         type: "website",
         siteName: "ThesisLock",
@@ -110,6 +112,7 @@ export async function generateMetadata({
     return {
       title,
       description,
+      alternates: { canonical },
       openGraph: {
         type: "website",
         siteName: "ThesisLock",
@@ -130,6 +133,7 @@ export async function generateMetadata({
   return {
     title: notFoundTitle,
     description: notFoundDescription,
+    alternates: { canonical },
     openGraph: {
       type: "website",
       siteName: "ThesisLock",

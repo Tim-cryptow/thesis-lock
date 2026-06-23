@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/integration-guides" },
   title: { absolute: "Integration Guides | ThesisLock Docs" },
   description:
     "Copy-ready examples for verifying ThesisLock anchors from JavaScript, Python, cURL, GitHub Actions, and any CI/CD pipeline.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/tags" },
   title: { absolute: "Tags | ThesisLock Docs" },
   description:
     "Add flexible tags to your anchors, filter by tag across the app, and manage tags with a cloud, stats, rename, merge, and delete. All stored locally in your browser.",

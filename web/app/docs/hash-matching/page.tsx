@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/hash-matching" },
   title: { absolute: "Hash Matching | ThesisLock Docs" },
   description:
     "File previews with thumbnails, and the hash matcher that confirms a file matches an anchored hash for integrity checks.",

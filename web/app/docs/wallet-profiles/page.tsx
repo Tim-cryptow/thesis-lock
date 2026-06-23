@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, CodeBlock, H2, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/wallet-profiles" },
   title: { absolute: "Wallet Profiles | ThesisLock Docs" },
   description:
     "Public per-wallet profile pages with anchoring stats, recent anchors, document types, a JSON API, and an embeddable badge.",

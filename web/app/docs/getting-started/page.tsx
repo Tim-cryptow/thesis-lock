@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/getting-started" },
   title: { absolute: "Getting Started | ThesisLock Docs" },
   description:
     "What ThesisLock is, how anchoring works, and how to anchor your first document in under a minute.",

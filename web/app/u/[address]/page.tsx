@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: { absolute: title },
     description,
+    alternates: { canonical: `/u/${address}` },
     openGraph: {
       type: "profile",
       siteName: "ThesisLock",

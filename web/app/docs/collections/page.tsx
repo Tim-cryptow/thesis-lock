@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/collections" },
   title: { absolute: "Collections | ThesisLock Docs" },
   description:
     "Organize anchored documents into named, browser-local collections with ThesisLock: create folders, add anchors by hash, file, or wallet, and share a collection as a link or import one.",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Code, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/sharing" },
   title: { absolute: "Sharing | ThesisLock Docs" },
   description:
     "Share verification results, wallet profiles, groups, and protocol stats on social media and messaging apps, and let people scan a QR code to verify on mobile.",

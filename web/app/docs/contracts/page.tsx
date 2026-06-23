@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CodeBlock, Code, H2, H3, Lead, List, P, Table } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/contracts" },
   title: { absolute: "Contracts | ThesisLock Docs" },
   description:
     "The five Clarity contracts behind ThesisLock, their mainnet addresses, function signatures, and direct Hiro API read calls.",

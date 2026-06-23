@@ -9,6 +9,7 @@ import {
 } from "@/lib/templates";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/templates" },
   title: { absolute: "Anchor Templates | ThesisLock Docs" },
   description:
     "Structured label formats for papers, legal documents, code releases, datasets, and certificates, plus the label encoding and how to add custom templates.",

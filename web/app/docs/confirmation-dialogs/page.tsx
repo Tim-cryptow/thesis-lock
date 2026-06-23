@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Code, CodeBlock, H2, Lead, List, P } from "../ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/docs/confirmation-dialogs" },
   title: { absolute: "Confirmation Dialogs | ThesisLock Docs" },
   description:
     "How ThesisLock guards destructive and irreversible actions with a confirmation dialog, and how to use the useConfirm hook.",
