@@ -7,6 +7,8 @@ import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
+import ValidatedInput from "@/app/components/ValidatedInput";
+import { validateGroupName } from "@/lib/validators";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -196,33 +198,16 @@ export default function GroupsPage() {
         <>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-10">
             <h2 className="text-lg mb-3">{t("groups.create.heading")}</h2>
-            <label
-              htmlFor="group-name"
-              className="block text-sm text-foreground/60 mb-2"
-            >
-              {t("groups.create.nameLabel")}
-            </label>
-            <input
+            <ValidatedInput
               id="group-name"
+              label={t("groups.create.nameLabel")}
               value={name}
-              onChange={(e) => onNameChange(e.target.value)}
+              onChange={onNameChange}
+              validator={validateGroupName}
               placeholder={t("groups.create.namePlaceholder")}
               maxLength={64}
-              disabled={pending}
-              aria-invalid={nameError ? true : undefined}
-              className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50 disabled:opacity-60"
+              required
             />
-            <div className="mt-1 flex items-center justify-between text-xs">
-              <span
-                className={nameError ? "text-red-600 dark:text-red-400" : "text-transparent"}
-                role={nameError ? "alert" : undefined}
-              >
-                {nameError ?? "."}
-              </span>
-              <span className="text-foreground/50 font-mono">
-                {name.length}/64
-              </span>
-            </div>
             <button
               onClick={submit}
               disabled={pending || !name.trim() || !!nameError}

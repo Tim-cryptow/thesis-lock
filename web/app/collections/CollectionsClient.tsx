@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import EmptyState from "@/app/components/EmptyState";
+import ValidatedInput from "@/app/components/ValidatedInput";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
 import { auditCollectionCreate } from "@/lib/auditEvents";
@@ -304,13 +305,13 @@ export default function CollectionsClient() {
         >
           <h2 className="text-sm font-medium mb-4">New collection</h2>
           <div className="flex flex-col gap-4">
-            <input
-              autoFocus
+            <ValidatedInput
+              label="Collection name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={setName}
               placeholder="Collection name"
               maxLength={64}
-              className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 text-sm focus:outline-none focus:border-foreground/50"
+              required
             />
             <textarea
               value={description}
