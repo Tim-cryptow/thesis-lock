@@ -3,8 +3,8 @@
 import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import FooterStatus from "@/app/components/FooterStatus";
+import SocialLinks from "@/app/components/SocialLinks";
 
-const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
 const YEAR = 2026;
 
 type FooterLink = { label: string; href: string };
@@ -102,22 +102,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="transition hover:text-foreground nav-underline"
-            >
-              GitHub
-            </a>
-            <a
-              href="/api/feed/rss"
-              target="_blank"
-              rel="noreferrer"
-              className="transition hover:text-foreground nav-underline"
-            >
-              RSS
-            </a>
+            <SocialLinks size="sm" />
             <FooterStatus />
             <LanguageSwitcher />
           </div>
