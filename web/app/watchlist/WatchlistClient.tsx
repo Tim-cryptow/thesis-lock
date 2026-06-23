@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { validateStacksAddress } from "@stacks/transactions";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import HashInput from "@/app/components/HashInput";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -393,12 +394,16 @@ export default function WatchlistClient() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={TYPE_PLACEHOLDERS[type]}
-            className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:border-foreground/50"
-          />
+          {type === "hash" ? (
+            <HashInput label="Hash to watch" value={value} onChange={setValue} />
+          ) : (
+            <input
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={TYPE_PLACEHOLDERS[type]}
+              className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:border-foreground/50"
+            />
+          )}
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}

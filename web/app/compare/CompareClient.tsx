@@ -12,6 +12,7 @@ import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
 import { useSearchParams } from "next/navigation";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import HashInput from "@/app/components/HashInput";
 import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 import { hashFile } from "@/lib/stacks";
@@ -770,8 +771,6 @@ function DocColumn({
   onOwnerChange,
 }: DocColumnProps) {
   const { t } = useI18n();
-  const showInvalid =
-    state.hash.trim().length > 0 && !isValidHash(state.hash.trim());
 
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-5">
@@ -798,24 +797,14 @@ function DocColumn({
       <p className="mt-3 text-xs text-foreground/50 uppercase tracking-wide">
         {t("compare.orPaste")}
       </p>
-      <label className="sr-only" htmlFor={`hash-${title}`}>
-        {t("compare.hashLabel")}
-      </label>
-      <input
-        id={`hash-${title}`}
-        type="text"
-        value={state.hash}
-        onChange={(e) => onHashChange(e.target.value)}
-        placeholder={t("compare.hashPlaceholder")}
-        spellCheck={false}
-        autoComplete="off"
-        className="mt-1 w-full font-mono text-xs px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
-      />
-      {showInvalid && (
-        <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-          {t("compare.hashInvalid")}
-        </p>
-      )}
+      <div className="mt-1">
+        <HashInput
+          id={`hash-${title}`}
+          label={t("compare.hashLabel")}
+          value={state.hash}
+          onChange={onHashChange}
+        />
+      </div>
       <label
         className="mt-3 block text-xs text-foreground/50 uppercase tracking-wide"
         htmlFor={`owner-${title}`}
