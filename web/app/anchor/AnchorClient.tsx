@@ -41,8 +41,8 @@ import {
   auditProofMint,
 } from "@/lib/auditEvents";
 import { downloadCertificate } from "@/lib/downloadCertificate";
-import { formatBytes } from "@/lib/format";
 import FileDropZone from "@/app/components/FileDropZone";
+import FilePreview from "@/app/components/FilePreview";
 import { useTx } from "@/app/components/TxProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 
@@ -94,10 +94,6 @@ function validateLabel(next: string): {
     return { value: next.slice(0, 64), error: "asciiOnly" };
   }
   return { value: next.slice(0, 64), error: null };
-}
-
-function truncateHashShort(h: string) {
-  return h.length <= 14 ? h : `${h.slice(0, 8)}...${h.slice(-6)}`;
 }
 
 export default function AnchorPage() {
@@ -162,8 +158,6 @@ export default function AnchorPage() {
     setTemplateId(id);
     setFieldValues({});
   };
-  const [copied, setCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
 
   const [rows, setRows] = useState<BatchRow[]>([]);
   const [batchDragOver, setBatchDragOver] = useState(false);
@@ -234,18 +228,6 @@ export default function AnchorPage() {
     const { value, error } = validateLabel(next);
     setLabel(value);
     setLabelError(error);
-  };
-
-  const copyHash = async () => {
-    if (!hash) return;
-    try {
-      await navigator.clipboard.writeText(hash);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopyFailed(true);
-      setTimeout(() => setCopyFailed(false), 1500);
-    }
   };
 
   const addBatchFiles = useCallback((incoming: FileList | File[] | null) => {
@@ -1058,12 +1040,7 @@ export default function AnchorPage() {
             ariaLabel={t("anchor.single.dropZoneAria")}
           >
             {file ? (
-              <p className="text-foreground/80">
-                <span className="font-medium">{file.name}</span>{" "}
-                <span className="text-foreground/50 text-sm">
-                  ({formatBytes(file.size)})
-                </span>
-              </p>
+              <p className="text-foreground/60">Drop another file to replace</p>
             ) : (
               <p className="text-foreground/60">
                 {t("anchor.single.dropZonePrompt")}
@@ -1078,36 +1055,9 @@ export default function AnchorPage() {
             </p>
           )}
 
-          {(hashing || hash) && (
-            <div
-              className="mt-6"
-              role="region"
-              aria-label={t("anchor.single.hashRegionAria")}
-              aria-live="polite"
-              aria-busy={hashing}
-            >
-              <div className="block text-sm text-foreground/60 mb-2">
-                {t("anchor.single.sha256")}
-                <HelpText term="SHA-256 Hash" />
-              </div>
-              {hashing ? (
-                <p className="font-mono text-sm text-foreground/50">
-                  {t("anchor.single.hashing")}
-                </p>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <code className="font-mono text-xs md:text-sm break-all bg-foreground/5 px-3 py-2 rounded flex-1">
-                    {hash}
-                  </code>
-                  <button
-                    onClick={copyHash}
-                    aria-label={t("anchor.single.copyHashAria")}
-                    className="text-xs px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
-                  >
-                    {copied ? t("common.actions.copied") : copyFailed ? t("anchor.single.copyFailed") : t("common.actions.copy")}
-                  </button>
-                </div>
-              )}
+          {file && (
+            <div className="mt-6">
+              <FilePreview file={file} hash={hash} hashing={hashing} />
             </div>
           )}
 
@@ -1250,12 +1200,17 @@ export default function AnchorPage() {
                 >
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium truncate">
-                        {idx + 1}. {row.file.name}
-                      </div>
-                      <div className="text-xs text-foreground/50 mt-0.5">
-                        {formatBytes(row.file.size)}
-                      </div>
+                      <FilePreview
+                        file={row.file}
+                        hash={row.hash}
+                        hashing={row.hashing}
+                        compact
+                      />
+                      {row.hashError ? (
+                        <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
+                          {row.hashError}
+                        </p>
+                      ) : null}
                     </div>
                     <button
                       onClick={() => removeRow(row.id)}
@@ -1265,25 +1220,6 @@ export default function AnchorPage() {
                     >
                       {t("anchor.batch.remove")}
                     </button>
-                  </div>
-
-                  <div className="mt-3">
-                    <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                      {t("anchor.single.sha256")}
-                    </div>
-                    {row.hashing ? (
-                      <p className="font-mono text-xs text-foreground/50">
-                        {t("anchor.single.hashing")}
-                      </p>
-                    ) : row.hashError ? (
-                      <p className="text-xs text-red-600 dark:text-red-400" role="alert">
-                        {row.hashError}
-                      </p>
-                    ) : (
-                      <code className="font-mono text-xs">
-                        {row.hash ? truncateHashShort(row.hash) : "-"}
-                      </code>
-                    )}
                   </div>
 
                   <div className="mt-3">
