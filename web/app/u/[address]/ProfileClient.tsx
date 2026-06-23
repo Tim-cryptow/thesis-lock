@@ -8,6 +8,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BackButton from "@/app/components/BackButton";
 import CountUp from "@/app/components/CountUp";
 import WatchlistButton from "@/app/components/WatchlistButton";
+import StarButton from "@/app/components/StarButton";
 import MiniContributionGraph from "@/app/components/calendar/MiniContributionGraph";
 import ShareButtons from "@/app/components/ShareButtons";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -210,6 +211,7 @@ export default function ProfileClient() {
                 value={profile.address}
                 showLabel
               />
+              <StarButton type="wallet" value={profile.address} label="" />
               <a
                 href={explorerAddressUrl(profile.address)}
                 target="_blank"
