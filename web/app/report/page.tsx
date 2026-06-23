@@ -6,6 +6,7 @@ export function generateMetadata(): Metadata {
     title: "Verification Report",
     description:
       "Generate a formal, multi-document verification report from on-chain ThesisLock anchors, exportable as HTML, JSON, or CSV.",
+    alternates: { canonical: "/report" },
     openGraph: {
       type: "website",
       siteName: "ThesisLock",
