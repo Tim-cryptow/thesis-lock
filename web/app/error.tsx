@@ -2,6 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import ErrorPage from "./components/ErrorPage";
+
+const ISSUES_URL = "https://github.com/Tim-cryptow/thesis-lock/issues/new";
 
 export default function Error({
   error,
@@ -15,28 +18,37 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-      <Link
-        href="/"
-        className="text-sm text-foreground/60 hover:text-foreground"
-      >
-        &larr; ThesisLock
-      </Link>
-      <h1 className="text-3xl mt-8 mb-2">Something went wrong.</h1>
-      <p className="text-foreground/70 mb-6">
-        An unexpected error occurred. You can try again.
-      </p>
-      <button
-        onClick={() => unstable_retry()}
-        className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-      >
-        Try again
-      </button>
-      {process.env.NODE_ENV !== "production" && error.message && (
-        <pre className="mt-6 overflow-auto rounded-lg border border-foreground/10 bg-card p-4 text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
+    <ErrorPage
+      title="Something went wrong"
+      description="An unexpected error occurred. You can try again, or head back home."
+    >
+      <div className="flex flex-wrap justify-center gap-3">
+        <button
+          onClick={() => unstable_retry()}
+          className="px-5 py-2.5 rounded-md bg-heading text-background text-sm font-medium hover:opacity-90 press-scale"
+        >
+          Try again
+        </button>
+        <Link
+          href="/"
+          className="px-5 py-2.5 rounded-md border border-foreground/15 text-sm hover:border-foreground/40 transition"
+        >
+          Go home
+        </Link>
+        <a
+          href={ISSUES_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="px-5 py-2.5 rounded-md border border-foreground/15 text-sm hover:border-foreground/40 transition"
+        >
+          Report this issue
+        </a>
+      </div>
+      {process.env.NODE_ENV !== "production" && error.message ? (
+        <pre className="mt-6 mx-auto max-w-xl overflow-auto rounded-lg border border-foreground/10 bg-card p-4 text-left text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap">
           {error.message}
         </pre>
-      )}
-    </div>
+      ) : null}
+    </ErrorPage>
   );
 }
