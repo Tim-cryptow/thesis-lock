@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import VerifyClientLoader from "./VerifyClientLoader";
+import JsonLd from "@/app/components/JsonLd";
 import { fetchAnchor, fetchBatchAnchor } from "@/lib/hiroAnchor";
 
 type Props = {
@@ -151,6 +152,19 @@ export async function generateMetadata({
   };
 }
 
+const webPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Verify Document",
+  description:
+    "Check if a document hash has been anchored on the Stacks blockchain.",
+};
+
 export default function Page() {
-  return <VerifyClientLoader />;
+  return (
+    <>
+      <JsonLd data={webPageSchema} />
+      <VerifyClientLoader />
+    </>
+  );
 }
