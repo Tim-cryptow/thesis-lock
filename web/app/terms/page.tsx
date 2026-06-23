@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 
 const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
+
+const title = "Terms of Service";
+const description =
+  "ThesisLock is open source under the MIT license, provided as is with no warranty. On-chain anchors are permanent and public, and securing your wallet is your responsibility.";
+
+export function generateMetadata(): Metadata {
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      siteName: "ThesisLock",
+      title: `${title} | ThesisLock`,
+      description,
+      url: "/terms",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | ThesisLock`,
+      description,
+    },
+  };
+}
 
 export default function TermsPage() {
   return (

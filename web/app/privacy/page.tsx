@@ -1,5 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
+
+const title = "Privacy Policy";
+const description =
+  "ThesisLock collects no data. Everything is stored locally in your browser, hashing happens client-side, and only the transactions you sign are public on Stacks. No cookies or tracking.";
+
+export function generateMetadata(): Metadata {
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "website",
+      siteName: "ThesisLock",
+      title: `${title} | ThesisLock`,
+      description,
+      url: "/privacy",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | ThesisLock`,
+      description,
+    },
+  };
+}
 
 export default function PrivacyPage() {
   return (
