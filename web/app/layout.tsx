@@ -28,6 +28,7 @@ import SettingsLink from "./components/SettingsLink";
 import RecentPages from "./components/RecentPages";
 import NavigationTracker from "./components/NavigationTracker";
 import BackupReminder from "./components/BackupReminder";
+import FavoritesBar from "./components/FavoritesBar";
 
 // Runs before first paint to apply the saved (or system) theme, avoiding a
 // flash of the wrong theme before React hydrates. Inlined as a string so it
@@ -145,6 +146,7 @@ export default function RootLayout({
                     <SettingsLink />
                     <RecentPages />
                     <NotificationSound />
+                    <FavoritesBar />
                     <main
                       id="main-content"
                       tabIndex={-1}
