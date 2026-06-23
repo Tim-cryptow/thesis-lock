@@ -12,6 +12,8 @@ type ValidatedInputProps = {
   placeholder?: string;
   maxLength?: number;
   helpText?: string;
+  // Message shown (in green) when the value is valid and non-empty.
+  validText?: string;
   required?: boolean;
   id?: string;
   type?: string;
@@ -36,6 +38,7 @@ export default function ValidatedInput({
   placeholder,
   maxLength,
   helpText,
+  validText,
   required = false,
   id: idProp,
   type = "text",
@@ -133,6 +136,8 @@ export default function ValidatedInput({
           <span className="text-red-600 dark:text-red-400" role="alert">
             {result.error}
           </span>
+        ) : showValid && validText ? (
+          <span className="text-green-600 dark:text-green-400">{validText}</span>
         ) : helpText ? (
           <span className="text-foreground/50">{helpText}</span>
         ) : null}
