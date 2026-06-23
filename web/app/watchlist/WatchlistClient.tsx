@@ -5,6 +5,7 @@ import Link from "next/link";
 import { validateStacksAddress } from "@stacks/transactions";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import HashInput from "@/app/components/HashInput";
+import AddressInput from "@/app/components/AddressInput";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -396,6 +397,8 @@ export default function WatchlistClient() {
         <div className="flex flex-col gap-3">
           {type === "hash" ? (
             <HashInput label="Hash to watch" value={value} onChange={setValue} />
+          ) : type === "wallet" ? (
+            <AddressInput label="Wallet to watch" value={value} onChange={setValue} />
           ) : (
             <input
               value={value}
