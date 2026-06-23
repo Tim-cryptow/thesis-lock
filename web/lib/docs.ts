@@ -62,6 +62,12 @@ export const DOCS: DocMeta[] = [
       "File previews with thumbnails, and the hash matcher that confirms a file matches an anchored hash for integrity checks.",
   },
   {
+    slug: "input-validation",
+    title: "Input Validation",
+    description:
+      "How fields validate hashes, addresses, labels, and names with clear errors, character counters, auto-formatting, and matching API checks.",
+  },
+  {
     slug: "contracts",
     title: "Contracts",
     description:
