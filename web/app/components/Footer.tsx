@@ -4,6 +4,7 @@ import Link from "next/link";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 import FooterStatus from "@/app/components/FooterStatus";
 import SocialLinks from "@/app/components/SocialLinks";
+import FooterStats from "@/app/components/FooterStats";
 
 const YEAR = 2026;
 
@@ -106,6 +107,10 @@ export default function Footer() {
             <FooterStatus />
             <LanguageSwitcher />
           </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <FooterStats />
         </div>
       </div>
     </footer>
