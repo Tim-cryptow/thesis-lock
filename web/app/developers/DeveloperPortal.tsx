@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
-import Footer from "@/app/components/Footer";
 import { useI18n } from "@/app/components/I18nProvider";
 import PlaygroundClient from "./PlaygroundClient";
 import ApiKeysClient from "./ApiKeysClient";
@@ -194,7 +193,6 @@ export default function DeveloperPortal() {
         ) : null}
         {tab === "webhooks" ? <WebhooksClient /> : null}
       </div>
-      <Footer />
     </>
   );
 }

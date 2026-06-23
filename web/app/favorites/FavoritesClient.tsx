@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
-import Footer from "@/app/components/Footer";
 import EmptyState from "@/app/components/EmptyState";
 import StarButton from "@/app/components/StarButton";
 import {
@@ -241,7 +240,6 @@ export default function FavoritesClient() {
           </>
         )}
       </div>
-      <Footer />
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
-import Footer from "@/app/components/Footer";
 import HashMatcher from "@/app/components/HashMatcher";
 
 type Mode = "hash-file" | "file-file";
@@ -75,7 +74,6 @@ export default function MatchClient() {
           />
         )}
       </div>
-      <Footer />
     </div>
   );
 }

@@ -1,121 +1,120 @@
 "use client";
 
 import Link from "next/link";
-import ThemeToggle from "@/app/components/ThemeToggle";
 import LanguageSwitcher from "@/app/components/LanguageSwitcher";
-import LiveBadge from "@/app/components/LiveBadge";
 import FooterStatus from "@/app/components/FooterStatus";
-import { useTour } from "@/app/components/TourProvider";
-import { resetTour } from "@/lib/onboarding";
-import { useI18n } from "@/app/components/I18nProvider";
+import SocialLinks from "@/app/components/SocialLinks";
+import FooterStats from "@/app/components/FooterStats";
+import BackToTop from "@/app/components/BackToTop";
 
-const REPO_URL = "https://github.com/Tim-cryptow/thesis-lock";
-const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
-const EXPLORER_URL = `https://explorer.hiro.so/address/${CONTRACT_ADDRESS}?chain=mainnet`;
+const YEAR = 2026;
+
+type FooterLink = { label: string; href: string };
+
+const SECTIONS: { heading: string; links: FooterLink[] }[] = [
+  {
+    heading: "Product",
+    links: [
+      { label: "Anchor", href: "/anchor" },
+      { label: "Batch Anchor", href: "/anchor?mode=batch" },
+      { label: "Verify", href: "/search" },
+      { label: "Bulk Verify", href: "/verify-bulk" },
+      { label: "Search", href: "/search" },
+      { label: "Hash Matcher", href: "/match" },
+    ],
+  },
+  {
+    heading: "Protocol",
+    links: [
+      { label: "Stats", href: "/stats" },
+      { label: "Feed", href: "/feed" },
+      { label: "Explorer", href: "/explorer" },
+      { label: "Groups", href: "/groups" },
+      { label: "Calendar", href: "/calendar" },
+    ],
+  },
+  {
+    heading: "Developers",
+    links: [
+      { label: "API Playground", href: "/developers" },
+      { label: "SDK", href: "/docs/sdk" },
+      { label: "CLI", href: "/docs/cli" },
+      { label: "GitHub Action", href: "/docs/github-action" },
+      { label: "Docs", href: "/docs" },
+    ],
+  },
+  {
+    heading: "Account",
+    links: [
+      { label: "My Anchors", href: "/anchors" },
+      { label: "Dashboard", href: "/dashboard" },
+      { label: "Activity", href: "/activity" },
+      { label: "Collections", href: "/collections" },
+      { label: "Settings", href: "/settings" },
+    ],
+  },
+];
 
 export default function Footer() {
-  const { t } = useI18n();
-  const { startTour } = useTour();
-
   return (
-    <footer className="mt-auto border-t border-foreground/10 py-8 px-6 text-sm text-foreground/60">
-      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-foreground">{t("common.brand")}</span>
-          <span className="text-foreground/50">{t("common.tagline")}</span>
+    <footer className="mt-auto border-t border-foreground/10 bg-card/60">
+      <div className="mx-auto w-full max-w-6xl px-6 py-12">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+          {SECTIONS.map((section) => (
+            <nav key={section.heading} aria-label={section.heading}>
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-foreground/60">
+                {section.heading}
+              </h2>
+              <ul className="space-y-2 text-sm">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-foreground/70 transition hover:text-foreground nav-underline"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              resetTour();
-              startTour();
-            }}
-            className="hover:text-foreground transition nav-underline"
-          >
-            Restart onboarding tour
-          </button>
-          <Link href="/docs" className="hover:text-foreground transition nav-underline">
-            {t("common.footer.docs")}
-          </Link>
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground transition nav-underline"
-          >
-            {t("common.footer.github")}
-          </a>
-          <a
-            href={EXPLORER_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground transition nav-underline"
-          >
-            {t("common.footer.explorer")}
-          </a>
-          <Link href="/docs/api" className="hover:text-foreground transition nav-underline">
-            {t("common.footer.api")}
-          </Link>
-          <Link
-            href="/developers"
-            data-tour="developers-link"
-            className="hover:text-foreground transition nav-underline"
-          >
-            {t("common.footer.developers")}
-          </Link>
-          <Link href="/settings" className="hover:text-foreground transition nav-underline">
-            Settings
-          </Link>
-          <Link href="/performance" className="hover:text-foreground transition nav-underline">
-            Performance
-          </Link>
-          <Link href="/tags" className="hover:text-foreground transition nav-underline">
-            Tags
-          </Link>
-          <Link href="/glossary" className="hover:text-foreground transition nav-underline">
-            Glossary
-          </Link>
-          <Link href="/match" className="hover:text-foreground transition nav-underline">
-            Hash Matcher
-          </Link>
-          <Link href="/audit" className="hover:text-foreground transition nav-underline">
-            Audit
-          </Link>
-          <Link
-            href="/calendar"
-            data-tour="calendar-nav"
-            className="hover:text-foreground transition nav-underline"
-          >
-            Calendar
-          </Link>
-          <a
-            href="/api/feed/rss"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="RSS feed"
-            title="RSS feed"
-            className="hover:text-foreground transition nav-underline"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-4 w-4"
-              aria-hidden="true"
-            >
-              <circle cx="6.18" cy="17.82" r="2.18" />
-              <path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83C19.56 11.4 12.6 4.44 4 4.44z" />
-              <path d="M4 10.1v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z" />
-            </svg>
-          </a>
-          <FooterStatus />
-          <LiveBadge />
-          <LanguageSwitcher />
-          <ThemeToggle />
+
+        <div className="mt-10 flex flex-col gap-4 border-t border-foreground/10 pt-6 text-sm text-foreground/60 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-1">
+            <span className="text-foreground/70">
+              Built on Stacks &middot; Secured by Bitcoin
+            </span>
+            <span className="text-foreground/50">&copy; {YEAR} ThesisLock</span>
+            <div className="mt-1 flex items-center gap-3 text-xs">
+              <Link
+                href="/terms"
+                className="text-foreground/55 transition hover:text-foreground nav-underline"
+              >
+                Terms
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-foreground/55 transition hover:text-foreground nav-underline"
+              >
+                Privacy
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <SocialLinks size="sm" />
+            <FooterStatus />
+            <LanguageSwitcher />
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <FooterStats />
         </div>
       </div>
+      <BackToTop />
     </footer>
   );
 }
