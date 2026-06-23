@@ -85,6 +85,20 @@ export default function Footer() {
               Built on Stacks &middot; Secured by Bitcoin
             </span>
             <span className="text-foreground/50">&copy; {YEAR} ThesisLock</span>
+            <div className="mt-1 flex items-center gap-3 text-xs">
+              <Link
+                href="/terms"
+                className="text-foreground/55 transition hover:text-foreground nav-underline"
+              >
+                Terms
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-foreground/55 transition hover:text-foreground nav-underline"
+              >
+                Privacy
+              </Link>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
