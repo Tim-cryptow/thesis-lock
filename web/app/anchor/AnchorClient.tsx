@@ -43,6 +43,8 @@ import {
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 import FilePreview from "@/app/components/FilePreview";
+import ValidatedInput from "@/app/components/ValidatedInput";
+import { validateLabel as validateLabelRule } from "@/lib/validators";
 import { useTx } from "@/app/components/TxProvider";
 import { useI18n } from "@/app/components/I18nProvider";
 
@@ -1075,40 +1077,17 @@ export default function AnchorPage() {
 
           {isGenericTemplate ? (
             <div className="mt-6">
-              <div className="flex items-center mb-2">
-                <label
-                  htmlFor="label"
-                  className="block text-sm text-foreground/60"
-                >
-                  {t("anchor.label.fieldLabel")}
-                </label>
-                <HelpText term="Label" />
-              </div>
-              <input
+              <ValidatedInput
                 id="label"
-                data-tour="label-input"
+                dataTour="label-input"
+                helpTerm="Label"
+                label={t("anchor.label.fieldLabel")}
                 value={label}
-                onChange={(e) => onLabelChange(e.target.value)}
+                onChange={onLabelChange}
+                validator={validateLabelRule}
                 placeholder={t("anchor.label.placeholder")}
                 maxLength={64}
-                aria-describedby="label-status"
-                aria-invalid={labelError ? true : undefined}
-                className="w-full px-3 py-2 rounded-md border border-foreground/15 bg-card focus:outline-none focus:border-foreground/50"
               />
-              <div
-                id="label-status"
-                className="mt-1 flex items-center justify-between text-xs"
-              >
-                <span
-                  className={labelError ? "text-red-600 dark:text-red-400" : "text-transparent"}
-                  role={labelError ? "alert" : undefined}
-                >
-                  {labelError ? t("anchor.label.asciiOnly") : "."}
-                </span>
-                <span className="text-foreground/50 font-mono">
-                  {label.length}/64
-                </span>
-              </div>
             </div>
           ) : (
             <div className="mt-6">
