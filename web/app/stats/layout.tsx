@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 
-const title = "Recent Anchors";
+const title = "Protocol Stats";
 const description =
-  "Browse the latest documents anchored on the Stacks blockchain via ThesisLock.";
+  "Live protocol statistics for ThesisLock: total anchors, unique wallets, contracts deployed, and on-chain activity across the Stacks mainnet contracts.";
 
 export const metadata: Metadata = {
   title,
   description,
-  alternates: { canonical: "/feed" },
+  alternates: { canonical: "/stats" },
   openGraph: {
     type: "website",
     siteName: "ThesisLock",
     title: `${title} | ThesisLock`,
     description,
-    url: "/feed",
+    url: "/stats",
   },
   twitter: {
     card: "summary_large_image",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FeedLayout({
+export default function StatsLayout({
   children,
 }: {
   children: React.ReactNode;
