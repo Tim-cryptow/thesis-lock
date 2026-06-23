@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import ErrorPage from "./ErrorPage";
+import RateLimitError from "./RateLimitError";
+
+const RATE_LIMIT = /\b429\b|rate.?limit|too many requests/i;
 
 type RouteErrorProps = {
   title: string;
@@ -25,6 +28,12 @@ export default function RouteError({
   useEffect(() => {
     console.error(error);
   }, [error]);
+
+  // A rate limit is transient, so show the dedicated auto-retrying view instead
+  // of the generic error layout.
+  if (RATE_LIMIT.test(error.message ?? "")) {
+    return <RateLimitError onRetry={unstable_retry} />;
+  }
 
   return (
     <ErrorPage
