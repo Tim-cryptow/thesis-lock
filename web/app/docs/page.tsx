@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: { absolute: "Documentation | ThesisLock Docs" },
   description:
     "Guides and reference for ThesisLock: contracts, web app, REST API, SDK, CLI, and GitHub Action.",
+  alternates: { canonical: "/docs" },
 };
 
 export default function DocsHome() {

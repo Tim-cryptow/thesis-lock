@@ -12,6 +12,7 @@ export function generateMetadata(): Metadata {
   return {
     title,
     description,
+    alternates: { canonical: "/terms" },
     openGraph: {
       type: "website",
       siteName: "ThesisLock",
