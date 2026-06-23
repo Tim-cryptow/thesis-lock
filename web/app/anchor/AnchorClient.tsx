@@ -150,6 +150,11 @@ export default function AnchorPage() {
     }
   }, [searchParams]);
 
+  // Deep links such as /anchor?mode=batch open straight into batch mode.
+  useEffect(() => {
+    if (searchParams.get("mode") === "batch") setMode("batch");
+  }, [searchParams]);
+
   const setFieldValue = (key: string, value: string) => {
     setFieldValues((prev) => ({ ...prev, [key]: value }));
   };
