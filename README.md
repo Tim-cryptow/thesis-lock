@@ -53,6 +53,7 @@ ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, givi
 - Standardized input validation across every form: hashes, Stacks addresses, labels, and names validate as you type with a character counter, a clear error message, and a green checkmark once a value is valid. Hash and address fields auto-format pasted values (stripping whitespace and a leading `0x`, lowercasing, and detecting which kind a paste is), submit buttons stay disabled until the required fields pass, and the same rules guard the REST API, which answers malformed input with a `400` and a specific message instead of failing deeper in.
 - Complete SEO and social-sharing metadata on every page: a per-page title, description, canonical URL, and Open Graph and Twitter card tags, with site-wide defaults and explicit indexing directives in the root layout. A generated `sitemap.xml` lists every page (including all documentation guides, kept in sync with the docs index) with per-section change frequencies and priorities, `robots.txt` allows crawling while disallowing the `/api/` routes, and JSON-LD structured data (Organization on the landing page, WebPage on verification pages, TechArticle on the docs) makes the content machine-readable for search engines.
 - Comprehensive error pages that guide users back: a branded global 404 with an inline hash search and suggested links, custom not-found pages for invalid hashes, wallet addresses, and groups (validated on the server so bad links get a specific message), route-level error boundaries with a retry on every page that reads on-chain data, an auto-retrying rate-limit view, plus offline and maintenance pages. A reusable `ErrorPage` component keeps them consistent in light and dark themes.
+- Real-time event sync from chain to a Supabase index: a hosted Hiro Chainhook posts every `anchor-created` event to `/api/chainhooks`, which verifies a bearer token and mirrors the events into a `thesis_locks` table, reorg-aware (apply and rollback) and idempotent per transaction id. Reads still work without it; the chain stays the source of truth. See `chainhooks/README.md`.
 
 ## Protocol
 
@@ -75,6 +76,7 @@ The original `thesislock` contract was first deployed at Stacks block 7798720, b
 - Next.js 16 App Router with TypeScript and Tailwind
 - Stacks Connect for wallet integration (Leather, Xverse, Asigna)
 - Hiro Stacks API for read-only contract calls
+- Supabase as an optional real-time index of anchor events, populated by a Hiro Chainhook
 - Vercel for hosting
 
 ## Local development

@@ -1,0 +1,23 @@
+{
+  "chain": "stacks",
+  "uuid": "f6a7b8c9-0d1e-4f23-8a45-6b7c8d9e0f12",
+  "name": "thesislock-anchor-created",
+  "version": 1,
+  "networks": {
+    "mainnet": {
+      "start_block": 7798720,
+      "decode_clarity_values": true,
+      "if_this": {
+        "scope": "print_event",
+        "contract_identifier": "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock",
+        "contains": "anchor-created"
+      },
+      "then_that": {
+        "http_post": {
+          "url": "https://thesis-lock.vercel.app/api/chainhooks",
+          "authorization_header": "Bearer <CHAINHOOK_AUTH_TOKEN>"
+        }
+      }
+    }
+  }
+}

@@ -31,6 +31,9 @@ web/out
 # Claude Code (local-only)
 .claude/settings.local.json
 
+# Chainhook predicates with real secrets filled in (commit only the placeholder)
+chainhooks/*.local.json
+
 # Deployment logs
 .deploy-logs/
 

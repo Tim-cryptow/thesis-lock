@@ -224,6 +224,12 @@ export const DOCS: DocMeta[] = [
       "Subscribe to protocol events programmatically: the event types, the signed JSON payload format, HMAC-SHA256 signature verification, and the developer portal manager and tester.",
   },
   {
+    slug: "event-sync",
+    title: "Event Sync",
+    description:
+      "How a Hiro Chainhook streams on-chain anchor events into a Supabase index in real time, with reorg-aware apply and rollback and a public read table.",
+  },
+  {
     slug: "data-portability",
     title: "Data Portability",
     description:

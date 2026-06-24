@@ -10,7 +10,7 @@ ThesisLock is a hash-anchor service for academic and creative documents on the S
 - Frontend: Next.js 14 App Router, TypeScript (strict), Tailwind, deployed to Vercel
 - Wallet: Stacks Connect (Leather, Xverse, Asigna)
 - Reads: Hiro Stacks API at `https://api.mainnet.hiro.so`
-- No backend, no database, no auth server. Hashing is client-side. Reads go directly to the public Hiro API.
+- Minimal backend. Hashing is client-side and the app reads directly from the public Hiro API. The only server-side component is the Hiro Chainhook ingestion endpoint (`/api/chainhooks`), which mirrors anchor events into an optional Supabase index (`thesis_locks`); the chain stays the source of truth.
 
 ## Identifiers
 
