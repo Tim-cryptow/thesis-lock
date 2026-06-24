@@ -1,11 +1,16 @@
-"use client";
+import { notFound } from "next/navigation";
+import GroupDetailLoader from "./GroupDetailLoader";
 
-import dynamic from "next/dynamic";
+type Props = {
+  params: Promise<{ id: string }>;
+};
 
-const GroupDetailClient = dynamic(() => import("./GroupDetailClient"), {
-  ssr: false,
-});
-
-export default function Page() {
-  return <GroupDetailClient />;
+// Group ids are sequential integers assigned on chain. Anything else cannot be
+// a real group, so render the not-found page instead of loading the client.
+export default async function Page({ params }: Props) {
+  const { id } = await params;
+  if (!/^\d+$/.test(id ?? "")) {
+    notFound();
+  }
+  return <GroupDetailLoader />;
 }

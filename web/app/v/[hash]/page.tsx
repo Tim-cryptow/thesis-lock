@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import VerifyClientLoader from "./VerifyClientLoader";
+import { notFound } from "next/navigation";
 import JsonLd from "@/app/components/JsonLd";
 import { fetchAnchor, fetchBatchAnchor } from "@/lib/hiroAnchor";
 
@@ -160,7 +161,13 @@ const webPageSchema = {
     "Check if a document hash has been anchored on the Stacks blockchain.",
 };
 
-export default function Page() {
+export default async function Page({ params }: Props) {
+  const { hash } = await params;
+  // Only the hash format is checked here. A well-formed hash that simply is not
+  // anchored still renders the verify view, which explains it is unverified.
+  if (!HEX_64.test((hash ?? "").toLowerCase())) {
+    notFound();
+  }
   return (
     <>
       <JsonLd data={webPageSchema} />

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import ProfileClient from "./ProfileClient";
+import { notFound } from "next/navigation";
+import { validateAddress } from "@/lib/validators";
 
 type Props = {
   params: Promise<{ address: string }>;
@@ -36,6 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function Page() {
+export default async function Page({ params }: Props) {
+  const { address } = await params;
+  if (!validateAddress(address ?? "").valid) {
+    notFound();
+  }
   return <ProfileClient />;
 }
