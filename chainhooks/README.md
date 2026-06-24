@@ -67,24 +67,28 @@ Redeploy after setting them so the endpoint picks them up.
    `print_event`, contract `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM.thesislock`,
    `contains` `anchor-created`, `start_block` `7798720`, `decode_clarity_values`
    `true`.
-4. Set the action to **HTTP POST** with URL
-   `https://thesis-lock.vercel.app/api/chainhooks` and the authorization header to
-   `Bearer <your CHAINHOOK_AUTH_TOKEN>` (the same value set in Vercel). The
-   committed predicate keeps a placeholder; enter the real token only in the Hiro
-   UI, never in the file.
+4. Set the action to **HTTP POST**. The hosted Hiro Platform builder has no
+   custom-header field, so pass the secret as a `token` query parameter on the
+   endpoint URL:
+   `https://thesis-lock.vercel.app/api/chainhooks?token=<your CHAINHOOK_AUTH_TOKEN>`
+   Use the same value you set as `CHAINHOOK_AUTH_TOKEN` in Vercel. (If you instead
+   run the predicate with the Chainhook CLI or a self-hosted node, you can use the
+   `authorization_header` in `thesislock-events.predicate.json`; the endpoint
+   accepts either the header or the query parameter.) Enter the real token only in
+   the Hiro UI, never in the committed file.
 5. Enable the chainhook. It backfills from block 7798720, then streams new events.
 
 ## 4. Smoke test
 
 ```
-curl -i -X POST https://thesis-lock.vercel.app/api/chainhooks \
-  -H "Authorization: Bearer $CHAINHOOK_AUTH_TOKEN" \
+curl -i -X POST "https://thesis-lock.vercel.app/api/chainhooks?token=$CHAINHOOK_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"apply":[],"rollback":[]}'
 # -> HTTP/1.1 200 ... {"ok":true}
 ```
 
-A wrong or missing token returns `401`. Malformed JSON returns `400`. Any
+The `Authorization: Bearer $CHAINHOOK_AUTH_TOKEN` header works the same way. A
+wrong or missing token returns `401`. Malformed JSON returns `400`. Any
 processing or database error returns `500`, which tells Hiro to retry; because
 writes upsert on `tx_id`, replays are safe.
 

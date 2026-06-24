@@ -76,7 +76,7 @@ export default function EventSyncDocs() {
         items={[
           <>
             <Code>CHAINHOOK_AUTH_TOKEN</Code> is the shared secret the chainhook
-            sends as its bearer token.
+            presents, as a bearer token or a <Code>?token=</Code> query parameter.
           </>,
           <>
             <Code>SUPABASE_URL</Code> is the Supabase project URL.

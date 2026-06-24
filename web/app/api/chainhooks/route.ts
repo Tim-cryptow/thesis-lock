@@ -118,7 +118,13 @@ export async function POST(req: Request) {
     return json({ ok: false, error: "Server not configured." }, 500);
   }
   const header = req.headers.get("authorization") ?? "";
-  const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
+  const bearer = header.startsWith("Bearer ") ? header.slice(7) : "";
+  // Also accept the token as a ?token= query param: the hosted Hiro Platform
+  // builder cannot send a custom Authorization header, so the secret rides on
+  // the endpoint URL instead. The Chainhook CLI / self-hosted node can still use
+  // the Bearer header.
+  const queryToken = new URL(req.url).searchParams.get("token") ?? "";
+  const provided = bearer || queryToken;
   if (!provided || !tokenMatches(provided, expected)) {
     return json({ ok: false, error: "Unauthorized." }, 401);
   }
