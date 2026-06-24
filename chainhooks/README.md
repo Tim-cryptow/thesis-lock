@@ -87,10 +87,12 @@ curl -i -X POST "https://thesis-lock.vercel.app/api/chainhooks?token=$CHAINHOOK_
 # -> HTTP/1.1 200 ... {"ok":true}
 ```
 
-The `Authorization: Bearer $CHAINHOOK_AUTH_TOKEN` header works the same way. A
-wrong or missing token returns `401`. Malformed JSON returns `400`. Any
-processing or database error returns `500`, which tells Hiro to retry; because
-writes upsert on `tx_id`, replays are safe.
+The `Authorization: Bearer $CHAINHOOK_AUTH_TOKEN` header works the same way. An
+empty body like this acknowledges with `200` once the token matches, without
+needing Supabase, so it is a clean reachability and auth check. Status codes:
+`404` the route is not deployed to production yet; `401` the token does not match
+`CHAINHOOK_AUTH_TOKEN`; `400` malformed JSON; `500` a configuration or database
+error (Hiro retries, and upserts on `tx_id` make replays safe).
 
 ## What gets stored
 

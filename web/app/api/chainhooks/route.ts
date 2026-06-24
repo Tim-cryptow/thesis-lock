@@ -137,13 +137,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    const supabase = getSupabaseAdmin();
-
     // Rollback before apply: if a reorg both rolls back and re-applies a tx, the
     // apply pass below restores reverted=false, leaving the correct final state.
     const rolledBack = (payload.rollback ?? [])
       .flatMap(anchorRowsFromBlock)
       .map((row) => row.tx_id);
+    const rows = (payload.apply ?? []).flatMap(anchorRowsFromBlock);
+
+    // Nothing relevant in this delivery (true for most blocks): acknowledge
+    // without touching the database, so a no-op never depends on Supabase.
+    if (rolledBack.length === 0 && rows.length === 0) {
+      return json({ ok: true });
+    }
+
+    const supabase = getSupabaseAdmin();
+
     if (rolledBack.length > 0) {
       const { error } = await supabase
         .from("thesis_locks")
@@ -153,7 +161,6 @@ export async function POST(req: Request) {
     }
 
     // Apply: idempotent upsert keyed on tx_id, so redelivery is a safe no-op.
-    const rows = (payload.apply ?? []).flatMap(anchorRowsFromBlock);
     if (rows.length > 0) {
       const { error } = await supabase
         .from("thesis_locks")
