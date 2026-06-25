@@ -45,7 +45,9 @@ export type IndexAnchor = {
 // The single column->UI-type mapper every helper reuses.
 export function rowToAnchor(row: AnchorRow): IndexAnchor {
   return {
-    hash: (row.hash ?? "").toLowerCase(),
+    // The index stores the hash 0x-prefixed; the UI (feed links, search dedup,
+    // /v/<hash> which requires 64 bare hex chars) uses a 0x-free lowercase hash.
+    hash: (row.hash ?? "").replace(/^0x/i, "").toLowerCase(),
     anchoredBy: row.anchored_by ?? "",
     label: row.label ?? "",
     stacksBlock: Number(row.stacks_block ?? 0),
