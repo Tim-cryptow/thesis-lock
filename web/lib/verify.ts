@@ -1,5 +1,6 @@
 import { validateStacksAddress } from "@stacks/transactions";
-import { fetchAnchor, fetchBatchAnchor } from "./hiroAnchor";
+import { fetchBatchAnchor } from "./hiroAnchor";
+import { getAnchorByHash } from "./anchorsIndex";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -85,7 +86,11 @@ export async function verifyHash(
     }
   }
 
-  const single = await fetchAnchor(hash);
+  // Single-anchor verification reads the live contract first (the source of
+  // truth), so a stale index row never certifies a rolled-back anchor; the index
+  // is only a fallback when the chain read is unreachable. getAnchorByHash
+  // encapsulates that, returning null only on an authoritative not-found.
+  const single = await getAnchorByHash(hash);
   if (single) {
     return {
       verified: true,

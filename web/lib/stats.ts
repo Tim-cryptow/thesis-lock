@@ -1,4 +1,5 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
+import { getStats } from "./anchorsIndex";
 import { fetchWithRetry } from "./fetchWithRetry";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
@@ -120,10 +121,16 @@ function txDay(tx: AddressTx): string | null {
 }
 
 async function computeStats(): Promise<ProtocolStats> {
-  const [single, batch, registry] = await Promise.all([
+  // The single-anchor total comes from the index when it is reachable, keeping
+  // the headline count consistent with the migrated feed/search/verify reads.
+  // The per-day chart, wallet union, and batch/registry totals still need the
+  // per-transaction Hiro data, so those contract calls remain. getStats returns
+  // null on an index outage, and totalAnchors falls back to the Hiro count.
+  const [single, batch, registry, indexStats] = await Promise.all([
     fetchContractCalls(SINGLE_CONTRACT),
     fetchContractCalls(BATCH_CONTRACT),
     fetchContractCalls(REGISTRY_CONTRACT),
+    getStats(),
   ]);
 
   const everyCall = [...single, ...batch, ...registry];
@@ -180,8 +187,10 @@ async function computeStats(): Promise<ProtocolStats> {
     .map(([date, count]) => ({ date, count }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
+  const singleAnchors = indexStats ? indexStats.totalAnchors : single.length;
+
   return {
-    totalAnchors: single.length + batchAnchors,
+    totalAnchors: singleAnchors + batchAnchors,
     totalBatchAnchors: batchAnchors,
     totalRegistrations: registry.length,
     totalTransactions: single.length + batch.length + registry.length,

@@ -91,6 +91,19 @@ export default function EventSyncDocs() {
         Full setup, the table SQL, and the Hiro Platform registration steps live
         in <Code>chainhooks/README.md</Code> in the repository.
       </P>
+
+      <H2>Reads</H2>
+      <P>
+        The app&apos;s feed, stats, profile, search, and verify reads query this
+        index through a browser-safe anon key (the public-read RLS policy) instead
+        of polling the Hiro API on every request. If the index is unreachable, or
+        a just-anchored hash has not been indexed yet, those reads fall back to
+        the Hiro API, so verification never returns a false negative. Batch,
+        registry, group, and proof anchors still come from Hiro. These reads use{" "}
+        <Code>NEXT_PUBLIC_SUPABASE_URL</Code> and{" "}
+        <Code>NEXT_PUBLIC_SUPABASE_ANON_KEY</Code>, distinct from the server-only
+        write vars above.
+      </P>
     </div>
   );
 }

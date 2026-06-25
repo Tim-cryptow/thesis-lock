@@ -7,6 +7,7 @@ import {
   readAnchor,
   readBatchAnchor,
 } from "./stacks";
+import { searchAnchors } from "./anchorsIndex";
 import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
@@ -275,13 +276,20 @@ export async function searchByHash(
 
   const results: SearchResult[] = [];
 
-  const [single, proof, groupEvents, registryEvents] = await Promise.all([
-    readAnchor(normalized).catch(() => null),
+  const [indexSingles, proof, groupEvents, registryEvents] = await Promise.all([
+    searchAnchors(normalized, "hash"),
     getProofByHash(normalized).catch(() => null),
     fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
     fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
   ]);
 
+  // Use the index when it has the hash; otherwise (an index outage OR a miss for
+  // a not-yet-indexed anchor) confirm against the chain, matching verify's
+  // fallback so hash search and verify never disagree.
+  const single =
+    indexSingles && indexSingles.length > 0
+      ? indexSingles[0]
+      : await readAnchor(normalized).catch(() => null);
   if (single) {
     results.push({
       hash: normalized,
@@ -463,10 +471,15 @@ export async function searchByPrincipal(
   const owner = principal.trim().toUpperCase();
   if (!STX_PRINCIPAL.test(owner)) return [];
 
-  const [registryEntries, singleEvents, registryEvents, proofEvents, groupEvents] =
+  // Single anchors come from the index; on an outage, fall back to the Hiro
+  // single-contract event scan.
+  const indexSingles = await searchAnchors(owner, "principal");
+  const [registryEntries, fallbackSingleEvents, registryEvents, proofEvents, groupEvents] =
     await Promise.all([
       getRecentAnchors(owner).catch(() => []),
-      fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
+      indexSingles === null
+        ? fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[])
+        : Promise.resolve([] as RawEvent[]),
       fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllEvents(PROOF_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
@@ -486,8 +499,21 @@ export async function searchByPrincipal(
     });
   }
 
+  if (indexSingles !== null) {
+    for (const a of indexSingles) {
+      results.push({
+        hash: a.hash,
+        label: a.label,
+        owner,
+        stacksBlock: a.stacksBlock,
+        source: "single",
+        verifyUrl: buildVerifyUrl(a.hash, "single", owner),
+      });
+    }
+  }
+
   for (const ev of [
-    ...singleEvents,
+    ...fallbackSingleEvents,
     ...registryEvents,
     ...proofEvents,
     ...groupEvents,
@@ -565,16 +591,33 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
 
-  const [singleEvents, registryEvents, groupEvents, proofResults] =
+  // Single anchors come from the index; on an outage, fall back to the Hiro
+  // single-contract event scan.
+  const indexSingles = await searchAnchors(needle, "label");
+  const [fallbackSingleEvents, registryEvents, groupEvents, proofResults] =
     await Promise.all([
-      fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
+      indexSingles === null
+        ? fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[])
+        : Promise.resolve([] as RawEvent[]),
       fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
       fetchAllProofs().catch(() => [] as SearchResult[]),
     ]);
 
   const results: SearchResult[] = [];
-  for (const ev of [...singleEvents, ...groupEvents]) {
+  if (indexSingles !== null) {
+    for (const a of indexSingles) {
+      results.push({
+        hash: a.hash,
+        label: a.label,
+        owner: a.anchoredBy,
+        stacksBlock: a.stacksBlock,
+        source: "single",
+        verifyUrl: buildVerifyUrl(a.hash, "single", a.anchoredBy),
+      });
+    }
+  }
+  for (const ev of [...fallbackSingleEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.label.toLowerCase().includes(needle)) {
       results.push(toResult(parsed));

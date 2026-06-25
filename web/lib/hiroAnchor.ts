@@ -72,7 +72,11 @@ function withHexPrefix(hex: string): string {
   return hex.startsWith("0x") ? hex : `0x${hex}`;
 }
 
-async function callReadOnly(
+// Throws when the Hiro read itself fails (network error, non-2xx, or an API
+// error response) so callers can tell an outage apart from a genuine miss.
+// Returns the deserialized Clarity value, or null when the contract responded
+// with no value (an optional none), which is an authoritative "not found".
+async function callReadOnlyOrThrow(
   contract: string,
   fn: string,
   args: string[],
@@ -87,11 +91,37 @@ async function callReadOnly(
     }),
     next: { revalidate: 60 },
   });
-  if (!res.ok) return null;
+  if (!res.ok) throw new Error(`Hiro read-only call failed: ${res.status}`);
   const data = (await res.json()) as { okay?: boolean; result?: string };
-  if (!data.okay || !data.result) return null;
-  const cv = deserializeCV(data.result);
-  return cvToValue(cv, true);
+  if (!data.okay || !data.result) {
+    throw new Error("Hiro read-only call returned no result");
+  }
+  return cvToValue(deserializeCV(data.result), true);
+}
+
+// Best-effort wrapper: maps any failure (outage or API error) to null, so reads
+// that only need "value or nothing" treat an unreachable Hiro the same as a
+// miss. The verify path uses callReadOnlyOrThrow directly to keep them distinct.
+async function callReadOnly(
+  contract: string,
+  fn: string,
+  args: string[],
+): Promise<unknown> {
+  try {
+    return await callReadOnlyOrThrow(contract, fn, args);
+  } catch {
+    return null;
+  }
+}
+
+function mapAnchorValue(value: unknown): FetchedAnchor {
+  const v = tupleFields(value);
+  return {
+    anchoredBy: String(fieldValue(v["anchored-by"]) ?? ""),
+    stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
+    burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
+    label: String(fieldValue(v["label"]) ?? ""),
+  };
 }
 
 export async function fetchAnchor(
@@ -101,13 +131,22 @@ export async function fetchAnchor(
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const value = await callReadOnly(CONTRACT_NAME, "get-anchor", [hashArg]);
   if (value === null || value === undefined) return null;
-  const v = tupleFields(value);
-  return {
-    anchoredBy: String(fieldValue(v["anchored-by"]) ?? ""),
-    stacksBlock: Number(fieldValue(v["stacks-block"]) ?? 0),
-    burnBlock: Number(fieldValue(v["burn-block"]) ?? 0),
-    label: String(fieldValue(v["label"]) ?? ""),
-  };
+  return mapAnchorValue(value);
+}
+
+// Like fetchAnchor, but throws when the contract read is unreachable (so the
+// verify path can fall back to the index only on a real outage) and returns null
+// only when the chain authoritatively has no anchor for the hash. This keeps the
+// chain the source of truth for positive verification: a rolled-back anchor the
+// index has not marked reverted yet still reads as not found here.
+export async function fetchAnchorStrict(
+  hash: string,
+): Promise<FetchedAnchor | null> {
+  if (!HEX_64.test(hash)) return null;
+  const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
+  const value = await callReadOnlyOrThrow(CONTRACT_NAME, "get-anchor", [hashArg]);
+  if (value === null || value === undefined) return null;
+  return mapAnchorValue(value);
 }
 
 export async function fetchBatchAnchor(
