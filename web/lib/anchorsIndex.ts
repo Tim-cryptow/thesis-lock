@@ -6,6 +6,9 @@
 // callers can fall back to Hiro.
 
 import { getSupabaseRead } from "./supabaseClient";
+import { fetchAnchor, type FetchedAnchor } from "./hiroAnchor";
+
+const HEX_64 = /^[0-9a-f]{64}$/;
 
 export const ANCHORS_TABLE = "thesis_locks";
 
@@ -111,4 +114,47 @@ export async function getAnchorsByPrincipal(
   } catch {
     return null;
   }
+}
+
+// Resolve a single anchor by hash for the verify/detail path. The index is a
+// best-effort-fast cache, so on an index miss (or when the index is unreachable)
+// this falls back to the live Hiro contract read for that one hash. A recent,
+// not-yet-indexed anchor therefore never reads as "not found": the chain stays
+// the source of truth. Returns the same FetchedAnchor shape fetchAnchor returns,
+// so the verify lookup swaps mechanically.
+export async function getAnchorByHash(
+  hash: string,
+): Promise<FetchedAnchor | null> {
+  const normalized = (
+    hash.startsWith("0x") ? hash.slice(2) : hash
+  ).toLowerCase();
+  if (!HEX_64.test(normalized)) return null;
+
+  const supabase = getSupabaseRead();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from(ANCHORS_TABLE)
+        .select(ANCHOR_COLUMNS)
+        .eq("reverted", false)
+        // Match whether the column stored the hash with or without a 0x prefix.
+        .or(`hash.eq.0x${normalized},hash.eq.${normalized}`)
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        const anchor = rowToAnchor(data[0] as unknown as AnchorRow);
+        return {
+          anchoredBy: anchor.anchoredBy,
+          stacksBlock: anchor.stacksBlock,
+          burnBlock: anchor.burnBlock,
+          label: anchor.label,
+        };
+      }
+      // No row in the index: fall through to the chain rather than returning a
+      // false negative for a recent, not-yet-indexed anchor.
+    } catch {
+      // Index unreachable: fall through to the chain.
+    }
+  }
+
+  return fetchAnchor(normalized);
 }
