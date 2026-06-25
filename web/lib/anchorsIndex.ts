@@ -178,15 +178,19 @@ export async function searchAnchors(
   let hashNorm = "";
   let owner = "";
   let needle = "";
+  let labelPattern = "";
   if (type === "hash") {
     hashNorm = (query.startsWith("0x") ? query.slice(2) : query).toLowerCase();
     if (!HEX_64.test(hashNorm)) return [];
   } else if (type === "principal") {
     owner = query.trim().toUpperCase();
   } else {
-    // Strip LIKE wildcards so they match literally, like the Hiro path's includes.
-    needle = query.trim().replace(/[%_]/g, "");
+    needle = query.trim();
     if (!needle) return [];
+    // Escape the LIKE metacharacters (\ % _) so they match literally instead of
+    // acting as wildcards, preserving labels like "draft_v2" or "50%". A bare
+    // value deleted them, which both lost characters and broadened the match.
+    labelPattern = needle.replace(/[\\%_]/g, "\\$&");
   }
 
   try {
@@ -204,7 +208,7 @@ export async function searchAnchors(
       } else if (type === "principal") {
         q = q.eq("anchored_by", owner);
       } else {
-        q = q.ilike("label", `%${needle}%`);
+        q = q.ilike("label", `%${labelPattern}%`);
       }
       const { data, error } = await q
         .order("block_height", { ascending: false })
@@ -214,7 +218,15 @@ export async function searchAnchors(
       rows.push(...(data as unknown as AnchorRow[]));
       if (data.length < SEARCH_PAGE) break;
     }
-    return rows.map(rowToAnchor);
+    const anchors = rows.map(rowToAnchor);
+    // PostgREST also treats * as a wildcard (it cannot be escaped in the
+    // pattern), so re-check label hits with an exact, case-insensitive substring
+    // match to mirror the Hiro path's String.includes and drop any over-matches.
+    if (type === "label") {
+      const lower = needle.toLowerCase();
+      return anchors.filter((a) => a.label.toLowerCase().includes(lower));
+    }
+    return anchors;
   } catch {
     return null;
   }
