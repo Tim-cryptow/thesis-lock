@@ -5,6 +5,8 @@
 // rows (reorg correctness) and degrades to null when the index is unreachable so
 // callers can fall back to Hiro.
 
+import { getSupabaseRead } from "./supabaseClient";
+
 export const ANCHORS_TABLE = "thesis_locks";
 
 // The columns every read selects, kept beside the row type so they stay in sync.
@@ -48,4 +50,40 @@ export function rowToAnchor(row: AnchorRow): IndexAnchor {
     txId: row.tx_id,
     blockHeight: Number(row.block_height ?? 0),
   };
+}
+
+// Opaque keyset cursor for stable feed pagination across pages.
+export type AnchorCursor = { blockHeight: number; txId: string };
+
+// Recent single anchors for the feed, newest first. Backed by
+// thesis_locks_recent_idx (block_height desc where reverted = false). The cursor
+// pages by (block_height, tx_id) so pagination stays stable when several anchors
+// share a block. Returns null when the index is unavailable so the feed can fall
+// back to the Hiro event stream.
+export async function getRecentAnchors(
+  limit: number,
+  cursor?: AnchorCursor,
+): Promise<IndexAnchor[] | null> {
+  const supabase = getSupabaseRead();
+  if (!supabase) return null;
+  try {
+    let query = supabase
+      .from(ANCHORS_TABLE)
+      .select(ANCHOR_COLUMNS)
+      .eq("reverted", false)
+      .order("block_height", { ascending: false })
+      .order("tx_id", { ascending: false })
+      .limit(limit);
+    if (cursor) {
+      // Rows strictly older than the cursor in (block_height desc, tx_id desc).
+      query = query.or(
+        `block_height.lt.${cursor.blockHeight},and(block_height.eq.${cursor.blockHeight},tx_id.lt.${cursor.txId})`,
+      );
+    }
+    const { data, error } = await query;
+    if (error || !data) return null;
+    return (data as unknown as AnchorRow[]).map(rowToAnchor);
+  } catch {
+    return null;
+  }
 }
