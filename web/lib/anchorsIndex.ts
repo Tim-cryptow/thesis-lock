@@ -9,6 +9,9 @@ import { getSupabaseRead } from "./supabaseClient";
 import { fetchAnchor, type FetchedAnchor } from "./hiroAnchor";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
+// Page size for indexed searches, and a safety cap to bound a runaway loop.
+const SEARCH_PAGE = 1000;
+const SEARCH_SAFETY_CAP = 50000;
 
 export const ANCHORS_TABLE = "thesis_locks";
 
@@ -170,32 +173,48 @@ export async function searchAnchors(
 ): Promise<IndexAnchor[] | null> {
   const supabase = getSupabaseRead();
   if (!supabase) return null;
+
+  // Resolve the filter inputs once, bailing on invalid input.
+  let hashNorm = "";
+  let owner = "";
+  let needle = "";
+  if (type === "hash") {
+    hashNorm = (query.startsWith("0x") ? query.slice(2) : query).toLowerCase();
+    if (!HEX_64.test(hashNorm)) return [];
+  } else if (type === "principal") {
+    owner = query.trim().toUpperCase();
+  } else {
+    // Strip LIKE wildcards so they match literally, like the Hiro path's includes.
+    needle = query.trim().replace(/[%_]/g, "");
+    if (!needle) return [];
+  }
+
   try {
-    let q = supabase
-      .from(ANCHORS_TABLE)
-      .select(ANCHOR_COLUMNS)
-      .eq("reverted", false);
-    if (type === "hash") {
-      const normalized = (
-        query.startsWith("0x") ? query.slice(2) : query
-      ).toLowerCase();
-      if (!HEX_64.test(normalized)) return [];
-      q = q.or(`hash.eq.0x${normalized},hash.eq.${normalized}`);
-    } else if (type === "principal") {
-      q = q.eq("anchored_by", query.trim().toUpperCase());
-    } else {
-      // Substring match. Strip LIKE wildcards so they match literally, the same
-      // way the Hiro path's String.includes does.
-      const needle = query.trim().replace(/[%_]/g, "");
-      if (!needle) return [];
-      q = q.ilike("label", `%${needle}%`);
+    // Page to exhaustion: PostgREST caps a single response, so a wallet or label
+    // with many matches must be paged rather than silently dropping older rows
+    // (the Hiro path it replaces scanned events to exhaustion).
+    const rows: AnchorRow[] = [];
+    for (let offset = 0; offset < SEARCH_SAFETY_CAP; offset += SEARCH_PAGE) {
+      let q = supabase
+        .from(ANCHORS_TABLE)
+        .select(ANCHOR_COLUMNS)
+        .eq("reverted", false);
+      if (type === "hash") {
+        q = q.or(`hash.eq.0x${hashNorm},hash.eq.${hashNorm}`);
+      } else if (type === "principal") {
+        q = q.eq("anchored_by", owner);
+      } else {
+        q = q.ilike("label", `%${needle}%`);
+      }
+      const { data, error } = await q
+        .order("block_height", { ascending: false })
+        .order("tx_id", { ascending: false })
+        .range(offset, offset + SEARCH_PAGE - 1);
+      if (error || !data) return null;
+      rows.push(...(data as unknown as AnchorRow[]));
+      if (data.length < SEARCH_PAGE) break;
     }
-    const { data, error } = await q
-      .order("block_height", { ascending: false })
-      .order("tx_id", { ascending: false })
-      .limit(1000);
-    if (error || !data) return null;
-    return (data as unknown as AnchorRow[]).map(rowToAnchor);
+    return rows.map(rowToAnchor);
   } catch {
     return null;
   }
