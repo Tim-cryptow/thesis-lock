@@ -158,3 +158,43 @@ export async function getAnchorByHash(
 
   return fetchAnchor(normalized);
 }
+
+// Search single anchors in the index by exact hash, exact principal, or label
+// substring (case-insensitive), newest first. Returns null when the index is
+// unavailable so search can fall back to the Hiro single-contract event scan.
+export async function searchAnchors(
+  query: string,
+  type: "hash" | "principal" | "label",
+): Promise<IndexAnchor[] | null> {
+  const supabase = getSupabaseRead();
+  if (!supabase) return null;
+  try {
+    let q = supabase
+      .from(ANCHORS_TABLE)
+      .select(ANCHOR_COLUMNS)
+      .eq("reverted", false);
+    if (type === "hash") {
+      const normalized = (
+        query.startsWith("0x") ? query.slice(2) : query
+      ).toLowerCase();
+      if (!HEX_64.test(normalized)) return [];
+      q = q.or(`hash.eq.0x${normalized},hash.eq.${normalized}`);
+    } else if (type === "principal") {
+      q = q.eq("anchored_by", query.trim().toUpperCase());
+    } else {
+      // Substring match. Strip LIKE wildcards so they match literally, the same
+      // way the Hiro path's String.includes does.
+      const needle = query.trim().replace(/[%_]/g, "");
+      if (!needle) return [];
+      q = q.ilike("label", `%${needle}%`);
+    }
+    const { data, error } = await q
+      .order("block_height", { ascending: false })
+      .order("tx_id", { ascending: false })
+      .limit(1000);
+    if (error || !data) return null;
+    return (data as unknown as AnchorRow[]).map(rowToAnchor);
+  } catch {
+    return null;
+  }
+}
