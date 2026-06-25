@@ -283,10 +283,12 @@ export async function searchByHash(
     fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
   ]);
 
-  // Single anchor from the index; on an index outage, read it live from chain.
+  // Use the index when it has the hash; otherwise (an index outage OR a miss for
+  // a not-yet-indexed anchor) confirm against the chain, matching verify's
+  // fallback so hash search and verify never disagree.
   const single =
-    indexSingles !== null
-      ? (indexSingles[0] ?? null)
+    indexSingles && indexSingles.length > 0
+      ? indexSingles[0]
       : await readAnchor(normalized).catch(() => null);
   if (single) {
     results.push({
