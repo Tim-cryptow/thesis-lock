@@ -198,3 +198,64 @@ export async function searchAnchors(
     return null;
   }
 }
+
+export type IndexStats = {
+  totalAnchors: number;
+  uniqueWallets: number;
+  firstBlock: number;
+  latestBlock: number;
+};
+
+// Aggregate stats over the single-anchor index: total non-reverted anchors,
+// distinct anchoring wallets, and the first/latest anchored block. Returns null
+// when the index is unavailable so stats can fall back to the Hiro computation.
+export async function getStats(): Promise<IndexStats | null> {
+  const supabase = getSupabaseRead();
+  if (!supabase) return null;
+  try {
+    // Exact count without transferring rows.
+    const countRes = await supabase
+      .from(ANCHORS_TABLE)
+      .select("tx_id", { count: "exact", head: true })
+      .eq("reverted", false);
+    if (countRes.error || countRes.count === null) return null;
+    const totalAnchors = countRes.count;
+
+    const [latestRes, firstRes] = await Promise.all([
+      supabase
+        .from(ANCHORS_TABLE)
+        .select("block_height")
+        .eq("reverted", false)
+        .order("block_height", { ascending: false })
+        .limit(1),
+      supabase
+        .from(ANCHORS_TABLE)
+        .select("block_height")
+        .eq("reverted", false)
+        .order("block_height", { ascending: true })
+        .limit(1),
+    ]);
+    if (latestRes.error || firstRes.error) return null;
+    const readBlock = (row: unknown): number =>
+      Number((row as { block_height?: number } | undefined)?.block_height ?? 0);
+    const latestBlock = readBlock(latestRes.data?.[0]);
+    const firstBlock = readBlock(firstRes.data?.[0]);
+
+    // Distinct anchoring wallets. PostgREST has no COUNT(DISTINCT), so read the
+    // anchored_by column and dedupe; one small column stays cheap to transfer.
+    const walletsRes = await supabase
+      .from(ANCHORS_TABLE)
+      .select("anchored_by")
+      .eq("reverted", false)
+      .limit(10000);
+    if (walletsRes.error || !walletsRes.data) return null;
+    const wallets = new Set<string>();
+    for (const row of walletsRes.data as Array<{ anchored_by: string | null }>) {
+      if (row.anchored_by) wallets.add(row.anchored_by);
+    }
+
+    return { totalAnchors, uniqueWallets: wallets.size, firstBlock, latestBlock };
+  } catch {
+    return null;
+  }
+}
