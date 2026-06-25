@@ -1,5 +1,6 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
 import { readBatchAnchor, type BatchAnchor } from "./stacks";
+import { getRecentAnchors } from "./anchorsIndex";
 import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
@@ -165,19 +166,38 @@ export async function fetchRecentAnchors(limit = 20): Promise<FeedEntry[]> {
   // enough material for `limit` distinct, on-chain-backed entries.
   const target = Math.max(HIRO_PAGE, limit * 3);
 
-  // thesislock-batch is fetched for spec parity. Its print events carry
-  // only per-batch metadata (no hashes); per-hash batch rows are surfaced
-  // via the registry contract.
-  const [singleEvents, , registryEvents] = await Promise.all([
-    paginatedFetch(SINGLE_CONTRACT, target),
+  // Single anchors come from the Supabase index. On an index outage
+  // getRecentAnchors returns null and we page the single contract's events from
+  // Hiro instead, so the feed never goes empty. thesislock-batch is fetched for
+  // spec parity (its print events carry only per-batch metadata, no hashes);
+  // per-hash batch rows are surfaced via the registry contract.
+  const indexedSingles = await getRecentAnchors(target);
+  const [, registryEvents, fallbackSingleEvents] = await Promise.all([
     paginatedFetch(BATCH_CONTRACT, target),
     paginatedFetch(REGISTRY_CONTRACT, target),
+    indexedSingles === null
+      ? paginatedFetch(SINGLE_CONTRACT, target)
+      : Promise.resolve([] as RawEvent[]),
   ]);
 
   const partials: FeedEntry[] = [];
-  for (const ev of singleEvents) {
-    const p = parseSingleEvent(ev);
-    if (p) partials.push(p);
+  if (indexedSingles !== null) {
+    for (const a of indexedSingles) {
+      partials.push({
+        hash: a.hash,
+        label: a.label,
+        owner: a.anchoredBy,
+        stacksBlock: a.stacksBlock,
+        timestamp: "",
+        txId: a.txId,
+        source: "single",
+      });
+    }
+  } else {
+    for (const ev of fallbackSingleEvents) {
+      const p = parseSingleEvent(ev);
+      if (p) partials.push(p);
+    }
   }
   for (const ev of registryEvents) {
     const p = parseRegistryEvent(ev);
