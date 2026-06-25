@@ -1,5 +1,6 @@
 import { validateStacksAddress } from "@stacks/transactions";
-import { fetchAnchor, fetchBatchAnchor } from "./hiroAnchor";
+import { fetchBatchAnchor } from "./hiroAnchor";
+import { getAnchorByHash } from "./anchorsIndex";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
@@ -85,7 +86,9 @@ export async function verifyHash(
     }
   }
 
-  const single = await fetchAnchor(hash);
+  // The single-anchor lookup goes through the index, which falls back to the
+  // live Hiro read on a miss or outage, so verify never reports a false negative.
+  const single = await getAnchorByHash(hash);
   if (single) {
     return {
       verified: true,
