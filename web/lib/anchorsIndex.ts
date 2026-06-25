@@ -87,3 +87,28 @@ export async function getRecentAnchors(
     return null;
   }
 }
+
+// Single anchors a principal created, newest first. Backed by
+// thesis_locks_anchored_by_idx. Returns null when the index is unavailable so
+// the profile can fall back to the Hiro registry read.
+export async function getAnchorsByPrincipal(
+  principal: string,
+  limit = 50,
+): Promise<IndexAnchor[] | null> {
+  const supabase = getSupabaseRead();
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from(ANCHORS_TABLE)
+      .select(ANCHOR_COLUMNS)
+      .eq("reverted", false)
+      .eq("anchored_by", principal)
+      .order("block_height", { ascending: false })
+      .order("tx_id", { ascending: false })
+      .limit(limit);
+    if (error || !data) return null;
+    return (data as unknown as AnchorRow[]).map(rowToAnchor);
+  } catch {
+    return null;
+  }
+}
