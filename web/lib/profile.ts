@@ -6,6 +6,7 @@ import {
   readBatchAnchor,
   type RegistryEntry,
 } from "./stacks";
+import { getAnchorsByPrincipal } from "./anchorsIndex";
 import { fetchActivityLog, type ActivityEvent } from "./activityLog";
 import { parseLabel } from "./templates";
 
@@ -130,22 +131,55 @@ export async function fetchWalletProfile(
 
   let recentAnchors: ProfileAnchor[] = [];
   try {
+    // Single anchors come from the index. The registry read still surfaces batch
+    // anchors (and single anchors when the index is unavailable), validated
+    // against their backing contract so the profile never shows an entry whose
+    // verify link would report "not anchored".
+    const indexSingles = await getAnchorsByPrincipal(addr, RECENT_LIMIT);
     const recent = await getRecentAnchors(addr);
     const candidates = recent
       .filter((entry): entry is RegistryEntry => entry !== null)
       .slice(0, RECENT_LIMIT);
-    // Drop registry rows that aren't backed by a real anchor so the profile
-    // never shows entries whose verify link reports "not anchored", and tag the
-    // survivors with their backing contract for link generation.
-    const sources = await Promise.all(
-      candidates.map((entry) => anchorSource(addr, entry)),
-    );
-    recentAnchors = candidates
-      .map((entry, i) => {
-        const source = sources[i];
-        return source ? { ...entry, source } : null;
-      })
-      .filter((entry): entry is ProfileAnchor => entry !== null);
+
+    if (indexSingles !== null) {
+      const indexAnchors: ProfileAnchor[] = indexSingles.map((a) => ({
+        hash: a.hash,
+        label: a.label,
+        anchoredAt: a.stacksBlock,
+        source: "single",
+      }));
+      const indexHashes = new Set(indexAnchors.map((a) => a.hash));
+      // Only validate registry candidates the index didn't already confirm as a
+      // single anchor; those resolve to batch (or are dropped if unbacked).
+      const extra = candidates.filter(
+        (entry) => !indexHashes.has(entry.hash.toLowerCase()),
+      );
+      const sources = await Promise.all(
+        extra.map((entry) => anchorSource(addr, entry)),
+      );
+      const extraAnchors: ProfileAnchor[] = extra
+        .map((entry, i) => {
+          const source = sources[i];
+          return source
+            ? { ...entry, hash: entry.hash.toLowerCase(), source }
+            : null;
+        })
+        .filter((entry): entry is ProfileAnchor => entry !== null);
+      recentAnchors = [...indexAnchors, ...extraAnchors]
+        .sort((x, y) => y.anchoredAt - x.anchoredAt)
+        .slice(0, RECENT_LIMIT);
+    } else {
+      // Index unavailable: fall back to the registry-validated set entirely.
+      const sources = await Promise.all(
+        candidates.map((entry) => anchorSource(addr, entry)),
+      );
+      recentAnchors = candidates
+        .map((entry, i) => {
+          const source = sources[i];
+          return source ? { ...entry, source } : null;
+        })
+        .filter((entry): entry is ProfileAnchor => entry !== null);
+    }
   } catch {
     recentAnchors = [];
   }
