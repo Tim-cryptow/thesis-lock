@@ -3,10 +3,12 @@
 // browser-safe anon client and return the same shapes the existing Hiro read
 // paths produce, so call sites swap mechanically. Every read excludes reverted
 // rows (reorg correctness) and degrades to null when the index is unreachable so
-// callers can fall back to Hiro.
+// callers can fall back to Hiro. The trust-critical verify path (getAnchorByHash)
+// inverts this: it reads the contract first and uses the index only as an outage
+// fallback, since positive verification must stay chain-authoritative.
 
 import { getSupabaseRead } from "./supabaseClient";
-import { fetchAnchor, type FetchedAnchor } from "./hiroAnchor";
+import { fetchAnchorStrict, type FetchedAnchor } from "./hiroAnchor";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 // Page size for indexed searches, and a safety cap to bound a runaway loop.
@@ -121,12 +123,13 @@ export async function getAnchorsByPrincipal(
   }
 }
 
-// Resolve a single anchor by hash for the verify/detail path. The index is a
-// best-effort-fast cache, so on an index miss (or when the index is unreachable)
-// this falls back to the live Hiro contract read for that one hash. A recent,
-// not-yet-indexed anchor therefore never reads as "not found": the chain stays
-// the source of truth. Returns the same FetchedAnchor shape fetchAnchor returns,
-// so the verify lookup swaps mechanically.
+// Resolve a single anchor by hash for the trust-critical verify/detail path. The
+// live contract is the source of truth for positive verification, so this reads
+// the chain first: a stale index row (a reorg whose reverted update has not been
+// delivered yet) must never certify a rolled-back anchor. The index is consulted
+// only as a best-effort fallback when the chain read itself is unreachable, so a
+// Hiro outage does not turn a real anchor into a false negative. Returns the same
+// FetchedAnchor shape fetchAnchor returns, so the verify lookup swaps mechanically.
 export async function getAnchorByHash(
   hash: string,
 ): Promise<FetchedAnchor | null> {
@@ -135,33 +138,44 @@ export async function getAnchorByHash(
   ).toLowerCase();
   if (!HEX_64.test(normalized)) return null;
 
-  const supabase = getSupabaseRead();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from(ANCHORS_TABLE)
-        .select(ANCHOR_COLUMNS)
-        .eq("reverted", false)
-        // Match whether the column stored the hash with or without a 0x prefix.
-        .or(`hash.eq.0x${normalized},hash.eq.${normalized}`)
-        .limit(1);
-      if (!error && data && data.length > 0) {
-        const anchor = rowToAnchor(data[0] as unknown as AnchorRow);
-        return {
-          anchoredBy: anchor.anchoredBy,
-          stacksBlock: anchor.stacksBlock,
-          burnBlock: anchor.burnBlock,
-          label: anchor.label,
-        };
-      }
-      // No row in the index: fall through to the chain rather than returning a
-      // false negative for a recent, not-yet-indexed anchor.
-    } catch {
-      // Index unreachable: fall through to the chain.
-    }
+  try {
+    // Chain says found -> verified; chain authoritatively says none -> not found.
+    // We deliberately do not resurrect a stale index row on a clean not-found.
+    return await fetchAnchorStrict(normalized);
+  } catch {
+    // Chain read unreachable: best-effort fallback to the index.
+    return indexAnchorByHash(normalized);
   }
+}
 
-  return fetchAnchor(normalized);
+// Best-effort index lookup backing the verify fallback above: returns the
+// matching non-reverted anchor, or null on a miss or when the index is
+// unreachable. Only reached when the live contract read is down, so verification
+// keeps working (in a clearly degraded mode) during a Hiro outage.
+async function indexAnchorByHash(
+  normalized: string,
+): Promise<FetchedAnchor | null> {
+  const supabase = getSupabaseRead();
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from(ANCHORS_TABLE)
+      .select(ANCHOR_COLUMNS)
+      .eq("reverted", false)
+      // Match whether the column stored the hash with or without a 0x prefix.
+      .or(`hash.eq.0x${normalized},hash.eq.${normalized}`)
+      .limit(1);
+    if (error || !data || data.length === 0) return null;
+    const anchor = rowToAnchor(data[0] as unknown as AnchorRow);
+    return {
+      anchoredBy: anchor.anchoredBy,
+      stacksBlock: anchor.stacksBlock,
+      burnBlock: anchor.burnBlock,
+      label: anchor.label,
+    };
+  } catch {
+    return null;
+  }
 }
 
 // Search single anchors in the index by exact hash, exact principal, or label

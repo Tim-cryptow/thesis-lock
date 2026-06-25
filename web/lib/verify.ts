@@ -86,8 +86,10 @@ export async function verifyHash(
     }
   }
 
-  // The single-anchor lookup goes through the index, which falls back to the
-  // live Hiro read on a miss or outage, so verify never reports a false negative.
+  // Single-anchor verification reads the live contract first (the source of
+  // truth), so a stale index row never certifies a rolled-back anchor; the index
+  // is only a fallback when the chain read is unreachable. getAnchorByHash
+  // encapsulates that, returning null only on an authoritative not-found.
   const single = await getAnchorByHash(hash);
   if (single) {
     return {
