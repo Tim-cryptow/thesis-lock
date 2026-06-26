@@ -150,6 +150,39 @@ import { readFileSync } from 'node:fs';
 const hash = await hashFile(readFileSync('thesis.pdf'));
 console.log(truncateHash(hash, 4)); // '9afe...5d06'`}</CodeBlock>
 
+      <H2>Error handling</H2>
+      <P>
+        A failed network request or a contract rejection throws an{" "}
+        <Code>Error</Code>; a plain "not found" does not. Wrap calls in{" "}
+        <Code>try</Code>/<Code>catch</Code> for outages, and check{" "}
+        <Code>verified</Code> (or a <Code>null</Code> return) for the not-found
+        case. <Code>verifyBatch</Code>, <Code>getAnchorCount</Code>, and{" "}
+        <Code>getRecentAnchors</Code> also throw on an invalid principal, and{" "}
+        <Code>getProof</Code> throws on a negative or non-integer token id.
+      </P>
+      <CodeBlock language="ts">{`try {
+  const result = await client.verify(hash);
+  console.log(result.verified ? 'Anchored' : 'Not anchored');
+} catch (err) {
+  console.error('Lookup failed:', err);
+}`}</CodeBlock>
+
+      <H2>Examples</H2>
+      <P>
+        Runnable scripts live in the{" "}
+        <a
+          href="https://github.com/Tim-cryptow/thesis-lock/tree/main/sdk/examples"
+          className="underline hover:text-foreground"
+        >
+          sdk/examples
+        </a>{" "}
+        directory: <Code>verify-hash.ts</Code> (verify one hash),{" "}
+        <Code>check-wallet.ts</Code> (a wallet's anchor count and recent
+        anchors), <Code>hash-and-verify.ts</Code> (hash a local file then verify
+        it), and <Code>batch-check.ts</Code> (verify a list of hashes). Run any
+        with <Code>{`npx ts-node examples/<name>.ts`}</Code>.
+      </P>
+
       <H2>Types</H2>
       <P>
         <Code>AnchorResult</Code>, <Code>BatchAnchorResult</Code>,{" "}
