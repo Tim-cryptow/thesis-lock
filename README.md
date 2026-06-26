@@ -102,6 +102,31 @@ handler-level integration suite in `web/app/api/__tests__/` (each route invoked
 directly with its Hiro calls mocked). All run in CI alongside the build, type
 check, and Playwright end-to-end tests.
 
+## Testing
+
+Contract tests run with the Clarinet SDK and Vitest from the repo root
+(`npm test`): **177 tests across 17 files** covering the 5 Clarity contracts.
+Beyond the original happy-path suites (`tests/thesislock*.test.ts`), the expanded
+coverage adds, in `tests/`:
+
+- Per-contract edge cases (`thesislock-*-edge.test.ts`): empty and 64-character
+  labels, the 65-character and 11-entry type boundaries, duplicate hashes, the
+  registry's 10-item recent window, soulbound transfers, and group admin and
+  membership gating.
+- `cross-contract.test.ts`: anchor, register, mint, and group flows that read
+  back consistently across contracts.
+- `boundary-values.test.ts`: all-zero and all-ff hashes, punctuation, space, and
+  pipe labels, and a maximum 128-bit uint index.
+- `concurrent-users.test.ts`: independent per-principal records and counts.
+- `event-emissions.test.ts`: the exact print-event tuple for every public call.
+- `error-codes.test.ts`: a documented sweep of u100, u400, u401, u403, and u409.
+- `read-only-functions.test.ts` and `gas-estimation.test.ts`: every read-only
+  function, plus informational per-call cost logging (run with `-- --costs`).
+
+The contract suite runs in the `Contracts` CI job (`clarinet check` then
+`npm test`), which discovers every file under `tests/`. The frontend Vitest and
+Playwright suites under `web/` are described above. All suites run on every push.
+
 ## Documentation
 
 Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):
