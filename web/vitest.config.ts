@@ -21,6 +21,7 @@ export default defineConfig({
     include: [
       "lib/__tests__/**/*.test.ts",
       "app/components/__tests__/**/*.test.tsx",
+      "app/api/__tests__/**/*.test.ts",
     ],
   },
 });
