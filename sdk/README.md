@@ -12,7 +12,7 @@ npm install thesislock-sdk
 
 The SDK targets Node.js 18 or newer (it relies on the global `fetch` and `node:crypto`).
 
-## Quick start
+## Quick Start
 
 ```ts
 import { createClient } from 'thesislock-sdk';
@@ -21,8 +21,7 @@ const client = createClient();
 const result = await client.verify('9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06');
 
 if (result.verified) {
-  console.log('Anchored by', result.data.anchoredBy);
-  console.log('Stacks block', result.data.stacksBlock);
+  console.log('Anchored by', result.data.anchoredBy, 'at block', result.data.stacksBlock);
 }
 ```
 
@@ -34,20 +33,20 @@ if (result.verified) {
 | --- | --- | --- |
 | `apiUrl` | `https://api.mainnet.hiro.so` | Base URL of the Hiro Stacks API used for read-only calls. |
 | `contractAddress` | `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM` | Principal that deployed the ThesisLock contracts. |
-| `network` | `mainnet` | Network label, `mainnet` or `testnet`. |
+| `network` | `mainnet` | Network label, `mainnet` or `testnet`. Selects the default `apiUrl`. |
 
 ```ts
 import { ThesisLockClient } from 'thesislock-sdk';
 
 const client = new ThesisLockClient({
-  apiUrl: 'https://api.mainnet.hiro.so',
+  network: 'testnet',
   contractAddress: 'SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM',
 });
 ```
 
-## Client API
-
 All methods return Promises and call the Hiro read-only API. A failed network call or a contract-level rejection throws an `Error`. A simple "not found" is not an error: lookups resolve to an unverified result or `null`.
+
+## Verification
 
 ### verify(hash)
 
@@ -76,6 +75,8 @@ Tries the single anchor first, then the owner-keyed batch anchor when an `owner`
 const result = await client.verifyAny(hash, owner);
 ```
 
+## Registry
+
 ### getAnchorCount(owner)
 
 Returns the number of anchors a principal has registered in `thesislock-registry`.
@@ -92,6 +93,8 @@ Returns up to the ten most recent registry entries for a principal, newest first
 const entries = await client.getRecentAnchors(owner);
 // RegistryEntry[]
 ```
+
+## Proof NFTs
 
 ### getProof(tokenId)
 
@@ -111,7 +114,7 @@ const proof = await client.getProofByHash(hash);
 // ProofNFT | null
 ```
 
-## Utility functions
+## Utilities
 
 These are exported at the top level and do not require a client.
 
@@ -157,6 +160,41 @@ import { truncateHash } from 'thesislock-sdk';
 truncateHash('9afe6f57...585d06', 4); // '9afe...5d06'
 ```
 
+## Error Handling
+
+A failed network request or a contract-level rejection throws an `Error`; a plain "not found" does not. Wrap calls in `try`/`catch` for outages, and check `verified` (or a `null` return) for the not-found case.
+
+```ts
+import { createClient } from 'thesislock-sdk';
+
+const client = createClient();
+
+try {
+  const result = await client.verify(hash);
+  if (result.verified) {
+    console.log('Anchored at block', result.data.stacksBlock);
+  } else {
+    console.log('Not anchored');
+  }
+} catch (err) {
+  // Network failure, or the Hiro API rejected the read-only call.
+  console.error('Lookup failed:', err);
+}
+```
+
+`verifyBatch`, `getAnchorCount`, and `getRecentAnchors` also throw on an invalid Stacks principal, and `getProof` throws on a negative or non-integer token id.
+
+## Examples
+
+Runnable scripts live in [`examples/`](./examples):
+
+- [`verify-hash.ts`](./examples/verify-hash.ts): verify a single hash.
+- [`check-wallet.ts`](./examples/check-wallet.ts): read a wallet's anchor count and recent anchors.
+- [`hash-and-verify.ts`](./examples/hash-and-verify.ts): hash a local file, then verify it.
+- [`batch-check.ts`](./examples/batch-check.ts): verify a list of hashes in a loop.
+
+Run any of them with `npx ts-node examples/<name>.ts`.
+
 ## Types
 
 `AnchorResult`, `BatchAnchorResult`, `RegistryEntry`, `ProofNFT`, and `VerifyResult` are all exported for use in TypeScript projects.
@@ -175,6 +213,10 @@ if (result.verified) {
 }
 ```
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
 ## License
 
-MIT
+MIT, see [LICENSE](./LICENSE).
