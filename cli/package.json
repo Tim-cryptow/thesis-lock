@@ -7,21 +7,42 @@
     "thesislock": "./dist/bin/thesislock.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "bin",
+    "completions",
+    "CHANGELOG.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tim-cryptow/thesis-lock.git",
+    "directory": "cli"
+  },
+  "homepage": "https://github.com/Tim-cryptow/thesis-lock/tree/main/cli#readme",
+  "bugs": {
+    "url": "https://github.com/Tim-cryptow/thesis-lock/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/bin/thesislock.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "stacks",
+    "blockchain",
+    "bitcoin",
     "clarity",
     "thesislock",
     "proof-of-existence",
+    "verification",
+    "timestamping",
     "sha-256",
-    "cli"
+    "cli",
+    "command-line"
   ],
   "dependencies": {
     "@stacks/transactions": "^7.4.0",
