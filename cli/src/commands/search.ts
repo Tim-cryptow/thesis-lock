@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import ora from "ora";
 import { SITE_URL, truncateMiddle } from "../index";
+import { formatError, toJson } from "../output";
 import { detectSearchType, runSearch, SearchResult } from "../search";
 
 type Column = {
@@ -34,12 +35,20 @@ function printTable(results: SearchResult[]): void {
   );
 }
 
+function applyLimit(results: SearchResult[], limit?: number): SearchResult[] {
+  if (limit === undefined) return results;
+  const n = Number(limit);
+  if (!Number.isFinite(n) || n < 0) return results;
+  return results.slice(0, n);
+}
+
 export async function searchCommand(
   query: string,
-  options: { json?: boolean },
+  options: { json?: boolean; limit?: number },
 ): Promise<void> {
+  const json = options.json === true;
   const type = detectSearchType(query);
-  const spinner = options.json
+  const spinner = json
     ? null
     : ora(`Searching by ${type}: ${query}`).start();
 
@@ -47,10 +56,10 @@ export async function searchCommand(
   try {
     results = await runSearch(query, type);
   } catch (err) {
-    spinner?.fail("Search failed");
     const message = err instanceof Error ? err.message : String(err);
-    if (options.json) {
-      console.log(JSON.stringify({ error: message }));
+    spinner?.fail("Search failed");
+    if (json) {
+      console.log(formatError(message, true));
     } else {
       console.error(chalk.red(message));
     }
@@ -60,34 +69,28 @@ export async function searchCommand(
 
   spinner?.stop();
 
-  if (options.json) {
+  const limited = applyLimit(results, options.limit);
+
+  if (json) {
     console.log(
-      JSON.stringify(
-        {
-          query,
-          type,
-          count: results.length,
-          results: results.map((r) => ({
-            ...r,
-            verifyUrl: `${SITE_URL}${r.verifyPath}`,
-          })),
-        },
-        null,
-        2,
+      toJson(
+        limited.map((r) => ({ ...r, verifyUrl: `${SITE_URL}${r.verifyPath}` })),
       ),
     );
     return;
   }
 
-  if (results.length === 0) {
-    console.log(chalk.red(`No results for ${type} query: ${query}`));
+  if (limited.length === 0) {
+    console.log(chalk.red(`No results found for ${type} query: ${query}`));
     process.exitCode = 1;
     return;
   }
 
   console.log(
-    chalk.green(`${results.length} result${results.length === 1 ? "" : "s"} (${type} search)`),
+    chalk.green(
+      `${limited.length} result${limited.length === 1 ? "" : "s"} (${type} search)`,
+    ),
   );
   console.log();
-  printTable(results);
+  printTable(limited);
 }
