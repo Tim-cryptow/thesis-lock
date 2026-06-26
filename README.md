@@ -91,8 +91,13 @@ npm test
 cd web
 npm install
 cp .env.example .env.local
-npm run dev
+npm run dev        # start the dev server
+npm test           # run lib unit tests (Vitest + jsdom)
 ```
+
+The frontend `lib/` utilities are covered by a Vitest unit suite in
+`web/lib/__tests__/`, run in CI alongside the build, type check, and Playwright
+end-to-end tests.
 
 ## Documentation
 
