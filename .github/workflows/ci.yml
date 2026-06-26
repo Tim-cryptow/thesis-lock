@@ -70,7 +70,7 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-      - name: Unit tests
+      - name: Unit and component tests
         run: npm test
 
   e2e:

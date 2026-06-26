@@ -92,12 +92,13 @@ cd web
 npm install
 cp .env.example .env.local
 npm run dev        # start the dev server
-npm test           # run lib unit tests (Vitest + jsdom)
+npm test           # run unit and component tests (Vitest + jsdom)
 ```
 
 The frontend `lib/` utilities are covered by a Vitest unit suite in
-`web/lib/__tests__/`, run in CI alongside the build, type check, and Playwright
-end-to-end tests.
+`web/lib/__tests__/`, and the shared React components by a React Testing Library
+suite in `web/app/components/__tests__/`. Both run in CI alongside the build,
+type check, and Playwright end-to-end tests.
 
 ## Documentation
 

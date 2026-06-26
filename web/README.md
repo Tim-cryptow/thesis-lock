@@ -22,19 +22,27 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Testing
 
-Unit tests for the utility modules in `lib/` run with [Vitest](https://vitest.dev) under jsdom:
+Unit and component tests run with [Vitest](https://vitest.dev) under jsdom:
 
 ```bash
-npm test            # run the unit suite once
-npm run test:watch  # watch mode
+npm test              # run the whole suite once
+npm run test:watch    # watch mode
+npm run test:components # only the component tests
 ```
 
-The suite lives in `lib/__tests__/` and covers the browser-local libraries:
-validators, tags, collections, favorites, watchlist, API keys, the audit log,
-certificate generation, export formatting, anchor templates, the glossary, and
-performance metrics. Each suite installs an in-memory `localStorage` so runs are
-isolated and deterministic. End-to-end browser tests run separately with
-Playwright (`npm run test:e2e`).
+`lib/__tests__/` covers the browser-local libraries: validators, tags,
+collections, favorites, watchlist, API keys, the audit log, certificate
+generation, export formatting, anchor templates, the glossary, and performance
+metrics. Each suite installs an in-memory `localStorage` so runs are isolated
+and deterministic.
+
+`app/components/__tests__/` covers the shared React components with
+[React Testing Library](https://testing-library.com/docs/react-testing-library/intro/):
+CopyButton, TruncatedHash, TruncatedAddress, StarButton, ShareButtons,
+EmptyState, Tooltip, Skeleton, FadeIn, ValidatedInput, HashInput, and
+ConfirmDialog.
+
+End-to-end browser tests run separately with Playwright (`npm run test:e2e`).
 
 ## Learn More
 
