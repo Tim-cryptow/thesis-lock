@@ -6,5 +6,7 @@ import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 afterEach(() => {
-  cleanup();
+  // API route tests run under the node environment, where there is no document
+  // and nothing was rendered, so only clean up when a DOM is present.
+  if (typeof document !== "undefined") cleanup();
 });
