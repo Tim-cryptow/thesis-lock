@@ -155,6 +155,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Verify package contents
+        run: npm pack --dry-run
+
   cli:
     name: CLI
     runs-on: ubuntu-latest
