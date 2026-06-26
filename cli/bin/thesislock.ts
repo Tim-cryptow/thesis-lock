@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { batchCommand } from "../src/commands/batch";
 import { hashCommand } from "../src/commands/hash";
 import { searchCommand } from "../src/commands/search";
 import { statusCommand } from "../src/commands/status";
@@ -57,6 +58,17 @@ program
     (value) => parseInt(value, 10),
   )
   .action(searchCommand);
+
+program
+  .command("batch")
+  .description("Hash every file in a directory")
+  .argument("<dir>", "directory to scan")
+  .option("--verify", "also check whether each hash is anchored on Stacks")
+  .option("--recursive", "descend into subdirectories")
+  .option("--exclude <patterns>", "comma-separated glob patterns to skip")
+  .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the hash for each file")
+  .action(batchCommand);
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   const message = err instanceof Error ? err.message : String(err);
