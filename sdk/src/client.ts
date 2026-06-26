@@ -177,8 +177,11 @@ export class ThesisLockClient {
     if (!Array.isArray(value)) return [];
     const entries: RegistryEntry[] = [];
     for (const item of value) {
-      if (item === null || item === undefined) continue;
-      const v = tupleFields(item);
+      // Each list element is an (optional tuple): unwrap the optional layer
+      // first, then read the tuple fields. Empty slots unwrap to null.
+      const inner = fieldValue(item);
+      if (inner === null || inner === undefined) continue;
+      const v = tupleFields(inner);
       entries.push({
         hash: stripHex(String(fieldValue(v["hash"]) ?? "")).toLowerCase(),
         label: String(fieldValue(v["label"]) ?? ""),
