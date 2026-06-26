@@ -71,7 +71,33 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Unit and component tests
-        run: npm test
+        run: npm run test:unit
+
+  api-tests:
+    name: API tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Seed env vars from .env.example
+        run: cp .env.example .env.local
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: API tests
+        run: npm run test:api
 
   e2e:
     name: E2E

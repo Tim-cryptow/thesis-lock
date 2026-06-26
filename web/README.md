@@ -27,7 +27,9 @@ Unit and component tests run with [Vitest](https://vitest.dev) under jsdom:
 ```bash
 npm test              # run the whole suite once
 npm run test:watch    # watch mode
+npm run test:unit       # only the lib and component tests
 npm run test:components # only the component tests
+npm run test:api        # only the API endpoint tests
 ```
 
 `lib/__tests__/` covers the browser-local libraries: validators, tags,
@@ -41,6 +43,11 @@ and deterministic.
 CopyButton, TruncatedHash, TruncatedAddress, StarButton, ShareButtons,
 EmptyState, Tooltip, Skeleton, FadeIn, ValidatedInput, HashInput, and
 ConfirmDialog.
+
+`app/api/__tests__/` covers the public API endpoints (health, verify, search,
+stats, badge, card, profile, profile-badge, compare, activity, and status).
+Each route handler is invoked directly under the node environment with its
+Hiro-backed lib call mocked, so the tests never reach mainnet.
 
 End-to-end browser tests run separately with Playwright (`npm run test:e2e`).
 
