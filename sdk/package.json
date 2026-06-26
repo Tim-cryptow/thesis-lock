@@ -5,16 +5,34 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "src",
+    "dist",
+    "CHANGELOG.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tim-cryptow/thesis-lock.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/Tim-cryptow/thesis-lock/tree/main/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/Tim-cryptow/thesis-lock/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
     "stacks",
+    "blockchain",
+    "verification",
+    "timestamping",
     "clarity",
+    "bitcoin",
     "thesislock",
     "proof-of-existence",
     "sha-256"
