@@ -39,9 +39,10 @@ async function printMatch(result: SearchResult): Promise<void> {
 
 export async function verifyCommand(
   hash: string,
-  options: { owner?: string; json?: boolean },
+  options: { owner?: string; json?: boolean; quiet?: boolean },
 ): Promise<void> {
   const json = options.json === true;
+  const quiet = options.quiet === true;
   const normalized = normalizeHash(hash);
   if (!normalized) {
     const message = "Invalid hash: expected a 64-character hex SHA-256 digest";
@@ -54,9 +55,8 @@ export async function verifyCommand(
     return;
   }
 
-  const spinner = json
-    ? null
-    : ora(`Checking anchors for ${normalized}`).start();
+  const spinner =
+    json || quiet ? null : ora(`Checking anchors for ${normalized}`).start();
   let results: SearchResult[];
   try {
     results = await searchByHash(normalized, options.owner);
@@ -86,6 +86,12 @@ export async function verifyCommand(
         })),
       }),
     );
+    if (results.length === 0) process.exitCode = 1;
+    return;
+  }
+
+  if (quiet) {
+    console.log(results.length > 0 ? "true" : "false");
     if (results.length === 0) process.exitCode = 1;
     return;
   }

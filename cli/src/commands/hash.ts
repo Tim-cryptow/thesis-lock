@@ -104,9 +104,10 @@ function entryFailed(entry: HashEntry): boolean {
 
 export async function hashCommand(
   filepaths: string[],
-  options: { verify?: boolean; json?: boolean },
+  options: { verify?: boolean; json?: boolean; quiet?: boolean },
 ): Promise<void> {
   const json = options.json === true;
+  const quiet = options.quiet === true;
   const verify = options.verify === true;
 
   const entries: HashEntry[] = [];
@@ -116,6 +117,14 @@ export async function hashCommand(
 
   if (json) {
     console.log(toJson(entries));
+  } else if (quiet) {
+    for (const entry of entries) {
+      if (entry.error !== undefined) {
+        console.error(chalk.red(`${entry.error}: ${entry.file}`));
+      } else if (entry.hash !== undefined) {
+        console.log(entry.hash);
+      }
+    }
   } else {
     entries.forEach((entry, i) => {
       if (i > 0) console.log();

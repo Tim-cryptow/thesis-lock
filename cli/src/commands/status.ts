@@ -10,7 +10,7 @@ type ApiStatus = {
   chain_tip?: { block_height?: number };
 };
 
-type StatusOptions = { json?: boolean };
+type StatusOptions = { json?: boolean; quiet?: boolean };
 
 function contractIds(): string[] {
   return CONTRACT_NAMES.map((name) => `${CONTRACT_ADDRESS}.${name}`);
@@ -36,7 +36,8 @@ async function fetchApiStatus(): Promise<{
 
 async function showProtocolStatus(options: StatusOptions): Promise<void> {
   const json = options.json === true;
-  const spinner = json ? null : ora(`Querying ${apiUrl()}`).start();
+  const quiet = options.quiet === true;
+  const spinner = json || quiet ? null : ora(`Querying ${apiUrl()}`).start();
   const { healthy, latestBlock } = await fetchApiStatus();
   spinner?.stop();
 
@@ -49,6 +50,12 @@ async function showProtocolStatus(options: StatusOptions): Promise<void> {
         contracts: contractIds(),
       }),
     );
+    if (!healthy) process.exitCode = 1;
+    return;
+  }
+
+  if (quiet) {
+    console.log(healthy ? "ok" : "unreachable");
     if (!healthy) process.exitCode = 1;
     return;
   }
@@ -78,6 +85,7 @@ async function showPrincipalStatus(
   options: StatusOptions,
 ): Promise<void> {
   const json = options.json === true;
+  const quiet = options.quiet === true;
   const owner = principal.trim().toUpperCase();
   if (!STX_PRINCIPAL.test(owner)) {
     const message = `Invalid Stacks principal: ${principal}`;
@@ -90,12 +98,17 @@ async function showPrincipalStatus(
     return;
   }
 
-  const spinner = json ? null : ora(`Reading registry for ${owner}`).start();
+  const spinner =
+    json || quiet ? null : ora(`Reading registry for ${owner}`).start();
   try {
     const count = await getClient().getAnchorCount(owner);
     spinner?.stop();
     if (json) {
       console.log(toJson({ principal: owner, anchors: count }));
+      return;
+    }
+    if (quiet) {
+      console.log(String(count));
       return;
     }
     console.log(`${chalk.bold("Principal:")} ${owner}`);

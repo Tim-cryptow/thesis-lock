@@ -23,6 +23,7 @@ program
     "Stacks principal to check for owner-keyed batch anchors",
   )
   .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only true or false")
   .action(verifyCommand);
 
 program
@@ -31,6 +32,7 @@ program
   .argument("<filepaths...>", "paths of files to hash")
   .option("--verify", "also check whether each hash is anchored on Stacks")
   .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the hash for each file")
   .action(hashCommand);
 
 program
@@ -40,6 +42,7 @@ program
   )
   .argument("[principal]", "Stacks principal to look up")
   .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the health state or anchor count")
   .action(statusCommand);
 
 program
@@ -47,6 +50,7 @@ program
   .description("Search anchors by hash, wallet principal, or label substring")
   .argument("<query>", "64-hex hash, Stacks principal, or label text")
   .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only one matching hash per line")
   .option(
     "--limit <n>",
     "maximum number of results to show",

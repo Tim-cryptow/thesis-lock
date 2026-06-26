@@ -44,13 +44,13 @@ function applyLimit(results: SearchResult[], limit?: number): SearchResult[] {
 
 export async function searchCommand(
   query: string,
-  options: { json?: boolean; limit?: number },
+  options: { json?: boolean; quiet?: boolean; limit?: number },
 ): Promise<void> {
   const json = options.json === true;
+  const quiet = options.quiet === true;
   const type = detectSearchType(query);
-  const spinner = json
-    ? null
-    : ora(`Searching by ${type}: ${query}`).start();
+  const spinner =
+    json || quiet ? null : ora(`Searching by ${type}: ${query}`).start();
 
   let results: SearchResult[];
   try {
@@ -77,6 +77,14 @@ export async function searchCommand(
         limited.map((r) => ({ ...r, verifyUrl: `${SITE_URL}${r.verifyPath}` })),
       ),
     );
+    return;
+  }
+
+  if (quiet) {
+    for (const r of limited) {
+      console.log(r.hash);
+    }
+    if (limited.length === 0) process.exitCode = 1;
     return;
   }
 
