@@ -20,12 +20,9 @@ function configuredApiOrigin(): string | null {
 
 const CONNECT_SRC = Array.from(
   new Set(
-    [
-      "'self'",
-      "https://api.hiro.so",
-      "https://api.mainnet.hiro.so",
-      configuredApiOrigin(),
-    ].filter((s): s is string => Boolean(s)),
+    ["'self'", "https://api.hiro.so", "https://api.mainnet.hiro.so", configuredApiOrigin()].filter(
+      (s): s is string => Boolean(s),
+    ),
   ),
 ).join(" ");
 

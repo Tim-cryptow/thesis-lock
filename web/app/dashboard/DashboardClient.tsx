@@ -21,24 +21,11 @@ import { useI18n } from "@/app/components/I18nProvider";
 import { truncateAddress, useWallet } from "@/lib/wallet";
 import { fetchAllAnchors } from "@/lib/fetchAllAnchors";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
-import {
-  TAGS_CHANGED_EVENT,
-  getAllTags,
-  getTagColor,
-  type Tag,
-} from "@/lib/tags";
+import { TAGS_CHANGED_EVENT, getAllTags, getTagColor, type Tag } from "@/lib/tags";
 import { stageReportInput } from "@/lib/reportLink";
-import {
-  downloadExport,
-  formatAnchorsCSV,
-  formatAnchorsJSON,
-} from "@/lib/export";
+import { downloadExport, formatAnchorsCSV, formatAnchorsJSON } from "@/lib/export";
 import type { WalletAnalytics } from "@/lib/analytics";
-import {
-  activityCategory,
-  type ActivityCategory,
-  type ActivityEvent,
-} from "@/lib/activityLog";
+import { activityCategory, type ActivityCategory, type ActivityEvent } from "@/lib/activityLog";
 import { describeActivity } from "@/lib/activityDescriptions";
 
 const CHART_DAYS = 30;
@@ -111,9 +98,7 @@ function buildChartWindow(analytics: WalletAnalytics): ChartDay[] {
   const days: ChartDay[] = [];
   const today = new Date();
   for (let i = CHART_DAYS - 1; i >= 0; i -= 1) {
-    const d = new Date(
-      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-    );
+    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
     d.setUTCDate(d.getUTCDate() - i);
     const date = d.toISOString().slice(0, 10);
     const hit = bySource.get(date);
@@ -146,10 +131,7 @@ function StatCard({
   term?: string;
 }) {
   return (
-    <div
-      className="rounded-lg border border-foreground/10 bg-card p-6"
-      title={title}
-    >
+    <div className="rounded-lg border border-foreground/10 bg-card p-6" title={title}>
       <div className="text-xs uppercase tracking-wide text-foreground/50 mb-2">
         {label}
         {term ? <HelpText term={term} /> : null}
@@ -157,9 +139,7 @@ function StatCard({
       <div className="text-3xl font-mono">
         {count !== undefined ? <CountUp value={count} /> : value}
       </div>
-      {hint ? (
-        <div className="mt-2 text-xs text-foreground/50">{hint}</div>
-      ) : null}
+      {hint ? <div className="mt-2 text-xs text-foreground/50">{hint}</div> : null}
     </div>
   );
 }
@@ -171,22 +151,23 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (owner: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await instrumentedFetch(
-        `/api/analytics?address=${encodeURIComponent(owner)}`,
-      );
-      if (!res.ok) throw new Error(`analytics fetch failed: ${res.status}`);
-      const data = (await res.json()) as WalletAnalytics;
-      setAnalytics(data);
-    } catch {
-      setError(t("dashboard.loadError"));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const load = useCallback(
+    async (owner: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await instrumentedFetch(`/api/analytics?address=${encodeURIComponent(owner)}`);
+        if (!res.ok) throw new Error(`analytics fetch failed: ${res.status}`);
+        const data = (await res.json()) as WalletAnalytics;
+        setAnalytics(data);
+      } catch {
+        setError(t("dashboard.loadError"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (!address) {
@@ -298,19 +279,14 @@ export default function DashboardClient() {
     }
   };
 
-  const chartDays = useMemo(
-    () => (analytics ? buildChartWindow(analytics) : []),
-    [analytics],
-  );
+  const chartDays = useMemo(() => (analytics ? buildChartWindow(analytics) : []), [analytics]);
   const maxDayCount = useMemo(
     () => chartDays.reduce((max, d) => Math.max(max, d.count), 0),
     [chartDays],
   );
 
   const activeSince =
-    analytics && analytics.anchorsByDay.length > 0
-      ? analytics.anchorsByDay[0].date
-      : null;
+    analytics && analytics.anchorsByDay.length > 0 ? analytics.anchorsByDay[0].date : null;
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -322,75 +298,43 @@ export default function DashboardClient() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
-          <Link
-            href="/search"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/search" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.search")}
           </Link>
-          <Link
-            href="/anchor"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.anchor")}
           </Link>
-          <Link
-            href="/anchors"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.myAnchors")}
           </Link>
           <Link href="/tags" className="text-foreground/60 hover:text-foreground">
             Tags
           </Link>
           {address && (
-            <Link
-              href={`/u/${address}`}
-              className="text-foreground/60 hover:text-foreground"
-            >
+            <Link href={`/u/${address}`} className="text-foreground/60 hover:text-foreground">
               {t("common.nav.myProfile")}
             </Link>
           )}
-          <Link
-            href="/groups"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/groups" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.groups")}
           </Link>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.feed")}
           </Link>
-          <Link
-            href="/stats"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/stats" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.stats")}
           </Link>
-          <span className="text-foreground font-medium">
-            {t("common.nav.dashboard")}
-          </span>
-          <Link
-            href="/activity"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <span className="text-foreground font-medium">{t("common.nav.dashboard")}</span>
+          <Link href="/activity" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.activity")}
           </Link>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/report"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/report" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.report")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
@@ -410,9 +354,7 @@ export default function DashboardClient() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting
-              ? t("common.wallet.opening")
-              : t("common.wallet.connect")}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
       </div>
@@ -497,13 +439,8 @@ export default function DashboardClient() {
           {topTags.length > 0 && (
             <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
               <div className="mb-4 flex items-center justify-between gap-4">
-                <h2 className="text-sm uppercase tracking-wide text-foreground/50">
-                  Top tags
-                </h2>
-                <Link
-                  href="/tags"
-                  className="text-xs text-foreground/60 hover:text-foreground"
-                >
+                <h2 className="text-sm uppercase tracking-wide text-foreground/50">Top tags</h2>
+                <Link href="/tags" className="text-xs text-foreground/60 hover:text-foreground">
                   Manage tags
                 </Link>
               </div>
@@ -545,9 +482,7 @@ export default function DashboardClient() {
               </div>
             </div>
             {maxDayCount === 0 ? (
-              <p className="text-sm text-foreground/60">
-                {t("dashboard.activityEmpty")}
-              </p>
+              <p className="text-sm text-foreground/60">{t("dashboard.activityEmpty")}</p>
             ) : (
               <div
                 className="flex items-end gap-1 h-40"
@@ -555,9 +490,7 @@ export default function DashboardClient() {
                 aria-label={t("dashboard.chartAria")}
               >
                 {chartDays.map((d) => {
-                  const total = maxDayCount
-                    ? (d.count / maxDayCount) * 100
-                    : 0;
+                  const total = maxDayCount ? (d.count / maxDayCount) * 100 : 0;
                   return (
                     <div
                       key={d.date}
@@ -570,20 +503,13 @@ export default function DashboardClient() {
                         group: d.group,
                       })}
                     >
-                      <div
-                        className="w-full flex flex-col-reverse"
-                        style={{ height: `${total}%` }}
-                      >
+                      <div className="w-full flex flex-col-reverse" style={{ height: `${total}%` }}>
                         {SOURCE_META.map((s) => {
                           const v = d[s.key];
                           if (v <= 0) return null;
                           const pct = (v / d.count) * 100;
                           return (
-                            <div
-                              key={s.key}
-                              className={s.bar}
-                              style={{ height: `${pct}%` }}
-                            />
+                            <div key={s.key} className={s.bar} style={{ height: `${pct}%` }} />
                           );
                         })}
                       </div>
@@ -595,9 +521,7 @@ export default function DashboardClient() {
             {maxDayCount > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
                 <span>{formatDateLabel(chartDays[0].date)}</span>
-                <span>
-                  {formatDateLabel(chartDays[chartDays.length - 1].date)}
-                </span>
+                <span>{formatDateLabel(chartDays[chartDays.length - 1].date)}</span>
               </div>
             )}
           </section>
@@ -607,9 +531,7 @@ export default function DashboardClient() {
               {t("dashboard.bySourceHeading")}
             </h2>
             {analytics.totalAnchors === 0 ? (
-              <p className="text-sm text-foreground/60">
-                {t("dashboard.noAnchors")}
-              </p>
+              <p className="text-sm text-foreground/60">{t("dashboard.noAnchors")}</p>
             ) : (
               <>
                 <div className="flex h-4 w-full overflow-hidden rounded-full bg-foreground/10">
@@ -634,17 +556,11 @@ export default function DashboardClient() {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   {SOURCE_META.map((s) => {
                     const v = analytics.anchorsBySource[s.key];
-                    const pct = analytics.totalAnchors
-                      ? (v / analytics.totalAnchors) * 100
-                      : 0;
+                    const pct = analytics.totalAnchors ? (v / analytics.totalAnchors) * 100 : 0;
                     return (
                       <div key={s.key} className="flex items-center gap-2">
-                        <span
-                          className={`inline-block h-2 w-2 rounded-sm ${s.dot}`}
-                        />
-                        <span className="text-foreground/70">
-                          {t(`dashboard.${s.id}`)}
-                        </span>
+                        <span className={`inline-block h-2 w-2 rounded-sm ${s.dot}`} />
+                        <span className="text-foreground/70">{t(`dashboard.${s.id}`)}</span>
                         <span className="ml-auto font-mono text-xs text-foreground/60">
                           {formatNumber(v)} ({pct.toFixed(0)}%)
                         </span>
@@ -669,18 +585,13 @@ export default function DashboardClient() {
               </Link>
             </div>
             {recentEvents.length === 0 ? (
-              <p className="text-sm text-foreground/60">
-                {t("dashboard.noActivity")}
-              </p>
+              <p className="text-sm text-foreground/60">{t("dashboard.noActivity")}</p>
             ) : (
               <ul className="divide-y divide-foreground/10">
                 {recentEvents.map((event) => {
                   const { title, subtitle, icon } = describeActivity(event);
                   return (
-                    <li
-                      key={event.id}
-                      className="flex items-center gap-3 py-3"
-                    >
+                    <li key={event.id} className="flex items-center gap-3 py-3">
                       <span
                         aria-hidden="true"
                         className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${CATEGORY_BADGE[activityCategory(event.type)]}`}
@@ -709,42 +620,32 @@ export default function DashboardClient() {
             <h2 className="text-sm uppercase tracking-wide text-foreground/50 mb-2">
               {t("dashboard.exportHeading")}
             </h2>
-            <p className="text-sm text-foreground/60 mb-4">
-              {t("dashboard.exportDescription")}
-            </p>
+            <p className="text-sm text-foreground/60 mb-4">{t("dashboard.exportDescription")}</p>
             <div className="flex gap-2">
               <button
                 onClick={() => void handleExport("csv")}
                 disabled={exporting !== null}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {exporting === "csv"
-                  ? t("dashboard.exporting")
-                  : t("dashboard.exportCSV")}
+                {exporting === "csv" ? t("dashboard.exporting") : t("dashboard.exportCSV")}
               </button>
               <button
                 onClick={() => void handleExport("json")}
                 disabled={exporting !== null}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {exporting === "json"
-                  ? t("dashboard.exporting")
-                  : t("dashboard.exportJSON")}
+                {exporting === "json" ? t("dashboard.exporting") : t("dashboard.exportJSON")}
               </button>
               <button
                 onClick={() => void handleGenerateReport()}
                 disabled={reportLoading}
                 className="text-sm px-4 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
               >
-                {reportLoading
-                  ? t("dashboard.exporting")
-                  : t("dashboard.generateReport")}
+                {reportLoading ? t("dashboard.exporting") : t("dashboard.generateReport")}
               </button>
             </div>
             {exportError && (
-              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
-                {exportError}
-              </p>
+              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">{exportError}</p>
             )}
           </section>
         </StaggerList>

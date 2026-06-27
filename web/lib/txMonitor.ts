@@ -2,8 +2,7 @@
 // mined. Reads go through the same public Hiro mainnet base the rest of the app
 // uses. No state is persisted here; callers own that.
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 const POLL_INTERVAL_MS = 15_000;
 const TIMEOUT_MS = 30 * 60_000;
@@ -33,11 +32,7 @@ function isFailure(status: string): boolean {
 export class TxMonitor {
   private watches = new Map<string, WatchHandle>();
 
-  watch(
-    txId: string,
-    onConfirm: (result: TxResult) => void,
-    onFail: (error: Error) => void,
-  ): void {
+  watch(txId: string, onConfirm: (result: TxResult) => void, onFail: (error: Error) => void): void {
     if (this.watches.has(txId)) return;
 
     const poll = async () => {
@@ -45,9 +40,7 @@ export class TxMonitor {
       let blockHeight: number | null = null;
       let burnBlockHeight: number | null = null;
       try {
-        const res = await fetch(
-          `${HIRO_BASE}/extended/v1/tx/${withHexPrefix(txId)}`,
-        );
+        const res = await fetch(`${HIRO_BASE}/extended/v1/tx/${withHexPrefix(txId)}`);
         // 404 means the node has not indexed the tx yet; treat as still pending.
         if (res.status === 404) return;
         if (!res.ok) return;

@@ -50,10 +50,7 @@ export function resolvePath(translations: Translations, path: string): string {
 
 // Replaces {name} placeholders with the matching param value. A missing param
 // leaves the placeholder untouched so the gap is obvious.
-export function interpolate(
-  template: string,
-  params?: Record<string, string | number>,
-): string {
+export function interpolate(template: string, params?: Record<string, string | number>): string {
   if (!params) return template;
   return template.replace(/\{(\w+)\}/g, (match, key: string) => {
     const value = params[key];

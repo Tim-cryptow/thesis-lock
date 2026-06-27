@@ -55,12 +55,8 @@ export default function TemplateSelector({
 
   return (
     <div>
-      <div className="text-sm text-foreground/60 mb-1">
-        {t("templates.selector.heading")}
-      </div>
-      <p className="text-xs text-foreground/50 mb-3">
-        {t("templates.selector.description")}
-      </p>
+      <div className="text-sm text-foreground/60 mb-1">{t("templates.selector.heading")}</div>
+      <p className="text-xs text-foreground/50 mb-3">{t("templates.selector.description")}</p>
       <div
         role="radiogroup"
         aria-label={t("templates.selector.heading")}

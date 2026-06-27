@@ -39,8 +39,7 @@ export default function MiniContributionGraph({
     if (!address) return;
     let active = true;
     setLoading(true);
-    const dataPromise =
-      mode === "year" ? buildYearGrid(address) : buildRecentDays(address, days);
+    const dataPromise = mode === "year" ? buildYearGrid(address) : buildRecentDays(address, days);
     // The current streak needs the full history so it is not capped at the
     // compact window; both calls share one underlying scan.
     const datesPromise = showStreak
@@ -70,9 +69,7 @@ export default function MiniContributionGraph({
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-3">
-        <h2 className="text-sm uppercase tracking-wide text-foreground/50">
-          {title}
-        </h2>
+        <h2 className="text-sm uppercase tracking-wide text-foreground/50">{title}</h2>
         <Link
           href="/calendar"
           className="text-xs text-foreground/60 hover:text-foreground transition"

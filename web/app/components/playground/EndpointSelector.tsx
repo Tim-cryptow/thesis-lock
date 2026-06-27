@@ -13,9 +13,7 @@ function MethodBadge({ method }: { method: Endpoint["method"] }) {
       ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
       : "bg-sky-500/15 text-sky-600 dark:text-sky-400";
   return (
-    <span
-      className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-medium ${color}`}
-    >
+    <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-mono font-medium ${color}`}>
       {method}
     </span>
   );
@@ -24,10 +22,7 @@ function MethodBadge({ method }: { method: Endpoint["method"] }) {
 export default function EndpointSelector({ selectedId, onSelect }: Props) {
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor="playground-endpoint"
-        className="text-sm font-medium text-foreground"
-      >
+      <label htmlFor="playground-endpoint" className="text-sm font-medium text-foreground">
         Endpoint
       </label>
       <select
@@ -68,19 +63,13 @@ export default function EndpointSelector({ selectedId, onSelect }: Props) {
                       onClick={() => onSelect(endpoint)}
                       aria-current={active ? "true" : undefined}
                       className={`flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition ${
-                        active
-                          ? "bg-foreground/5"
-                          : "hover:bg-foreground/5"
+                        active ? "bg-foreground/5" : "hover:bg-foreground/5"
                       }`}
                     >
                       <MethodBadge method={endpoint.method} />
                       <span className="flex min-w-0 flex-col">
-                        <span className="font-mono text-xs text-foreground">
-                          {endpoint.path}
-                        </span>
-                        <span className="text-xs text-foreground/50">
-                          {endpoint.description}
-                        </span>
+                        <span className="font-mono text-xs text-foreground">{endpoint.path}</span>
+                        <span className="text-xs text-foreground/50">{endpoint.description}</span>
                       </span>
                     </button>
                   </li>

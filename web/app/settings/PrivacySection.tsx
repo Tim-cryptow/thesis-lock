@@ -83,9 +83,7 @@ export default function PrivacySection() {
   const [auditOn, setAuditOn] = useState(true);
   const [perfOn, setPerfOn] = useState(true);
   const [retention, setRetention] = useState(0);
-  const [keysByCategory, setKeysByCategory] = useState<Record<string, string[]>>(
-    {},
-  );
+  const [keysByCategory, setKeysByCategory] = useState<Record<string, string[]>>({});
   const [message, setMessage] = useState<string | null>(null);
   const confirm = useConfirm();
 
@@ -132,21 +130,17 @@ export default function PrivacySection() {
   return (
     <div className="flex flex-col gap-8">
       <p className="text-sm text-foreground/70 max-w-2xl">
-        Decide what ThesisLock records on this device and clear anything you no
-        longer want kept.
+        Decide what ThesisLock records on this device and clear anything you no longer want kept.
       </p>
 
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">Tracking</h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          These records are local and tamper-evident, never sent anywhere. Turn
-          them off if you would rather they not be kept.
+          These records are local and tamper-evident, never sent anywhere. Turn them off if you
+          would rather they not be kept.
         </p>
         <div className="flex flex-col gap-4">
-          <Row
-            label="Audit log"
-            hint="Record a tamper-evident history of your actions."
-          >
+          <Row label="Audit log" hint="Record a tamper-evident history of your actions.">
             <Switch
               label="Audit log"
               checked={auditOn}
@@ -175,8 +169,8 @@ export default function PrivacySection() {
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">Data retention</h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          Automatically drop audit log entries older than the chosen age. Applied
-          immediately and whenever a new action is recorded.
+          Automatically drop audit log entries older than the chosen age. Applied immediately and
+          whenever a new action is recorded.
         </p>
         <Row label="Keep audit entries for">
           <select
@@ -202,8 +196,7 @@ export default function PrivacySection() {
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">Clear specific data</h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          Remove one kind of data without touching the rest. This cannot be
-          undone.
+          Remove one kind of data without touching the rest. This cannot be undone.
         </p>
         <div className="flex flex-wrap gap-3">
           {clearActions.map((action) => (
@@ -218,19 +211,16 @@ export default function PrivacySection() {
           ))}
         </div>
         {message ? (
-          <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">
-            {message}
-          </p>
+          <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">{message}</p>
         ) : null}
       </section>
 
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">What data does ThesisLock store?</h2>
         <p className="text-sm text-foreground/70 mb-2 max-w-2xl">
-          All ThesisLock data is stored locally in your browser. No data is sent
-          to any server except the Stacks blockchain transactions you sign, which
-          are public by design. Hashing happens entirely on your device, so your
-          documents never leave it.
+          All ThesisLock data is stored locally in your browser. No data is sent to any server
+          except the Stacks blockchain transactions you sign, which are public by design. Hashing
+          happens entirely on your device, so your documents never leave it.
         </p>
         <details className="mt-2 text-sm">
           <summary className="cursor-pointer text-foreground/70 hover:text-foreground">
@@ -241,12 +231,8 @@ export default function PrivacySection() {
               const keys = keysByCategory[category] ?? [];
               return (
                 <li key={category}>
-                  <div className="text-foreground">
-                    {CATEGORY_LABELS[category]}
-                  </div>
-                  <div className="text-foreground/60">
-                    {CATEGORY_DESCRIPTIONS[category]}
-                  </div>
+                  <div className="text-foreground">{CATEGORY_LABELS[category]}</div>
+                  <div className="text-foreground/60">{CATEGORY_DESCRIPTIONS[category]}</div>
                   <div className="mt-1 text-xs text-foreground/45 mono break-all">
                     {keys.length > 0 ? keys.join(", ") : "nothing stored"}
                   </div>

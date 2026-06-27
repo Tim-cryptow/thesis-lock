@@ -50,13 +50,7 @@ export default function GroupDetailPage() {
   const groupId = Number(params.id);
   const validId = Number.isInteger(groupId) && groupId > 0;
 
-  const {
-    address,
-    connecting,
-    error: walletError,
-    connectWallet,
-    disconnectWallet,
-  } = useWallet();
+  const { address, connecting, error: walletError, connectWallet, disconnectWallet } = useWallet();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<string[]>([]);
@@ -176,21 +170,24 @@ export default function GroupDetailPage() {
   const [anchorPending, setAnchorPending] = useState(false);
   const [anchorTxId, setAnchorTxId] = useState<string | null>(null);
 
-  const onFileSelect = useCallback(async (selected: File | null) => {
-    if (!selected) return;
-    setFile(selected);
-    setHash(null);
-    setHashError(null);
-    setAnchorTxId(null);
-    setHashing(true);
-    try {
-      setHash(await hashFile(selected));
-    } catch (e) {
-      setHashError(e instanceof Error ? e.message : t("groups.detail.hashError"));
-    } finally {
-      setHashing(false);
-    }
-  }, [t]);
+  const onFileSelect = useCallback(
+    async (selected: File | null) => {
+      if (!selected) return;
+      setFile(selected);
+      setHash(null);
+      setHashError(null);
+      setAnchorTxId(null);
+      setHashing(true);
+      try {
+        setHash(await hashFile(selected));
+      } catch (e) {
+        setHashError(e instanceof Error ? e.message : t("groups.detail.hashError"));
+      } finally {
+        setHashing(false);
+      }
+    },
+    [t],
+  );
 
   const onLabelChange = (next: string) => {
     if (!ASCII_REGEX.test(next)) {
@@ -226,56 +223,37 @@ export default function GroupDetailPage() {
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
-          <div className="order-last ml-auto"><ThemeToggle /></div>
+          <div className="order-last ml-auto">
+            <ThemeToggle />
+          </div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.search")}
           </Link>
-          <Link
-            href="/groups"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/groups" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.groups")}
           </Link>
-          <Link
-            href="/anchors"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.myAnchors")}
           </Link>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.feed")}
           </Link>
-          <Link
-            href="/dashboard"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.dashboard")}
           </Link>
-          <Link
-            href="/activity"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/activity" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.activity")}
           </Link>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/report"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/report" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.report")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
@@ -288,11 +266,7 @@ export default function GroupDetailPage() {
             title={t("common.wallet.disconnect")}
             aria-label={t("common.wallet.disconnectAria")}
           >
-            <TruncatedAddress
-              address={address}
-              linkToProfile={false}
-              copyable={false}
-            />
+            <TruncatedAddress address={address} linkToProfile={false} copyable={false} />
           </button>
         ) : (
           <button
@@ -350,22 +324,12 @@ export default function GroupDetailPage() {
         <>
           <div className="flex items-center gap-3 flex-wrap mb-2">
             <h1 className="text-3xl">{group.name}</h1>
-            <WatchlistButton
-              type="group"
-              value={String(groupId)}
-              label={group.name}
-              showLabel
-            />
-            <StarButton
-              type="group"
-              value={String(groupId)}
-              label={group.name}
-            />
+            <WatchlistButton type="group" value={String(groupId)} label={group.name} showLabel />
+            <StarButton type="group" value={String(groupId)} label={group.name} />
           </div>
           <div className="text-sm text-foreground/60 mb-8">
             {t("groups.detail.metaPrefix", { id: groupId })}{" "}
-            <TruncatedAddress address={group.admin} copyable={false} />{" "}
-            &middot;{" "}
+            <TruncatedAddress address={group.admin} copyable={false} /> &middot;{" "}
             {members.length === 1
               ? t("groups.memberCountOne", { count: members.length })
               : t("groups.memberCountOther", { count: members.length })}{" "}
@@ -403,9 +367,7 @@ export default function GroupDetailPage() {
                   {memberError}
                 </p>
               )}
-              <p className="mt-2 text-xs text-foreground/50">
-                {t("groups.detail.refreshHint")}
-              </p>
+              <p className="mt-2 text-xs text-foreground/50">{t("groups.detail.refreshHint")}</p>
 
               <ul className="mt-4 space-y-2" role="list">
                 {members.map((m) => (
@@ -416,9 +378,7 @@ export default function GroupDetailPage() {
                     <span className="inline-flex items-center gap-1 min-w-0">
                       <TruncatedAddress address={m} copyable={false} />
                       {m === group.admin ? (
-                        <span className="text-foreground/50">
-                          {t("groups.detail.adminSuffix")}
-                        </span>
+                        <span className="text-foreground/50">{t("groups.detail.adminSuffix")}</span>
                       ) : null}
                     </span>
                     {m !== group.admin && (
@@ -427,7 +387,9 @@ export default function GroupDetailPage() {
                         disabled={removingMember === m}
                         className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50 shrink-0"
                       >
-                        {removingMember === m ? t("groups.detail.signing") : t("groups.detail.remove")}
+                        {removingMember === m
+                          ? t("groups.detail.signing")
+                          : t("groups.detail.remove")}
                       </button>
                     )}
                   </li>
@@ -438,9 +400,7 @@ export default function GroupDetailPage() {
 
           <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
             <h2 className="text-lg mb-1">{t("groups.detail.anchorHeading")}</h2>
-            <p className="text-foreground/70 text-sm mb-4">
-              {t("groups.detail.anchorIntro")}
-            </p>
+            <p className="text-foreground/70 text-sm mb-4">{t("groups.detail.anchorIntro")}</p>
             {!member ? (
               <p className="text-sm text-amber-700 dark:text-amber-400">
                 {t("groups.detail.notMember")}
@@ -455,14 +415,10 @@ export default function GroupDetailPage() {
                   {file ? (
                     <p className="text-foreground/80">
                       <span className="font-medium">{file.name}</span>{" "}
-                      <span className="text-foreground/50 text-sm">
-                        ({formatBytes(file.size)})
-                      </span>
+                      <span className="text-foreground/50 text-sm">({formatBytes(file.size)})</span>
                     </p>
                   ) : (
-                    <p className="text-foreground/60">
-                      {t("groups.detail.dropZoneLabel")}
-                    </p>
+                    <p className="text-foreground/60">{t("groups.detail.dropZoneLabel")}</p>
                   )}
                 </FileDropZone>
 
@@ -490,10 +446,7 @@ export default function GroupDetailPage() {
                 )}
 
                 <div className="mt-4">
-                  <label
-                    htmlFor="anchor-label"
-                    className="block text-sm text-foreground/60 mb-2"
-                  >
+                  <label htmlFor="anchor-label" className="block text-sm text-foreground/60 mb-2">
                     {t("groups.detail.labelLabel")}
                   </label>
                   <input
@@ -513,9 +466,7 @@ export default function GroupDetailPage() {
                     >
                       {labelError ?? "."}
                     </span>
-                    <span className="text-foreground/50 font-mono">
-                      {label.length}/64
-                    </span>
+                    <span className="text-foreground/50 font-mono">{label.length}/64</span>
                   </div>
                 </div>
 
@@ -541,10 +492,7 @@ export default function GroupDetailPage() {
                       {t("groups.viewTransaction")}
                     </a>
                     {t("groups.detail.appearOnConfirm")}{" "}
-                    <button
-                      onClick={() => void load()}
-                      className="underline hover:no-underline"
-                    >
+                    <button onClick={() => void load()} className="underline hover:no-underline">
                       {t("groups.refresh")}
                     </button>
                   </p>
@@ -559,9 +507,7 @@ export default function GroupDetailPage() {
               {anchors.length > 0 && (
                 <Link
                   href="/report"
-                  onClick={() =>
-                    stageReportInput(anchors.map((a) => ({ hash: a.hash })))
-                  }
+                  onClick={() => stageReportInput(anchors.map((a) => ({ hash: a.hash })))}
                   className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                 >
                   {t("groups.detail.generateReport")}
@@ -575,9 +521,7 @@ export default function GroupDetailPage() {
               </button>
             </div>
           </div>
-          <p className="text-foreground/60 text-sm mb-4">
-            {t("groups.detail.recentIntro")}
-          </p>
+          <p className="text-foreground/60 text-sm mb-4">{t("groups.detail.recentIntro")}</p>
 
           {anchors.length === 0 ? (
             <EmptyState
@@ -614,18 +558,13 @@ export default function GroupDetailPage() {
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                         {t("groups.detail.anchoredByLabel")}
                       </div>
-                      <TruncatedAddress
-                        address={anchor.anchoredBy}
-                        copyable={false}
-                      />
+                      <TruncatedAddress address={anchor.anchoredBy} copyable={false} />
                     </div>
                     <div>
                       <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
                         {t("groups.detail.stacksBlockLabel")}
                       </div>
-                      <code className="font-mono text-xs">
-                        {anchor.stacksBlock}
-                      </code>
+                      <code className="font-mono text-xs">{anchor.stacksBlock}</code>
                     </div>
                   </div>
                 </div>

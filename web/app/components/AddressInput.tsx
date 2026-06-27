@@ -9,9 +9,7 @@ export function sanitizeAddress(raw: string): string {
 }
 
 function truncate(address: string): string {
-  return address.length > 16
-    ? `${address.slice(0, 8)}...${address.slice(-6)}`
-    : address;
+  return address.length > 16 ? `${address.slice(0, 8)}...${address.slice(-6)}` : address;
 }
 
 type AddressInputProps = {
@@ -54,10 +52,7 @@ export default function AddressInput({
       {valid ? (
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-foreground/60">
           <code className="font-mono">{truncate(value)}</code>
-          <Link
-            href={`/u/${value}`}
-            className="underline hover:no-underline"
-          >
+          <Link href={`/u/${value}`} className="underline hover:no-underline">
             View profile &rarr;
           </Link>
         </div>

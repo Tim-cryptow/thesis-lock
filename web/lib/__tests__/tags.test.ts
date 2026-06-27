@@ -137,10 +137,7 @@ describe("renameTag / deleteTag / mergeTags", () => {
 
 describe("suggestTags", () => {
   it("suggests template tags from a structured label prefix", () => {
-    expect(suggestTags("paper-title:thesis|v:2")).toEqual([
-      "academic",
-      "research",
-    ]);
+    expect(suggestTags("paper-title:thesis|v:2")).toEqual(["academic", "research"]);
   });
 
   it("suggests workflow keywords found in the label text", () => {

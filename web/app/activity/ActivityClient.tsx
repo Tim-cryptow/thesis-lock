@@ -14,11 +14,7 @@ import { useWallet } from "@/lib/wallet";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
 import { explorerTxUrl } from "@/lib/stacks";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
-import {
-  activityCategory,
-  type ActivityCategory,
-  type ActivityEvent,
-} from "@/lib/activityLog";
+import { activityCategory, type ActivityCategory, type ActivityEvent } from "@/lib/activityLog";
 import { describeActivity } from "@/lib/activityDescriptions";
 
 const PAGE_SIZE = 20;
@@ -147,9 +143,7 @@ function EventRow({
           </span>
         </div>
         {subtitle && (
-          <div className="text-xs text-foreground/50 font-mono truncate">
-            {subtitle}
-          </div>
+          <div className="text-xs text-foreground/50 font-mono truncate">{subtitle}</div>
         )}
         <a
           href={explorerTxUrl(event.txId)}
@@ -277,9 +271,7 @@ export default function ActivityClient() {
   // Filtering is client-side over the loaded events, so switching pills is
   // instant and never refetches.
   const visibleEvents =
-    filter === "all"
-      ? events
-      : events.filter((e) => activityCategory(e.type) === filter);
+    filter === "all" ? events : events.filter((e) => activityCategory(e.type) === filter);
   const groups = groupByDay(visibleEvents, t, localeTag);
 
   return (
@@ -292,51 +284,28 @@ export default function ActivityClient() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
-          <Link
-            href="/anchor"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.anchor")}
           </Link>
-          <Link
-            href="/anchors"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.myAnchors")}
           </Link>
           {address && (
-            <Link
-              href={`/u/${address}`}
-              className="text-foreground/60 hover:text-foreground"
-            >
+            <Link href={`/u/${address}`} className="text-foreground/60 hover:text-foreground">
               {t("common.nav.myProfile")}
             </Link>
           )}
-          <Link
-            href="/dashboard"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.dashboard")}
           </Link>
-          <span className="text-foreground font-medium">
-            {t("common.nav.activity")}
-          </span>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <span className="text-foreground font-medium">{t("common.nav.activity")}</span>
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/report"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/report" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.report")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
@@ -348,11 +317,7 @@ export default function ActivityClient() {
             className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
             title={t("common.wallet.disconnect")}
           >
-            <TruncatedAddress
-              address={address}
-              linkToProfile={false}
-              copyable={false}
-            />
+            <TruncatedAddress address={address} linkToProfile={false} copyable={false} />
           </button>
         ) : (
           <button
@@ -360,9 +325,7 @@ export default function ActivityClient() {
             disabled={connecting}
             className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
           >
-            {connecting
-              ? t("common.wallet.opening")
-              : t("common.wallet.connect")}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         )}
       </div>
@@ -372,17 +335,13 @@ export default function ActivityClient() {
 
       {!address ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">
-            {t("activity.connectPrompt")}
-          </p>
+          <p className="text-foreground/70 mb-6">{t("activity.connectPrompt")}</p>
           <button
             onClick={connectWallet}
             disabled={connecting}
             className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-50"
           >
-            {connecting
-              ? t("common.wallet.opening")
-              : t("common.wallet.connect")}
+            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
           </button>
         </div>
       ) : error ? (
@@ -426,11 +385,7 @@ export default function ActivityClient() {
         />
       ) : (
         <>
-          <div
-            role="group"
-            aria-label={t("activity.title")}
-            className="flex flex-wrap gap-2 mb-6"
-          >
+          <div role="group" aria-label={t("activity.title")} className="flex flex-wrap gap-2 mb-6">
             {FILTERS.map((f) => {
               const active = f === filter;
               return (
@@ -477,9 +432,7 @@ export default function ActivityClient() {
             </p>
           )}
           {!hasMore && events.length > 0 && (
-            <p className="mt-6 text-center text-xs text-foreground/40">
-              {t("activity.noMore")}
-            </p>
+            <p className="mt-6 text-center text-xs text-foreground/40">{t("activity.noMore")}</p>
           )}
         </>
       )}

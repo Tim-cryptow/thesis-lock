@@ -19,12 +19,10 @@ import {
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 export const EXPLORER_CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 export type FunctionAccess = "public" | "read-only" | "private";
 
@@ -79,8 +77,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
   {
     name: "thesislock",
     address: EXPLORER_CONTRACT_ADDRESS,
-    deployTx:
-      "0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e",
+    deployTx: "0xd1bdda30d03befb0023c9e1c34e71a7429d5f1b699424f60481b3a64df8f5d8e",
     deployBlock: 7798720,
     maps: ["anchors"],
     variables: [],
@@ -118,8 +115,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
   {
     name: "thesislock-batch",
     address: EXPLORER_CONTRACT_ADDRESS,
-    deployTx:
-      "0xfb395a494ea378e83de4f19359ced3bb2288d3ccb200f058959c72b66ce7c99f",
+    deployTx: "0xfb395a494ea378e83de4f19359ced3bb2288d3ccb200f058959c72b66ce7c99f",
     deployBlock: 8104735,
     maps: ["batch-anchors"],
     variables: ["batch-counter"],
@@ -147,8 +143,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
         ],
         returnType:
           "(optional { label: (string-ascii 64), stacks-block: uint, burn-block: uint, batch-id: uint })",
-        description:
-          "Return a batch anchor record for a given hash and owner, or none.",
+        description: "Return a batch anchor record for a given hash and owner, or none.",
       },
       {
         name: "get-batch-count",
@@ -162,8 +157,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
   {
     name: "thesislock-registry",
     address: EXPLORER_CONTRACT_ADDRESS,
-    deployTx:
-      "0xb3acf2043c04c02431e240398686e69fed925226594ec18a53702ec61a6b303a",
+    deployTx: "0xb3acf2043c04c02431e240398686e69fed925226594ec18a53702ec61a6b303a",
     deployBlock: 8104735,
     maps: ["anchor-index", "anchor-count"],
     variables: [],
@@ -177,8 +171,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
           { name: "label", type: "(string-ascii 64)" },
         ],
         returnType: "(response uint uint)",
-        description:
-          "Append an anchor to the caller's index and return its zero-based position.",
+        description: "Append an anchor to the caller's index and return its zero-based position.",
       },
       {
         name: "get-anchor-count",
@@ -194,8 +187,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
           { name: "owner", type: "principal" },
           { name: "index", type: "uint" },
         ],
-        returnType:
-          "(optional { hash: (buff 32), label: (string-ascii 64), anchored-at: uint })",
+        returnType: "(optional { hash: (buff 32), label: (string-ascii 64), anchored-at: uint })",
         description: "Return the anchor at a given index for a principal.",
       },
       {
@@ -203,16 +195,14 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
         access: "read-only",
         args: [{ name: "owner", type: "principal" }],
         returnType: "(list 10 (optional { hash, label, anchored-at }))",
-        description:
-          "Return up to the ten most recent anchors for a principal, newest first.",
+        description: "Return up to the ten most recent anchors for a principal, newest first.",
       },
     ],
   },
   {
     name: "thesislock-proof",
     address: EXPLORER_CONTRACT_ADDRESS,
-    deployTx:
-      "0x0a249e7bbdc3d6a4c5b969ec4a7dadb6759e2726a10f706ba628197ed76a7c34",
+    deployTx: "0x0a249e7bbdc3d6a4c5b969ec4a7dadb6759e2726a10f706ba628197ed76a7c34",
     deployBlock: 8135493,
     maps: ["proof-data", "hash-to-token"],
     variables: ["last-token-id"],
@@ -289,8 +279,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
   {
     name: "thesislock-groups",
     address: EXPLORER_CONTRACT_ADDRESS,
-    deployTx:
-      "0x4a698fca849d4c0ea7e28d020ab45ef1846c0e9fea39e128f3b48632473cd89a",
+    deployTx: "0x4a698fca849d4c0ea7e28d020ab45ef1846c0e9fea39e128f3b48632473cd89a",
     deployBlock: 8212734,
     maps: ["groups", "group-members", "group-anchors", "group-anchor-count"],
     variables: ["group-counter"],
@@ -341,8 +330,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
         name: "get-group",
         access: "read-only",
         args: [{ name: "group-id", type: "uint" }],
-        returnType:
-          "(optional { name: (string-ascii 64), admin: principal, created-at: uint })",
+        returnType: "(optional { name: (string-ascii 64), admin: principal, created-at: uint })",
         description: "Return a group's name, admin, and creation block.",
       },
       {
@@ -378,8 +366,7 @@ export const CONTRACT_REGISTRY: ContractInfo[] = [
         access: "read-only",
         args: [{ name: "group-id", type: "uint" }],
         returnType: "(list 10 (optional { hash, label, anchored-by, stacks-block }))",
-        description:
-          "Return up to the ten most recent anchors in a group, newest first.",
+        description: "Return up to the ten most recent anchors in a group, newest first.",
       },
     ],
   },
@@ -506,9 +493,7 @@ export async function fetchContractCalls(
 // Total transactions touching a contract address, used as its call count. The
 // Hiro `total` counts every transaction including the single deploy, so we
 // subtract it. Returns 0 on any failure rather than throwing.
-export async function fetchContractCallCount(
-  contractName: string,
-): Promise<number> {
+export async function fetchContractCallCount(contractName: string): Promise<number> {
   const contractId = `${EXPLORER_CONTRACT_ADDRESS}.${contractName}`;
   const url = `${HIRO_BASE}/extended/v1/address/${contractId}/transactions?limit=1`;
   try {
@@ -548,9 +533,7 @@ export async function callReadOnly(
     throw new Error(`${functionName} is not read-only`);
   }
   if (args.length !== fn.args.length) {
-    throw new Error(
-      `Expected ${fn.args.length} argument(s), received ${args.length}`,
-    );
+    throw new Error(`Expected ${fn.args.length} argument(s), received ${args.length}`);
   }
 
   const serialized = fn.args.map((argDef, i) =>

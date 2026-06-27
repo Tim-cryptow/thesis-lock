@@ -36,21 +36,13 @@ export async function GET(req: Request) {
   const b = (url.searchParams.get("b") ?? "").toLowerCase();
 
   if (!HEX_64.test(a) || !HEX_64.test(b)) {
-    return badRequest(
-      "Provide two 64 hex character hashes as ?a= and ?b=.",
-    );
+    return badRequest("Provide two 64 hex character hashes as ?a= and ?b=.");
   }
 
   const ownerA = pickOwner(url.searchParams.get("ownerA"));
   const ownerB = pickOwner(url.searchParams.get("ownerB"));
-  const groupA = pickGroup(
-    url.searchParams.get("groupA"),
-    url.searchParams.get("giA"),
-  );
-  const groupB = pickGroup(
-    url.searchParams.get("groupB"),
-    url.searchParams.get("giB"),
-  );
+  const groupA = pickGroup(url.searchParams.get("groupA"), url.searchParams.get("giA"));
+  const groupB = pickGroup(url.searchParams.get("groupB"), url.searchParams.get("giB"));
 
   try {
     const comparison = await compareAnchors(a, b, ownerA, ownerB, groupA, groupB);

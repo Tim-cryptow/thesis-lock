@@ -7,8 +7,7 @@ type RouteContext = {
   params: Promise<{ hash: string }>;
 };
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 // Best-effort lookup of a Stacks block's wall-clock time so the card can show
 // when the anchor landed. Any failure just drops the timestamp line.
@@ -71,135 +70,119 @@ export async function GET(req: Request, { params }: RouteContext) {
   const verifyDisplay = verifyHref.replace(/^https?:\/\//, "");
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: "#0B0B0E",
+        color: "#F5F5F0",
+        padding: 40,
+        fontFamily: "sans-serif",
+      }}
+    >
       <div
         style={{
-          width: "100%",
-          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: -0.5 }}>ThesisLock</div>
+        <div
+          style={{
+            fontSize: 20,
+            padding: "8px 18px",
+            borderRadius: 9999,
+            background: "rgba(255,255,255,0.06)",
+            color: statusColor,
+            border: `2px solid ${statusColor}`,
+            fontWeight: 600,
+            display: "flex",
+          }}
+        >
+          {statusLabel}
+        </div>
+      </div>
+
+      <div
+        style={{
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          background: "#0B0B0E",
-          color: "#F5F5F0",
-          padding: 40,
-          fontFamily: "sans-serif",
+          justifyContent: "center",
+          gap: 14,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 14,
+            color: "#A1A1AA",
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            display: "flex",
+          }}
+        >
+          SHA-256
+        </div>
+        <div
+          style={{
+            fontFamily: "monospace",
+            fontSize: 30,
+            color: "#F5F5F0",
+            display: "flex",
+          }}
+        >
+          {hashShort}
+        </div>
+        {verified && stacksBlock !== null ? (
+          <div style={{ display: "flex", gap: 40, marginTop: 8 }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ color: "#71717A", fontSize: 14 }}>Stacks block</span>
+              <span style={{ fontFamily: "monospace", fontSize: 22 }}>{stacksBlock}</span>
+            </div>
+            {label ? (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ color: "#71717A", fontSize: 14 }}>Label</span>
+                <span style={{ fontSize: 22 }}>{label}</span>
+              </div>
+            ) : null}
+            {timestamp ? (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <span style={{ color: "#71717A", fontSize: 14 }}>Timestamp</span>
+                <span style={{ fontFamily: "monospace", fontSize: 22 }}>{timestamp}</span>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div style={{ color: "#A1A1AA", fontSize: 18, display: "flex" }}>
+            {valid ? "No anchor record found for this hash." : "Invalid hash format."}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+          fontSize: 14,
+          color: "#71717A",
         }}
       >
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            fontFamily: "monospace",
+            wordBreak: "break-all",
           }}
         >
-          <div style={{ fontSize: 34, fontWeight: 700, letterSpacing: -0.5 }}>
-            ThesisLock
-          </div>
-          <div
-            style={{
-              fontSize: 20,
-              padding: "8px 18px",
-              borderRadius: 9999,
-              background: "rgba(255,255,255,0.06)",
-              color: statusColor,
-              border: `2px solid ${statusColor}`,
-              fontWeight: 600,
-              display: "flex",
-            }}
-          >
-            {statusLabel}
-          </div>
+          Verify at {verifyDisplay}
         </div>
-
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 14,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 14,
-              color: "#A1A1AA",
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              display: "flex",
-            }}
-          >
-            SHA-256
-          </div>
-          <div
-            style={{
-              fontFamily: "monospace",
-              fontSize: 30,
-              color: "#F5F5F0",
-              display: "flex",
-            }}
-          >
-            {hashShort}
-          </div>
-          {verified && stacksBlock !== null ? (
-            <div style={{ display: "flex", gap: 40, marginTop: 8 }}>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ color: "#71717A", fontSize: 14 }}>
-                  Stacks block
-                </span>
-                <span style={{ fontFamily: "monospace", fontSize: 22 }}>
-                  {stacksBlock}
-                </span>
-              </div>
-              {label ? (
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ color: "#71717A", fontSize: 14 }}>Label</span>
-                  <span style={{ fontSize: 22 }}>{label}</span>
-                </div>
-              ) : null}
-              {timestamp ? (
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ color: "#71717A", fontSize: 14 }}>
-                    Timestamp
-                  </span>
-                  <span style={{ fontFamily: "monospace", fontSize: 22 }}>
-                    {timestamp}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div
-              style={{ color: "#A1A1AA", fontSize: 18, display: "flex" }}
-            >
-              {valid
-                ? "No anchor record found for this hash."
-                : "Invalid hash format."}
-            </div>
-          )}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-            fontSize: 14,
-            color: "#71717A",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              fontFamily: "monospace",
-              wordBreak: "break-all",
-            }}
-          >
-            Verify at {verifyDisplay}
-          </div>
-          <div style={{ display: "flex" }}>Anchored on Stacks</div>
-        </div>
+        <div style={{ display: "flex" }}>Anchored on Stacks</div>
       </div>
-    ),
+    </div>,
     {
       width: 600,
       height: 300,

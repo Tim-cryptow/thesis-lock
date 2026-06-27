@@ -131,11 +131,8 @@ export default function ConfirmDialog({
         {requireType ? (
           <label className="mt-4 block text-sm">
             <span className="text-foreground/70">
-              Type{" "}
-              <span className="mono font-semibold text-foreground">
-                {requireType}
-              </span>{" "}
-              to confirm.
+              Type <span className="mono font-semibold text-foreground">{requireType}</span> to
+              confirm.
             </span>
             <input
               type="text"

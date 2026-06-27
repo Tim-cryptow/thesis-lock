@@ -95,18 +95,12 @@ export function saveFavorites(favs: Favorite[]): void {
 export function isFavorite(type: string, value: string): boolean {
   const favType = type as FavoriteType;
   const normalized = normalizeValue(favType, value);
-  return loadFavorites().some(
-    (f) => f.type === favType && f.value === normalized,
-  );
+  return loadFavorites().some((f) => f.type === favType && f.value === normalized);
 }
 
 // Creates and persists a favorite, returning it. If the value is already
 // favorited, the existing entry is returned and nothing is added.
-export function addFavorite(
-  type: FavoriteType,
-  value: string,
-  label: string,
-): Favorite {
+export function addFavorite(type: FavoriteType, value: string, label: string): Favorite {
   const normalized = normalizeValue(type, value);
   const favs = loadFavorites();
   const existing = favs.find((f) => f.type === type && f.value === normalized);
@@ -128,11 +122,7 @@ export function removeFavorite(id: string): void {
 
 // Adds the value if it is not favorited, or removes it if it is. Returns the new
 // state: true when it is now a favorite, false when it was removed.
-export function toggleFavorite(
-  type: FavoriteType,
-  value: string,
-  label: string,
-): boolean {
+export function toggleFavorite(type: FavoriteType, value: string, label: string): boolean {
   const normalized = normalizeValue(type, value);
   const favs = loadFavorites();
   const existing = favs.find((f) => f.type === type && f.value === normalized);

@@ -9,8 +9,7 @@ import { fetchWithRetry } from "./fetchWithRetry";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const SINGLE_CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT = "thesislock-batch";
@@ -291,9 +290,7 @@ export async function fetchActivityLog(
     .map(toEvent)
     .filter((e): e is ActivityEvent => e !== null);
 
-  events.sort(
-    (a, b) => b.blockHeight - a.blockHeight || b.txId.localeCompare(a.txId),
-  );
+  events.sort((a, b) => b.blockHeight - a.blockHeight || b.txId.localeCompare(a.txId));
 
   const total = typeof data.total === "number" ? data.total : offset + results.length;
   const hasMore = offset + results.length < total;

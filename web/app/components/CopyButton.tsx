@@ -95,9 +95,7 @@ export default function CopyButton({
 
   return (
     <span className="relative inline-flex items-center gap-1.5">
-      {showValue ? (
-        <span className="mono text-xs break-all">{value}</span>
-      ) : null}
+      {showValue ? <span className="mono text-xs break-all">{value}</span> : null}
       <button
         type="button"
         onClick={() => void onCopy()}

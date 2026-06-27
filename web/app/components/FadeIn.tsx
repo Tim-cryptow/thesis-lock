@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createElement,
-  useEffect,
-  useState,
-  type ElementType,
-  type ReactNode,
-} from "react";
+import { createElement, useEffect, useState, type ElementType, type ReactNode } from "react";
 
 type Direction = "up" | "down" | "left" | "right" | "none";
 

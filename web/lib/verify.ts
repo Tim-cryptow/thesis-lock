@@ -3,8 +3,7 @@ import { fetchBatchAnchor } from "./hiroAnchor";
 import { getAnchorByHash } from "./anchorsIndex";
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 
@@ -40,9 +39,7 @@ export type VerificationResult =
       message: string;
     };
 
-export function corsHeaders(
-  extra?: Record<string, string>,
-): Record<string, string> {
+export function corsHeaders(extra?: Record<string, string>): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 const title = "Recent Anchors";
-const description =
-  "Browse the latest documents anchored on the Stacks blockchain via ThesisLock.";
+const description = "Browse the latest documents anchored on the Stacks blockchain via ThesisLock.";
 
 export const metadata: Metadata = {
   title,
@@ -22,10 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FeedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

@@ -21,8 +21,7 @@ export default function LiveBadge({ showText = true, className = "" }: Props) {
         ? "bg-red-500"
         : "bg-foreground/40";
 
-  const label =
-    status === "live" ? "Live" : status === "error" ? "Reconnecting" : "Paused";
+  const label = status === "live" ? "Live" : status === "error" ? "Reconnecting" : "Paused";
 
   const title =
     status === "paused"
@@ -39,10 +38,7 @@ export default function LiveBadge({ showText = true, className = "" }: Props) {
       aria-label={title}
       className={`inline-flex items-center gap-1.5 text-xs text-foreground/60 hover:text-foreground transition ${className}`}
     >
-      <span
-        aria-hidden="true"
-        className={`inline-block h-2 w-2 rounded-full ${dotClass}`}
-      />
+      <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${dotClass}`} />
       {showText && <span>{label}</span>}
     </button>
   );

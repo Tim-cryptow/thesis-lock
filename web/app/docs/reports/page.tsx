@@ -14,10 +14,9 @@ export default function Reports() {
     <div>
       <h1 className="text-3xl md:text-4xl">Verification Reports</h1>
       <Lead>
-        A verification report is a formal, multi-document audit artifact: it
-        proves that a set of documents were anchored on the Stacks blockchain at
-        the time of generation, with a table of contents, summary statistics, and
-        per-document verification details. Build one at{" "}
+        A verification report is a formal, multi-document audit artifact: it proves that a set of
+        documents were anchored on the Stacks blockchain at the time of generation, with a table of
+        contents, summary statistics, and per-document verification details. Build one at{" "}
         <Link href="/report" className="underline hover:text-foreground">
           /report
         </Link>
@@ -30,9 +29,8 @@ export default function Reports() {
         <Link href="/docs/web-app" className="underline hover:text-foreground">
           certificate
         </Link>{" "}
-        attests to one anchor. A verification report covers many documents at
-        once and is suited to audits, submissions, and compliance records. It is
-        offered in three formats:
+        attests to one anchor. A verification report covers many documents at once and is suited to
+        audits, submissions, and compliance records. It is offered in three formats:
       </P>
       <Table
         headers={["Format", "Use case"]}
@@ -56,23 +54,28 @@ export default function Reports() {
         <Link href="/anchors" className="underline hover:text-foreground">
           My Anchors
         </Link>
-        , <Link href="/verify-bulk" className="underline hover:text-foreground">bulk verify</Link>,
-        group, and <Link href="/dashboard" className="underline hover:text-foreground">dashboard</Link>{" "}
+        ,{" "}
+        <Link href="/verify-bulk" className="underline hover:text-foreground">
+          bulk verify
+        </Link>
+        , group, and{" "}
+        <Link href="/dashboard" className="underline hover:text-foreground">
+          dashboard
+        </Link>{" "}
         pages, which hand off their hashes to the builder.
       </P>
 
       <H2>API</H2>
       <P>
-        Generate a report server-side by POSTing a list of hashes. Add{" "}
-        <Code>?format=html</Code> or <Code>?format=csv</Code> to receive the
-        rendered document instead of JSON.
+        Generate a report server-side by POSTing a list of hashes. Add <Code>?format=html</Code> or{" "}
+        <Code>?format=csv</Code> to receive the rendered document instead of JSON.
       </P>
       <CodeBlock language="bash">{`curl -s -X POST "https://thesis-lock.vercel.app/api/report" \\
   -H "Content-Type: application/json" \\
   -d '{"hashes":[{"hash":"9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06","filename":"thesis.pdf"}]}' | jq`}</CodeBlock>
       <P>
-        Every verification is independently reproducible against the public Hiro
-        mainnet API, so a report can be re-checked without trusting ThesisLock.
+        Every verification is independently reproducible against the public Hiro mainnet API, so a
+        report can be re-checked without trusting ThesisLock.
       </P>
     </div>
   );

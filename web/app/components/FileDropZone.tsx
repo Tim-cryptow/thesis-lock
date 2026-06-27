@@ -72,11 +72,7 @@ export default function FileDropZone({
           e.target.value = "";
         }}
       />
-      {children ?? (
-        <p className="text-foreground/60">
-          Drop a file here, or click to choose one
-        </p>
-      )}
+      {children ?? <p className="text-foreground/60">Drop a file here, or click to choose one</p>}
     </div>
   );
 }

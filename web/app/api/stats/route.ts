@@ -17,9 +17,6 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=300" },
     });
   } catch {
-    return Response.json(
-      { error: "Could not load protocol stats." },
-      { status: 502 },
-    );
+    return Response.json({ error: "Could not load protocol stats." }, { status: 502 });
   }
 }

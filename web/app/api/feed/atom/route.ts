@@ -1,9 +1,5 @@
 import { generateAtom } from "@/lib/feedGenerator";
-import {
-  buildFeedOptions,
-  fetchFeedEvents,
-  parseFeedQuery,
-} from "@/lib/feedData";
+import { buildFeedOptions, fetchFeedEvents, parseFeedQuery } from "@/lib/feedData";
 
 export const dynamic = "force-dynamic";
 

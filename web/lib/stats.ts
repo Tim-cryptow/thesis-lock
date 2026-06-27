@@ -4,8 +4,7 @@ import { fetchWithRetry } from "./fetchWithRetry";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const SINGLE_CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT = "thesislock-batch";
@@ -140,9 +139,7 @@ async function computeStats(): Promise<ProtocolStats> {
     if (tx.sender_address) wallets.add(tx.sender_address);
   }
 
-  const anchorBlocks = everyCall
-    .map((tx) => tx.block_height ?? 0)
-    .filter((block) => block > 0);
+  const anchorBlocks = everyCall.map((tx) => tx.block_height ?? 0).filter((block) => block > 0);
   const firstAnchorBlock = anchorBlocks.length ? Math.min(...anchorBlocks) : 0;
   const latestAnchorBlock = anchorBlocks.length ? Math.max(...anchorBlocks) : 0;
 
@@ -166,8 +163,7 @@ async function computeStats(): Promise<ProtocolStats> {
   const writtenPairs = new Set<string>();
   const orderedBatch = [...batch].sort(
     (a, b) =>
-      (a.block_height ?? 0) - (b.block_height ?? 0) ||
-      (a.tx_index ?? 0) - (b.tx_index ?? 0),
+      (a.block_height ?? 0) - (b.block_height ?? 0) || (a.tx_index ?? 0) - (b.tx_index ?? 0),
   );
   let batchAnchors = 0;
   for (const tx of orderedBatch) {

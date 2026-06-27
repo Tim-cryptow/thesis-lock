@@ -22,10 +22,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TemplatesLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function TemplatesLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

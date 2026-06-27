@@ -25,12 +25,8 @@ describe("EmptyState", () => {
       />,
     );
     expect(screen.getByTestId("icon")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Nothing here yet" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Anchor a document to get started."),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Nothing here yet" })).toBeInTheDocument();
+    expect(screen.getByText("Anchor a document to get started.")).toBeInTheDocument();
   });
 
   it("renders the primary CTA as a link when actionHref is given", () => {
@@ -43,10 +39,7 @@ describe("EmptyState", () => {
         actionHref="/anchor"
       />,
     );
-    expect(screen.getByRole("link", { name: "Anchor a file" })).toHaveAttribute(
-      "href",
-      "/anchor",
-    );
+    expect(screen.getByRole("link", { name: "Anchor a file" })).toHaveAttribute("href", "/anchor");
   });
 
   it("renders the primary CTA as a button and fires onAction", () => {
@@ -71,9 +64,7 @@ describe("EmptyState", () => {
   });
 
   it("requires both a label and a target to show the primary CTA", () => {
-    render(
-      <EmptyState icon={null} title="t" description="d" actionLabel="Orphan" />,
-    );
+    render(<EmptyState icon={null} title="t" description="d" actionLabel="Orphan" />);
     expect(screen.queryByText("Orphan")).not.toBeInTheDocument();
   });
 
@@ -87,10 +78,7 @@ describe("EmptyState", () => {
         secondaryHref="/docs"
       />,
     );
-    expect(screen.getByRole("link", { name: "Learn more" })).toHaveAttribute(
-      "href",
-      "/docs",
-    );
+    expect(screen.getByRole("link", { name: "Learn more" })).toHaveAttribute("href", "/docs");
   });
 
   it("fires onSecondary for a secondary button", () => {

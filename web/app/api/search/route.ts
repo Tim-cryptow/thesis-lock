@@ -34,18 +34,12 @@ export async function GET(req: Request) {
   if (type === "hash") {
     const check = validateHash(query);
     if (!check.valid) {
-      return Response.json(
-        { error: check.error },
-        { status: 400, headers: corsHeaders() },
-      );
+      return Response.json({ error: check.error }, { status: 400, headers: corsHeaders() });
     }
   } else if (type === "principal") {
     const check = validateAddress(query);
     if (!check.valid) {
-      return Response.json(
-        { error: check.error },
-        { status: 400, headers: corsHeaders() },
-      );
+      return Response.json({ error: check.error }, { status: 400, headers: corsHeaders() });
     }
   }
 

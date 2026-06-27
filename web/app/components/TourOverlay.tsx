@@ -89,10 +89,7 @@ function useTargetRect(step: TourStep): DOMRect | null {
 }
 
 // Inline position styles for the tooltip relative to the highlighted rect.
-function tooltipStyle(
-  rect: DOMRect | null,
-  position: TourStep["position"],
-): React.CSSProperties {
+function tooltipStyle(rect: DOMRect | null, position: TourStep["position"]): React.CSSProperties {
   if (!rect) {
     return {
       top: "50%",

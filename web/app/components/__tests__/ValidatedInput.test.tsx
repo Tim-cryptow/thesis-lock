@@ -19,20 +19,13 @@ describe("ValidatedInput", () => {
   });
 
   it("shows a character counter against maxLength", () => {
-    render(
-      <ValidatedInput value="abc" onChange={() => {}} label="L" maxLength={64} />,
-    );
+    render(<ValidatedInput value="abc" onChange={() => {}} label="L" maxLength={64} />);
     expect(screen.getByText("3/64")).toBeInTheDocument();
   });
 
   it("shows an error after blur on an invalid value", () => {
     render(
-      <ValidatedInput
-        value="xyz"
-        onChange={() => {}}
-        validator={validateHash}
-        label="Hash"
-      />,
+      <ValidatedInput value="xyz" onChange={() => {}} validator={validateHash} label="Hash" />,
     );
     fireEvent.blur(screen.getByRole("textbox"));
     expect(screen.getByRole("alert")).toHaveTextContent(/64 hexadecimal/);
@@ -63,12 +56,7 @@ describe("ValidatedInput", () => {
 
   it("does not show an error before the field is touched", () => {
     render(
-      <ValidatedInput
-        value="xyz"
-        onChange={() => {}}
-        validator={validateHash}
-        label="Hash"
-      />,
+      <ValidatedInput value="xyz" onChange={() => {}} validator={validateHash} label="Hash" />,
     );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
@@ -78,12 +66,7 @@ describe("ValidatedInput", () => {
       const [value, setValue] = useState("");
       return (
         <>
-          <ValidatedInput
-            value={value}
-            onChange={setValue}
-            validator={validateHash}
-            label="Hash"
-          />
+          <ValidatedInput value={value} onChange={setValue} validator={validateHash} label="Hash" />
           <button type="submit" disabled={!validateHash(value).valid}>
             Submit
           </button>

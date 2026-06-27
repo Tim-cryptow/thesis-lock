@@ -17,9 +17,7 @@ function pickHash(value: string | string[] | undefined): string | null {
 // The compared hashes live in query params, so the title and description reflect
 // them when both are present, making a shared comparison link self-describing in
 // previews and search results. Falls back to the generic page copy otherwise.
-export async function generateMetadata({
-  searchParams,
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const sp = await searchParams;
   const locale = isLocale(sp.lang) ? sp.lang : DEFAULT_LOCALE;
   const t = getTranslation(locale).compare.meta;
@@ -29,13 +27,10 @@ export async function generateMetadata({
 
   const title =
     a && b
-      ? t.titleWith
-          .replace("{a}", `${a.slice(0, 10)}...`)
-          .replace("{b}", `${b.slice(0, 10)}...`)
+      ? t.titleWith.replace("{a}", `${a.slice(0, 10)}...`).replace("{b}", `${b.slice(0, 10)}...`)
       : t.title;
   const description = t.description;
-  const canonical =
-    a && b ? `/compare?a=${a}&b=${b}` : "/compare";
+  const canonical = a && b ? `/compare?a=${a}&b=${b}` : "/compare";
 
   return {
     title,

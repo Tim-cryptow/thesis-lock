@@ -93,11 +93,8 @@ export default function WebhooksClient() {
 
   const allSelected = selected.length === WEBHOOK_EVENTS.length;
   const toggleEvent = (id: string) =>
-    setSelected((cur) =>
-      cur.includes(id) ? cur.filter((e) => e !== id) : [...cur, id],
-    );
-  const toggleAll = () =>
-    setSelected(allSelected ? [] : WEBHOOK_EVENTS.map((e) => e.id));
+    setSelected((cur) => (cur.includes(id) ? cur.filter((e) => e !== id) : [...cur, id]));
+  const toggleAll = () => setSelected(allSelected ? [] : WEBHOOK_EVENTS.map((e) => e.id));
 
   const create = () => {
     setFormError(null);
@@ -135,11 +132,7 @@ export default function WebhooksClient() {
         const p = formatWebhookPayload(e.id, sampleEventData(e.id));
         return {
           id: e.id,
-          json: JSON.stringify(
-            { event: p.event, data: p.data, timestamp: p.timestamp },
-            null,
-            2,
-          ),
+          json: JSON.stringify({ event: p.event, data: p.data, timestamp: p.timestamp }, null, 2),
         };
       }),
     [],
@@ -150,16 +143,16 @@ export default function WebhooksClient() {
       <section>
         <h2 className="text-2xl">Webhooks</h2>
         <p className="mt-1 text-sm text-foreground/70">
-          Subscribe to protocol events and receive a signed JSON payload at your
-          endpoint. Subscriptions are stored in your browser; this is the payload
-          and signing specification you implement on your own delivery service.
+          Subscribe to protocol events and receive a signed JSON payload at your endpoint.
+          Subscriptions are stored in your browser; this is the payload and signing specification
+          you implement on your own delivery service.
         </p>
 
         {createdSecret ? (
           <div className="mt-6 rounded-md border border-amber-500/40 bg-amber-500/10 p-4">
             <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
-              Save this signing secret now. It is shown once and is required to
-              verify webhook signatures.
+              Save this signing secret now. It is shown once and is required to verify webhook
+              signatures.
             </p>
             <div className="mt-3 flex items-stretch gap-2">
               <code className="min-w-0 flex-1 overflow-x-auto rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-sm">
@@ -226,9 +219,7 @@ export default function WebhooksClient() {
                 />
                 <span>
                   <code className="text-xs">{e.id}</code>
-                  <span className="block text-xs text-foreground/60">
-                    {e.description}
-                  </span>
+                  <span className="block text-xs text-foreground/60">{e.description}</span>
                 </span>
               </label>
             ))}
@@ -236,9 +227,7 @@ export default function WebhooksClient() {
         </div>
 
         {formError ? (
-          <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-            {formError}
-          </p>
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">{formError}</p>
         ) : null}
 
         <button
@@ -261,10 +250,7 @@ export default function WebhooksClient() {
         ) : (
           <ul className="mt-4 flex flex-col gap-3">
             {subs.map((sub) => (
-              <li
-                key={sub.id}
-                className="rounded-lg border border-foreground/10 p-4"
-              >
+              <li key={sub.id} className="rounded-lg border border-foreground/10 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -294,9 +280,7 @@ export default function WebhooksClient() {
                     </div>
                     <p className="mt-2 text-xs text-foreground/50">
                       Last triggered{" "}
-                      {sub.lastTriggered
-                        ? new Date(sub.lastTriggered).toLocaleString()
-                        : "never"}
+                      {sub.lastTriggered ? new Date(sub.lastTriggered).toLocaleString() : "never"}
                       {sub.failCount > 0 ? ` · ${sub.failCount} failures` : ""}
                     </p>
                   </div>
@@ -347,18 +331,15 @@ export default function WebhooksClient() {
         <p className="mt-1 text-sm text-foreground/70">
           Each delivery is a POST with a JSON body of{" "}
           <code className="text-xs">{`{ event, data, timestamp }`}</code> and an{" "}
-          <code className="text-xs">X-ThesisLock-Signature</code> header of the
-          form <code className="text-xs">sha256=&lt;hex&gt;</code>, an HMAC-SHA256
-          of the raw body using your signing secret.
+          <code className="text-xs">X-ThesisLock-Signature</code> header of the form{" "}
+          <code className="text-xs">sha256=&lt;hex&gt;</code>, an HMAC-SHA256 of the raw body using
+          your signing secret.
         </p>
 
         <h4 className="mt-6 text-sm font-medium">Example payloads</h4>
         <div className="mt-2 flex flex-col gap-3">
           {examples.map((ex) => (
-            <details
-              key={ex.id}
-              className="rounded-md border border-foreground/10"
-            >
+            <details key={ex.id} className="rounded-md border border-foreground/10">
               <summary className="cursor-pointer px-3 py-2 text-sm">
                 <code className="text-xs">{ex.id}</code>
               </summary>
@@ -381,11 +362,10 @@ export default function WebhooksClient() {
 
         <h4 className="mt-6 text-sm font-medium">Retry policy</h4>
         <p className="mt-1 text-sm text-foreground/70">
-          Delivery and retries are handled by your integration. A common policy
-          is to retry on any non-2xx response with exponential backoff (for
-          example 1m, 5m, 30m) up to a handful of attempts, then pause the
-          subscription. The fail count shown above is tracked in your browser for
-          visibility.
+          Delivery and retries are handled by your integration. A common policy is to retry on any
+          non-2xx response with exponential backoff (for example 1m, 5m, 30m) up to a handful of
+          attempts, then pause the subscription. The fail count shown above is tracked in your
+          browser for visibility.
         </p>
       </section>
     </div>

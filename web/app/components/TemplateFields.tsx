@@ -53,9 +53,7 @@ export default function TemplateFields({
             <input
               id={inputId}
               value={value}
-              onChange={(e) =>
-                onChange(field.key, e.target.value.slice(0, field.maxLength))
-              }
+              onChange={(e) => onChange(field.key, e.target.value.slice(0, field.maxLength))}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
               disabled={disabled}
@@ -88,9 +86,7 @@ export default function TemplateFields({
         {preview ? (
           <code className="font-mono text-xs break-all">{preview}</code>
         ) : (
-          <p className="text-xs text-foreground/50">
-            {t("templates.preview.empty")}
-          </p>
+          <p className="text-xs text-foreground/50">{t("templates.preview.empty")}</p>
         )}
         <div className="mt-2 flex items-center justify-between text-xs">
           {truncated ? (

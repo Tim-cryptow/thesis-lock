@@ -20,12 +20,8 @@ describe("ShareButtons", () => {
     render(<ShareButtons url={URL} title={TITLE} />);
     expect(screen.getByRole("button", { name: "Copy link" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Share on X" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Share on LinkedIn" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Share on Telegram" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Share on LinkedIn" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Share on Telegram" })).toBeInTheDocument();
   });
 
   it("copies the URL when the copy button is clicked", async () => {
@@ -42,9 +38,7 @@ describe("ShareButtons", () => {
 
   it("builds the X share href with the encoded text and url", () => {
     render(<ShareButtons url={URL} title={TITLE} />);
-    const href = screen
-      .getByRole("link", { name: "Share on X" })
-      .getAttribute("href");
+    const href = screen.getByRole("link", { name: "Share on X" }).getAttribute("href");
     expect(href).toContain("https://twitter.com/intent/tweet?text=");
     expect(href).toContain(encodeURIComponent(TITLE));
     expect(href).toContain(encodeURIComponent(URL));
@@ -52,9 +46,7 @@ describe("ShareButtons", () => {
 
   it("builds the LinkedIn share href", () => {
     render(<ShareButtons url={URL} title={TITLE} />);
-    const href = screen
-      .getByRole("link", { name: "Share on LinkedIn" })
-      .getAttribute("href");
+    const href = screen.getByRole("link", { name: "Share on LinkedIn" }).getAttribute("href");
     expect(href).toBe(
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(URL)}`,
     );
@@ -62,18 +54,14 @@ describe("ShareButtons", () => {
 
   it("builds the Telegram share href", () => {
     render(<ShareButtons url={URL} title={TITLE} />);
-    const href = screen
-      .getByRole("link", { name: "Share on Telegram" })
-      .getAttribute("href");
+    const href = screen.getByRole("link", { name: "Share on Telegram" }).getAttribute("href");
     expect(href).toContain("https://t.me/share/url?url=");
     expect(href).toContain(encodeURIComponent(URL));
   });
 
   it("uses the explicit text over the title in share links", () => {
     render(<ShareButtons url={URL} title={TITLE} text="Custom share text" />);
-    const href = screen
-      .getByRole("link", { name: "Share on X" })
-      .getAttribute("href");
+    const href = screen.getByRole("link", { name: "Share on X" }).getAttribute("href");
     expect(href).toContain(encodeURIComponent("Custom share text"));
   });
 

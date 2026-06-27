@@ -5,18 +5,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #FAFAF7;
-  --foreground: #1A1A1A;
-  --heading: #0F0F0F;
-  --card: #FFFFFF;
+  --background: #fafaf7;
+  --foreground: #1a1a1a;
+  --heading: #0f0f0f;
+  --card: #ffffff;
   color-scheme: light;
 }
 
 .dark {
   --background: #121212;
-  --foreground: #E6E6E6;
-  --heading: #FAFAFA;
-  --card: #1C1C1C;
+  --foreground: #e6e6e6;
+  --heading: #fafafa;
+  --card: #1c1c1c;
   color-scheme: dark;
 }
 
@@ -27,10 +27,13 @@
   --color-card: var(--card);
   --font-serif: var(--font-lora);
   --font-mono: var(--font-jetbrains-mono);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif;
 }
 
-html, body {
+html,
+body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
@@ -195,8 +198,7 @@ html, body {
 }
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px -12px
-    color-mix(in srgb, var(--foreground) 30%, transparent);
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--foreground) 30%, transparent);
 }
 
 .nav-underline {
@@ -270,14 +272,21 @@ html, body {
   }
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--heading);
   font-family: var(--font-serif);
   font-weight: 500;
   letter-spacing: -0.01em;
 }
 
-code, pre, .mono {
+code,
+pre,
+.mono {
   font-family: var(--font-mono);
 }
 

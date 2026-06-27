@@ -10,12 +10,7 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  TOUR_STEPS,
-  completeTour,
-  shouldShowTour,
-  type TourStep,
-} from "@/lib/onboarding";
+import { TOUR_STEPS, completeTour, shouldShowTour, type TourStep } from "@/lib/onboarding";
 import TourOverlay from "./TourOverlay";
 
 // Delay before the tour auto-starts for a first-time visitor, giving the page a
@@ -52,7 +47,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const hasStartedRef = useRef(false);
 
   const total = TOUR_STEPS.length;
-  const currentStep = isActive ? TOUR_STEPS[index] ?? null : null;
+  const currentStep = isActive ? (TOUR_STEPS[index] ?? null) : null;
 
   const startTour = useCallback(() => {
     hasStartedRef.current = true;
@@ -123,9 +118,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     [isActive, index, total, currentStep, startTour, nextStep, prevStep, skipTour],
   );
 
-  const needsNavigation = Boolean(
-    currentStep?.page && pathname !== currentStep.page,
-  );
+  const needsNavigation = Boolean(currentStep?.page && pathname !== currentStep.page);
 
   return (
     <TourContext.Provider value={value}>

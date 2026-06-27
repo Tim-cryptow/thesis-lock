@@ -53,13 +53,14 @@ describe("GET /api/stats", () => {
   it("includes the anchorsByDay array", async () => {
     const body = await (await GET()).json();
     expect(Array.isArray(body.anchorsByDay)).toBe(true);
-    expect(body.anchorsByDay[0]).toMatchObject({ date: expect.any(String), count: expect.any(Number) });
+    expect(body.anchorsByDay[0]).toMatchObject({
+      date: expect.any(String),
+      count: expect.any(Number),
+    });
   });
 
   it("sets the cache-control header", async () => {
-    expect((await GET()).headers.get("Cache-Control")).toBe(
-      "public, s-maxage=300",
-    );
+    expect((await GET()).headers.get("Cache-Control")).toBe("public, s-maxage=300");
   });
 
   it("returns 502 when the stats lookup fails", async () => {

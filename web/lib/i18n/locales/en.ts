@@ -179,8 +179,7 @@ export const en = {
     },
     integrate: {
       heading: "Integrate ThesisLock in your workflow",
-      intro:
-        "Anchor and verify documents from your own code, terminal, or CI pipeline.",
+      intro: "Anchor and verify documents from your own code, terminal, or CI pipeline.",
       sdk: {
         title: "SDK",
         body: "A typed TypeScript client for Node and the browser.",
@@ -217,8 +216,7 @@ export const en = {
     },
     form: {
       heading: "Anchor a document",
-      intro:
-        "Files are hashed in your browser. Only the hash is submitted on chain.",
+      intro: "Files are hashed in your browser. Only the hash is submitted on chain.",
       modeGroupAria: "Anchor mode",
       singleMode: "Single file",
       singleModeAria: "Anchor a single file",
@@ -240,13 +238,10 @@ export const en = {
       asciiOnly: "Labels must be ASCII only.",
     },
     batch: {
-      dropZoneAria:
-        "Drop up to {max} files here to hash them, or click to choose",
-      dropZonePrompt:
-        "Drop up to {max} files here, or click to choose. Added: {added}/{max}.",
+      dropZoneAria: "Drop up to {max} files here to hash them, or click to choose",
+      dropZonePrompt: "Drop up to {max} files here, or click to choose. Added: {added}/{max}.",
       limitReached: "Limit is {max} files per batch.",
-      partiallyAdded:
-        "Only added {added} of {total}. Limit is {max} per batch.",
+      partiallyAdded: "Only added {added} of {total}. Limit is {max} per batch.",
       remove: "Remove",
       removeFileAria: "Remove file {name}",
       labelForAria: "Label for {name}",
@@ -260,8 +255,7 @@ export const en = {
       batch: "Anchor batch of {count}",
       batchHelp:
         "You will sign one batch transaction, then one more per file to record each in your anchor history.",
-      doNotNavigate:
-        "Do not navigate away while transactions are in your wallet.",
+      doNotNavigate: "Do not navigate away while transactions are in your wallet.",
     },
     success: {
       hashLabel: "Hash",
@@ -295,8 +289,7 @@ export const en = {
       minting: "Minting {current} of {total}...",
       single: {
         heading: "Proof NFT",
-        description:
-          "Mint a soulbound NFT as permanent proof in your wallet (optional).",
+        description: "Mint a soulbound NFT as permanent proof in your wallet (optional).",
         mint: "Mint Proof NFT",
       },
       batch: {
@@ -318,13 +311,10 @@ export const en = {
     recordTitle: "Anchor record",
     compareLink: "Compare with another document",
     lookingUp: "Looking up on chain...",
-    tweetText:
-      "Anchored on Stacks. Verifiable timestamp without sharing the file:",
+    tweetText: "Anchored on Stacks. Verifiable timestamp without sharing the file:",
     error: {
-      lookupFailed:
-        "Could not look up this anchor. Check your connection and try again.",
-      hiroUnavailable:
-        "The Hiro API is currently unavailable. Retrying automatically...",
+      lookupFailed: "Could not look up this anchor. Check your connection and try again.",
+      hiroUnavailable: "The Hiro API is currently unavailable. Retrying automatically...",
       hashFailed: "Could not hash this file.",
     },
     fields: {
@@ -354,8 +344,7 @@ export const en = {
     notAnchored: {
       body: "This hash has not been anchored.",
       batchHintPrefix: "If this was batch-anchored, add",
-      batchHintSuffix:
-        "to the URL or connect the anchoring wallet to verify.",
+      batchHintSuffix: "to the URL or connect the anchoring wallet to verify.",
       cta: "Anchor a document",
     },
     proof: {
@@ -427,8 +416,7 @@ export const en = {
   feed: {
     title: "Recent anchors",
     refreshing: "Refreshing...",
-    subtitle:
-      "Recent on-chain anchor activity from any wallet. Auto-refreshes every minute.",
+    subtitle: "Recent on-chain anchor activity from any wallet. Auto-refreshes every minute.",
     block: "block {block}",
     loadMore: "Load more",
     loadingMore: "Loading...",
@@ -468,8 +456,7 @@ export const en = {
   stats: {
     error: "Could not load protocol stats. Try again soon.",
     title: "Protocol stats",
-    subtitle:
-      "On-chain activity across the ThesisLock contracts on Stacks mainnet.",
+    subtitle: "On-chain activity across the ThesisLock contracts on Stacks mainnet.",
     totalAnchors: "Total anchors",
     uniqueWallets: "Unique wallets",
     contractsDeployed: "Contracts deployed",
@@ -543,12 +530,10 @@ export const en = {
       title: "Groups",
       intro:
         "Create a named group and anchor documents under it with members you trust. Every member can add to a shared, on-chain document history.",
-      connectPrompt:
-        "Connect your Stacks wallet to create and manage groups.",
+      connectPrompt: "Connect your Stacks wallet to create and manage groups.",
       yourGroups: "Your groups",
       loadingGroups: "Loading groups...",
-      empty:
-        "You are not a member of any group yet. Create one above to get started.",
+      empty: "You are not a member of any group yet. Create one above to get started.",
       loadError: "Failed to load groups.",
       cardMeta: "Group #{id} · {anchors}",
       adminSuffix: " · admin",
@@ -574,19 +559,15 @@ export const en = {
       membersHeading: "Members",
       addMemberLabel: "Add a member by Stacks principal",
       principalPlaceholder: "SP...",
-      invalidPrincipal:
-        "Enter a valid Stacks principal (starts with SP or SM).",
+      invalidPrincipal: "Enter a valid Stacks principal (starts with SP or SM).",
       add: "Add",
       signing: "Signing...",
       remove: "Remove",
       adminSuffix: " (admin)",
-      refreshHint:
-        "After the transaction confirms, refresh to see the updated list.",
+      refreshHint: "After the transaction confirms, refresh to see the updated list.",
       anchorHeading: "Anchor a document to this group",
-      anchorIntro:
-        "The file is hashed in your browser. Only the hash is recorded on chain.",
-      notMember:
-        "Only group members can anchor documents here. Ask the admin to add your wallet.",
+      anchorIntro: "The file is hashed in your browser. Only the hash is recorded on chain.",
+      notMember: "Only group members can anchor documents here. Ask the admin to add your wallet.",
       dropZoneAria: "Drop a file here to hash it, or click to choose one",
       dropZoneLabel: "Drop a file here, or click to choose one",
       hashError: "Could not hash this file.",
@@ -614,8 +595,7 @@ export const en = {
   },
   dashboard: {
     title: "My dashboard",
-    subtitle:
-      "Your anchoring activity on the ThesisLock contracts, by source and over time.",
+    subtitle: "Your anchoring activity on the ThesisLock contracts, by source and over time.",
     connectPrompt: "Connect your Stacks wallet to view your personal analytics.",
     loadError: "Could not load your analytics. Try again soon.",
     exportError: "Export failed.",
@@ -638,8 +618,7 @@ export const en = {
     noHash: "no hash",
     blockSuffix: " · block {block}",
     exportHeading: "Export full history",
-    exportDescription:
-      "Download every anchor registered to this wallet, with verify links.",
+    exportDescription: "Download every anchor registered to this wallet, with verify links.",
     exporting: "Exporting...",
     exportCSV: "Export CSV",
     exportJSON: "Export JSON",
@@ -703,8 +682,7 @@ export const en = {
   },
   activity: {
     title: "Activity",
-    subtitle:
-      "Every interaction across all ThesisLock contracts, newest first.",
+    subtitle: "Every interaction across all ThesisLock contracts, newest first.",
     connectPrompt: "Connect your wallet to see your activity.",
     empty: "No activity yet. Start by anchoring a document.",
     emptyCta: "Anchor a document",
@@ -727,8 +705,7 @@ export const en = {
   templates: {
     selector: {
       heading: "Template",
-      description:
-        "Choose a template to structure your label, or keep it free-form.",
+      description: "Choose a template to structure your label, or keep it free-form.",
     },
     field: {
       required: "{name} is required.",
@@ -739,13 +716,11 @@ export const en = {
       empty: "Fill in the fields to preview the generated label.",
     },
     warning: {
-      truncated:
-        "Label is over {max} characters and will be truncated on chain.",
+      truncated: "Label is over {max} characters and will be truncated on chain.",
     },
     batch: {
       defaultHeading: "Default template",
-      defaultDescription:
-        "Applied to every file. Each file can override it below.",
+      defaultDescription: "Applied to every file. Each file can override it below.",
       overrideLabel: "Template for this file",
     },
     verify: {

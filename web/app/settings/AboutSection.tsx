@@ -65,9 +65,8 @@ export default function AboutSection() {
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">ThesisLock v{APP_VERSION}</h2>
         <p className="text-sm text-foreground/70 max-w-2xl">
-          A hash-anchor service for academic and creative documents on the Stacks
-          blockchain. Prove a document existed at a point in time without ever
-          exposing the document itself.
+          A hash-anchor service for academic and creative documents on the Stacks blockchain. Prove
+          a document existed at a point in time without ever exposing the document itself.
         </p>
       </section>
 
@@ -84,9 +83,7 @@ export default function AboutSection() {
               className="flex flex-wrap items-center justify-between gap-2 py-2"
             >
               <div className="min-w-0">
-                <div className="mono text-sm text-foreground">
-                  {contract.name}
-                </div>
+                <div className="mono text-sm text-foreground">{contract.name}</div>
                 <div className="text-xs text-foreground/55">
                   {CONTRACT_BLURBS[contract.name] ?? ""}
                 </div>
@@ -143,10 +140,9 @@ export default function AboutSection() {
       <section className="rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-xl mb-1">License and credits</h2>
         <p className="text-sm text-foreground/70 max-w-2xl">
-          Released under the MIT License. Built on Stacks, with on-chain reads
-          served by the public Hiro API. Thanks to the Stacks and Hiro
-          communities and to the maintainers of the open-source libraries this
-          project depends on.
+          Released under the MIT License. Built on Stacks, with on-chain reads served by the public
+          Hiro API. Thanks to the Stacks and Hiro communities and to the maintainers of the
+          open-source libraries this project depends on.
         </p>
       </section>
 

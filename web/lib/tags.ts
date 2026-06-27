@@ -167,9 +167,7 @@ export function loadTags(): AnchorTags[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map(coerceEntry)
-      .filter((e): e is AnchorTags => e !== null && e.tags.length > 0);
+    return parsed.map(coerceEntry).filter((e): e is AnchorTags => e !== null && e.tags.length > 0);
   } catch {
     return [];
   }
@@ -311,10 +309,7 @@ export function getTagsForHash(hash: string): string[] {
 // and capped; an empty result removes the anchor's entry entirely.
 export function setTagsForHash(hash: string, tags: string[]): void {
   const key = normalizeHash(hash);
-  const next = dedupe(tags.map(normalizeTag).filter(Boolean)).slice(
-    0,
-    MAX_TAGS_PER_ANCHOR,
-  );
+  const next = dedupe(tags.map(normalizeTag).filter(Boolean)).slice(0, MAX_TAGS_PER_ANCHOR);
   const all = loadTags().filter((e) => e.hash !== key);
   if (next.length > 0) all.push({ hash: key, tags: next });
   saveTags(all);
@@ -363,10 +358,7 @@ export function renameTag(oldName: string, newName: string): void {
     e.tags.includes(from)
       ? {
           hash: e.hash,
-          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(
-            0,
-            MAX_TAGS_PER_ANCHOR,
-          ),
+          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(0, MAX_TAGS_PER_ANCHOR),
         }
       : e,
   );
@@ -379,9 +371,7 @@ export function deleteTag(tag: string): void {
   const name = normalizeTag(tag);
   if (!name) return;
   const all = loadTags().map((e) =>
-    e.tags.includes(name)
-      ? { hash: e.hash, tags: e.tags.filter((t) => t !== name) }
-      : e,
+    e.tags.includes(name) ? { hash: e.hash, tags: e.tags.filter((t) => t !== name) } : e,
   );
   saveTags(all);
 }
@@ -396,10 +386,7 @@ export function mergeTags(source: string, target: string): void {
     e.tags.includes(from)
       ? {
           hash: e.hash,
-          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(
-            0,
-            MAX_TAGS_PER_ANCHOR,
-          ),
+          tags: dedupe(e.tags.map((t) => (t === from ? to : t))).slice(0, MAX_TAGS_PER_ANCHOR),
         }
       : e,
   );

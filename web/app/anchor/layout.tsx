@@ -22,10 +22,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AnchorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AnchorLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

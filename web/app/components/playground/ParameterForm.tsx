@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  isComplete,
-  type Endpoint,
-  type EndpointParam,
-} from "./endpoints";
+import { isComplete, type Endpoint, type EndpointParam } from "./endpoints";
 
 type Props = {
   endpoint: Endpoint;
@@ -44,9 +40,7 @@ function Field({
             *
           </span>
         ) : (
-          <span className="ml-1 text-xs font-normal text-foreground/40">
-            optional
-          </span>
+          <span className="ml-1 text-xs font-normal text-foreground/40">optional</span>
         )}
       </label>
 
@@ -85,13 +79,7 @@ function Field({
   );
 }
 
-export default function ParameterForm({
-  endpoint,
-  values,
-  onChange,
-  onSubmit,
-  loading,
-}: Props) {
+export default function ParameterForm({ endpoint, values, onChange, onSubmit, loading }: Props) {
   const ready = isComplete(endpoint, values);
 
   return (
@@ -102,14 +90,10 @@ export default function ParameterForm({
       }}
       className="flex flex-col gap-4"
     >
-      <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/40">
-        Parameters
-      </h2>
+      <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/40">Parameters</h2>
 
       {endpoint.params.length === 0 ? (
-        <p className="text-sm text-foreground/50">
-          This endpoint takes no parameters.
-        </p>
+        <p className="text-sm text-foreground/50">This endpoint takes no parameters.</p>
       ) : (
         endpoint.params.map((param) => (
           <Field

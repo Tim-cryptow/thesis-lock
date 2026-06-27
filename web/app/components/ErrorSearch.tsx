@@ -25,10 +25,7 @@ export default function ErrorSearch() {
 
   return (
     <form onSubmit={onSubmit} className="mt-8 mx-auto max-w-md text-left">
-      <label
-        htmlFor="error-search"
-        className="block text-sm font-medium text-foreground/70 mb-2"
-      >
+      <label htmlFor="error-search" className="block text-sm font-medium text-foreground/70 mb-2">
         Looking for a hash?
       </label>
       <div className="flex gap-2">

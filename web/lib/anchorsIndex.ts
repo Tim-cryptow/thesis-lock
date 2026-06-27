@@ -130,12 +130,8 @@ export async function getAnchorsByPrincipal(
 // only as a best-effort fallback when the chain read itself is unreachable, so a
 // Hiro outage does not turn a real anchor into a false negative. Returns the same
 // FetchedAnchor shape fetchAnchor returns, so the verify lookup swaps mechanically.
-export async function getAnchorByHash(
-  hash: string,
-): Promise<FetchedAnchor | null> {
-  const normalized = (
-    hash.startsWith("0x") ? hash.slice(2) : hash
-  ).toLowerCase();
+export async function getAnchorByHash(hash: string): Promise<FetchedAnchor | null> {
+  const normalized = (hash.startsWith("0x") ? hash.slice(2) : hash).toLowerCase();
   if (!HEX_64.test(normalized)) return null;
 
   try {
@@ -152,9 +148,7 @@ export async function getAnchorByHash(
 // matching non-reverted anchor, or null on a miss or when the index is
 // unreachable. Only reached when the live contract read is down, so verification
 // keeps working (in a clearly degraded mode) during a Hiro outage.
-async function indexAnchorByHash(
-  normalized: string,
-): Promise<FetchedAnchor | null> {
+async function indexAnchorByHash(normalized: string): Promise<FetchedAnchor | null> {
   const supabase = getSupabaseRead();
   if (!supabase) return null;
   try {
@@ -213,10 +207,7 @@ export async function searchAnchors(
     // (the Hiro path it replaces scanned events to exhaustion).
     const rows: AnchorRow[] = [];
     for (let offset = 0; offset < SEARCH_SAFETY_CAP; offset += SEARCH_PAGE) {
-      let q = supabase
-        .from(ANCHORS_TABLE)
-        .select(ANCHOR_COLUMNS)
-        .eq("reverted", false);
+      let q = supabase.from(ANCHORS_TABLE).select(ANCHOR_COLUMNS).eq("reverted", false);
       if (type === "hash") {
         q = q.or(`hash.eq.0x${hashNorm},hash.eq.${hashNorm}`);
       } else if (type === "principal") {

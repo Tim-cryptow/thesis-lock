@@ -49,14 +49,14 @@ export default function WebhooksDocs() {
     <div>
       <h1 className="text-3xl md:text-4xl">Webhooks</h1>
       <Lead>
-        Webhooks push protocol events to your endpoint as signed JSON. Manage
-        subscriptions and send test payloads from the{" "}
+        Webhooks push protocol events to your endpoint as signed JSON. Manage subscriptions and send
+        test payloads from the{" "}
         <Link href="/developers#webhooks" className="underline hover:text-foreground">
           developer portal
         </Link>
-        . Like the rest of ThesisLock there is no server of our own, so this
-        documents the format and signing scheme you wire into your own delivery
-        service, using the same events that drive the feeds and audit log.
+        . Like the rest of ThesisLock there is no server of our own, so this documents the format
+        and signing scheme you wire into your own delivery service, using the same events that drive
+        the feeds and audit log.
       </Lead>
 
       <H2>Event types</H2>
@@ -92,30 +92,27 @@ export default function WebhooksDocs() {
 
       <H2>Signature</H2>
       <P>
-        The request carries an <Code>X-ThesisLock-Signature</Code> header of the
-        form <Code>sha256=&lt;hex&gt;</Code>, an HMAC-SHA256 of the raw request
-        body computed with your subscription{"'"}s signing secret. The secret is
-        shown once when you create the subscription. Verify it before trusting a
-        payload:
+        The request carries an <Code>X-ThesisLock-Signature</Code> header of the form{" "}
+        <Code>sha256=&lt;hex&gt;</Code>, an HMAC-SHA256 of the raw request body computed with your
+        subscription{"'"}s signing secret. The secret is shown once when you create the
+        subscription. Verify it before trusting a payload:
       </P>
       <CodeBlock language="javascript">{NODE}</CodeBlock>
       <CodeBlock language="python">{PYTHON}</CodeBlock>
 
       <H2>Retries</H2>
       <P>
-        Delivery and retries are implemented by your integration. A common policy
-        is to retry on any non-2xx response with exponential backoff (for example
-        one minute, five minutes, thirty minutes) for a few attempts, then pause
-        the subscription. The developer portal tracks a per-subscription fail
-        count for visibility.
+        Delivery and retries are implemented by your integration. A common policy is to retry on any
+        non-2xx response with exponential backoff (for example one minute, five minutes, thirty
+        minutes) for a few attempts, then pause the subscription. The developer portal tracks a
+        per-subscription fail count for visibility.
       </P>
 
       <H2>Testing</H2>
       <P>
-        The portal{"'"}s webhook tester sends a sample payload to your endpoint
-        and shows the response. If your endpoint does not allow cross-origin
-        requests from the browser, it falls back to a ready-to-run{" "}
-        <Code>curl</Code> command.
+        The portal{"'"}s webhook tester sends a sample payload to your endpoint and shows the
+        response. If your endpoint does not allow cross-origin requests from the browser, it falls
+        back to a ready-to-run <Code>curl</Code> command.
       </P>
     </div>
   );

@@ -12,11 +12,7 @@ import {
 
 // JSON.stringify that survives the bigint values cvToValue returns for uints.
 function safeStringify(value: unknown): string {
-  return JSON.stringify(
-    value,
-    (_key, val) => (typeof val === "bigint" ? val.toString() : val),
-    2,
-  );
+  return JSON.stringify(value, (_key, val) => (typeof val === "bigint" ? val.toString() : val), 2);
 }
 
 function stringAsciiMax(type: string): number | undefined {
@@ -38,15 +34,8 @@ function placeholderFor(type: string): string {
   return "";
 }
 
-export default function ReadOnlyTester({
-  contract,
-}: {
-  contract: ContractInfo;
-}) {
-  const readFns = useMemo(
-    () => getReadOnlyFunctions(contract),
-    [contract],
-  );
+export default function ReadOnlyTester({ contract }: { contract: ContractInfo }) {
+  const readFns = useMemo(() => getReadOnlyFunctions(contract), [contract]);
   const [fnName, setFnName] = useState(readFns[0]?.name ?? "");
   const [values, setValues] = useState<Record<string, string>>({});
   const [included, setIncluded] = useState<Record<string, boolean>>({});
@@ -71,8 +60,7 @@ export default function ReadOnlyTester({
     setError(null);
   }, [fnName]);
 
-  const isOptional = (arg: FunctionArg) =>
-    arg.type.trim().startsWith("(optional");
+  const isOptional = (arg: FunctionArg) => arg.type.trim().startsWith("(optional");
 
   const call = useCallback(async () => {
     if (!fn) return;
@@ -95,17 +83,15 @@ export default function ReadOnlyTester({
 
   if (readFns.length === 0) {
     return (
-      <p className="text-sm text-foreground/60">
-        This contract exposes no read-only functions.
-      </p>
+      <p className="text-sm text-foreground/60">This contract exposes no read-only functions.</p>
     );
   }
 
   return (
     <div className="flex flex-col gap-5">
       <p className="text-sm text-foreground/65">
-        Call a read-only function against the live mainnet contract through the
-        Hiro API. These reads are free and need no wallet.
+        Call a read-only function against the live mainnet contract through the Hiro API. These
+        reads are free and need no wallet.
       </p>
 
       <label className="text-xs text-foreground/55">
@@ -133,12 +119,8 @@ export default function ReadOnlyTester({
             return (
               <div key={arg.name} className="text-xs">
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="font-mono text-foreground/80">
-                    {arg.name}
-                  </span>
-                  <span className="font-mono text-foreground/45">
-                    {arg.type}
-                  </span>
+                  <span className="font-mono text-foreground/80">{arg.name}</span>
+                  <span className="font-mono text-foreground/45">{arg.type}</span>
                   {optional && (
                     <label className="ml-auto flex items-center gap-1 text-foreground/55">
                       <input
@@ -201,12 +183,8 @@ export default function ReadOnlyTester({
 
       {result && (
         <div className="flex flex-col gap-4">
-          <ResultBlock title="Formatted output">
-            {safeStringify(result.value)}
-          </ResultBlock>
-          <ResultBlock title="Decoded JSON">
-            {safeStringify(result.json)}
-          </ResultBlock>
+          <ResultBlock title="Formatted output">{safeStringify(result.value)}</ResultBlock>
+          <ResultBlock title="Decoded JSON">{safeStringify(result.json)}</ResultBlock>
           <ResultBlock title="Raw Clarity value">{result.raw}</ResultBlock>
         </div>
       )}
@@ -214,18 +192,10 @@ export default function ReadOnlyTester({
   );
 }
 
-function ResultBlock({
-  title,
-  children,
-}: {
-  title: string;
-  children: string;
-}) {
+function ResultBlock({ title, children }: { title: string; children: string }) {
   return (
     <div>
-      <div className="mb-1 text-xs uppercase tracking-wide text-foreground/45">
-        {title}
-      </div>
+      <div className="mb-1 text-xs uppercase tracking-wide text-foreground/45">{title}</div>
       <pre className="overflow-x-auto rounded-lg border border-foreground/10 bg-background/60 p-3 text-xs font-mono text-foreground/85">
         {children}
       </pre>

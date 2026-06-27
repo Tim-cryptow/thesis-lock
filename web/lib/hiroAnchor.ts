@@ -9,11 +9,9 @@ import {
 } from "@stacks/transactions";
 import { hexToBytes } from "@stacks/common";
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT_NAME = "thesislock-batch";
 const PROOF_CONTRACT_NAME = "thesislock-proof";
@@ -76,11 +74,7 @@ function withHexPrefix(hex: string): string {
 // error response) so callers can tell an outage apart from a genuine miss.
 // Returns the deserialized Clarity value, or null when the contract responded
 // with no value (an optional none), which is an authoritative "not found".
-async function callReadOnlyOrThrow(
-  contract: string,
-  fn: string,
-  args: string[],
-): Promise<unknown> {
+async function callReadOnlyOrThrow(contract: string, fn: string, args: string[]): Promise<unknown> {
   const url = `${HIRO_BASE}/v2/contracts/call-read/${CONTRACT_ADDRESS}/${contract}/${fn}`;
   const res = await fetch(url, {
     method: "POST",
@@ -102,11 +96,7 @@ async function callReadOnlyOrThrow(
 // Best-effort wrapper: maps any failure (outage or API error) to null, so reads
 // that only need "value or nothing" treat an unreachable Hiro the same as a
 // miss. The verify path uses callReadOnlyOrThrow directly to keep them distinct.
-async function callReadOnly(
-  contract: string,
-  fn: string,
-  args: string[],
-): Promise<unknown> {
+async function callReadOnly(contract: string, fn: string, args: string[]): Promise<unknown> {
   try {
     return await callReadOnlyOrThrow(contract, fn, args);
   } catch {
@@ -124,9 +114,7 @@ function mapAnchorValue(value: unknown): FetchedAnchor {
   };
 }
 
-export async function fetchAnchor(
-  hash: string,
-): Promise<FetchedAnchor | null> {
+export async function fetchAnchor(hash: string): Promise<FetchedAnchor | null> {
   if (!HEX_64.test(hash)) return null;
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const value = await callReadOnly(CONTRACT_NAME, "get-anchor", [hashArg]);
@@ -139,9 +127,7 @@ export async function fetchAnchor(
 // only when the chain authoritatively has no anchor for the hash. This keeps the
 // chain the source of truth for positive verification: a rolled-back anchor the
 // index has not marked reverted yet still reads as not found here.
-export async function fetchAnchorStrict(
-  hash: string,
-): Promise<FetchedAnchor | null> {
+export async function fetchAnchorStrict(hash: string): Promise<FetchedAnchor | null> {
   if (!HEX_64.test(hash)) return null;
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const value = await callReadOnlyOrThrow(CONTRACT_NAME, "get-anchor", [hashArg]);
@@ -157,10 +143,7 @@ export async function fetchBatchAnchor(
   if (!validateStacksAddress(owner)) return null;
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
   const ownerArg = serializeCV(principalCV(owner));
-  const value = await callReadOnly(BATCH_CONTRACT_NAME, "get-batch-anchor", [
-    hashArg,
-    ownerArg,
-  ]);
+  const value = await callReadOnly(BATCH_CONTRACT_NAME, "get-batch-anchor", [hashArg, ownerArg]);
   if (value === null || value === undefined) return null;
   const v = tupleFields(value);
   return {
@@ -175,24 +158,16 @@ export async function fetchBatchAnchor(
 // exists. The proof contract is keyed by hash alone, so no owner is needed.
 // get-token-id-by-hash returns an optional uint; cvToValue unwraps it to the
 // number, the verbose { value } shape, or null on a miss.
-export async function fetchProofIdByHash(
-  hash: string,
-): Promise<number | null> {
+export async function fetchProofIdByHash(hash: string): Promise<number | null> {
   if (!HEX_64.test(hash)) return null;
   const hashArg = serializeCV(bufferCV(hexToBytes(stripHex(hash))));
-  const value = await callReadOnly(
-    PROOF_CONTRACT_NAME,
-    "get-token-id-by-hash",
-    [hashArg],
-  );
+  const value = await callReadOnly(PROOF_CONTRACT_NAME, "get-token-id-by-hash", [hashArg]);
   if (value === null || value === undefined) return null;
   const id = Number(fieldValue(value));
   return Number.isFinite(id) ? id : null;
 }
 
-export async function fetchProof(
-  tokenId: number,
-): Promise<FetchedProof | null> {
+export async function fetchProof(tokenId: number): Promise<FetchedProof | null> {
   if (!Number.isInteger(tokenId) || tokenId < 0) return null;
   const idArg = serializeCV(uintCV(tokenId));
   const value = await callReadOnly(PROOF_CONTRACT_NAME, "get-proof", [idArg]);

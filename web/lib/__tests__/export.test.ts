@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import {
-  formatAnchorsCSV,
-  formatAnchorsJSON,
-  formatBulkVerifyCSV,
-} from "../export";
+import { formatAnchorsCSV, formatAnchorsJSON, formatBulkVerifyCSV } from "../export";
 import { installMemoryStorage } from "./memoryStorage";
 
 const H1 = "a".repeat(64);
@@ -29,10 +25,9 @@ describe("formatAnchorsCSV", () => {
   });
 
   it("writes a data row with the anchor fields and verify URL", () => {
-    const row = formatAnchorsCSV(
-      [{ hash: H1, label: "My Doc", anchoredAt: 1000 }],
-      OWNER,
-    ).split("\r\n")[1];
+    const row = formatAnchorsCSV([{ hash: H1, label: "My Doc", anchoredAt: 1000 }], OWNER).split(
+      "\r\n",
+    )[1];
     expect(row).toContain(H1);
     expect(row).toContain("My Doc");
     expect(row).toContain("1000");
@@ -40,18 +35,16 @@ describe("formatAnchorsCSV", () => {
   });
 
   it("quotes a label containing a comma", () => {
-    const row = formatAnchorsCSV(
-      [{ hash: H1, label: "Doc, final", anchoredAt: 1 }],
-      OWNER,
-    ).split("\r\n")[1];
+    const row = formatAnchorsCSV([{ hash: H1, label: "Doc, final", anchoredAt: 1 }], OWNER).split(
+      "\r\n",
+    )[1];
     expect(row).toContain('"Doc, final"');
   });
 
   it("escapes embedded quotes by doubling them", () => {
-    const row = formatAnchorsCSV(
-      [{ hash: H1, label: 'He said "hi"', anchoredAt: 1 }],
-      OWNER,
-    ).split("\r\n")[1];
+    const row = formatAnchorsCSV([{ hash: H1, label: 'He said "hi"', anchoredAt: 1 }], OWNER).split(
+      "\r\n",
+    )[1];
     expect(row).toContain('""hi""');
   });
 });

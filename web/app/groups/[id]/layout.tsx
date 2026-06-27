@@ -5,8 +5,7 @@ type Props = {
 };
 
 const title = "Group";
-const description =
-  "A ThesisLock group and its shared, on-chain anchoring history.";
+const description = "A ThesisLock group and its shared, on-chain anchoring history.";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -29,10 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function GroupDetailLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function GroupDetailLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

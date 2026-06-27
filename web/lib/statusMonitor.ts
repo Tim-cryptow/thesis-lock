@@ -8,11 +8,7 @@
 
 export type ServiceCategory = "contract" | "api" | "dependency";
 
-export type ServiceStatusLevel =
-  | "operational"
-  | "degraded"
-  | "down"
-  | "unknown";
+export type ServiceStatusLevel = "operational" | "degraded" | "down" | "unknown";
 
 export type ServiceStatus = {
   name: string;
@@ -34,10 +30,7 @@ export type StatusHistory = {
   checks: StatusHistoryCheck[];
 };
 
-export type OverallStatus =
-  | "all-operational"
-  | "partial-outage"
-  | "major-outage";
+export type OverallStatus = "all-operational" | "partial-outage" | "major-outage";
 
 const HISTORY_KEY = "thesislock_status_history";
 
@@ -56,11 +49,9 @@ const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_POINTS = 300;
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
-const HIRO_API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 // The five Clarity contracts deployed on mainnet, in the order shown on the
 // status page.
@@ -90,9 +81,7 @@ const API_PROBES: ApiProbe[] = [
 ];
 
 function now(): number {
-  return typeof performance !== "undefined" && performance.now
-    ? performance.now()
-    : Date.now();
+  return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
 }
 
 function levelFromTime(ms: number): ServiceStatusLevel {
@@ -104,8 +93,7 @@ function levelFromTime(ms: number): ServiceStatusLevel {
 // browser).
 function resolveUrl(endpoint: string, baseUrl?: string): string {
   if (/^https?:\/\//i.test(endpoint)) return endpoint;
-  const base =
-    baseUrl ?? (typeof window !== "undefined" ? window.location.origin : "");
+  const base = baseUrl ?? (typeof window !== "undefined" ? window.location.origin : "");
   return `${base}${endpoint}`;
 }
 
@@ -119,15 +107,9 @@ type ProbeResult = {
 
 // A single fetch with a hard timeout and no retries, so the measured time
 // reflects real latency rather than a masked, retried request.
-async function probe(
-  url: string,
-  method: "GET" | "OPTIONS" = "GET",
-): Promise<ProbeResult> {
-  const controller =
-    typeof AbortController !== "undefined" ? new AbortController() : null;
-  const timer = controller
-    ? setTimeout(() => controller.abort(), TIMEOUT_MS)
-    : null;
+async function probe(url: string, method: "GET" | "OPTIONS" = "GET"): Promise<ProbeResult> {
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), TIMEOUT_MS) : null;
   const start = now();
   try {
     const res = await fetch(url, {
@@ -206,9 +188,7 @@ function statusFromProbe(
 
 // Verifies a contract is published by fetching its source from the Hiro node
 // RPC. A 200 means the contract exists; anything else is treated as down.
-export async function checkContractHealth(
-  contractName: string,
-): Promise<ServiceStatus> {
+export async function checkContractHealth(contractName: string): Promise<ServiceStatus> {
   const url = `${HIRO_API_BASE}/v2/contracts/source/${CONTRACT_ADDRESS}/${contractName}?proof=0`;
   return statusFromProbe(contractName, "contract", await probe(url, "GET"));
 }
@@ -233,9 +213,7 @@ export async function checkHiroHealth(): Promise<ServiceStatus> {
 
 // Checks the Stacks node RPC info endpoint, reflecting the underlying network's
 // reachability separately from the Hiro application layer.
-async function checkStacksNetworkHealth(
-  baseUrl = HIRO_API_BASE,
-): Promise<ServiceStatus> {
+async function checkStacksNetworkHealth(baseUrl = HIRO_API_BASE): Promise<ServiceStatus> {
   const result = await probe(`${baseUrl}/v2/info`, "GET");
   return statusFromProbe("Stacks Network", "dependency", result);
 }
@@ -243,9 +221,7 @@ async function checkStacksNetworkHealth(
 // Runs every check concurrently and returns the full set of statuses. Pass a
 // base URL when calling server-side so the API probes resolve to an absolute
 // origin; in the browser the current origin is used automatically.
-export async function checkAllServices(
-  baseUrl?: string,
-): Promise<ServiceStatus[]> {
+export async function checkAllServices(baseUrl?: string): Promise<ServiceStatus[]> {
   const contracts = CONTRACT_NAMES.map((name) => checkContractHealth(name));
   const apis = API_PROBES.map((p) =>
     checkApiHealth(p.path, { method: p.method, baseUrl, name: p.name }),
@@ -283,9 +259,7 @@ function loadHistory(): StatusHistory[] {
       if (!item || typeof item !== "object") continue;
       const v = item as Record<string, unknown>;
       if (typeof v.service !== "string" || !Array.isArray(v.checks)) continue;
-      const checks = v.checks
-        .map(coerceCheck)
-        .filter((c): c is StatusHistoryCheck => c !== null);
+      const checks = v.checks.map(coerceCheck).filter((c): c is StatusHistoryCheck => c !== null);
       out.push({ service: v.service, checks });
     }
     return out;
@@ -309,10 +283,7 @@ export function saveStatusHistory(statuses: ServiceStatus[]): void {
         byService.set(s.name, entry);
       }
       const last = entry.checks[entry.checks.length - 1];
-      if (
-        last &&
-        nowMs - new Date(last.timestamp).getTime() < SAMPLE_INTERVAL_MS
-      ) {
+      if (last && nowMs - new Date(last.timestamp).getTime() < SAMPLE_INTERVAL_MS) {
         continue;
       }
       entry.checks.push({
@@ -351,9 +322,7 @@ export function getUptimePercentage(service: string, hours = 24): number {
     (c) => new Date(c.timestamp).getTime() >= cutoff && c.status !== "unknown",
   );
   if (checks.length === 0) return 100;
-  const up = checks.filter(
-    (c) => c.status === "operational" || c.status === "degraded",
-  ).length;
+  const up = checks.filter((c) => c.status === "operational" || c.status === "degraded").length;
   return Math.round((up / checks.length) * 1000) / 10;
 }
 

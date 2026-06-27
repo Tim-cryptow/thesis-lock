@@ -26,8 +26,7 @@ function breakdownRows(breakdown: Record<string, number>): string {
   }
   return entries
     .map(
-      ([action, count]) =>
-        `<tr><td>${escapeHtml(action)}</td><td class="num">${count}</td></tr>`,
+      ([action, count]) => `<tr><td>${escapeHtml(action)}</td><td class="num">${count}</td></tr>`,
     )
     .join("");
 }

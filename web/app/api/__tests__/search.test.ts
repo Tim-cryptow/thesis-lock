@@ -54,18 +54,14 @@ describe("GET /api/search", () => {
   });
 
   it("rejects an invalid hash when type=hash", async () => {
-    const res = await GET(
-      mockNextRequest(`${BASE}/api/search?q=notahash&type=hash`),
-    );
+    const res = await GET(mockNextRequest(`${BASE}/api/search?q=notahash&type=hash`));
     expect(res.status).toBe(400);
     expect(runSearch).not.toHaveBeenCalled();
   });
 
   it("forces a principal search with type=principal", async () => {
     vi.mocked(runSearch).mockResolvedValue([]);
-    await GET(
-      mockNextRequest(`${BASE}/api/search?q=${PRINCIPAL}&type=principal`),
-    );
+    await GET(mockNextRequest(`${BASE}/api/search?q=${PRINCIPAL}&type=principal`));
     expect(runSearch).toHaveBeenCalledWith(PRINCIPAL, "principal", undefined);
   });
 

@@ -36,9 +36,7 @@ export default function WebhookTester({
     if (focusId) {
       setSelectedId(focusId);
     } else if (subscriptions.length > 0) {
-      setSelectedId((cur) =>
-        subscriptions.some((s) => s.id === cur) ? cur : subscriptions[0].id,
-      );
+      setSelectedId((cur) => (subscriptions.some((s) => s.id === cur) ? cur : subscriptions[0].id));
     }
   }, [focusId, subscriptions]);
 
@@ -69,12 +67,10 @@ export default function WebhookTester({
   const send = useCallback(async () => {
     if (!selected) return;
     setSending(true);
-    const start =
-      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const start = typeof performance !== "undefined" ? performance.now() : Date.now();
     const record = (partial: Omit<TestResult, "at" | "event" | "timeMs">) => {
       const timeMs = Math.round(
-        (typeof performance !== "undefined" ? performance.now() : Date.now()) -
-          start,
+        (typeof performance !== "undefined" ? performance.now() : Date.now()) - start,
       );
       setHistory((cur) =>
         [
@@ -128,9 +124,8 @@ export default function WebhookTester({
     <div>
       <h3 className="text-lg font-medium">Test a webhook</h3>
       <p className="mt-1 text-sm text-foreground/70">
-        Send a sample payload to a subscription endpoint from your browser. If
-        the endpoint does not allow cross-origin requests, use the curl command
-        instead.
+        Send a sample payload to a subscription endpoint from your browser. If the endpoint does not
+        allow cross-origin requests, use the curl command instead.
       </p>
 
       {subscriptions.length === 0 ? (
@@ -193,14 +188,12 @@ export default function WebhookTester({
 
           {history.length > 0 ? (
             <div className="mt-6">
-              <div className="mb-2 text-sm font-medium">
-                Recent tests
-              </div>
+              <div className="mb-2 text-sm font-medium">Recent tests</div>
               {history[0].corsBlocked ? (
                 <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
                   <p className="text-sm text-amber-700 dark:text-amber-300">
-                    The browser could not complete the request (likely CORS).
-                    Run this from your server or terminal instead:
+                    The browser could not complete the request (likely CORS). Run this from your
+                    server or terminal instead:
                   </p>
                   <div className="mt-2 flex items-stretch gap-2">
                     <pre className="min-w-0 flex-1 overflow-x-auto rounded-md border border-foreground/15 bg-background p-2 text-xs">
@@ -212,19 +205,12 @@ export default function WebhookTester({
               ) : null}
               <ul className="flex flex-col gap-2">
                 {history.map((r, i) => (
-                  <li
-                    key={i}
-                    className="rounded-md border border-foreground/10 p-3 text-sm"
-                  >
+                  <li key={i} className="rounded-md border border-foreground/10 p-3 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="flex items-center gap-2">
                         <span
                           className={`h-2 w-2 rounded-full ${
-                            r.ok
-                              ? "bg-emerald-500"
-                              : r.corsBlocked
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                            r.ok ? "bg-emerald-500" : r.corsBlocked ? "bg-amber-500" : "bg-red-500"
                           }`}
                         />
                         <code className="text-xs">{r.event}</code>
@@ -237,8 +223,7 @@ export default function WebhookTester({
                         </span>
                       </span>
                       <span className="text-xs text-foreground/50 tabular-nums">
-                        {r.timeMs} ms ·{" "}
-                        {new Date(r.at).toLocaleTimeString()}
+                        {r.timeMs} ms · {new Date(r.at).toLocaleTimeString()}
                       </span>
                     </div>
                     {r.bodyPreview ? (

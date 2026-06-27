@@ -6,8 +6,7 @@
 import { lookup } from "node:dns/promises";
 import https from "node:https";
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 const HEX_TXID = /^(0x)?[0-9a-f]{64}$/i;
 const MAX_PENDING = 200;
@@ -35,9 +34,7 @@ function key(txId: string, url: string): string {
 // IPv6 literals keep their surrounding brackets in URL.hostname (for example
 // "[::1]"), so strip them before any host comparison.
 function unbracket(host: string): string {
-  return host.startsWith("[") && host.endsWith("]")
-    ? host.slice(1, -1)
-    : host;
+  return host.startsWith("[") && host.endsWith("]") ? host.slice(1, -1) : host;
 }
 
 function isBlockedIpv4(host: string): boolean {
@@ -102,9 +99,7 @@ export function isSafeWebhookUrl(raw: string): boolean {
 // delivery) if it is internal or unresolvable. Pinning the exact addresses we
 // checked closes the TOCTOU gap where a re-resolve at connect time could hand
 // back a private address.
-async function resolveSafeAddresses(
-  host: string,
-): Promise<ResolvedAddress[] | null> {
+async function resolveSafeAddresses(host: string): Promise<ResolvedAddress[] | null> {
   if (isBlockedIpLiteral(host)) return null;
   // Public IP literal: connect directly, nothing to resolve.
   if (host.includes(":")) return [{ address: host, family: 6 }];
@@ -151,10 +146,7 @@ function deliverWebhook(
         timeout: POST_TIMEOUT_MS,
         lookup: ((_hostname, options, callback) => {
           if (options && (options as { all?: boolean }).all) {
-            (callback as (e: null, a: ResolvedAddress[]) => void)(
-              null,
-              addresses,
-            );
+            (callback as (e: null, a: ResolvedAddress[]) => void)(null, addresses);
           } else {
             callback(null, addresses[0].address, addresses[0].family);
           }
@@ -216,10 +208,9 @@ export async function processPendingWebhooks(): Promise<void> {
         let status: string;
         let blockHeight: number | null = null;
         try {
-          const res = await fetch(
-            `${HIRO_BASE}/extended/v1/tx/${withHexPrefix(hook.txId)}`,
-            { signal: AbortSignal.timeout(POST_TIMEOUT_MS) },
-          );
+          const res = await fetch(`${HIRO_BASE}/extended/v1/tx/${withHexPrefix(hook.txId)}`, {
+            signal: AbortSignal.timeout(POST_TIMEOUT_MS),
+          });
           if (!res.ok) return;
           const data = (await res.json()) as {
             tx_status?: string;
@@ -231,8 +222,7 @@ export async function processPendingWebhooks(): Promise<void> {
           return;
         }
 
-        const failed =
-          status.startsWith("abort_") || status.startsWith("dropped");
+        const failed = status.startsWith("abort_") || status.startsWith("dropped");
         if (status !== "success" && !failed) return;
 
         registry.delete(mapKey);

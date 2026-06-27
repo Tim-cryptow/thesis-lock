@@ -88,9 +88,7 @@ export default function ShareButtons({ url, title, text }: ShareButtonsProps) {
     },
     {
       label: "Share on LinkedIn",
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-        url,
-      )}`,
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       icon: <LinkedInIcon />,
     },
     {

@@ -43,24 +43,13 @@ function coerce(value: unknown): BulkVerifyInput | null {
   if (!HEX_64.test(hash)) return null;
   const out: BulkVerifyInput = { hash };
   if (typeof v.name === "string" && v.name) out.name = v.name;
-  if (
-    typeof v.owner === "string" &&
-    STX_PRINCIPAL.test(v.owner.toUpperCase())
-  ) {
+  if (typeof v.owner === "string" && STX_PRINCIPAL.test(v.owner.toUpperCase())) {
     out.owner = v.owner.toUpperCase();
   }
-  if (
-    typeof v.groupId === "number" &&
-    Number.isInteger(v.groupId) &&
-    v.groupId >= 0
-  ) {
+  if (typeof v.groupId === "number" && Number.isInteger(v.groupId) && v.groupId >= 0) {
     out.groupId = v.groupId;
   }
-  if (
-    typeof v.groupIndex === "number" &&
-    Number.isInteger(v.groupIndex) &&
-    v.groupIndex >= 0
-  ) {
+  if (typeof v.groupIndex === "number" && Number.isInteger(v.groupIndex) && v.groupIndex >= 0) {
     out.groupIndex = v.groupIndex;
   }
   if (typeof v.verifyUrl === "string" && verifyPathHash(v.verifyUrl) === hash) {

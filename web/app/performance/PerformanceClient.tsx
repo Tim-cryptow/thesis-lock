@@ -32,39 +32,30 @@ const RANGES: { id: Range; label: string; days?: number }[] = [
   { id: "all", label: "All time", days: undefined },
 ];
 
-const VITAL_INFO: Record<
-  WebVitalName,
-  { unit: "ms" | "score"; description: string }
-> = {
+const VITAL_INFO: Record<WebVitalName, { unit: "ms" | "score"; description: string }> = {
   LCP: {
     unit: "ms",
-    description:
-      "Largest Contentful Paint: when the main content of the page becomes visible.",
+    description: "Largest Contentful Paint: when the main content of the page becomes visible.",
   },
   INP: {
     unit: "ms",
-    description:
-      "Interaction to Next Paint: how quickly the page responds to interactions.",
+    description: "Interaction to Next Paint: how quickly the page responds to interactions.",
   },
   CLS: {
     unit: "score",
-    description:
-      "Cumulative Layout Shift: how much the page unexpectedly shifts while loading.",
+    description: "Cumulative Layout Shift: how much the page unexpectedly shifts while loading.",
   },
   FCP: {
     unit: "ms",
-    description:
-      "First Contentful Paint: when the first content appears on screen.",
+    description: "First Contentful Paint: when the first content appears on screen.",
   },
   TTFB: {
     unit: "ms",
-    description:
-      "Time to First Byte: how long the server takes to start responding.",
+    description: "Time to First Byte: how long the server takes to start responding.",
   },
   FID: {
     unit: "ms",
-    description:
-      "First Input Delay: the delay before the page reacts to the first interaction.",
+    description: "First Input Delay: the delay before the page reacts to the first interaction.",
   },
 };
 
@@ -104,10 +95,7 @@ export default function PerformanceClient() {
   const [debug, setDebug] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  const days = useMemo(
-    () => RANGES.find((r) => r.id === range)?.days,
-    [range],
-  );
+  const days = useMemo(() => RANGES.find((r) => r.id === range)?.days, [range]);
 
   useEffect(() => {
     // Ask the always-mounted tracker to flush the current session's LCP, CLS,
@@ -161,10 +149,7 @@ export default function PerformanceClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           Home
         </Link>
-        <Link
-          href="/docs/performance"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/docs/performance" className="text-foreground/60 hover:text-foreground">
           Docs
         </Link>
         <span className="text-foreground font-medium">Performance</span>
@@ -191,8 +176,8 @@ export default function PerformanceClient() {
         </div>
       </div>
       <p className="text-foreground/70 mb-6">
-        Web Vitals, page load, and API timings measured in your browser. Stored
-        locally; nothing is sent anywhere.
+        Web Vitals, page load, and API timings measured in your browser. Stored locally; nothing is
+        sent anywhere.
       </p>
 
       <div className="mb-8 flex flex-wrap gap-1 border-b border-foreground/10">
@@ -212,22 +197,15 @@ export default function PerformanceClient() {
         ))}
       </div>
 
-      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">
-        Web Vitals
-      </h2>
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">Web Vitals</h2>
       <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {VITAL_NAMES.map((name) => {
           const summary = vitals[name];
           const info = VITAL_INFO[name];
           return (
-            <div
-              key={name}
-              className="rounded-lg border border-foreground/10 bg-card p-4"
-            >
+            <div key={name} className="rounded-lg border border-foreground/10 bg-card p-4">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-sm text-foreground/70">
-                  {name}
-                </span>
+                <span className="font-mono text-sm text-foreground/70">{name}</span>
                 {summary ? (
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${ratingBadgeClasses(
@@ -243,15 +221,10 @@ export default function PerformanceClient() {
                   {summary ? formatVital(summary.p75, info.unit) : "n/a"}
                 </span>
                 {recent[name] && recent[name].length > 1 ? (
-                  <SparklineChart
-                    values={recent[name]}
-                    rating={summary?.rating ?? "good"}
-                  />
+                  <SparklineChart values={recent[name]} rating={summary?.rating ?? "good"} />
                 ) : null}
               </div>
-              <p className="mt-2 text-xs text-foreground/55">
-                {info.description}
-              </p>
+              <p className="mt-2 text-xs text-foreground/55">{info.description}</p>
               <p className="mt-1 text-[10px] text-foreground/40">
                 {summary
                   ? `p75 of ${summary.count} sample${summary.count === 1 ? "" : "s"}`
@@ -262,9 +235,7 @@ export default function PerformanceClient() {
         })}
       </div>
 
-      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">
-        Page Performance
-      </h2>
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">Page Performance</h2>
       {pageRows.length === 0 ? (
         <p className="mb-10 rounded-lg border border-foreground/10 bg-card p-6 text-sm text-foreground/60">
           No page metrics yet.
@@ -292,12 +263,8 @@ export default function PerformanceClient() {
                     }`}
                   >
                     <td className="break-all px-4 py-2 font-mono">{path}</td>
-                    <td className="px-4 py-2 text-right">
-                      {Math.round(s.avgLoad)} ms
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {Math.round(s.avgRender)} ms
-                    </td>
+                    <td className="px-4 py-2 text-right">{Math.round(s.avgLoad)} ms</td>
+                    <td className="px-4 py-2 text-right">{Math.round(s.avgRender)} ms</td>
                     <td className="px-4 py-2 text-right">{s.visits}</td>
                     <td className="px-4 py-2">
                       <span
@@ -316,9 +283,7 @@ export default function PerformanceClient() {
         </div>
       )}
 
-      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">
-        API Performance
-      </h2>
+      <h2 className="mb-3 text-sm uppercase tracking-wide text-foreground/50">API Performance</h2>
       {apiRows.length === 0 ? (
         <p className="rounded-lg border border-foreground/10 bg-card p-6 text-sm text-foreground/60">
           No API metrics yet.
@@ -343,17 +308,11 @@ export default function PerformanceClient() {
                   <tr
                     key={endpoint}
                     className={`border-b border-foreground/5 ${
-                      highError
-                        ? "bg-red-500/10"
-                        : slow
-                          ? "bg-amber-500/10"
-                          : ""
+                      highError ? "bg-red-500/10" : slow ? "bg-amber-500/10" : ""
                     }`}
                   >
                     <td className="break-all px-4 py-2 font-mono">{endpoint}</td>
-                    <td className="px-4 py-2 text-right">
-                      {Math.round(s.avgResponse)} ms
-                    </td>
+                    <td className="px-4 py-2 text-right">{Math.round(s.avgResponse)} ms</td>
                     <td
                       className={`px-4 py-2 text-right ${
                         highError ? "text-red-600 dark:text-red-400" : ""
@@ -362,9 +321,7 @@ export default function PerformanceClient() {
                       {(s.errorRate * 100).toFixed(1)}%
                     </td>
                     <td className="px-4 py-2 text-right">{s.calls}</td>
-                    <td className="px-4 py-2 text-right">
-                      {Math.round(s.cachedRate * 100)}%
-                    </td>
+                    <td className="px-4 py-2 text-right">{Math.round(s.cachedRate * 100)}%</td>
                   </tr>
                 );
               })}

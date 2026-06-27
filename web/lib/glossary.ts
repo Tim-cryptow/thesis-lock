@@ -25,8 +25,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
   {
     term: "Principal",
-    definition:
-      "A Stacks wallet address that identifies who performed an action.",
+    definition: "A Stacks wallet address that identifies who performed an action.",
   },
   {
     term: "Anchor",
@@ -48,8 +47,7 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
   {
     term: "Group",
-    definition:
-      "A shared space where team members can anchor documents together.",
+    definition: "A shared space where team members can anchor documents together.",
   },
   {
     term: "Registry",
@@ -57,14 +55,11 @@ export const GLOSSARY: GlossaryEntry[] = [
   },
   {
     term: "Gas Fee",
-    definition:
-      "A small STX payment to process your transaction on the blockchain.",
+    definition: "A small STX payment to process your transaction on the blockchain.",
   },
 ];
 
-const DEFINITIONS = new Map(
-  GLOSSARY.map((entry) => [entry.term.toLowerCase(), entry.definition]),
-);
+const DEFINITIONS = new Map(GLOSSARY.map((entry) => [entry.term.toLowerCase(), entry.definition]));
 
 export function getDefinition(term: string): string | undefined {
   return DEFINITIONS.get(term.trim().toLowerCase());

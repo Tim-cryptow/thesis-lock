@@ -6,12 +6,5 @@ export default function FeedError(props: {
   error: Error & { digest?: string };
   unstable_retry: () => void;
 }) {
-  return (
-    <RouteError
-      title="Error loading feed"
-      backHref="/"
-      backLabel="Go home"
-      {...props}
-    />
-  );
+  return <RouteError title="Error loading feed" backHref="/" backLabel="Go home" {...props} />;
 }

@@ -5,10 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useI18n } from "./I18nProvider";
 import ShortcutsModal from "./ShortcutsModal";
-import {
-  PALETTE_OPEN_EVENT,
-  SHORTCUTS_OPEN_EVENT,
-} from "@/lib/commandPalette";
+import { PALETTE_OPEN_EVENT, SHORTCUTS_OPEN_EVENT } from "@/lib/commandPalette";
 
 // Dispatched when the search input should grab focus while already on /search.
 export const FOCUS_SEARCH_EVENT = "thesislock:focus-search";
@@ -33,12 +30,7 @@ export const SHORTCUTS: Shortcut[] = [
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
-  return (
-    tag === "INPUT" ||
-    tag === "TEXTAREA" ||
-    tag === "SELECT" ||
-    target.isContentEditable
-  );
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target.isContentEditable;
 }
 
 export default function KeyboardShortcuts() {

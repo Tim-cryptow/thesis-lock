@@ -10,8 +10,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 function contractUrl(name: string): string {
   return `https://explorer.hiro.so/txid/${CONTRACT_ADDRESS}.${name}?chain=mainnet`;
@@ -178,149 +177,139 @@ export default function HomeClient() {
         <ThemeToggle />
       </div>
       <FadeIn delay={0}>
-      <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 w-full">
-        <h1 className="text-5xl md:text-6xl leading-tight">
-          {t("landing.hero.title")}
-        </h1>
-        <p className="mt-6 text-lg max-w-2xl text-foreground/80">
-          {t("landing.hero.subtitle")}
-        </p>
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            href="/anchor"
-            className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 press-scale"
-          >
-            {t("landing.hero.anchorCta")}
-          </Link>
-          <Link
-            href="/search"
-            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 press-scale"
-          >
-            {t("landing.hero.verifyCta")}
-          </Link>
-        </div>
-        <HeroStats />
-        <TourBanner />
-      </section>
+        <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 w-full">
+          <h1 className="text-5xl md:text-6xl leading-tight">{t("landing.hero.title")}</h1>
+          <p className="mt-6 text-lg max-w-2xl text-foreground/80">{t("landing.hero.subtitle")}</p>
+          <div className="mt-10 flex flex-wrap items-center gap-4">
+            <Link
+              href="/anchor"
+              className="inline-flex items-center px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 press-scale"
+            >
+              {t("landing.hero.anchorCta")}
+            </Link>
+            <Link
+              href="/search"
+              className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 press-scale"
+            >
+              {t("landing.hero.verifyCta")}
+            </Link>
+          </div>
+          <HeroStats />
+          <TourBanner />
+        </section>
       </FadeIn>
 
       <FadeIn delay={80}>
-      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-10">{t("landing.steps.heading")}</h2>
-        <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {STEPS.map((step, i) => (
-            <li
-              key={step.id}
-              className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-heading text-background text-sm font-mono">
-                  {i + 1}
-                </span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-6 h-6 text-foreground/70"
-                  aria-hidden="true"
-                >
-                  {step.icon}
-                </svg>
-              </div>
-              <h3 className="text-xl mb-2">
-                {t(`landing.steps.${step.id}.title`)}
-              </h3>
-              <p className="text-foreground/80 text-sm leading-relaxed">
-                {t(`landing.steps.${step.id}.body`)}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
-      </FadeIn>
-
-      <FadeIn delay={160}>
-      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">{t("landing.features.heading")}</h2>
-        <p className="text-foreground/70 mb-10 max-w-2xl">
-          {t("landing.features.intro")}
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((feature) => (
-            <FeatureCard
-              key={feature.id}
-              title={t(`landing.features.${feature.id}.title`)}
-              body={t(`landing.features.${feature.id}.body`)}
-              href={feature.href}
-              icon={feature.icon}
-            />
-          ))}
-          <FeatureCard
-            title="Tags"
-            body="Add flexible tags to any anchor, then filter by tag across your history, the feed, and search, with auto-suggestions, a tag cloud, and stats."
-            href="/tags"
-            icon={
-              <>
-                <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59A2 2 0 0 0 3.59 11l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
-                <circle cx="7.5" cy="7.5" r="1.5" />
-              </>
-            }
-          />
-          <FeatureCard
-            title="Track your anchoring streak"
-            body="See your anchoring activity as a GitHub-style contribution graph, browse it by month, and keep your daily streak going, all from the calendar."
-            href="/calendar"
-            icon={
-              <>
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" />
-              </>
-            }
-          />
-        </div>
-      </section>
-      </FadeIn>
-
-      <FadeIn delay={240}>
-      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">{t("landing.contracts.heading")}</h2>
-        <p className="text-foreground/70 mb-4 max-w-2xl">
-          {t("landing.contracts.intro")}
-        </p>
-        <p className="mb-10">
-          <Link
-            href="/explorer"
-            className="text-sm text-foreground underline hover:text-foreground/70"
-          >
-            {t("landing.contracts.explore")} &rarr;
-          </Link>
-        </p>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          <ul className="flex flex-col gap-3">
-            {CONTRACTS.map((contract) => (
+        <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+          <h2 className="text-3xl mb-10">{t("landing.steps.heading")}</h2>
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {STEPS.map((step, i) => (
               <li
-                key={contract.name}
-                className="rounded-lg border border-foreground/10 bg-card p-4"
+                key={step.id}
+                className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col"
               >
-                <a
-                  href={contractUrl(contract.name)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-sm text-foreground hover:underline"
-                >
-                  {contract.name}
-                </a>
-                <p className="text-foreground/70 text-sm mt-1">
-                  {t(`landing.contracts.${contract.id}`)}
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-heading text-background text-sm font-mono">
+                    {i + 1}
+                  </span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-6 h-6 text-foreground/70"
+                    aria-hidden="true"
+                  >
+                    {step.icon}
+                  </svg>
+                </div>
+                <h3 className="text-xl mb-2">{t(`landing.steps.${step.id}.title`)}</h3>
+                <p className="text-foreground/80 text-sm leading-relaxed">
+                  {t(`landing.steps.${step.id}.body`)}
                 </p>
               </li>
             ))}
-          </ul>
-          <div className="rounded-lg border border-foreground/10 bg-card p-6 font-mono text-xs text-foreground/70 leading-relaxed">
-            <pre className="whitespace-pre overflow-x-auto">{`  your file
+          </ol>
+        </section>
+      </FadeIn>
+
+      <FadeIn delay={160}>
+        <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+          <h2 className="text-3xl mb-3">{t("landing.features.heading")}</h2>
+          <p className="text-foreground/70 mb-10 max-w-2xl">{t("landing.features.intro")}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((feature) => (
+              <FeatureCard
+                key={feature.id}
+                title={t(`landing.features.${feature.id}.title`)}
+                body={t(`landing.features.${feature.id}.body`)}
+                href={feature.href}
+                icon={feature.icon}
+              />
+            ))}
+            <FeatureCard
+              title="Tags"
+              body="Add flexible tags to any anchor, then filter by tag across your history, the feed, and search, with auto-suggestions, a tag cloud, and stats."
+              href="/tags"
+              icon={
+                <>
+                  <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59A2 2 0 0 0 3.59 11l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
+                  <circle cx="7.5" cy="7.5" r="1.5" />
+                </>
+              }
+            />
+            <FeatureCard
+              title="Track your anchoring streak"
+              body="See your anchoring activity as a GitHub-style contribution graph, browse it by month, and keep your daily streak going, all from the calendar."
+              href="/calendar"
+              icon={
+                <>
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                </>
+              }
+            />
+          </div>
+        </section>
+      </FadeIn>
+
+      <FadeIn delay={240}>
+        <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+          <h2 className="text-3xl mb-3">{t("landing.contracts.heading")}</h2>
+          <p className="text-foreground/70 mb-4 max-w-2xl">{t("landing.contracts.intro")}</p>
+          <p className="mb-10">
+            <Link
+              href="/explorer"
+              className="text-sm text-foreground underline hover:text-foreground/70"
+            >
+              {t("landing.contracts.explore")} &rarr;
+            </Link>
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <ul className="flex flex-col gap-3">
+              {CONTRACTS.map((contract) => (
+                <li
+                  key={contract.name}
+                  className="rounded-lg border border-foreground/10 bg-card p-4"
+                >
+                  <a
+                    href={contractUrl(contract.name)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-sm text-foreground hover:underline"
+                  >
+                    {contract.name}
+                  </a>
+                  <p className="text-foreground/70 text-sm mt-1">
+                    {t(`landing.contracts.${contract.id}`)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <div className="rounded-lg border border-foreground/10 bg-card p-6 font-mono text-xs text-foreground/70 leading-relaxed">
+              <pre className="whitespace-pre overflow-x-auto">{`  your file
      |
      v  SHA-256 (in browser)
   document hash
@@ -335,82 +324,78 @@ export default function HomeClient() {
      |
      v
   Stacks  ->  Bitcoin (settled)`}</pre>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       </FadeIn>
 
       <FadeIn delay={320}>
-      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">{t("landing.integrate.heading")}</h2>
-        <p className="text-foreground/70 mb-10 max-w-2xl">
-          {t("landing.integrate.intro")}
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">{t("landing.integrate.sdk.title")}</h3>
-            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              {t("landing.integrate.sdk.body")}
-            </p>
-            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npm install thesislock-sdk
+        <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+          <h2 className="text-3xl mb-3">{t("landing.integrate.heading")}</h2>
+          <p className="text-foreground/70 mb-10 max-w-2xl">{t("landing.integrate.intro")}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+              <h3 className="text-xl mb-3">{t("landing.integrate.sdk.title")}</h3>
+              <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+                {t("landing.integrate.sdk.body")}
+              </p>
+              <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npm install thesislock-sdk
 
 import { createClient } from 'thesislock-sdk';
 const client = createClient();
 const result = await client.verify(hash);`}</pre>
-          </div>
-          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">{t("landing.integrate.cli.title")}</h3>
-            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              {t("landing.integrate.cli.body")}
-            </p>
-            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npx thesislock-cli verify <hash>`}</pre>
-          </div>
-          <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
-            <h3 className="text-xl mb-3">
-              {t("landing.integrate.githubAction.title")}
-            </h3>
-            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
-              {t("landing.integrate.githubAction.body")}
-            </p>
-            <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`- uses: Tim-cryptow/thesis-lock/action@main
+            </div>
+            <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+              <h3 className="text-xl mb-3">{t("landing.integrate.cli.title")}</h3>
+              <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+                {t("landing.integrate.cli.body")}
+              </p>
+              <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`npx thesislock-cli verify <hash>`}</pre>
+            </div>
+            <div className="rounded-lg border border-foreground/10 bg-card p-6 flex flex-col">
+              <h3 className="text-xl mb-3">{t("landing.integrate.githubAction.title")}</h3>
+              <p className="text-foreground/80 text-sm leading-relaxed mb-4">
+                {t("landing.integrate.githubAction.body")}
+              </p>
+              <pre className="mt-auto rounded-md bg-foreground/5 p-3 font-mono text-xs text-foreground/80 overflow-x-auto whitespace-pre">{`- uses: Tim-cryptow/thesis-lock/action@main
   with:
     hash: "abc123..."`}</pre>
+            </div>
           </div>
-        </div>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/docs"
-            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-          >
-            {t("landing.integrate.readDocs")}
-          </Link>
-          <Link
-            href="/developers"
-            className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-          >
-            {t("landing.integrate.developerPortal")}
-          </Link>
-        </div>
-      </section>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/docs"
+              className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              {t("landing.integrate.readDocs")}
+            </Link>
+            <Link
+              href="/developers"
+              className="inline-flex items-center px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+            >
+              {t("landing.integrate.developerPortal")}
+            </Link>
+          </div>
+        </section>
       </FadeIn>
 
       <FadeIn delay={400}>
-      <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
-        <h2 className="text-3xl mb-3">{t("landing.live.heading")}</h2>
-        <p className="text-foreground/70 mb-10 max-w-2xl">
-          A live protocol feed streams new anchors as they land on chain. Watch
-          the activity ticker at the top of the page, or open the{" "}
-          <Link href="/feed" className="underline hover:text-foreground">
-            feed
-          </Link>{" "}
-          and{" "}
-          <Link href="/stats" className="underline hover:text-foreground">
-            stats
-          </Link>{" "}
-          to see them update in real time.
-        </p>
-        <StatsBar />
-      </section>
+        <section className="max-w-5xl mx-auto px-6 pb-24 w-full">
+          <h2 className="text-3xl mb-3">{t("landing.live.heading")}</h2>
+          <p className="text-foreground/70 mb-10 max-w-2xl">
+            A live protocol feed streams new anchors as they land on chain. Watch the activity
+            ticker at the top of the page, or open the{" "}
+            <Link href="/feed" className="underline hover:text-foreground">
+              feed
+            </Link>{" "}
+            and{" "}
+            <Link href="/stats" className="underline hover:text-foreground">
+              stats
+            </Link>{" "}
+            to see them update in real time.
+          </p>
+          <StatsBar />
+        </section>
       </FadeIn>
     </div>
   );

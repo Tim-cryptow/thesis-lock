@@ -18,9 +18,7 @@ function escapeHtml(s: string): string {
 // as a proof-only match.
 export function verifyUrlFor(entry: ReportEntry): string {
   if (entry.verifyUrl) {
-    return entry.verifyUrl.startsWith("http")
-      ? entry.verifyUrl
-      : `${SITE_URL}${entry.verifyUrl}`;
+    return entry.verifyUrl.startsWith("http") ? entry.verifyUrl : `${SITE_URL}${entry.verifyUrl}`;
   }
   const base = `${SITE_URL}/v/${entry.hash}`;
   if (entry.source === "batch" && entry.owner) {
@@ -120,9 +118,7 @@ function tocRows(data: ReportData): string {
 export function renderReportHTML(data: ReportData): string {
   const title = escapeHtml(data.title || "Verification Report");
   const generatedAt = escapeHtml(new Date(data.generatedAt).toUTCString());
-  const generatedBy = data.generatedBy
-    ? escapeHtml(data.generatedBy)
-    : "Anonymous";
+  const generatedBy = data.generatedBy ? escapeHtml(data.generatedBy) : "Anonymous";
   const headline = `${data.summary.verified} of ${data.summary.total} documents verified on the Stacks blockchain`;
 
   return `<!DOCTYPE html>

@@ -6,9 +6,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
 import PlaygroundClient from "./PlaygroundClient";
 import ApiKeysClient from "./ApiKeysClient";
-import IntegrationGuidesClient, {
-  type GuideTabId,
-} from "./IntegrationGuidesClient";
+import IntegrationGuidesClient, { type GuideTabId } from "./IntegrationGuidesClient";
 import QuickStartGuide from "./QuickStartGuide";
 import WebhooksClient from "./WebhooksClient";
 
@@ -79,16 +77,10 @@ export default function DeveloperPortal() {
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
-          <Link
-            href="/docs"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/docs" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.docs")}
           </Link>
-          <Link
-            href="/docs/api"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/docs/api" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.api")}
           </Link>
           <span className="text-foreground font-medium">Developers</span>
@@ -97,15 +89,12 @@ export default function DeveloperPortal() {
         <header className="mt-8 mb-8">
           <h1 className="text-3xl mb-2">Developer Portal</h1>
           <p className="text-foreground/70 max-w-2xl">
-            API playground, key management, integration guides, and webhooks for
-            building on ThesisLock.
+            API playground, key management, integration guides, and webhooks for building on
+            ThesisLock.
           </p>
           <p className="text-foreground/70 max-w-2xl mt-2">
             Optimizing or debugging? The{" "}
-            <Link
-              href="/performance"
-              className="underline hover:text-foreground"
-            >
+            <Link href="/performance" className="underline hover:text-foreground">
               performance dashboard
             </Link>{" "}
             tracks Web Vitals, page load, and API response times in your browser.
@@ -115,8 +104,8 @@ export default function DeveloperPortal() {
             <Link href="/audit" className="underline hover:text-foreground">
               audit trail
             </Link>{" "}
-            records every action with a re-verifiable integrity hash and
-            exportable chain-of-custody reports.
+            records every action with a re-verifiable integrity hash and exportable chain-of-custody
+            reports.
           </p>
           <p className="text-foreground/70 max-w-2xl mt-2">
             Building an integration? Subscribe to protocol events with the{" "}
@@ -185,10 +174,7 @@ export default function DeveloperPortal() {
         {tab === "guides" ? (
           <div className="flex flex-col gap-8">
             <QuickStartGuide onLearnMore={setGuideTab} />
-            <IntegrationGuidesClient
-              activeTab={guideTab}
-              onTabChange={setGuideTab}
-            />
+            <IntegrationGuidesClient activeTab={guideTab} onTabChange={setGuideTab} />
           </div>
         ) : null}
         {tab === "webhooks" ? <WebhooksClient /> : null}

@@ -100,10 +100,7 @@ const HIRO_PAGE = 50;
 // silently dropping anchors older than a fixed window.
 const HARD_OFFSET_CAP = 50_000;
 
-async function fetchEventsPage(
-  contractName: string,
-  offset: number,
-): Promise<RawEvent[]> {
+async function fetchEventsPage(contractName: string, offset: number): Promise<RawEvent[]> {
   const url = `${API_URL}/extended/v1/contract/${CONTRACT_ADDRESS}.${contractName}/events?limit=${HIRO_PAGE}&offset=${offset}`;
   const res = await fetchWithRetry(url);
   if (!res.ok) {
@@ -239,13 +236,7 @@ function toResult(parsed: ParsedEvent): SearchResult {
     source,
     ...(parsed.groupId !== undefined ? { groupId: parsed.groupId } : {}),
     ...(parsed.groupIndex !== undefined ? { groupIndex: parsed.groupIndex } : {}),
-    verifyUrl: buildVerifyUrl(
-      parsed.hash,
-      source,
-      parsed.owner,
-      parsed.groupId,
-      parsed.groupIndex,
-    ),
+    verifyUrl: buildVerifyUrl(parsed.hash, source, parsed.owner, parsed.groupId, parsed.groupIndex),
   };
 }
 
@@ -266,10 +257,7 @@ function dedupe(results: SearchResult[]): SearchResult[] {
 // keyed by { hash, owner }, so its owners are discovered from the registry's
 // anchor-registered events (every batch entry is also registered there) and
 // then confirmed against the batch map. An explicit owner is always checked too.
-export async function searchByHash(
-  hash: string,
-  owner?: string,
-): Promise<SearchResult[]> {
+export async function searchByHash(hash: string, owner?: string): Promise<SearchResult[]> {
   const normalized = stripHex(hash).toLowerCase();
   if (!HEX_64.test(normalized)) return [];
 
@@ -331,15 +319,10 @@ export async function searchByHash(
     }
   }
 
-  const batches = await mapWithConcurrency(
-    Array.from(candidateOwners),
-    async (candidate) => {
-      const batch = await readBatchAnchor(normalized, candidate).catch(
-        () => null,
-      );
-      return batch ? { candidate, batch } : null;
-    },
-  );
+  const batches = await mapWithConcurrency(Array.from(candidateOwners), async (candidate) => {
+    const batch = await readBatchAnchor(normalized, candidate).catch(() => null);
+    return batch ? { candidate, batch } : null;
+  });
   for (const entry of batches) {
     if (!entry) continue;
     results.push({
@@ -398,11 +381,7 @@ export async function discoverBatchAndGroupAnchors(
   // Group anchors are keyed by { group-id, index }, discoverable only via events.
   for (const ev of groupEvents) {
     const parsed = parseEvent(ev);
-    if (
-      parsed &&
-      parsed.event === "group-anchor-added" &&
-      targets.has(parsed.hash)
-    ) {
+    if (parsed && parsed.event === "group-anchor-added" && targets.has(parsed.hash)) {
       consider(toResult(parsed));
     }
   }
@@ -429,22 +408,15 @@ export async function discoverBatchAndGroupAnchors(
   }
   for (const ev of registryEvents) {
     const parsed = parseEvent(ev);
-    if (
-      parsed &&
-      parsed.event === "anchor-registered" &&
-      targets.has(parsed.hash)
-    ) {
+    if (parsed && parsed.event === "anchor-registered" && targets.has(parsed.hash)) {
       addCandidate(parsed.hash, parsed.owner);
     }
   }
 
-  const batches = await mapWithConcurrency(
-    candidates,
-    async ({ hash, owner }) => {
-      const batch = await readBatchAnchor(hash, owner).catch(() => null);
-      return batch ? { hash, owner, batch } : null;
-    },
-  );
+  const batches = await mapWithConcurrency(candidates, async ({ hash, owner }) => {
+    const batch = await readBatchAnchor(hash, owner).catch(() => null);
+    return batch ? { hash, owner, batch } : null;
+  });
   for (const entry of batches) {
     if (!entry) continue;
     consider({
@@ -464,9 +436,7 @@ export async function discoverBatchAndGroupAnchors(
 // recent entries fast; scanning registry print events by owner covers the full
 // history (the read returns only the last ten), and the other contracts' events
 // surface single anchors, proof mints, and group anchors.
-export async function searchByPrincipal(
-  principal: string,
-): Promise<SearchResult[]> {
+export async function searchByPrincipal(principal: string): Promise<SearchResult[]> {
   const owner = principal.trim().toUpperCase();
   if (!STX_PRINCIPAL.test(owner)) return [];
 
@@ -511,12 +481,7 @@ export async function searchByPrincipal(
     }
   }
 
-  for (const ev of [
-    ...fallbackSingleEvents,
-    ...registryEvents,
-    ...proofEvents,
-    ...groupEvents,
-  ]) {
+  for (const ev of [...fallbackSingleEvents, ...registryEvents, ...proofEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.owner.toUpperCase() === owner) {
       results.push(toResult(parsed));
@@ -532,22 +497,16 @@ export async function searchByPrincipal(
 // silently drop real matches.
 const READ_CONCURRENCY = 8;
 
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
+async function mapWithConcurrency<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
   let next = 0;
-  const workers = Array.from(
-    { length: Math.min(READ_CONCURRENCY, items.length) },
-    async () => {
-      while (next < items.length) {
-        const i = next;
-        next += 1;
-        results[i] = await fn(items[i]);
-      }
-    },
-  );
+  const workers = Array.from({ length: Math.min(READ_CONCURRENCY, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next;
+      next += 1;
+      results[i] = await fn(items[i]);
+    }
+  });
   await Promise.all(workers);
   return results;
 }
@@ -560,9 +519,7 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
   if (!Number.isFinite(lastId) || lastId < 1) return [];
 
   const ids = Array.from({ length: lastId }, (_, i) => i + 1);
-  const proofs = await mapWithConcurrency(ids, (id) =>
-    getProof(id).catch(() => null),
-  );
+  const proofs = await mapWithConcurrency(ids, (id) => getProof(id).catch(() => null));
 
   const results: SearchResult[] = [];
   for (const proof of proofs) {
@@ -593,15 +550,14 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
   // Single anchors come from the index; on an outage, fall back to the Hiro
   // single-contract event scan.
   const indexSingles = await searchAnchors(needle, "label");
-  const [fallbackSingleEvents, registryEvents, groupEvents, proofResults] =
-    await Promise.all([
-      indexSingles === null
-        ? fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[])
-        : Promise.resolve([] as RawEvent[]),
-      fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
-      fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
-      fetchAllProofs().catch(() => [] as SearchResult[]),
-    ]);
+  const [fallbackSingleEvents, registryEvents, groupEvents, proofResults] = await Promise.all([
+    indexSingles === null
+      ? fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[])
+      : Promise.resolve([] as RawEvent[]),
+    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllProofs().catch(() => [] as SearchResult[]),
+  ]);
 
   const results: SearchResult[] = [];
   if (indexSingles !== null) {
@@ -639,15 +595,10 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
       registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
     }
   }
-  const confirmed = await mapWithConcurrency(
-    Array.from(registryHits.values()),
-    async (hit) => {
-      const batch = await readBatchAnchor(hit.hash, hit.owner).catch(
-        () => null,
-      );
-      return batch ? { hit, batch } : null;
-    },
-  );
+  const confirmed = await mapWithConcurrency(Array.from(registryHits.values()), async (hit) => {
+    const batch = await readBatchAnchor(hit.hash, hit.owner).catch(() => null);
+    return batch ? { hit, batch } : null;
+  });
   for (const entry of confirmed) {
     if (!entry) continue;
     if (!entry.batch.label.toLowerCase().includes(needle)) continue;

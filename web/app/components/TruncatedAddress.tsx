@@ -45,9 +45,7 @@ export default function TruncatedAddress({
           {short}
         </span>
       )}
-      {copyable ? (
-        <CopyButton value={address} label="address" size="sm" />
-      ) : null}
+      {copyable ? <CopyButton value={address} label="address" size="sm" /> : null}
     </span>
   );
 }

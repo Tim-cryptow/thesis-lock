@@ -18,12 +18,7 @@ type StarButtonProps = {
 // A small star toggle that favorites the given hash, wallet, group, or page.
 // Reusable inline next to any item. Shows a hollow star when not favorited and a
 // filled amber star when favorited, with a brief pop on toggle.
-export default function StarButton({
-  type,
-  value,
-  label,
-  className = "",
-}: StarButtonProps) {
+export default function StarButton({ type, value, label, className = "" }: StarButtonProps) {
   const [favorited, setFavorited] = useState(false);
   const [pop, setPop] = useState(false);
 

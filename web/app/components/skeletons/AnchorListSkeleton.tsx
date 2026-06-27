@@ -6,10 +6,7 @@ export default function AnchorListSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="flex flex-col gap-3" aria-busy="true">
       {Array.from({ length: rows }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-foreground/10 bg-card p-5"
-        >
+        <div key={i} className="rounded-lg border border-foreground/10 bg-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-2.5">
               <SkeletonLine width="9rem" height="0.7rem" />

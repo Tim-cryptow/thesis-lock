@@ -41,10 +41,7 @@ export function recordPageVisit(path: string, title: string): void {
   try {
     const pages = read().filter((page) => page.path !== path);
     pages.unshift({ path, title, visitedAt: new Date().toISOString() });
-    window.sessionStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(pages.slice(0, MAX_ENTRIES)),
-    );
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pages.slice(0, MAX_ENTRIES)));
   } catch {
     // sessionStorage can be unavailable or full; wayfinding is best-effort.
   }
@@ -59,8 +56,7 @@ export function getRecentPages(): RecentPage[] {
 // recorded yet.
 export function getPreviousPage(): { path: string; title: string } | null {
   const pages = read();
-  const current =
-    typeof window !== "undefined" ? window.location.pathname : null;
+  const current = typeof window !== "undefined" ? window.location.pathname : null;
   const previous = pages.find((page) => page.path !== current);
   return previous ? { path: previous.path, title: previous.title } : null;
 }

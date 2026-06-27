@@ -29,8 +29,7 @@ type Props = {
 
 function statusColor(status: number): string {
   if (status >= 500) return "bg-red-500/15 text-red-600 dark:text-red-400";
-  if (status >= 400)
-    return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
+  if (status >= 400) return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
   if (status >= 200 && status < 300)
     return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
   return "bg-foreground/10 text-foreground/70";
@@ -38,13 +37,7 @@ function statusColor(status: number): string {
 
 // Recursive JSON renderer with color-coded value types. Indentation is built
 // with non-breaking spaces so it survives inside the <pre> without collapsing.
-function JsonValue({
-  value,
-  indent,
-}: {
-  value: unknown;
-  indent: number;
-}): ReactNode {
+function JsonValue({ value, indent }: { value: unknown; indent: number }): ReactNode {
   const pad = "  ".repeat(indent);
   const padInner = "  ".repeat(indent + 1);
 
@@ -71,9 +64,7 @@ function JsonValue({
           <Fragment key={index}>
             {padInner}
             <JsonValue value={item} indent={indent + 1} />
-            {index < value.length - 1 ? (
-              <span className="text-zinc-300">,</span>
-            ) : null}
+            {index < value.length - 1 ? <span className="text-zinc-300">,</span> : null}
             {"\n"}
           </Fragment>
         ))}
@@ -96,9 +87,7 @@ function JsonValue({
             <span className="text-zinc-100">{JSON.stringify(key)}</span>
             <span className="text-zinc-300">: </span>
             <JsonValue value={val} indent={indent + 1} />
-            {index < entries.length - 1 ? (
-              <span className="text-zinc-300">,</span>
-            ) : null}
+            {index < entries.length - 1 ? <span className="text-zinc-300">,</span> : null}
             {"\n"}
           </Fragment>
         ))}
@@ -126,22 +115,14 @@ function ImagePreview({ result }: { result: PlaygroundResult }) {
             dangerouslySetInnerHTML={{ __html: result.text }}
           />
         ) : result.imageUrl ? (
-          <img
-            src={result.imageUrl}
-            alt="API image response preview"
-            className="max-w-full"
-          />
+          <img src={result.imageUrl} alt="API image response preview" className="max-w-full" />
         ) : (
-          <span className="text-sm text-foreground/50">
-            No preview available.
-          </span>
+          <span className="text-sm text-foreground/50">No preview available.</span>
         )}
       </div>
       {isSvg ? (
         <pre className="overflow-x-auto rounded-md bg-zinc-900 px-4 py-3 text-xs text-zinc-100">
-          <code className="font-mono whitespace-pre-wrap break-all">
-            {result.text}
-          </code>
+          <code className="font-mono whitespace-pre-wrap break-all">{result.text}</code>
         </pre>
       ) : null}
     </div>
@@ -197,9 +178,7 @@ export default function ResponsePanel({ result, loading, error }: Props) {
         >
           {result.status} {result.statusText}
         </span>
-        <span className="text-xs text-foreground/50">
-          {result.durationMs} ms
-        </span>
+        <span className="text-xs text-foreground/50">{result.durationMs} ms</span>
       </div>
 
       <div className="flex flex-col gap-0.5">
@@ -217,9 +196,7 @@ export default function ResponsePanel({ result, loading, error }: Props) {
         <ImagePreview result={result} />
       ) : (
         <pre className="overflow-x-auto rounded-md bg-zinc-900 px-4 py-3 text-sm text-zinc-100">
-          <code className="font-mono whitespace-pre-wrap break-all">
-            {result.text}
-          </code>
+          <code className="font-mono whitespace-pre-wrap break-all">{result.text}</code>
         </pre>
       )}
     </div>

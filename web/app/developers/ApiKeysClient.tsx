@@ -72,9 +72,7 @@ export default function ApiKeysClient() {
     const trimmed = editName.trim();
     setKeys((prev) => {
       const next = trimmed
-        ? prev.map((k) =>
-            k.id === editingId ? { ...k, name: trimmed } : k,
-          )
+        ? prev.map((k) => (k.id === editingId ? { ...k, name: trimmed } : k))
         : prev;
       saveKeys(next);
       return next;
@@ -102,8 +100,8 @@ export default function ApiKeysClient() {
       </div>
 
       <div className="rounded-md border border-foreground/10 bg-foreground/5 px-4 py-3 text-sm text-foreground/70">
-        API keys are stored in your browser&apos;s local storage. For production
-        use, implement server-side key validation.
+        API keys are stored in your browser&apos;s local storage. For production use, implement
+        server-side key validation.
       </div>
 
       {keys.length === 0 ? (
@@ -130,10 +128,7 @@ export default function ApiKeysClient() {
             </thead>
             <tbody>
               {keys.map((key) => (
-                <tr
-                  key={key.id}
-                  className="border-b border-foreground/5 align-top last:border-0"
-                >
+                <tr key={key.id} className="border-b border-foreground/5 align-top last:border-0">
                   <td className="px-4 py-3">
                     {editingId === key.id ? (
                       <input
@@ -155,18 +150,10 @@ export default function ApiKeysClient() {
                       <span className="font-medium">{key.name}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-mono text-foreground/70">
-                    {maskKey(key.key)}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/70">
-                    {formatDate(key.created)}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/70">
-                    {formatDate(key.lastUsed)}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/70">
-                    {key.requestCount}
-                  </td>
+                  <td className="px-4 py-3 font-mono text-foreground/70">{maskKey(key.key)}</td>
+                  <td className="px-4 py-3 text-foreground/70">{formatDate(key.created)}</td>
+                  <td className="px-4 py-3 text-foreground/70">{formatDate(key.lastUsed)}</td>
+                  <td className="px-4 py-3 text-foreground/70">{key.requestCount}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {key.permissions.map((permission) => (
@@ -205,12 +192,7 @@ export default function ApiKeysClient() {
         </div>
       )}
 
-      {creating ? (
-        <KeyCreationModal
-          onCreate={addKey}
-          onClose={() => setCreating(false)}
-        />
-      ) : null}
+      {creating ? <KeyCreationModal onCreate={addKey} onClose={() => setCreating(false)} /> : null}
     </div>
   );
 }

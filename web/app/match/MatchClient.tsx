@@ -20,14 +20,12 @@ export default function MatchClient() {
 
         <h1 className="mb-2 text-3xl">Hash Matcher</h1>
         <p className="mb-8 text-foreground/70">
-          Confirm two files are identical by comparing their SHA-256 hashes. Hashing
-          happens entirely in your browser; the files never leave your device.
+          Confirm two files are identical by comparing their SHA-256 hashes. Hashing happens
+          entirely in your browser; the files never leave your device.
         </p>
 
         <div className="mb-6 flex items-center gap-2">
-          <span className="mr-1 text-xs uppercase tracking-wide text-foreground/50">
-            Mode
-          </span>
+          <span className="mr-1 text-xs uppercase tracking-wide text-foreground/50">Mode</span>
           <button
             type="button"
             onClick={() => setMode("hash-file")}

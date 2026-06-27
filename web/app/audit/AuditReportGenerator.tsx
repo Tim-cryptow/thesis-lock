@@ -62,8 +62,7 @@ export default function AuditReportGenerator() {
 
   const downloadCsv = () => {
     if (!report) return;
-    const esc = (v: string) =>
-      /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const esc = (v: string) => (/[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
     // A metadata preamble (period, summary, and the integrity hash) so the CSV
     // stands alone as a compliance artifact, like the JSON and HTML exports.
     const preamble = [
@@ -86,11 +85,7 @@ export default function AuditReportGenerator() {
 
   const downloadHtml = () => {
     if (!report) return;
-    downloadExport(
-      renderAuditReportHTML(report),
-      `audit-report-${stamp()}.html`,
-      "text/html",
-    );
+    downloadExport(renderAuditReportHTML(report), `audit-report-${stamp()}.html`, "text/html");
   };
 
   const breakdown = report
@@ -101,9 +96,8 @@ export default function AuditReportGenerator() {
     <section className="mt-10 rounded-lg border border-foreground/10 bg-card p-6">
       <h2 className="text-lg font-medium">Audit report</h2>
       <p className="mt-1 text-sm text-foreground/60">
-        Generate a signed-style compliance report over a period, with an
-        integrity hash and the full entry list, exportable as JSON, CSV, or a
-        printable HTML document.
+        Generate a signed-style compliance report over a period, with an integrity hash and the full
+        entry list, exportable as JSON, CSV, or a printable HTML document.
       </p>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
@@ -139,9 +133,7 @@ export default function AuditReportGenerator() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <div className="text-sm font-medium">Report {truncateMiddle(report.id, 8, 6)}</div>
-              <div className="text-xs text-foreground/50">
-                Generated {fmt(report.generatedAt)}
-              </div>
+              <div className="text-xs text-foreground/50">Generated {fmt(report.generatedAt)}</div>
               <div className="text-xs text-foreground/50">
                 Period: {fmt(report.period.from)} to {fmt(report.period.to)}
               </div>
@@ -176,25 +168,19 @@ export default function AuditReportGenerator() {
               <div className="text-[11px] uppercase tracking-wide text-foreground/50">
                 Total actions
               </div>
-              <div className="text-xl font-semibold tabular-nums">
-                {report.totalActions}
-              </div>
+              <div className="text-xl font-semibold tabular-nums">{report.totalActions}</div>
             </div>
             <div className="rounded-md border border-foreground/10 p-3">
               <div className="text-[11px] uppercase tracking-wide text-foreground/50">
                 Unique actors
               </div>
-              <div className="text-xl font-semibold tabular-nums">
-                {report.uniqueActors}
-              </div>
+              <div className="text-xl font-semibold tabular-nums">{report.uniqueActors}</div>
             </div>
             <div className="rounded-md border border-foreground/10 p-3">
               <div className="text-[11px] uppercase tracking-wide text-foreground/50">
                 Distinct actions
               </div>
-              <div className="text-xl font-semibold tabular-nums">
-                {breakdown.length}
-              </div>
+              <div className="text-xl font-semibold tabular-nums">{breakdown.length}</div>
             </div>
           </div>
 
@@ -219,12 +205,10 @@ export default function AuditReportGenerator() {
             <div className="text-[11px] uppercase tracking-wide text-foreground/50">
               Integrity hash (SHA-256)
             </div>
-            <div className="mt-1 break-all font-mono text-xs">
-              {report.integrityHash}
-            </div>
+            <div className="mt-1 break-all font-mono text-xs">{report.integrityHash}</div>
             <p className="mt-2 text-[11px] text-foreground/50">
-              Computed over the id and timestamp of every entry in order. Any
-              change to the set or order of entries changes this value.
+              Computed over the id and timestamp of every entry in order. Any change to the set or
+              order of entries changes this value.
             </p>
           </div>
 
@@ -244,13 +228,8 @@ export default function AuditReportGenerator() {
                 </thead>
                 <tbody>
                   {report.entries.slice(0, PREVIEW_LIMIT).map((e) => (
-                    <tr
-                      key={e.id}
-                      className="border-t border-foreground/5 text-foreground/70"
-                    >
-                      <td className="whitespace-nowrap px-3 py-1.5">
-                        {fmt(e.timestamp)}
-                      </td>
+                    <tr key={e.id} className="border-t border-foreground/5 text-foreground/70">
+                      <td className="whitespace-nowrap px-3 py-1.5">{fmt(e.timestamp)}</td>
                       <td className="px-3 py-1.5 font-mono">{e.action}</td>
                       <td className="px-3 py-1.5 font-mono">
                         {e.actor ? truncateMiddle(e.actor) : "n/a"}
@@ -265,8 +244,8 @@ export default function AuditReportGenerator() {
             </div>
             {report.entries.length > PREVIEW_LIMIT && (
               <p className="mt-1 text-[11px] text-foreground/40">
-                Showing the first {PREVIEW_LIMIT} of {report.entries.length}.
-                The full set is included in every export.
+                Showing the first {PREVIEW_LIMIT} of {report.entries.length}. The full set is
+                included in every export.
               </p>
             )}
           </div>

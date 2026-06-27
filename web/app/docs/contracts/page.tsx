@@ -16,16 +16,15 @@ export default function Contracts() {
     <div>
       <h1 className="text-3xl md:text-4xl">Contracts</h1>
       <Lead>
-        ThesisLock is five Clarity 3 contracts deployed to Stacks mainnet under
-        the same principal. Each one stores anchors in a different shape; all of
-        them are public and readable without a wallet.
+        ThesisLock is five Clarity 3 contracts deployed to Stacks mainnet under the same principal.
+        Each one stores anchors in a different shape; all of them are public and readable without a
+        wallet.
       </Lead>
 
       <H2>Deployer</H2>
       <P>
-        Every contract lives at the deployer principal{" "}
-        <Code>{DEPLOYER}</Code>. A contract identifier is the principal followed
-        by the contract name, for example{" "}
+        Every contract lives at the deployer principal <Code>{DEPLOYER}</Code>. A contract
+        identifier is the principal followed by the contract name, for example{" "}
         <Code>{DEPLOYER}.thesislock</Code>.
       </P>
 
@@ -58,9 +57,11 @@ export default function Contracts() {
 
       <H2>Function signatures</H2>
       <P>
-        Public functions write state and must be signed by a wallet. Read-only
-        functions take no gas and can be called against the Hiro API directly
-        (see <a href="#direct-api-reads" className="underline hover:text-foreground">Direct API reads</a>{" "}
+        Public functions write state and must be signed by a wallet. Read-only functions take no gas
+        and can be called against the Hiro API directly (see{" "}
+        <a href="#direct-api-reads" className="underline hover:text-foreground">
+          Direct API reads
+        </a>{" "}
         below).
       </P>
 
@@ -116,25 +117,22 @@ export default function Contracts() {
 (get-group-anchor-at    (group-id uint) (index uint))
 (get-recent-group-anchors (group-id uint))`}</CodeBlock>
       <P>
-        Non-admin calls to <Code>add-member</Code> or{" "}
-        <Code>remove-member</Code> fail with <Code>u403</Code>. A duplicate
-        proof hash fails with <Code>u409</Code>.
+        Non-admin calls to <Code>add-member</Code> or <Code>remove-member</Code> fail with{" "}
+        <Code>u403</Code>. A duplicate proof hash fails with <Code>u409</Code>.
       </P>
 
       <H2>Direct API reads</H2>
       <P>
-        Read-only functions can be called over HTTP against the public Hiro
-        mainnet API at <Code>https://api.mainnet.hiro.so</Code>. Arguments are
-        serialized Clarity values. A 32-byte hash is encoded as a{" "}
-        <Code>(buff 32)</Code> by prefixing the hex with{" "}
+        Read-only functions can be called over HTTP against the public Hiro mainnet API at{" "}
+        <Code>https://api.mainnet.hiro.so</Code>. Arguments are serialized Clarity values. A 32-byte
+        hash is encoded as a <Code>(buff 32)</Code> by prefixing the hex with{" "}
         <Code>0x0200000020</Code> (type byte <Code>02</Code>, big-endian length{" "}
         <Code>00000020</Code>).
       </P>
 
       <H3>is-anchored: a boolean check</H3>
       <P>
-        The quickest lookup. Returns <Code>0x03</Code> for true and{" "}
-        <Code>0x04</Code> for false.
+        The quickest lookup. Returns <Code>0x03</Code> for true and <Code>0x04</Code> for false.
       </P>
       <CodeBlock language="bash">{`HASH=0000000000000000000000000000000000000000000000000000000000000000
 
@@ -145,15 +143,16 @@ curl -sX POST \\
 
       <H3>get-anchor: the full record</H3>
       <P>
-        Returns a serialized Clarity optional. <Code>0x09</Code> means{" "}
-        <Code>none</Code> (never anchored); a payload beginning <Code>0x0a0c</Code>{" "}
-        is <Code>(some (tuple ...))</Code>.
+        Returns a serialized Clarity optional. <Code>0x09</Code> means <Code>none</Code> (never
+        anchored); a payload beginning <Code>0x0a0c</Code> is <Code>(some (tuple ...))</Code>.
       </P>
       <CodeBlock language="bash">{`curl -sX POST \\
   https://api.mainnet.hiro.so/v2/contracts/call-read/${DEPLOYER}/thesislock/get-anchor \\
   -H 'Content-Type: application/json' \\
   --data "{\\"sender\\":\\"${DEPLOYER}\\",\\"arguments\\":[\\"0x0200000020\${HASH}\\"]}"`}</CodeBlock>
-      <P>Decode a <Code>some</Code> payload into JSON with @stacks/transactions:</P>
+      <P>
+        Decode a <Code>some</Code> payload into JSON with @stacks/transactions:
+      </P>
       <CodeBlock language="bash">{`node -e '
 const { deserializeCV, cvToJSON } = require("@stacks/transactions");
 const hex = "0a0c0000000..."; // strip 0x, paste from API response
@@ -162,8 +161,8 @@ console.log(JSON.stringify(cvToJSON(deserializeCV(hex)), null, 2));
 
       <H3>get-batch-anchor: serialize the owner too</H3>
       <P>
-        Batch anchors are keyed by both hash and owner, so the principal is a
-        second serialized argument. Let @stacks/transactions encode it:
+        Batch anchors are keyed by both hash and owner, so the principal is a second serialized
+        argument. Let @stacks/transactions encode it:
       </P>
       <CodeBlock language="bash">{`HASH=0000000000000000000000000000000000000000000000000000000000000000
 OWNER=${DEPLOYER}
@@ -198,8 +197,7 @@ curl -sX POST \\
             <Link href="/docs/api" className="underline hover:text-foreground">
               REST API
             </Link>{" "}
-            wraps these reads and returns plain JSON, no Clarity encoding
-            required.
+            wraps these reads and returns plain JSON, no Clarity encoding required.
           </>,
           <>
             The{" "}

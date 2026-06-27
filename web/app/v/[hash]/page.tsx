@@ -27,10 +27,7 @@ function canonicalUrl(hash: string, owner: string | null): string {
   return owner ? `/v/${hash}?owner=${owner}` : `/v/${hash}`;
 }
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const [{ hash: raw }, sp] = await Promise.all([params, searchParams]);
   const hash = (raw ?? "").toLowerCase();
   const owner = pickOwner(sp.owner);
@@ -157,8 +154,7 @@ const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Verify Document",
-  description:
-    "Check if a document hash has been anchored on the Stacks blockchain.",
+  description: "Check if a document hash has been anchored on the Stacks blockchain.",
 };
 
 export default async function Page({ params }: Props) {

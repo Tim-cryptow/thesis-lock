@@ -13,9 +13,7 @@ function createMemoryStorage(): Storage {
       store = {};
     },
     getItem(key: string): string | null {
-      return Object.prototype.hasOwnProperty.call(store, key)
-        ? store[key]
-        : null;
+      return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
     },
     key(index: number): string | null {
       return Object.keys(store)[index] ?? null;

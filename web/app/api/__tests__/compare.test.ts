@@ -15,8 +15,24 @@ const B = "b".repeat(64);
 const OWNER = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const comparison: AnchorComparison = {
-  left: { hash: A, label: "v1", owner: OWNER, block: 100, burnBlock: 90, source: "single", proofNFT: null },
-  right: { hash: B, label: "v2", owner: OWNER, block: 200, burnBlock: 95, source: "single", proofNFT: null },
+  left: {
+    hash: A,
+    label: "v1",
+    owner: OWNER,
+    block: 100,
+    burnBlock: 90,
+    source: "single",
+    proofNFT: null,
+  },
+  right: {
+    hash: B,
+    label: "v2",
+    owner: OWNER,
+    block: 200,
+    burnBlock: 95,
+    source: "single",
+    proofNFT: null,
+  },
   timeDelta: { blocks: 100, estimatedMinutes: 50 },
   sameOwner: true,
   sameLabel: false,

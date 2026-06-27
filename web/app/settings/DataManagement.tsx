@@ -59,9 +59,7 @@ function categoryLabel(name: string): string {
   return CATEGORY_LABELS[name as Category] ?? name;
 }
 
-function toCategoryRows(
-  breakdown: Array<{ key: string; size: number }>,
-): CategoryRow[] {
+function toCategoryRows(breakdown: Array<{ key: string; size: number }>): CategoryRow[] {
   const map = new Map<Category, CategoryRow>();
   for (const { key, size } of breakdown) {
     const category = categoryForKey(key);
@@ -210,8 +208,8 @@ export default function DataManagement() {
   return (
     <div className="flex flex-col gap-8">
       <p className="text-sm text-foreground/70 max-w-2xl">
-        Everything below lives only in this browser. Export a backup to keep a
-        copy or move your data to another device, then restore it there.
+        Everything below lives only in this browser. Export a backup to keep a copy or move your
+        data to another device, then restore it there.
       </p>
 
       {/* Storage usage overview */}
@@ -223,8 +221,8 @@ export default function DataManagement() {
           Storage usage
         </h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          How much of this browser&apos;s local storage ThesisLock is using,
-          broken down by category.
+          How much of this browser&apos;s local storage ThesisLock is using, broken down by
+          category.
         </p>
 
         <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -266,9 +264,7 @@ export default function DataManagement() {
                   <tr key={row.category} className="border-b border-foreground/5">
                     <td className="py-2 pr-3">{row.label}</td>
                     <td className="py-2 pr-3 text-foreground/65">{row.keys}</td>
-                    <td className="py-2 pr-3 text-foreground/65">
-                      {formatBytes(row.size)}
-                    </td>
+                    <td className="py-2 pr-3 text-foreground/65">{formatBytes(row.size)}</td>
                     <td className="py-2 text-right">
                       <button
                         type="button"
@@ -299,8 +295,8 @@ export default function DataManagement() {
           Backup
         </h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          Download a single JSON file with all of your ThesisLock data:
-          collections, tags, watchlist, audit log, preferences, and more.
+          Download a single JSON file with all of your ThesisLock data: collections, tags,
+          watchlist, audit log, preferences, and more.
         </p>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -334,17 +330,13 @@ export default function DataManagement() {
           Restore
         </h2>
         <p className="text-sm text-foreground/65 mb-4 max-w-2xl">
-          Load a backup file exported from ThesisLock. You will see a preview and
-          choose how to apply it before anything changes.
+          Load a backup file exported from ThesisLock. You will see a preview and choose how to
+          apply it before anything changes.
         </p>
 
-        <FileDropZone
-          onFile={onFile}
-          ariaLabel="Choose a backup file, or drop one here"
-        >
+        <FileDropZone onFile={onFile} ariaLabel="Choose a backup file, or drop one here">
           <p className="text-foreground/60">
-            Drop a <span className="mono">.json</span> backup here, or click to
-            choose one
+            Drop a <span className="mono">.json</span> backup here, or click to choose one
           </p>
           {fileName ? (
             <p className="mt-2 text-sm text-foreground/50">Selected: {fileName}</p>
@@ -404,8 +396,7 @@ export default function DataManagement() {
                 <span>
                   <span className="font-medium">Merge with existing</span>
                   <span className="block text-foreground/55">
-                    Keep current data and add anything new. Collections and tags
-                    are combined.
+                    Keep current data and add anything new. Collections and tags are combined.
                   </span>
                 </span>
               </label>
@@ -420,8 +411,7 @@ export default function DataManagement() {
                 <span>
                   <span className="font-medium">Replace all data</span>
                   <span className="block text-foreground/55">
-                    Erase current data first, then load the backup. Cannot be
-                    undone.
+                    Erase current data first, then load the backup. Cannot be undone.
                   </span>
                 </span>
               </label>
@@ -450,8 +440,7 @@ export default function DataManagement() {
         {result ? (
           <div className="mt-4 rounded-md border border-foreground/10 bg-background/40 p-4 text-sm">
             <p className="font-medium">
-              Imported {result.imported}, skipped {result.skipped}, errors{" "}
-              {result.errors.length}.
+              Imported {result.imported}, skipped {result.skipped}, errors {result.errors.length}.
             </p>
             {result.errors.length > 0 ? (
               <ul className="mt-2 list-disc pl-5 text-red-700 dark:text-red-400">
@@ -480,9 +469,9 @@ export default function DataManagement() {
           Danger zone
         </h2>
         <p className="text-sm text-foreground/70 mb-3 max-w-2xl">
-          This permanently removes all ThesisLock data from this browser. It does
-          not affect anything anchored on the Stacks blockchain, but the local
-          data below cannot be recovered unless you have a backup.
+          This permanently removes all ThesisLock data from this browser. It does not affect
+          anything anchored on the Stacks blockchain, but the local data below cannot be recovered
+          unless you have a backup.
         </p>
 
         <ul className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/60">

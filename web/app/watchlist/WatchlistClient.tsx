@@ -176,9 +176,7 @@ function ItemCard({
       </div>
 
       <div className="mt-3 flex items-center gap-3 text-xs">
-        <span className="text-foreground/45">
-          Checked {relativeTime(item.lastChecked)}
-        </span>
+        <span className="text-foreground/45">Checked {relativeTime(item.lastChecked)}</span>
         <span className="ml-auto flex items-center gap-3">
           <button
             type="button"
@@ -216,9 +214,7 @@ export default function WatchlistClient() {
   const [error, setError] = useState<string | null>(null);
   const [checkingIds, setCheckingIds] = useState<Set<string>>(new Set());
   const [checkingAll, setCheckingAll] = useState(false);
-  const [progress, setProgress] = useState<{ done: number; total: number } | null>(
-    null,
-  );
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   // Load once on mount and stay in sync with changes from elsewhere (watch
   // buttons on other pages, another tab).
@@ -257,9 +253,7 @@ export default function WatchlistClient() {
     setCheckingIds((prev) => new Set(prev).add(item.id));
     try {
       const status = await checkWatch(item);
-      const updated = loadWatchlist().map((i) =>
-        i.id === item.id ? applyCheck(i, status) : i,
-      );
+      const updated = loadWatchlist().map((i) => (i.id === item.id ? applyCheck(i, status) : i));
       saveWatchlist(updated);
       setItems(updated);
     } catch {
@@ -281,9 +275,7 @@ export default function WatchlistClient() {
     if (current.length === 0 || checkingAll) return;
     setCheckingAll(true);
     setProgress({ done: 0, total: current.length });
-    const next = await checkAllWatches(current, (done, total) =>
-      setProgress({ done, total }),
-    );
+    const next = await checkAllWatches(current, (done, total) => setProgress({ done, total }));
     setItems(next);
     setCheckingAll(false);
     setProgress(null);
@@ -341,24 +333,16 @@ export default function WatchlistClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/search"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
-        <Link
-          href="/stats"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.stats")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.watchlist")}
-        </span>
+        <span className="text-foreground font-medium">{t("common.nav.watchlist")}</span>
         <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.docs")}
         </Link>
@@ -366,15 +350,12 @@ export default function WatchlistClient() {
 
       <h1 className="text-3xl mb-2">Watchlist</h1>
       <p className="text-foreground/70 mb-8 max-w-2xl">
-        Save document hashes, wallets, and groups you want to monitor. Check back
-        any time to see whether a hash has been anchored or whether a wallet or
-        group has new anchors. Your watchlist is stored only in this browser.
+        Save document hashes, wallets, and groups you want to monitor. Check back any time to see
+        whether a hash has been anchored or whether a wallet or group has new anchors. Your
+        watchlist is stored only in this browser.
       </p>
 
-      <form
-        onSubmit={submit}
-        className="rounded-lg border border-foreground/10 bg-card p-5 mb-10"
-      >
+      <form onSubmit={submit} className="rounded-lg border border-foreground/10 bg-card p-5 mb-10">
         <div className="flex gap-1 mb-4">
           {(["hash", "wallet", "group"] as WatchType[]).map((opt) => (
             <button
@@ -402,10 +383,7 @@ export default function WatchlistClient() {
               // switch the watch type to match, after sanitizing it.
               const text = e.clipboardData.getData("text");
               if (!text) return;
-              const asHash = text
-                .replace(/\s+/g, "")
-                .replace(/^0x/i, "")
-                .toLowerCase();
+              const asHash = text.replace(/\s+/g, "").replace(/^0x/i, "").toLowerCase();
               const asAddress = text.replace(/\s+/g, "").toUpperCase();
               if (validateHash(asHash).valid) {
                 e.preventDefault();
@@ -421,11 +399,7 @@ export default function WatchlistClient() {
             {type === "hash" ? (
               <HashInput label="Hash to watch" value={value} onChange={setValue} />
             ) : type === "wallet" ? (
-              <AddressInput
-                label="Wallet to watch"
-                value={value}
-                onChange={setValue}
-              />
+              <AddressInput label="Wallet to watch" value={value} onChange={setValue} />
             ) : (
               <input
                 value={value}
@@ -491,9 +465,7 @@ export default function WatchlistClient() {
                 <section key={section.type}>
                   <h2 className="text-sm font-medium text-foreground/70 mb-3">
                     {SECTION_TITLES[section.type]}{" "}
-                    <span className="text-foreground/40">
-                      ({section.items.length})
-                    </span>
+                    <span className="text-foreground/40">({section.items.length})</span>
                   </h2>
                   <div className="flex flex-col gap-3">
                     {section.items.map((item) => (

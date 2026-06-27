@@ -3,8 +3,7 @@ import { fetchWithRetry } from "./fetchWithRetry";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://api.hiro.so";
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const SINGLE_CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 const BATCH_CONTRACT = "thesislock-batch";
@@ -212,8 +211,7 @@ async function computeAnalytics(address: string): Promise<WalletAnalytics> {
   // Replay in chain order so batch dedup matches what was actually written.
   const ordered = [...txs].sort(
     (a, b) =>
-      (a.block_height ?? 0) - (b.block_height ?? 0) ||
-      (a.tx_index ?? 0) - (b.tx_index ?? 0),
+      (a.block_height ?? 0) - (b.block_height ?? 0) || (a.tx_index ?? 0) - (b.tx_index ?? 0),
   );
 
   for (const tx of ordered) {
@@ -249,9 +247,7 @@ async function computeAnalytics(address: string): Promise<WalletAnalytics> {
 
   const recentActivity = buildRecentActivity(ordered);
 
-  const anchorsByDay = Array.from(byDay.values()).sort((a, b) =>
-    a.date.localeCompare(b.date),
-  );
+  const anchorsByDay = Array.from(byDay.values()).sort((a, b) => a.date.localeCompare(b.date));
 
   return {
     totalAnchors: singleAnchors + batchAnchors + groupAnchors,
@@ -278,9 +274,7 @@ function buildRecentActivity(orderedAsc: AddressTx[]): ActivityItem[] {
     const fn = tx.contract_call?.function_name;
     const id = tx.contract_call?.contract_id;
     const block = tx.block_height ?? 0;
-    const timestamp = txTimestamp(tx)
-      ? new Date(txTimestamp(tx) * 1000).toISOString()
-      : "";
+    const timestamp = txTimestamp(tx) ? new Date(txTimestamp(tx) * 1000).toISOString() : "";
 
     if (id === SINGLE_ID && fn === "anchor-document") {
       items.push({
@@ -298,9 +292,7 @@ function buildRecentActivity(orderedAsc: AddressTx[]): ActivityItem[] {
         txId: tx.tx_id,
         kind: "batch",
         action:
-          hashes.length === 1
-            ? "Batch anchored 1 file"
-            : `Batch anchored ${hashes.length} files`,
+          hashes.length === 1 ? "Batch anchored 1 file" : `Batch anchored ${hashes.length} files`,
         hash: hashes[0] ?? null,
         groupId: null,
         block,
@@ -332,9 +324,7 @@ function buildRecentActivity(orderedAsc: AddressTx[]): ActivityItem[] {
   return items;
 }
 
-export async function fetchWalletAnalytics(
-  address: string,
-): Promise<WalletAnalytics> {
+export async function fetchWalletAnalytics(address: string): Promise<WalletAnalytics> {
   const cached = cache.get(address);
   if (cached && Date.now() < cached.expires) return cached.data;
   const data = await computeAnalytics(address);

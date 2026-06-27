@@ -53,15 +53,8 @@ const CATEGORY_KEYS: Record<Exclude<Category, "customSettings">, string[]> = {
   ],
   watchlist: ["thesislock_watchlist", "thesislock_watchlist_autocheck"],
   apiKeys: ["thesislock_api_keys"],
-  auditLog: [
-    "thesislock_audit_log",
-    "thesislock_audit_session",
-    "thesislock_audit_integrity",
-  ],
-  notificationPreferences: [
-    "thesislock.notifications.prefs",
-    "thesislock.notifications",
-  ],
+  auditLog: ["thesislock_audit_log", "thesislock_audit_session", "thesislock_audit_integrity"],
+  notificationPreferences: ["thesislock.notifications.prefs", "thesislock.notifications"],
   webhookSubscriptions: ["thesislock_webhooks"],
   theme: ["thesislock.theme"],
   tourComplete: ["thesislock_tour_complete"],
@@ -101,8 +94,7 @@ export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
   watchlist: "Hashes, wallets, and groups you are monitoring.",
   apiKeys: "Scoped API keys you created in the developer portal.",
   auditLog: "The tamper-evident record of actions you have taken.",
-  notificationPreferences:
-    "Your notification history and per-type alert preferences.",
+  notificationPreferences: "Your notification history and per-type alert preferences.",
   webhookSubscriptions: "Webhook endpoints you registered for protocol events.",
   theme: "Your light, dark, or system theme choice.",
   tourComplete: "Whether you have completed the onboarding tour.",
@@ -110,8 +102,7 @@ export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
   requestHistory: "Past requests made in the developer API playground.",
   performanceData: "In-browser Web Vitals and timing metrics.",
   statusHistory: "Cached results from the system status checks.",
-  customSettings:
-    "Other interface preferences such as language and live updates.",
+  customSettings: "Other interface preferences such as language and live updates.",
 };
 
 // Arrays are unioned on a merge import. The audit log is the one exception: its
@@ -328,10 +319,7 @@ function mergeArrays(existing: unknown, incoming: unknown): unknown {
     const key = rowKey(item);
     if (key && indexByKey.has(key)) {
       const at = indexByKey.get(key)!;
-      result[at] = mergeRow(
-        result[at] as Record<string, unknown>,
-        item as Record<string, unknown>,
-      );
+      result[at] = mergeRow(result[at] as Record<string, unknown>, item as Record<string, unknown>);
     } else if (key) {
       indexByKey.set(key, result.length);
       result.push(item);
@@ -398,11 +386,7 @@ export function importAllData(
         continue;
       }
       const existingValue = safeParse(existing);
-      if (
-        !NO_MERGE_KEYS.has(key) &&
-        Array.isArray(existingValue) &&
-        Array.isArray(value)
-      ) {
+      if (!NO_MERGE_KEYS.has(key) && Array.isArray(existingValue) && Array.isArray(value)) {
         // Both sides are arrays: union them, combining rows that share an
         // identity so existing data is kept and new items are added.
         writeValue(key, mergeArrays(existingValue, value));
@@ -412,9 +396,7 @@ export function importAllData(
         result.skipped++;
       }
     } catch (e) {
-      result.errors.push(
-        `${key}: ${e instanceof Error ? e.message : "could not be written"}`,
-      );
+      result.errors.push(`${key}: ${e instanceof Error ? e.message : "could not be written"}`);
     }
   }
 
@@ -443,9 +425,7 @@ export function clearKeys(keys: string[]): { cleared: number } {
 
 /** Remove every key currently belonging to a category. */
 export function clearCategory(category: Category): { cleared: number } {
-  const keys = getAllLocalStorageKeys().filter(
-    (key) => categoryForKey(key) === category,
-  );
+  const keys = getAllLocalStorageKeys().filter((key) => categoryForKey(key) === category);
   return clearKeys(keys);
 }
 
@@ -594,9 +574,7 @@ export function daysSinceBackup(): number | null {
 export function needsBackupReminder(): boolean {
   if (typeof window === "undefined") return false;
   // Ignore the backup marker itself when deciding if there is data worth saving.
-  const meaningful = getAllLocalStorageKeys().filter(
-    (key) => key !== LAST_BACKUP_KEY,
-  );
+  const meaningful = getAllLocalStorageKeys().filter((key) => key !== LAST_BACKUP_KEY);
   if (meaningful.length < 3) return false;
   const days = daysSinceBackup();
   return days === null || days >= BACKUP_REMINDER_DAYS;

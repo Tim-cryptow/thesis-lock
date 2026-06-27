@@ -14,18 +14,17 @@ export default function GettingStarted() {
     <div>
       <h1 className="text-3xl md:text-4xl">Getting Started</h1>
       <Lead>
-        ThesisLock is a proof-of-existence service for documents. You prove a
-        file existed at a point in time without ever revealing the file itself.
+        ThesisLock is a proof-of-existence service for documents. You prove a file existed at a
+        point in time without ever revealing the file itself.
       </Lead>
 
       <H2>What is ThesisLock</H2>
       <P>
-        ThesisLock anchors a SHA-256 hash of any document on the Stacks
-        blockchain, which settles on Bitcoin. The hash is a one-way fingerprint:
-        it identifies the file uniquely, but the file cannot be reconstructed
-        from it. Once a hash is anchored, anyone can confirm when it was
-        recorded, by which wallet, and what label was attached, all without
-        access to the original document.
+        ThesisLock anchors a SHA-256 hash of any document on the Stacks blockchain, which settles on
+        Bitcoin. The hash is a one-way fingerprint: it identifies the file uniquely, but the file
+        cannot be reconstructed from it. Once a hash is anchored, anyone can confirm when it was
+        recorded, by which wallet, and what label was attached, all without access to the original
+        document.
       </P>
 
       <H2>How it works</H2>
@@ -33,28 +32,24 @@ export default function GettingStarted() {
       <List
         items={[
           <>
-            <strong>Hash.</strong> Your browser computes the SHA-256 digest of
-            the file locally. The file never leaves your device; only its
-            fingerprint is used.
+            <strong>Hash.</strong> Your browser computes the SHA-256 digest of the file locally. The
+            file never leaves your device; only its fingerprint is used.
           </>,
           <>
-            <strong>Anchor.</strong> You sign a Stacks transaction with your
-            wallet that writes the hash, an optional label, and the current
-            block heights to a Clarity contract on chain.
+            <strong>Anchor.</strong> You sign a Stacks transaction with your wallet that writes the
+            hash, an optional label, and the current block heights to a Clarity contract on chain.
           </>,
           <>
-            <strong>Verify.</strong> Anyone can later re-hash a file and check it
-            against the chain, or visit a verification URL, to confirm the
-            anchor and its timestamp.
+            <strong>Verify.</strong> Anyone can later re-hash a file and check it against the chain,
+            or visit a verification URL, to confirm the anchor and its timestamp.
           </>,
         ]}
       />
 
       <H2>Prerequisites</H2>
       <P>
-        To anchor a document you need a Stacks wallet and a small amount of STX
-        to cover the transaction fee. ThesisLock supports the major wallets
-        through Stacks Connect:
+        To anchor a document you need a Stacks wallet and a small amount of STX to cover the
+        transaction fee. ThesisLock supports the major wallets through Stacks Connect:
       </P>
       <List
         items={[
@@ -92,8 +87,8 @@ export default function GettingStarted() {
         ]}
       />
       <P>
-        Verifying an existing anchor needs no wallet at all. It is a read-only
-        lookup against the public Hiro API.
+        Verifying an existing anchor needs no wallet at all. It is a read-only lookup against the
+        public Hiro API.
       </P>
 
       <H2>Anchor your first document in 60 seconds</H2>
@@ -109,22 +104,22 @@ export default function GettingStarted() {
           <>Drop a file onto the page, or pick one. It is hashed in place.</>,
           <>Add an optional label (up to 64 ASCII characters) to describe it.</>,
           <>
-            Sign the transaction in your wallet. ThesisLock polls for
-            confirmation and shows a toast when the anchor lands on chain.
+            Sign the transaction in your wallet. ThesisLock polls for confirmation and shows a toast
+            when the anchor lands on chain.
           </>,
           <>
             Share the verification link, which has the form{" "}
-            <code className="font-mono text-sm">/v/&lt;hash&gt;</code>, so anyone
-            can confirm the anchor.
+            <code className="font-mono text-sm">/v/&lt;hash&gt;</code>, so anyone can confirm the
+            anchor.
           </>,
         ]}
       />
 
       <H2>Verify on chain</H2>
       <P>
-        You do not need the frontend to verify. Any hash can be checked directly
-        against the Hiro mainnet API, or with the SDK, CLI, or GitHub Action.
-        The quickest manual check is a read-only contract call:
+        You do not need the frontend to verify. Any hash can be checked directly against the Hiro
+        mainnet API, or with the SDK, CLI, or GitHub Action. The quickest manual check is a
+        read-only contract call:
       </P>
       <CodeBlock language="bash">{`HASH=0000000000000000000000000000000000000000000000000000000000000000
 

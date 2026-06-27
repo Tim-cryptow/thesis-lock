@@ -34,8 +34,7 @@ export default function StaggerList({
   return (
     <>
       {items.map((child, index) => {
-        const key =
-          isValidElement(child) && child.key != null ? child.key : index;
+        const key = isValidElement(child) && child.key != null ? child.key : index;
         const delay = baseDelay + Math.min(index, MAX_STAGGERED) * staggerDelay;
         return (
           <FadeIn key={key} delay={delay} direction={direction}>

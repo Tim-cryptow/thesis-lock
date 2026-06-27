@@ -33,19 +33,11 @@ export function P({ children }: { children: ReactNode }) {
 
 export function Code({ children }: { children: ReactNode }) {
   return (
-    <code className="font-mono text-sm rounded bg-foreground/5 px-1.5 py-0.5">
-      {children}
-    </code>
+    <code className="font-mono text-sm rounded bg-foreground/5 px-1.5 py-0.5">{children}</code>
   );
 }
 
-export function CodeBlock({
-  children,
-  language,
-}: {
-  children: string;
-  language?: string;
-}) {
+export function CodeBlock({ children, language }: { children: string; language?: string }) {
   return (
     <pre
       data-language={language}
@@ -56,13 +48,7 @@ export function CodeBlock({
   );
 }
 
-export function Table({
-  headers,
-  rows,
-}: {
-  headers: string[];
-  rows: ReactNode[][];
-}) {
+export function Table({ headers, rows }: { headers: string[]; rows: ReactNode[][] }) {
   return (
     <div className="my-4 overflow-x-auto">
       <table className="w-full text-sm border-collapse">

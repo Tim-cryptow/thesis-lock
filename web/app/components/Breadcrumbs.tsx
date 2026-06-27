@@ -142,10 +142,7 @@ export default function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
                   {crumb.label}
                 </span>
               ) : linkable ? (
-                <Link
-                  href={crumb.href}
-                  className="hover:text-foreground transition"
-                >
+                <Link href={crumb.href} className="hover:text-foreground transition">
                   {crumb.label}
                 </Link>
               ) : (

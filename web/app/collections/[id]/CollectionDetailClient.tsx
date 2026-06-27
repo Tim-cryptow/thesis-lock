@@ -94,9 +94,7 @@ function ItemRow({
     <div className="rounded-lg border border-foreground/10 bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          {item.label && (
-            <div className="font-medium truncate">{item.label}</div>
-          )}
+          {item.label && <div className="font-medium truncate">{item.label}</div>}
           <div className="mt-1 flex items-center gap-2">
             <code className="font-mono text-xs text-foreground/65 break-all">
               {truncateMiddle(item.hash)}
@@ -111,9 +109,7 @@ function ItemRow({
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className="text-[11px] text-foreground/45">
-            {formatDate(item.addedAt)}
-          </span>
+          <span className="text-[11px] text-foreground/45">{formatDate(item.addedAt)}</span>
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -180,12 +176,7 @@ function ItemRow({
       </div>
 
       <div className="mt-3 border-t border-foreground/10 pt-3">
-        <TagInput
-          hash={item.hash}
-          label={item.label}
-          verifyUrl={itemVerifyHref(item)}
-          compact
-        />
+        <TagInput hash={item.hash} label={item.label} verifyUrl={itemVerifyHref(item)} compact />
       </div>
 
       <div className="mt-3 flex items-center gap-3 text-xs">
@@ -398,9 +389,7 @@ export default function CollectionDetailClient() {
           ...(i.label ? { name: i.label } : {}),
           ...(ctx.owner ? { owner: ctx.owner } : {}),
           ...(ctx.groupId !== undefined ? { groupId: ctx.groupId } : {}),
-          ...(ctx.groupIndex !== undefined
-            ? { groupIndex: ctx.groupIndex }
-            : {}),
+          ...(ctx.groupIndex !== undefined ? { groupIndex: ctx.groupIndex } : {}),
           ...(i.verifyUrl ? { verifyUrl: i.verifyUrl } : {}),
         };
       }),
@@ -422,9 +411,7 @@ export default function CollectionDetailClient() {
           ...(i.label ? { filename: i.label } : {}),
           ...(ctx.owner ? { owner: ctx.owner } : {}),
           ...(ctx.groupId !== undefined ? { groupId: ctx.groupId } : {}),
-          ...(ctx.groupIndex !== undefined
-            ? { groupIndex: ctx.groupIndex }
-            : {}),
+          ...(ctx.groupIndex !== undefined ? { groupIndex: ctx.groupIndex } : {}),
         };
       }),
     );
@@ -438,8 +425,8 @@ export default function CollectionDetailClient() {
           ← Collections
         </Link>
         <p className="mt-8 text-foreground/70">
-          This collection does not exist in this browser. It may have been
-          deleted, or you opened it on a different device.
+          This collection does not exist in this browser. It may have been deleted, or you opened it
+          on a different device.
         </p>
       </div>
     );
@@ -465,10 +452,7 @@ export default function CollectionDetailClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/collections"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/collections" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.collections")}
         </Link>
       </div>
@@ -534,16 +518,12 @@ export default function CollectionDetailClient() {
                   <h1 className="text-2xl truncate">{collection.name}</h1>
                   <div className="text-xs text-foreground/50">
                     {count} {count === 1 ? "item" : "items"}
-                    {collection.isPublic && (
-                      <span className={`ml-2 ${color.text}`}>Public</span>
-                    )}
+                    {collection.isPublic && <span className={`ml-2 ${color.text}`}>Public</span>}
                   </div>
                 </div>
               </div>
               {collection.description && (
-                <p className="mt-3 text-sm text-foreground/70">
-                  {collection.description}
-                </p>
+                <p className="mt-3 text-sm text-foreground/70">{collection.description}</p>
               )}
               <div className="mt-4 flex flex-wrap gap-2 text-sm">
                 <button
@@ -617,8 +597,7 @@ export default function CollectionDetailClient() {
         </h2>
         {count === 0 ? (
           <p className="text-sm text-foreground/55">
-            No items yet. Add a hash, drop a file, or pull from your anchors
-            below.
+            No items yet. Add a hash, drop a file, or pull from your anchors below.
           </p>
         ) : (
           <div className="flex flex-col gap-3">
@@ -641,9 +620,7 @@ export default function CollectionDetailClient() {
         <h2 className="text-sm font-medium mb-4">Add items</h2>
 
         <div className="mb-6">
-          <span className="mb-2 block text-xs text-foreground/55">
-            Add by hash
-          </span>
+          <span className="mb-2 block text-xs text-foreground/55">Add by hash</span>
           <div className="flex flex-col gap-2">
             <input
               value={hashInput}
@@ -672,12 +649,8 @@ export default function CollectionDetailClient() {
         </div>
 
         <div className="mb-6">
-          <span className="mb-2 block text-xs text-foreground/55">
-            Add by file
-          </span>
-          <label
-            className="flex cursor-pointer items-center justify-center rounded-md border border-dashed border-foreground/20 px-4 py-6 text-sm text-foreground/60 hover:border-foreground/40"
-          >
+          <span className="mb-2 block text-xs text-foreground/55">Add by file</span>
+          <label className="flex cursor-pointer items-center justify-center rounded-md border border-dashed border-foreground/20 px-4 py-6 text-sm text-foreground/60 hover:border-foreground/40">
             <input
               type="file"
               className="hidden"
@@ -688,14 +661,14 @@ export default function CollectionDetailClient() {
                 e.target.value = "";
               }}
             />
-            {fileBusy ? "Hashing..." : "Drop a file here, or click to choose. It is hashed locally."}
+            {fileBusy
+              ? "Hashing..."
+              : "Drop a file here, or click to choose. It is hashed locally."}
           </label>
         </div>
 
         <div>
-          <span className="mb-2 block text-xs text-foreground/55">
-            Add from My Anchors
-          </span>
+          <span className="mb-2 block text-xs text-foreground/55">Add from My Anchors</span>
           {!address ? (
             <button
               type="button"
@@ -727,9 +700,7 @@ export default function CollectionDetailClient() {
                         {truncateMiddle(entry.hash)}
                       </code>
                       {entry.label && (
-                        <span className="ml-2 text-xs text-foreground/50">
-                          {entry.label}
-                        </span>
+                        <span className="ml-2 text-xs text-foreground/50">{entry.label}</span>
                       )}
                     </div>
                     <button

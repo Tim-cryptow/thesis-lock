@@ -16,23 +16,14 @@ export async function POST(request: Request) {
   const txId = typeof body.txId === "string" ? body.txId : "";
 
   if (!isValidTxId(txId)) {
-    return Response.json(
-      { error: "txId must be a 32-byte hex transaction id." },
-      { status: 400 },
-    );
+    return Response.json({ error: "txId must be a 32-byte hex transaction id." }, { status: 400 });
   }
   if (!isSafeWebhookUrl(url)) {
-    return Response.json(
-      { error: "url must be a public https endpoint." },
-      { status: 400 },
-    );
+    return Response.json({ error: "url must be a public https endpoint." }, { status: 400 });
   }
 
   if (!registerWebhook(url, txId)) {
-    return Response.json(
-      { error: "Could not register webhook (registry full)." },
-      { status: 429 },
-    );
+    return Response.json({ error: "Could not register webhook (registry full)." }, { status: 429 });
   }
 
   return Response.json({ registered: true, txId });

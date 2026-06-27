@@ -3,12 +3,7 @@
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import { useI18n } from "@/app/components/I18nProvider";
-import {
-  GENERIC_TEMPLATE_ID,
-  TEMPLATES,
-  buildLabel,
-  type AnchorTemplate,
-} from "@/lib/templates";
+import { GENERIC_TEMPLATE_ID, TEMPLATES, buildLabel, type AnchorTemplate } from "@/lib/templates";
 
 // A representative label built from each field's placeholder, so the library
 // shows what a real structured label looks like for every template.
@@ -16,9 +11,7 @@ function exampleLabel(template: AnchorTemplate): string {
   if (template.id === GENERIC_TEMPLATE_ID) {
     return template.fields[0].placeholder.replace(/^e\.g\.\s*/, "");
   }
-  const values = Object.fromEntries(
-    template.fields.map((field) => [field.key, field.placeholder]),
-  );
+  const values = Object.fromEntries(template.fields.map((field) => [field.key, field.placeholder]));
   return buildLabel(template, values);
 }
 
@@ -37,30 +30,20 @@ export default function TemplatesPage() {
         <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/report"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/report" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.report")}
         </Link>
         <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.docs")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.templates")}
-        </span>
+        <span className="text-foreground font-medium">{t("common.nav.templates")}</span>
       </div>
 
       <h1 className="text-3xl mb-2">{t("templates.page.heading")}</h1>
-      <p className="text-foreground/70 mb-8 max-w-2xl">
-        {t("templates.page.intro")}
-      </p>
+      <p className="text-foreground/70 mb-8 max-w-2xl">{t("templates.page.intro")}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {TEMPLATES.map((template) => (
@@ -82,9 +65,7 @@ export default function TemplatesPage() {
                 </span>
               </div>
             </div>
-            <p className="text-sm text-foreground/70 mb-4">
-              {template.description}
-            </p>
+            <p className="text-sm text-foreground/70 mb-4">{template.description}</p>
 
             <div className="mb-4">
               <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
@@ -127,9 +108,7 @@ export default function TemplatesPage() {
 
       <div className="mt-10 rounded-lg border border-foreground/10 bg-card p-5">
         <h2 className="text-lg mb-1">{t("templates.page.custom.heading")}</h2>
-        <p className="text-sm text-foreground/70">
-          {t("templates.page.custom.body")}
-        </p>
+        <p className="text-sm text-foreground/70">{t("templates.page.custom.body")}</p>
       </div>
     </div>
   );

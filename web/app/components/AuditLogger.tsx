@@ -7,9 +7,7 @@ import { AUDIT_EVENT, type AuditEventDetail } from "@/lib/auditEvents";
 import { getStxAddress } from "@/lib/wallet";
 
 function asCategory(value: string): AuditCategory {
-  return (AUDIT_CATEGORIES as string[]).includes(value)
-    ? (value as AuditCategory)
-    : "system";
+  return (AUDIT_CATEGORIES as string[]).includes(value) ? (value as AuditCategory) : "system";
 }
 
 // Invisible component, mounted once in the layout. It records page navigation on
@@ -55,8 +53,7 @@ export default function AuditLogger() {
       });
     };
     window.addEventListener(AUDIT_EVENT, onAudit as EventListener);
-    return () =>
-      window.removeEventListener(AUDIT_EVENT, onAudit as EventListener);
+    return () => window.removeEventListener(AUDIT_EVENT, onAudit as EventListener);
   }, []);
 
   return null;

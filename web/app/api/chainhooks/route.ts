@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 // The contract whose print events we ingest, built from the same env defaults the
 // rest of the app uses so a contract move only changes one place.
 const CONTRACT_ID = `${
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM"
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM"
 }.${process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock"}`;
 
 // The only event thesislock emits (see contracts/thesislock.clar).
@@ -162,9 +161,7 @@ export async function POST(req: Request) {
 
     // Apply: idempotent upsert keyed on tx_id, so redelivery is a safe no-op.
     if (rows.length > 0) {
-      const { error } = await supabase
-        .from("thesis_locks")
-        .upsert(rows, { onConflict: "tx_id" });
+      const { error } = await supabase.from("thesis_locks").upsert(rows, { onConflict: "tx_id" });
       if (error) throw error;
     }
 

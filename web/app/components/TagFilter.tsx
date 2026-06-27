@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  TAGS_CHANGED_EVENT,
-  getAllTags,
-  getTagColor,
-  normalizeTag,
-  type Tag,
-} from "@/lib/tags";
+import { TAGS_CHANGED_EVENT, getAllTags, getTagColor, normalizeTag, type Tag } from "@/lib/tags";
 
 type TagFilterProps = {
   selectedTags: string[];
@@ -65,9 +59,7 @@ export default function TagFilter({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-foreground/50">
-          Tags
-        </span>
+        <span className="text-xs font-medium uppercase tracking-wide text-foreground/50">Tags</span>
         {allTags.length > searchThreshold && (
           <input
             type="text"
@@ -114,9 +106,7 @@ export default function TagFilter({
               <span
                 className="rounded-full px-1 text-[10px]"
                 style={
-                  active
-                    ? { backgroundColor: "#ffffff33" }
-                    : { backgroundColor: `${color}26` }
+                  active ? { backgroundColor: "#ffffff33" } : { backgroundColor: `${color}26` }
                 }
               >
                 {tag.count}
@@ -125,9 +115,7 @@ export default function TagFilter({
           );
         })}
         {visible.length === 0 && (
-          <span className="px-1 py-1 text-xs text-foreground/40">
-            No tags match.
-          </span>
+          <span className="px-1 py-1 text-xs text-foreground/40">No tags match.</span>
         )}
       </div>
     </div>

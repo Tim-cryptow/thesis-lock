@@ -23,9 +23,7 @@ export default function LanguageSwitcher() {
             aria-label={LOCALE_NAMES[code]}
             title={LOCALE_NAMES[code]}
             className={`px-2 py-1 transition ${
-              active
-                ? "bg-heading text-background"
-                : "text-foreground/60 hover:text-foreground"
+              active ? "bg-heading text-background" : "text-foreground/60 hover:text-foreground"
             } ${index === 0 ? "rounded-l-md" : ""} ${
               index === LOCALES.length - 1 ? "rounded-r-md" : ""
             }`}

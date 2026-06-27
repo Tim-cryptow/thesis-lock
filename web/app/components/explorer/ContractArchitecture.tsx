@@ -18,8 +18,7 @@ function Box({
   onSelect: (name: string) => void;
   variant?: "core" | "companion" | "independent";
 }) {
-  const base =
-    "w-full rounded-lg border px-4 py-3 text-left transition hover:border-foreground/40";
+  const base = "w-full rounded-lg border px-4 py-3 text-left transition hover:border-foreground/40";
   const variantClass =
     variant === "core"
       ? "border-foreground/40 bg-card"
@@ -27,11 +26,7 @@ function Box({
         ? "border-dashed border-foreground/25 bg-card"
         : "border-foreground/15 bg-card";
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(name)}
-      className={`${base} ${variantClass}`}
-    >
+    <button type="button" onClick={() => onSelect(name)} className={`${base} ${variantClass}`}>
       <span className="block font-mono text-sm">{name}</span>
       <span className="block text-xs text-foreground/55">{role}</span>
     </button>
@@ -43,37 +38,21 @@ function Tick() {
   return <span aria-hidden className="block h-5 w-px bg-foreground/20" />;
 }
 
-export default function ContractArchitecture({
-  onSelect,
-}: {
-  onSelect: (name: string) => void;
-}) {
+export default function ContractArchitecture({ onSelect }: { onSelect: (name: string) => void }) {
   return (
     <section className="rounded-lg border border-foreground/10 bg-background/40 p-6">
       <h2 className="text-xl mb-1">Architecture</h2>
       <p className="text-sm text-foreground/60 mb-6 max-w-2xl">
-        Companion contracts extend the core anchoring with batch, indexing,
-        proof, and group capabilities. Select any box to inspect that contract.
+        Companion contracts extend the core anchoring with batch, indexing, proof, and group
+        capabilities. Select any box to inspect that contract.
       </p>
 
       <div className="flex flex-col items-center gap-0">
         {/* Companion row */}
         <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-          <Box
-            name="thesislock-batch"
-            role="Batch operations"
-            onSelect={onSelect}
-          />
-          <Box
-            name="thesislock-registry"
-            role="History index"
-            onSelect={onSelect}
-          />
-          <Box
-            name="thesislock-proof"
-            role="NFT proofs"
-            onSelect={onSelect}
-          />
+          <Box name="thesislock-batch" role="Batch operations" onSelect={onSelect} />
+          <Box name="thesislock-registry" role="History index" onSelect={onSelect} />
+          <Box name="thesislock-proof" role="NFT proofs" onSelect={onSelect} />
         </div>
 
         {/* Connectors from the three companions down to the core */}
@@ -82,10 +61,7 @@ export default function ContractArchitecture({
           <Tick />
           <Tick />
         </div>
-        <span
-          aria-hidden
-          className="h-px w-full max-w-2xl bg-foreground/20"
-        />
+        <span aria-hidden className="h-px w-full max-w-2xl bg-foreground/20" />
         <Tick />
 
         {/* Core */}

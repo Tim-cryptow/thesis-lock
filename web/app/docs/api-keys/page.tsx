@@ -14,19 +14,18 @@ export default function ApiKeys() {
     <div>
       <h1 className="text-3xl md:text-4xl">API Keys</h1>
       <Lead>
-        The developer portal lets you create named API keys with scoped
-        permissions. They model the integration flow of a real developer portal:
-        create a key, copy it, and reference it from your app.
+        The developer portal lets you create named API keys with scoped permissions. They model the
+        integration flow of a real developer portal: create a key, copy it, and reference it from
+        your app.
       </Lead>
 
       <H2>How keys work today</H2>
       <P>
-        ThesisLock&apos;s read API is public and unauthenticated, so a key is not
-        required to call any endpoint. Keys are generated and stored entirely in
-        your browser&apos;s local storage under{" "}
-        <Code>thesislock_api_keys</Code>. Nothing is sent to a server, and
-        clearing site data removes them. This is an MVP: for production access
-        control, validate keys server-side behind your own gateway.
+        ThesisLock&apos;s read API is public and unauthenticated, so a key is not required to call
+        any endpoint. Keys are generated and stored entirely in your browser&apos;s local storage
+        under <Code>thesislock_api_keys</Code>. Nothing is sent to a server, and clearing site data
+        removes them. This is an MVP: for production access control, validate keys server-side
+        behind your own gateway.
       </P>
 
       <H2>Creating a key</H2>
@@ -34,35 +33,31 @@ export default function ApiKeys() {
         items={[
           <>
             Open the{" "}
-            <Link
-              href="/developers#keys"
-              className="underline hover:text-foreground"
-            >
+            <Link href="/developers#keys" className="underline hover:text-foreground">
               API Keys tab
             </Link>{" "}
             in the developer portal.
           </>,
           <>Select Create new API key, name it, and choose permissions.</>,
           <>
-            Copy the key from the reveal dialog and store it somewhere safe. The
-            full key also stays available from the key list on this browser
-            (it lives in local storage); revoke and replace it if it leaks.
+            Copy the key from the reveal dialog and store it somewhere safe. The full key also stays
+            available from the key list on this browser (it lives in local storage); revoke and
+            replace it if it leaks.
           </>,
         ]}
       />
 
       <H2>Key format and permissions</H2>
       <P>
-        Keys have the form <Code>tl_</Code> followed by 32 hex characters,
-        generated with <Code>crypto.getRandomValues</Code>. In lists they are
-        masked to the prefix, the first six characters, and the last four.
-        Permissions map to the public API surfaces:
+        Keys have the form <Code>tl_</Code> followed by 32 hex characters, generated with{" "}
+        <Code>crypto.getRandomValues</Code>. In lists they are masked to the prefix, the first six
+        characters, and the last four. Permissions map to the public API surfaces:
       </P>
       <List
         items={[
           <>
-            <Code>verify</Code>, <Code>search</Code>, <Code>stats</Code>,{" "}
-            <Code>badges</Code>, <Code>profiles</Code>, and <Code>compare</Code>.
+            <Code>verify</Code>, <Code>search</Code>, <Code>stats</Code>, <Code>badges</Code>,{" "}
+            <Code>profiles</Code>, and <Code>compare</Code>.
           </>,
         ]}
       />
@@ -73,10 +68,7 @@ maskKey(key);                   // "tl_3f9a1b...c4d2"`}</CodeBlock>
 
       <P>
         Ready to integrate? See the{" "}
-        <Link
-          href="/developers#guides"
-          className="underline hover:text-foreground"
-        >
+        <Link href="/developers#guides" className="underline hover:text-foreground">
           Integration Guides
         </Link>
         .

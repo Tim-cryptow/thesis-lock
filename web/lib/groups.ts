@@ -1,10 +1,5 @@
 import { cvToValue, deserializeCV } from "@stacks/transactions";
-import {
-  getGroup,
-  getGroupAnchorAt,
-  getGroupAnchorCount,
-  type Group,
-} from "./stacks";
+import { getGroup, getGroupAnchorAt, getGroupAnchorCount, type Group } from "./stacks";
 import { fetchWithRetry } from "./fetchWithRetry";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
@@ -160,9 +155,7 @@ function parseGroupAnchorEvent(ev: RawEvent): GroupAnchorMatch | null {
 // prints can push an older group-anchor record past any fixed page and make a
 // real anchor read as not found. The group name is fetched separately because
 // the print event carries only the group id.
-export async function findGroupAnchorByHash(
-  hash: string,
-): Promise<GroupAnchorMatch | null> {
+export async function findGroupAnchorByHash(hash: string): Promise<GroupAnchorMatch | null> {
   const target = stripHex(hash).toLowerCase();
   const events = await fetchAllEvents();
   for (const ev of events) {
@@ -185,10 +178,7 @@ export async function getGroupAnchorByLocation(
   groupId: number,
   index: number,
 ): Promise<GroupAnchorMatch | null> {
-  const [anchor, group] = await Promise.all([
-    getGroupAnchorAt(groupId, index),
-    getGroup(groupId),
-  ]);
+  const [anchor, group] = await Promise.all([getGroupAnchorAt(groupId, index), getGroup(groupId)]);
   if (!anchor) return null;
   return {
     groupId,
@@ -224,16 +214,11 @@ export async function fetchMyGroups(address: string): Promise<GroupSummary[]> {
 
   const summaries = await Promise.all(
     myGroupIds.map(async (id): Promise<GroupSummary | null> => {
-      const [group, anchorCount] = await Promise.all([
-        getGroup(id),
-        getGroupAnchorCount(id),
-      ]);
+      const [group, anchorCount] = await Promise.all([getGroup(id), getGroupAnchorCount(id)]);
       if (!group) return null;
       return { id, anchorCount, ...group };
     }),
   );
 
-  return summaries
-    .filter((s): s is GroupSummary => s !== null)
-    .sort((a, b) => b.id - a.id);
+  return summaries.filter((s): s is GroupSummary => s !== null).sort((a, b) => b.id - a.id);
 }

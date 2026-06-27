@@ -2,11 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { ReportData } from "@/lib/report";
-import {
-  renderReportCSV,
-  renderReportHTML,
-  renderReportJSON,
-} from "@/lib/reportRenderer";
+import { renderReportCSV, renderReportHTML, renderReportJSON } from "@/lib/reportRenderer";
 import SaveToCollectionButton from "@/app/components/SaveToCollectionButton";
 
 // Same Blob + object URL pattern as downloadCertificate: build the file in the
@@ -173,8 +169,7 @@ export default function ReportActions({
       </div>
       {!shareUrl ? (
         <p className="mt-2 text-xs text-foreground/50">
-          This report has too many hashes to share as a link. Use a download
-          instead.
+          This report has too many hashes to share as a link. Use a download instead.
         </p>
       ) : null}
     </section>

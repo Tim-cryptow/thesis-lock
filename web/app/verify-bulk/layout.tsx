@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 const title = "Bulk Verify";
-const description =
-  "Verify multiple documents at once against the Stacks blockchain";
+const description = "Verify multiple documents at once against the Stacks blockchain";
 
 export const metadata: Metadata = {
   title,
@@ -22,10 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BulkVerifyLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function BulkVerifyLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

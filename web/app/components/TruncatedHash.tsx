@@ -17,11 +17,7 @@ function truncate(hash: string, chars: number): string {
 // Displays a hash as first/last characters in monospace, with the full value on
 // hover. Clicking the text copies it, and an inline CopyButton is shown by
 // default. Used wherever a long hash needs a compact, consistent display.
-export default function TruncatedHash({
-  hash,
-  chars = 8,
-  copyable = true,
-}: TruncatedHashProps) {
+export default function TruncatedHash({ hash, chars = 8, copyable = true }: TruncatedHashProps) {
   if (!hash) return null;
 
   return (

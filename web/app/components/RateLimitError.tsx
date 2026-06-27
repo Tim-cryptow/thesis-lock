@@ -13,10 +13,7 @@ type RateLimitErrorProps = {
 
 // Shown when the Hiro API responds with 429. A visible countdown auto-retries so
 // the user does not have to babysit a transient rate limit.
-export default function RateLimitError({
-  retryAfterSeconds = 30,
-  onRetry,
-}: RateLimitErrorProps) {
+export default function RateLimitError({ retryAfterSeconds = 30, onRetry }: RateLimitErrorProps) {
   const [seconds, setSeconds] = useState(retryAfterSeconds);
 
   // Hold the latest callback in a ref so the countdown effect depends only on

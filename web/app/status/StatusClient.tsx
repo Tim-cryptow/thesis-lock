@@ -34,10 +34,7 @@ const BAR_COLORS: Record<string, string> = {
   unknown: "bg-foreground/10",
 };
 
-const OVERALL: Record<
-  OverallStatus,
-  { text: string; cls: string; level: ServiceStatusLevel }
-> = {
+const OVERALL: Record<OverallStatus, { text: string; cls: string; level: ServiceStatusLevel }> = {
   "all-operational": {
     text: "All Systems Operational",
     cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
@@ -107,9 +104,7 @@ function ServiceRow({ service, tick }: { service: ServiceStatus; tick: number })
         {bars.map((bar, i) => (
           <span
             key={i}
-            title={
-              bar.timestamp ? `${fmtTime(bar.timestamp)}: ${bar.status}` : "no data"
-            }
+            title={bar.timestamp ? `${fmtTime(bar.timestamp)}: ${bar.status}` : "no data"}
             className={`flex-1 rounded-sm ${BAR_COLORS[bar.status] ?? BAR_COLORS.unknown}`}
             style={{ minWidth: 2 }}
           />
@@ -169,8 +164,8 @@ export default function StatusClient() {
       <header className="mb-6">
         <h1 className="text-3xl font-semibold">System Status</h1>
         <p className="text-foreground/60 mt-1 text-sm">
-          Live health of the ThesisLock contracts, API, and upstream
-          dependencies. Checks run in your browser and refresh automatically.
+          Live health of the ThesisLock contracts, API, and upstream dependencies. Checks run in
+          your browser and refresh automatically.
         </p>
       </header>
 
@@ -181,9 +176,7 @@ export default function StatusClient() {
           <StatusIndicator status={banner.level} size="lg" showText={false} />
           <div>
             <div className="text-lg font-semibold">{banner.text}</div>
-            <div className="text-xs opacity-80">
-              Last checked {fmtTime(lastChecked)}
-            </div>
+            <div className="text-xs opacity-80">Last checked {fmtTime(lastChecked)}</div>
           </div>
         </div>
         <button
@@ -210,11 +203,7 @@ export default function StatusClient() {
                   <p className="py-6 text-sm text-foreground/50">Loading...</p>
                 ) : (
                   rows.map((service) => (
-                    <ServiceRow
-                      key={service.name}
-                      service={service}
-                      tick={historyTick}
-                    />
+                    <ServiceRow key={service.name} service={service} tick={historyTick} />
                   ))
                 )}
               </div>

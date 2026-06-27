@@ -12,9 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function InstallPrompt() {
   const { t } = useI18n();
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
-    null,
-  );
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -67,9 +65,7 @@ export default function InstallPrompt() {
   return (
     <div className="fixed bottom-16 left-4 right-4 z-40 sm:left-auto sm:right-4 sm:max-w-sm">
       <div className="rounded-lg border border-foreground/15 bg-card p-4 shadow-lg">
-        <p className="text-sm text-foreground/80">
-          {t("common.install.prompt")}
-        </p>
+        <p className="text-sm text-foreground/80">{t("common.install.prompt")}</p>
         <div className="mt-3 flex items-center justify-end gap-2">
           <button
             type="button"

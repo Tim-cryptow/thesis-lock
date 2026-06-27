@@ -15,10 +15,7 @@ function escapeCsv(value: string): string {
   return value;
 }
 
-export function formatAnchorsCSV(
-  anchors: RegistryEntry[],
-  owner: string,
-): string {
+export function formatAnchorsCSV(anchors: RegistryEntry[], owner: string): string {
   const header = ["Hash", "Label", "Stacks Block", "Owner", "Verify URL"];
   const rows = anchors.map((a) =>
     [a.hash, a.label, String(a.anchoredAt), owner, verifyUrlFor(a.hash, owner)]
@@ -28,10 +25,7 @@ export function formatAnchorsCSV(
   return [header.join(","), ...rows].join("\r\n");
 }
 
-export function formatAnchorsJSON(
-  anchors: RegistryEntry[],
-  owner: string,
-): string {
+export function formatAnchorsJSON(anchors: RegistryEntry[], owner: string): string {
   const exportedAt = new Date().toISOString();
   const items = anchors.map((a) => ({
     hash: a.hash,
@@ -55,24 +49,14 @@ export type BulkVerifyRow = {
 export function formatBulkVerifyCSV(rows: BulkVerifyRow[]): string {
   const header = ["Filename", "Full Hash", "Status", "Source", "Block"];
   const lines = rows.map((r) =>
-    [
-      r.filename,
-      r.hash ?? "",
-      r.status,
-      r.source ?? "",
-      r.block !== null ? String(r.block) : "",
-    ]
+    [r.filename, r.hash ?? "", r.status, r.source ?? "", r.block !== null ? String(r.block) : ""]
       .map(escapeCsv)
       .join(","),
   );
   return [header.join(","), ...lines].join("\r\n");
 }
 
-export function downloadExport(
-  content: string,
-  filename: string,
-  mimeType: string,
-): void {
+export function downloadExport(content: string, filename: string, mimeType: string): void {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

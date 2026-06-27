@@ -27,24 +27,16 @@ export async function GET(_req: Request, { params }: RouteContext) {
   const tokenId = Number(id);
 
   if (!Number.isInteger(tokenId) || tokenId < 1) {
-    return Response.json(
-      { error: "Invalid token id." },
-      { status: 400, headers: corsHeaders() },
-    );
+    return Response.json({ error: "Invalid token id." }, { status: 400, headers: corsHeaders() });
   }
 
   const proof = await fetchProof(tokenId);
   if (!proof) {
-    return Response.json(
-      { error: "Token not found." },
-      { status: 404, headers: corsHeaders() },
-    );
+    return Response.json({ error: "Token not found." }, { status: 404, headers: corsHeaders() });
   }
 
   const verifyUrl = `${APP_ORIGIN}/v/${proof.hash}`;
-  const image = `data:image/svg+xml;utf8,${encodeURIComponent(
-    proofSvg(tokenId, proof.hash),
-  )}`;
+  const image = `data:image/svg+xml;utf8,${encodeURIComponent(proofSvg(tokenId, proof.hash))}`;
 
   return Response.json(
     {

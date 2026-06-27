@@ -25,20 +25,15 @@ type Step = "form" | "reveal";
 export default function KeyCreationModal({ onCreate, onClose }: Props) {
   const [step, setStep] = useState<Step>("form");
   const [name, setName] = useState("");
-  const [permissions, setPermissions] = useState<string[]>([
-    ...AVAILABLE_PERMISSIONS,
-  ]);
+  const [permissions, setPermissions] = useState<string[]>([...AVAILABLE_PERMISSIONS]);
   const [createdKey, setCreatedKey] = useState("");
 
   const trimmedName = name.trim();
-  const canGenerate =
-    validateApiKeyName(name).valid && permissions.length > 0;
+  const canGenerate = validateApiKeyName(name).valid && permissions.length > 0;
 
   const togglePermission = useCallback((permission: string) => {
     setPermissions((prev) =>
-      prev.includes(permission)
-        ? prev.filter((p) => p !== permission)
-        : [...prev, permission],
+      prev.includes(permission) ? prev.filter((p) => p !== permission) : [...prev, permission],
     );
   }, []);
 
@@ -154,8 +149,8 @@ export default function KeyCreationModal({ onCreate, onClose }: Props) {
               </div>
 
               <p className="mt-4 text-sm text-foreground/60">
-                Store it in a password manager or your environment. The key lives
-                only in this browser; clearing site data removes it.
+                Store it in a password manager or your environment. The key lives only in this
+                browser; clearing site data removes it.
               </p>
 
               <div className="mt-6 flex justify-end">

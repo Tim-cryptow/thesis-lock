@@ -1,8 +1,4 @@
-import {
-  checkAllServices,
-  getOverallStatus,
-  type OverallStatus,
-} from "@/lib/statusMonitor";
+import { checkAllServices, getOverallStatus, type OverallStatus } from "@/lib/statusMonitor";
 
 export const dynamic = "force-dynamic";
 
@@ -52,11 +48,7 @@ function textWidth(text: string): number {
   return width;
 }
 
-function renderBadge(
-  label: string,
-  message: string,
-  messageColor: string,
-): string {
+function renderBadge(label: string, message: string, messageColor: string): string {
   const pad = 10;
   const labelTextW = textWidth(label);
   const messageTextW = textWidth(message);
@@ -96,9 +88,7 @@ export async function GET(req: Request) {
   const origin = new URL(req.url).origin;
   let state = UNKNOWN as { message: string; color: string };
   try {
-    const overall: OverallStatus = getOverallStatus(
-      await checkAllServices(origin),
-    );
+    const overall: OverallStatus = getOverallStatus(await checkAllServices(origin));
     state = STATE[overall];
   } catch {
     // Leave the badge in the unknown state if the checks could not run.

@@ -31,12 +31,7 @@ const EMPTY_STREAK: StreakInfo = {
 
 function FlameIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-3.5 w-3.5"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
       <path d="M12 2c.7 2.6-.6 4.2-2 5.6C8.4 9.2 7 10.7 7 13a5 5 0 0 0 10 .2c0-1.6-.7-3-1.6-4.2-.3 1-1 1.6-1.9 1.8.6-2-.3-4.3-1.5-5.6C11.2 4.4 11 3 12 2z" />
     </svg>
   );
@@ -59,9 +54,7 @@ function StatCard({
         {icon}
         {label}
       </div>
-      <div className={`text-2xl font-semibold tabular-nums ${accent ?? ""}`}>
-        {value}
-      </div>
+      <div className={`text-2xl font-semibold tabular-nums ${accent ?? ""}`}>{value}</div>
     </div>
   );
 }
@@ -154,21 +147,19 @@ export default function CalendarClient() {
   const toggleDay = (day: CalendarDay) =>
     setSelectedDate((cur) => (cur === day.date ? null : day.date));
 
-  const activeDays = view === "graph" ? yearDays : monthData?.days ?? [];
+  const activeDays = view === "graph" ? yearDays : (monthData?.days ?? []);
   const selectedDay = selectedDate
-    ? activeDays.find((d) => d.date === selectedDate) ?? null
+    ? (activeDays.find((d) => d.date === selectedDate) ?? null)
     : null;
 
-  const canGoNextMonth =
-    year < CURRENT_YEAR || (year === CURRENT_YEAR && month < CURRENT_MONTH);
+  const canGoNextMonth = year < CURRENT_YEAR || (year === CURRENT_YEAR && month < CURRENT_MONTH);
 
   return (
     <main className="max-w-5xl mx-auto px-6 py-10">
       <header className="mb-8">
         <h1 className="text-3xl font-semibold">Calendar</h1>
         <p className="text-foreground/60 mt-1 text-sm">
-          Your anchoring activity over time. Keep your streak going by anchoring
-          regularly.
+          Your anchoring activity over time. Keep your streak going by anchoring regularly.
         </p>
       </header>
 
@@ -200,10 +191,7 @@ export default function CalendarClient() {
               value={`${stats.longestStreak} ${dayWord(stats.longestStreak)}`}
             />
             <StatCard label="Active days" value={String(stats.totalActiveDays)} />
-            <StatCard
-              label={`Anchors in ${year}`}
-              value={String(stats.totalAnchors)}
-            />
+            <StatCard label={`Anchors in ${year}`} value={String(stats.totalAnchors)} />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -292,18 +280,12 @@ export default function CalendarClient() {
                   onSelectDay={toggleDay}
                 />
               ) : (
-                <p className="text-sm text-foreground/50 py-10 text-center">
-                  Loading month...
-                </p>
+                <p className="text-sm text-foreground/50 py-10 text-center">Loading month...</p>
               )}
             </div>
           )}
 
-          <DayDetail
-            day={selectedDay}
-            owner={address}
-            onClose={() => setSelectedDate(null)}
-          />
+          <DayDetail day={selectedDay} owner={address} onClose={() => setSelectedDate(null)} />
         </>
       )}
     </main>

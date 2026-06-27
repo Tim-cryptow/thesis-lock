@@ -13,21 +13,101 @@ type Props = {
 // plain text, so an unknown word never breaks rendering.
 const KEYWORDS: Record<string, string[]> = {
   javascript: [
-    "const", "let", "var", "function", "return", "import", "from", "export",
-    "async", "await", "new", "if", "else", "for", "while", "class", "extends",
-    "try", "catch", "finally", "throw", "of", "in", "typeof", "default",
-    "null", "true", "false", "undefined", "console", "this", "void",
+    "const",
+    "let",
+    "var",
+    "function",
+    "return",
+    "import",
+    "from",
+    "export",
+    "async",
+    "await",
+    "new",
+    "if",
+    "else",
+    "for",
+    "while",
+    "class",
+    "extends",
+    "try",
+    "catch",
+    "finally",
+    "throw",
+    "of",
+    "in",
+    "typeof",
+    "default",
+    "null",
+    "true",
+    "false",
+    "undefined",
+    "console",
+    "this",
+    "void",
   ],
   python: [
-    "def", "return", "import", "from", "as", "if", "else", "elif", "for",
-    "while", "class", "try", "except", "finally", "raise", "with", "in", "is",
-    "not", "and", "or", "None", "True", "False", "print", "lambda", "pass",
-    "break", "continue", "global", "yield", "assert",
+    "def",
+    "return",
+    "import",
+    "from",
+    "as",
+    "if",
+    "else",
+    "elif",
+    "for",
+    "while",
+    "class",
+    "try",
+    "except",
+    "finally",
+    "raise",
+    "with",
+    "in",
+    "is",
+    "not",
+    "and",
+    "or",
+    "None",
+    "True",
+    "False",
+    "print",
+    "lambda",
+    "pass",
+    "break",
+    "continue",
+    "global",
+    "yield",
+    "assert",
   ],
   bash: [
-    "if", "then", "else", "elif", "fi", "for", "in", "do", "done", "while",
-    "case", "esac", "function", "echo", "export", "local", "return", "set",
-    "curl", "jq", "npx", "npm", "docker", "bash", "sh", "exit", "read",
+    "if",
+    "then",
+    "else",
+    "elif",
+    "fi",
+    "for",
+    "in",
+    "do",
+    "done",
+    "while",
+    "case",
+    "esac",
+    "function",
+    "echo",
+    "export",
+    "local",
+    "return",
+    "set",
+    "curl",
+    "jq",
+    "npx",
+    "npm",
+    "docker",
+    "bash",
+    "sh",
+    "exit",
+    "read",
   ],
   yaml: ["true", "false", "null", "yes", "no", "on", "off"],
   json: ["true", "false", "null"],
@@ -42,8 +122,7 @@ const COMMENT_PREFIX: Record<string, string | null> = {
   json: null,
 };
 
-const STRING_PATTERN =
-  "\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|`(?:\\\\.|[^`\\\\])*`";
+const STRING_PATTERN = "\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|`(?:\\\\.|[^`\\\\])*`";
 
 function escapeForRegex(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -63,11 +142,7 @@ function buildTokenizer(language: string): RegExp {
   return new RegExp(parts.join("|"), "g");
 }
 
-function highlightLine(
-  line: string,
-  tokenizer: RegExp,
-  keywords: Set<string>,
-): ReactNode[] {
+function highlightLine(line: string, tokenizer: RegExp, keywords: Set<string>): ReactNode[] {
   const nodes: ReactNode[] = [];
   let lastIndex = 0;
   let key = 0;
@@ -117,12 +192,7 @@ function highlightLine(
   return nodes;
 }
 
-export default function CodeBlock({
-  code,
-  language,
-  title,
-  copyable = true,
-}: Props) {
+export default function CodeBlock({ code, language, title, copyable = true }: Props) {
   const [copied, setCopied] = useState(false);
 
   const lines = useMemo(() => {
@@ -130,9 +200,7 @@ export default function CodeBlock({
     const keywords = new Set(KEYWORDS[language] ?? []);
     // Trailing newline would render an empty final line; drop it.
     const source = code.replace(/\n$/, "");
-    return source
-      .split("\n")
-      .map((line) => highlightLine(line, tokenizer, keywords));
+    return source.split("\n").map((line) => highlightLine(line, tokenizer, keywords));
   }, [code, language]);
 
   const copy = useCallback(async () => {

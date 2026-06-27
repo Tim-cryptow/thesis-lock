@@ -39,17 +39,11 @@ export function dispatchAudit(
 // Convenience wrappers for the common actions, so call sites read clearly and
 // the action names and categories stay consistent across the app.
 
-export function auditAnchor(
-  hash: string,
-  metadata?: Record<string, unknown>,
-): void {
+export function auditAnchor(hash: string, metadata?: Record<string, unknown>): void {
   dispatchAudit("anchor_submit", "anchor", hash, metadata);
 }
 
-export function auditBatchAnchor(
-  entries: { hash: string; label: string }[],
-  txId?: string,
-): void {
+export function auditBatchAnchor(entries: { hash: string; label: string }[], txId?: string): void {
   dispatchAudit("batch_anchor", "anchor", null, {
     count: entries.length,
     hashes: entries.map((e) => e.hash),
@@ -58,10 +52,7 @@ export function auditBatchAnchor(
   });
 }
 
-export function auditVerify(
-  hash: string,
-  metadata?: Record<string, unknown>,
-): void {
+export function auditVerify(hash: string, metadata?: Record<string, unknown>): void {
   dispatchAudit("verify_check", "verify", hash, metadata);
 }
 
@@ -73,10 +64,7 @@ export function auditSearch(query: string, type?: string): void {
   dispatchAudit("search", "search", null, { query, type: type ?? "auto" });
 }
 
-export function auditExport(
-  format: string,
-  metadata?: Record<string, unknown>,
-): void {
+export function auditExport(format: string, metadata?: Record<string, unknown>): void {
   dispatchAudit("export", "export", null, { format, ...metadata });
 }
 
@@ -84,9 +72,7 @@ export function auditCertificateDownload(hash?: string | null): void {
   dispatchAudit("certificate_download", "export", hash ?? null);
 }
 
-export function auditReportGenerate(
-  metadata?: Record<string, unknown>,
-): void {
+export function auditReportGenerate(metadata?: Record<string, unknown>): void {
   dispatchAudit("report_generate", "export", null, metadata);
 }
 
@@ -109,10 +95,5 @@ export function auditWalletConnect(address: string): void {
 }
 
 export function auditWalletDisconnect(address?: string | null): void {
-  dispatchAudit(
-    "wallet_disconnect",
-    "system",
-    address ?? null,
-    address ? { address } : undefined,
-  );
+  dispatchAudit("wallet_disconnect", "system", address ?? null, address ? { address } : undefined);
 }

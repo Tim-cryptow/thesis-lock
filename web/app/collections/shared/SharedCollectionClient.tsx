@@ -145,15 +145,11 @@ export default function SharedCollectionClient() {
   if (!collection) {
     return (
       <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
-        <Link
-          href="/collections"
-          className="text-sm text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/collections" className="text-sm text-foreground/60 hover:text-foreground">
           ← Collections
         </Link>
         <p className="mt-8 text-foreground/70">
-          This share link is missing or could not be read. Ask the sender for a
-          fresh link.
+          This share link is missing or could not be read. Ask the sender for a fresh link.
         </p>
       </div>
     );
@@ -171,10 +167,7 @@ export default function SharedCollectionClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/collections"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/collections" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.collections")}
         </Link>
       </div>
@@ -196,9 +189,7 @@ export default function SharedCollectionClient() {
             </div>
           </div>
           {collection.description && (
-            <p className="mt-3 text-sm text-foreground/70">
-              {collection.description}
-            </p>
+            <p className="mt-3 text-sm text-foreground/70">{collection.description}</p>
           )}
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <button
@@ -254,27 +245,18 @@ export default function SharedCollectionClient() {
         Items <span className="text-foreground/40">({count})</span>
       </h2>
       {count === 0 ? (
-        <p className="text-sm text-foreground/55">
-          This collection has no items.
-        </p>
+        <p className="text-sm text-foreground/55">This collection has no items.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {collection.items.map((item) => (
-            <div
-              key={item.hash}
-              className="rounded-lg border border-foreground/10 bg-card p-4"
-            >
+            <div key={item.hash} className="rounded-lg border border-foreground/10 bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  {item.label && (
-                    <div className="font-medium truncate">{item.label}</div>
-                  )}
+                  {item.label && <div className="font-medium truncate">{item.label}</div>}
                   <code className="mt-1 block font-mono text-xs text-foreground/65 break-all">
                     {truncateMiddle(item.hash)}
                   </code>
-                  {item.note && (
-                    <p className="mt-2 text-sm text-foreground/70">{item.note}</p>
-                  )}
+                  {item.note && <p className="mt-2 text-sm text-foreground/70">{item.note}</p>}
                 </div>
                 <StatusBadge state={statuses[item.hash] ?? "checking"} />
               </div>

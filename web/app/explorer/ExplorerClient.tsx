@@ -56,34 +56,20 @@ export default function ExplorerClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/search"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
-        <Link
-          href="/stats"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.stats")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.explorer")}
-        </span>
-        <Link
-          href="/docs"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <span className="text-foreground font-medium">{t("common.nav.explorer")}</span>
+        <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.docs")}
         </Link>
       </div>
@@ -91,11 +77,9 @@ export default function ExplorerClient() {
       <h1 className="text-3xl mb-2">Contract Explorer</h1>
       <p className="text-foreground/70 mb-8 max-w-2xl">
         ThesisLock is five Clarity 3 contracts deployed to Stacks mainnet under{" "}
-        <span className="font-mono text-foreground/90">
-          {EXPLORER_CONTRACT_ADDRESS}
-        </span>
-        . Browse each one&apos;s functions, maps, and data variables, watch
-        recent on-chain calls, and run read-only functions directly from here.
+        <span className="font-mono text-foreground/90">{EXPLORER_CONTRACT_ADDRESS}</span>. Browse
+        each one&apos;s functions, maps, and data variables, watch recent on-chain calls, and run
+        read-only functions directly from here.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-8">
@@ -127,12 +111,8 @@ export default function ExplorerClient() {
             >
               <ContractGlyph name={c.name} />
               <span className="min-w-0">
-                <span className="block font-mono text-sm truncate">
-                  {c.name}
-                </span>
-                <span className="block text-xs text-foreground/55">
-                  {CONTRACT_BLURBS[c.name]}
-                </span>
+                <span className="block font-mono text-sm truncate">{c.name}</span>
+                <span className="block text-xs text-foreground/55">{CONTRACT_BLURBS[c.name]}</span>
               </span>
             </button>
           ))}
@@ -140,10 +120,7 @@ export default function ExplorerClient() {
 
         <main className="min-w-0">
           {selectedContract ? (
-            <ContractDetail
-              contract={selectedContract}
-              callCount={counts[selectedContract.name]}
-            />
+            <ContractDetail contract={selectedContract} callCount={counts[selectedContract.name]} />
           ) : (
             <Overview counts={counts} onSelect={setSelected} />
           )}
@@ -168,12 +145,8 @@ function Overview({
         <h2 className="text-xl mb-4">The five contracts</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {CONTRACT_REGISTRY.map((c) => {
-            const reads = c.functions.filter(
-              (f) => f.access === "read-only",
-            ).length;
-            const writes = c.functions.filter(
-              (f) => f.access === "public",
-            ).length;
+            const reads = c.functions.filter((f) => f.access === "read-only").length;
+            const writes = c.functions.filter((f) => f.access === "public").length;
             const count = counts[c.name];
             return (
               <button
@@ -186,9 +159,7 @@ function Overview({
                   <ContractGlyph name={c.name} />
                   <span className="font-mono text-sm">{c.name}</span>
                 </div>
-                <p className="text-sm text-foreground/65 mb-4">
-                  {CONTRACT_BLURBS[c.name]}
-                </p>
+                <p className="text-sm text-foreground/65 mb-4">{CONTRACT_BLURBS[c.name]}</p>
                 <dl className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <dt className="text-foreground/45">Calls</dt>
@@ -198,9 +169,7 @@ function Overview({
                   </div>
                   <div>
                     <dt className="text-foreground/45">Functions</dt>
-                    <dd className="font-mono text-foreground/85">
-                      {writes + reads}
-                    </dd>
+                    <dd className="font-mono text-foreground/85">{writes + reads}</dd>
                   </div>
                   <div>
                     <dt className="text-foreground/45">Block</dt>

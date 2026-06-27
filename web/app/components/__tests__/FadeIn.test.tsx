@@ -23,30 +23,22 @@ describe("FadeIn", () => {
 
   it("applies the hidden-state transform for the direction", () => {
     const { container } = render(<FadeIn direction="left">x</FadeIn>);
-    expect((container.firstChild as HTMLElement).style.transform).toBe(
-      "translateX(12px)",
-    );
+    expect((container.firstChild as HTMLElement).style.transform).toBe("translateX(12px)");
   });
 
   it("defaults to sliding up", () => {
     const { container } = render(<FadeIn>x</FadeIn>);
-    expect((container.firstChild as HTMLElement).style.transform).toBe(
-      "translateY(12px)",
-    );
+    expect((container.firstChild as HTMLElement).style.transform).toBe("translateY(12px)");
   });
 
   it("applies the delay to the transition", () => {
     const { container } = render(<FadeIn delay={200}>x</FadeIn>);
-    expect((container.firstChild as HTMLElement).style.transitionDelay).toBe(
-      "200ms",
-    );
+    expect((container.firstChild as HTMLElement).style.transitionDelay).toBe("200ms");
   });
 
   it("passes through a custom className", () => {
     const { container } = render(<FadeIn className="fade-wrapper">x</FadeIn>);
-    expect((container.firstChild as HTMLElement).className).toContain(
-      "fade-wrapper",
-    );
+    expect((container.firstChild as HTMLElement).className).toContain("fade-wrapper");
   });
 
   it("renders as the element named by the as prop", () => {
@@ -55,10 +47,7 @@ describe("FadeIn", () => {
   });
 
   it("shows content immediately when reduced motion is preferred", () => {
-    vi.stubGlobal(
-      "matchMedia",
-      vi.fn().mockReturnValue({ matches: true }),
-    );
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({ matches: true }));
     const { container } = render(<FadeIn>x</FadeIn>);
     const el = container.firstChild as HTMLElement;
     expect(el.style.opacity).toBe("1");

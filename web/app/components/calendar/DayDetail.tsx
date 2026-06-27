@@ -67,13 +67,7 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-function AnchorRow({
-  item,
-  owner,
-}: {
-  item: CalendarHash;
-  owner?: string | null;
-}) {
+function AnchorRow({ item, owner }: { item: CalendarHash; owner?: string | null }) {
   const parsed = parseLabel(item.label);
   const template = parsed.templateId ? getTemplate(parsed.templateId) : undefined;
   const tags = getTagsForHash(item.hash);
@@ -84,9 +78,7 @@ function AnchorRow({
   const verifyHref =
     item.source === "batch" && owner
       ? `/v/${item.hash}?owner=${owner}`
-      : item.source === "group" &&
-          item.groupId !== undefined &&
-          item.groupIndex !== undefined
+      : item.source === "group" && item.groupId !== undefined && item.groupIndex !== undefined
         ? `/v/${item.hash}?group=${item.groupId}&gi=${item.groupIndex}`
         : `/v/${item.hash}`;
   return (
@@ -124,11 +116,7 @@ function AnchorRow({
         >
           Verify
         </Link>
-        <AddToCollectionButton
-          hash={item.hash}
-          label={item.label}
-          verifyUrl={verifyHref}
-        />
+        <AddToCollectionButton hash={item.hash} label={item.label} verifyUrl={verifyHref} />
       </div>
       {tags.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-1">

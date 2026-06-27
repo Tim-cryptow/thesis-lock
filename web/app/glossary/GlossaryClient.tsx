@@ -24,9 +24,7 @@ export default function GlossaryClient() {
     const q = query.trim().toLowerCase();
     if (!q) return SORTED;
     return SORTED.filter(
-      (entry) =>
-        entry.term.toLowerCase().includes(q) ||
-        entry.definition.toLowerCase().includes(q),
+      (entry) => entry.term.toLowerCase().includes(q) || entry.definition.toLowerCase().includes(q),
     );
   }, [query]);
 
@@ -42,18 +40,14 @@ export default function GlossaryClient() {
         <Link href="/docs" className="text-foreground/60 hover:text-foreground">
           Docs
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           Anchor
         </Link>
       </div>
 
       <h1 className="text-3xl mb-2">Glossary</h1>
       <p className="text-foreground/70 mb-8">
-        Plain-English definitions of the technical terms you will run into
-        across ThesisLock.
+        Plain-English definitions of the technical terms you will run into across ThesisLock.
       </p>
 
       <div className="mb-8">

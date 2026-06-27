@@ -64,8 +64,7 @@ export default function ValidatedInput({
 
   const result = validator ? validator(debounced) : { valid: true };
   const showError = touched && !result.valid && Boolean(result.error);
-  const showValid =
-    Boolean(validator) && result.valid && debounced.trim().length > 0;
+  const showValid = Boolean(validator) && result.valid && debounced.trim().length > 0;
 
   const borderClass = showError
     ? "border-red-500/70 focus:border-red-500"

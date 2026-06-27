@@ -36,22 +36,16 @@ describe("getTemplate", () => {
 
 describe("buildLabel", () => {
   it("encodes a structured label with prefix and fields", () => {
-    expect(buildLabel(paper, { title: "thesis", v: "2" })).toBe(
-      "paper-title:thesis|v:2",
-    );
+    expect(buildLabel(paper, { title: "thesis", v: "2" })).toBe("paper-title:thesis|v:2");
   });
 
   it("skips empty fields", () => {
-    expect(buildLabel(paper, { title: "thesis", v: "", dept: "" })).toBe(
-      "paper-title:thesis",
-    );
+    expect(buildLabel(paper, { title: "thesis", v: "", dept: "" })).toBe("paper-title:thesis");
   });
 
   it("returns the raw value for the generic template", () => {
     const generic = getTemplate(GENERIC_TEMPLATE_ID)!;
-    expect(buildLabel(generic, { label: "free form text" })).toBe(
-      "free form text",
-    );
+    expect(buildLabel(generic, { label: "free form text" })).toBe("free form text");
   });
 
   it("truncates to the maximum on-chain label length", () => {

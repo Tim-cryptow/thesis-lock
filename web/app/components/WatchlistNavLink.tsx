@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/app/components/I18nProvider";
-import {
-  WATCHLIST_CHANGED_EVENT,
-  countWatchUpdates,
-  loadWatchlist,
-} from "@/lib/watchlist";
+import { WATCHLIST_CHANGED_EVENT, countWatchUpdates, loadWatchlist } from "@/lib/watchlist";
 
 // Nav-cluster link to the watchlist with a count badge when watched items have
 // new updates. Carries the tour target so the onboarding tour can highlight it.

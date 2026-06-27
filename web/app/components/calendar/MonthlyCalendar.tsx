@@ -125,9 +125,7 @@ export default function MonthlyCalendar({
               </span>
               {has ? (
                 <span className="inline-flex items-center gap-1 text-[10px] text-foreground/70">
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${dotClass(cell.count)}`}
-                  />
+                  <span className={`h-1.5 w-1.5 rounded-full ${dotClass(cell.count)}`} />
                   {cell.count}
                 </span>
               ) : (

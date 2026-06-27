@@ -36,9 +36,7 @@ describe("ConfirmDialog", () => {
   it("renders the title and message when open", () => {
     setup();
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Delete item" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Delete item" })).toBeInTheDocument();
     expect(screen.getByText("This cannot be undone.")).toBeInTheDocument();
   });
 
@@ -62,9 +60,9 @@ describe("ConfirmDialog", () => {
 
   it("uses a red confirm button for the danger variant", () => {
     setup({ variant: "danger" });
-    expect(
-      screen.getByRole("button", { name: "Delete" }).getAttribute("class"),
-    ).toContain("bg-red-600");
+    expect(screen.getByRole("button", { name: "Delete" }).getAttribute("class")).toContain(
+      "bg-red-600",
+    );
   });
 
   it("uses a custom cancel label", () => {

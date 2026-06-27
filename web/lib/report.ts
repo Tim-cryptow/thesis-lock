@@ -84,21 +84,16 @@ function pickBest(
 ): SearchResult | null {
   if (results.length === 0) return null;
   const wanted = pin?.owner?.toUpperCase();
-  const pinnedGroup =
-    pin?.groupId !== undefined && pin?.groupIndex !== undefined;
+  const pinnedGroup = pin?.groupId !== undefined && pin?.groupIndex !== undefined;
   return [...results].sort((a, b) => {
     // A pinned group row (the exact { group-id, index } a hash was collected
     // from) is the record being asked about, so it outranks everything,
     // including a global single anchor for the same hash.
     if (pinnedGroup) {
       const aGroup =
-        a.source === "group" &&
-        a.groupId === pin!.groupId &&
-        a.groupIndex === pin!.groupIndex;
+        a.source === "group" && a.groupId === pin!.groupId && a.groupIndex === pin!.groupIndex;
       const bGroup =
-        b.source === "group" &&
-        b.groupId === pin!.groupId &&
-        b.groupIndex === pin!.groupIndex;
+        b.source === "group" && b.groupId === pin!.groupId && b.groupIndex === pin!.groupIndex;
       if (aGroup !== bGroup) return aGroup ? -1 : 1;
     }
     // When the caller named an owner, that wallet's batch anchor is the record
@@ -120,10 +115,7 @@ function pickBest(
 // Resolves a single hash into a report entry by checking every contract. A
 // not-found or malformed hash still produces an entry (verified: false) so the
 // report reflects exactly what was requested.
-export async function verifyReportEntry(
-  input: HashInput,
-  owner?: string,
-): Promise<ReportEntry> {
+export async function verifyReportEntry(input: HashInput, owner?: string): Promise<ReportEntry> {
   const hash = normalizeHash(input.hash);
   // A per-item owner takes precedence over the report-level owner so a hash
   // collected as a specific wallet's batch record resolves to that record.
@@ -213,10 +205,7 @@ export async function generateReport(
     }
   };
 
-  const workers = Array.from(
-    { length: Math.min(REPORT_CONCURRENCY, hashes.length) },
-    worker,
-  );
+  const workers = Array.from({ length: Math.min(REPORT_CONCURRENCY, hashes.length) }, worker);
   await Promise.all(workers);
 
   return {

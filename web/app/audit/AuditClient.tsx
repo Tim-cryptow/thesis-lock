@@ -100,8 +100,7 @@ export default function AuditClient() {
   const clearLog = async () => {
     const ok = await confirm({
       title: "Clear audit log",
-      message:
-        "Clear the entire audit log on this device? This cannot be undone.",
+      message: "Clear the entire audit log on this device? This cannot be undone.",
       confirmLabel: "Clear log",
       variant: "warning",
     });
@@ -128,10 +127,7 @@ export default function AuditClient() {
     };
   }, [entries]);
 
-  const maxCategory = useMemo(
-    () => Math.max(1, ...Object.values(summary.byCategory)),
-    [summary],
-  );
+  const maxCategory = useMemo(() => Math.max(1, ...Object.values(summary.byCategory)), [summary]);
 
   const filtered = useMemo(() => {
     const from = dateFrom ? localDayStartIso(dateFrom) : "";
@@ -147,9 +143,7 @@ export default function AuditClient() {
       return true;
     });
     rows.sort((x, y) =>
-      sortDesc
-        ? y.timestamp.localeCompare(x.timestamp)
-        : x.timestamp.localeCompare(y.timestamp),
+      sortDesc ? y.timestamp.localeCompare(x.timestamp) : x.timestamp.localeCompare(y.timestamp),
     );
     return rows;
   }, [entries, category, action, actor, dateFrom, dateTo, sortDesc]);
@@ -161,10 +155,7 @@ export default function AuditClient() {
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const current = Math.min(page, pageCount - 1);
-  const pageRows = filtered.slice(
-    current * PAGE_SIZE,
-    current * PAGE_SIZE + PAGE_SIZE,
-  );
+  const pageRows = filtered.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
 
   const clearFilters = () => {
     setCategory("");
@@ -174,8 +165,7 @@ export default function AuditClient() {
     setDateTo("");
   };
 
-  const hasFilters =
-    category || action || actor || dateFrom || dateTo ? true : false;
+  const hasFilters = category || action || actor || dateFrom || dateTo ? true : false;
 
   return (
     <div className="flex-1 max-w-6xl mx-auto px-6 py-12 w-full">
@@ -195,49 +185,32 @@ export default function AuditClient() {
       <header className="mb-8">
         <h1 className="text-3xl mb-2">Audit Trail</h1>
         <p className="text-foreground/70 max-w-3xl">
-          A tamper-evident record of every action taken in this browser. Each
-          entry is timestamped and tied to a session; the log can be filtered,
-          verified for integrity, and exported as a compliance report. All data
-          stays on this device.
+          A tamper-evident record of every action taken in this browser. Each entry is timestamped
+          and tied to a session; the log can be filtered, verified for integrity, and exported as a
+          compliance report. All data stays on this device.
         </p>
       </header>
 
       {/* Summary */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <div className="rounded-lg border border-foreground/10 bg-card p-5">
-          <div className="text-xs uppercase tracking-wide text-foreground/50">
-            Total actions
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {summary.total}
-          </div>
+          <div className="text-xs uppercase tracking-wide text-foreground/50">Total actions</div>
+          <div className="mt-1 text-2xl font-semibold tabular-nums">{summary.total}</div>
         </div>
         <div className="rounded-lg border border-foreground/10 bg-card p-5">
-          <div className="text-xs uppercase tracking-wide text-foreground/50">
-            Actions today
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {summary.today}
-          </div>
+          <div className="text-xs uppercase tracking-wide text-foreground/50">Actions today</div>
+          <div className="mt-1 text-2xl font-semibold tabular-nums">{summary.today}</div>
         </div>
         <div className="rounded-lg border border-foreground/10 bg-card p-5">
-          <div className="text-xs uppercase tracking-wide text-foreground/50">
-            Unique sessions
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">
-            {summary.sessions}
-          </div>
+          <div className="text-xs uppercase tracking-wide text-foreground/50">Unique sessions</div>
+          <div className="mt-1 text-2xl font-semibold tabular-nums">{summary.sessions}</div>
         </div>
         <div className="rounded-lg border border-foreground/10 bg-card p-5">
-          <div className="mb-2 text-xs uppercase tracking-wide text-foreground/50">
-            By category
-          </div>
+          <div className="mb-2 text-xs uppercase tracking-wide text-foreground/50">By category</div>
           <div className="flex flex-col gap-1">
             {AUDIT_CATEGORIES.filter((c) => summary.byCategory[c]).map((c) => (
               <div key={c} className="flex items-center gap-2">
-                <span className="w-14 shrink-0 text-[11px] text-foreground/60">
-                  {c}
-                </span>
+                <span className="w-14 shrink-0 text-[11px] text-foreground/60">{c}</span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-foreground/5">
                   <div
                     className="h-full rounded-full bg-foreground/40"
@@ -264,9 +237,8 @@ export default function AuditClient() {
           <div>
             <h2 className="text-sm font-medium">Log integrity</h2>
             <p className="max-w-2xl text-xs text-foreground/60">
-              Recompute the log&apos;s SHA-256 and compare it to the value
-              stored on the last write, to confirm the log has not been modified
-              outside the app.
+              Recompute the log&apos;s SHA-256 and compare it to the value stored on the last write,
+              to confirm the log has not been modified outside the app.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
@@ -323,8 +295,8 @@ export default function AuditClient() {
                   <path d="M12 9v4" />
                   <path d="M12 17h.01" />
                 </svg>
-                Integrity check failed. The log does not match its stored hash
-                and may have been modified outside the app.
+                Integrity check failed. The log does not match its stored hash and may have been
+                modified outside the app.
               </div>
             )}
             {integrity.status === "missing" && (
@@ -341,9 +313,7 @@ export default function AuditClient() {
               <div className="text-[11px] uppercase tracking-wide text-foreground/50">
                 Computed hash
               </div>
-              <div className="mt-1 break-all font-mono text-xs">
-                {integrity.computed}
-              </div>
+              <div className="mt-1 break-all font-mono text-xs">{integrity.computed}</div>
               {integrity.stored && integrity.stored !== integrity.computed && (
                 <>
                   <div className="mt-2 text-[11px] uppercase tracking-wide text-foreground/50">
@@ -367,165 +337,158 @@ export default function AuditClient() {
         />
       ) : (
         <>
-      {/* Filters */}
-      <section className="mb-4 flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-xs text-foreground/50">
-          Category
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm text-foreground"
-          >
-            <option value="">All</option>
-            {AUDIT_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-foreground/50">
-          Action
-          <input
-            type="text"
-            value={action}
-            onChange={(e) => setAction(e.target.value)}
-            placeholder="e.g. anchor"
-            className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-foreground/50">
-          Actor
-          <input
-            type="text"
-            value={actor}
-            onChange={(e) => setActor(e.target.value)}
-            placeholder="principal"
-            className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-foreground/50">
-          From
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-foreground/50">
-          To
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
-          />
-        </label>
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm text-foreground/70 hover:border-foreground/40"
-          >
-            Clear
-          </button>
-        )}
-      </section>
+          {/* Filters */}
+          <section className="mb-4 flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1 text-xs text-foreground/50">
+              Category
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm text-foreground"
+              >
+                <option value="">All</option>
+                {AUDIT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-foreground/50">
+              Action
+              <input
+                type="text"
+                value={action}
+                onChange={(e) => setAction(e.target.value)}
+                placeholder="e.g. anchor"
+                className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-foreground/50">
+              Actor
+              <input
+                type="text"
+                value={actor}
+                onChange={(e) => setActor(e.target.value)}
+                placeholder="principal"
+                className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-foreground/50">
+              From
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-foreground/50">
+              To
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="rounded-md border border-foreground/15 bg-background px-2 py-1.5 text-sm"
+              />
+            </label>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="rounded-md border border-foreground/15 px-3 py-1.5 text-sm text-foreground/70 hover:border-foreground/40"
+              >
+                Clear
+              </button>
+            )}
+          </section>
 
-      {/* Table */}
-      <section className="rounded-lg border border-foreground/10 bg-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-foreground/10 text-left text-xs uppercase tracking-wide text-foreground/50">
-                <th className="px-4 py-2 font-medium">
+          {/* Table */}
+          <section className="rounded-lg border border-foreground/10 bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-foreground/10 text-left text-xs uppercase tracking-wide text-foreground/50">
+                    <th className="px-4 py-2 font-medium">
+                      <button
+                        type="button"
+                        onClick={() => setSortDesc((s) => !s)}
+                        className="inline-flex items-center gap-1 hover:text-foreground"
+                      >
+                        Timestamp {sortDesc ? "v" : "^"}
+                      </button>
+                    </th>
+                    <th className="px-4 py-2 font-medium">Action</th>
+                    <th className="px-4 py-2 font-medium">Category</th>
+                    <th className="px-4 py-2 font-medium">Actor</th>
+                    <th className="px-4 py-2 font-medium">Target</th>
+                    <th className="px-4 py-2 font-medium">Session</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageRows.map((e) => (
+                    <tr key={e.id} className="border-b border-foreground/5 last:border-0 align-top">
+                      <td className="whitespace-nowrap px-4 py-2 text-xs text-foreground/70">
+                        {formatTimestamp(e.timestamp)}
+                      </td>
+                      <td className="px-4 py-2 font-mono text-xs">{e.action}</td>
+                      <td className="px-4 py-2">
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                            CATEGORY_STYLES[e.category] ?? CATEGORY_STYLES.system
+                          }`}
+                        >
+                          {e.category}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 font-mono text-xs text-foreground/70">
+                        {e.actor ? truncateMiddle(e.actor) : "n/a"}
+                      </td>
+                      <td className="px-4 py-2 font-mono text-xs text-foreground/70">
+                        {e.target ? truncateMiddle(e.target) : "n/a"}
+                      </td>
+                      <td className="px-4 py-2 font-mono text-xs text-foreground/50">
+                        {truncateMiddle(e.sessionId, 6, 4)}
+                      </td>
+                    </tr>
+                  ))}
+                  {pageRows.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-10 text-center text-sm text-foreground/50">
+                        No entries match the filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {filtered.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between gap-4 border-t border-foreground/10 px-4 py-3 text-sm">
+                <span className="text-xs text-foreground/50">
+                  {current * PAGE_SIZE + 1}-{Math.min((current + 1) * PAGE_SIZE, filtered.length)}{" "}
+                  of {filtered.length}
+                </span>
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setSortDesc((s) => !s)}
-                    className="inline-flex items-center gap-1 hover:text-foreground"
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={current === 0}
+                    className="rounded-md border border-foreground/15 px-3 py-1 hover:border-foreground/40 disabled:opacity-40"
                   >
-                    Timestamp {sortDesc ? "v" : "^"}
+                    Prev
                   </button>
-                </th>
-                <th className="px-4 py-2 font-medium">Action</th>
-                <th className="px-4 py-2 font-medium">Category</th>
-                <th className="px-4 py-2 font-medium">Actor</th>
-                <th className="px-4 py-2 font-medium">Target</th>
-                <th className="px-4 py-2 font-medium">Session</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageRows.map((e) => (
-                <tr
-                  key={e.id}
-                  className="border-b border-foreground/5 last:border-0 align-top"
-                >
-                  <td className="whitespace-nowrap px-4 py-2 text-xs text-foreground/70">
-                    {formatTimestamp(e.timestamp)}
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs">{e.action}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        CATEGORY_STYLES[e.category] ?? CATEGORY_STYLES.system
-                      }`}
-                    >
-                      {e.category}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs text-foreground/70">
-                    {e.actor ? truncateMiddle(e.actor) : "n/a"}
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs text-foreground/70">
-                    {e.target ? truncateMiddle(e.target) : "n/a"}
-                  </td>
-                  <td className="px-4 py-2 font-mono text-xs text-foreground/50">
-                    {truncateMiddle(e.sessionId, 6, 4)}
-                  </td>
-                </tr>
-              ))}
-              {pageRows.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-4 py-10 text-center text-sm text-foreground/50"
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                    disabled={current >= pageCount - 1}
+                    className="rounded-md border border-foreground/15 px-3 py-1 hover:border-foreground/40 disabled:opacity-40"
                   >
-                    No entries match the filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        {filtered.length > PAGE_SIZE && (
-          <div className="flex items-center justify-between gap-4 border-t border-foreground/10 px-4 py-3 text-sm">
-            <span className="text-xs text-foreground/50">
-              {current * PAGE_SIZE + 1}-
-              {Math.min((current + 1) * PAGE_SIZE, filtered.length)} of{" "}
-              {filtered.length}
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={current === 0}
-                className="rounded-md border border-foreground/15 px-3 py-1 hover:border-foreground/40 disabled:opacity-40"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-                disabled={current >= pageCount - 1}
-                className="rounded-md border border-foreground/15 px-3 py-1 hover:border-foreground/40 disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
         </>
       )}
 

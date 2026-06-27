@@ -7,11 +7,7 @@ export const BASE = "https://thesis-lock.test";
 
 // Builds a web Request for a route handler. A body object is JSON-encoded and
 // the content-type set, matching how the routes read JSON bodies.
-export function createMockRequest(
-  method: string,
-  url: string,
-  body?: unknown,
-): Request {
+export function createMockRequest(method: string, url: string, body?: unknown): Request {
   const init: RequestInit = { method };
   if (body !== undefined) {
     init.body = JSON.stringify(body);
@@ -36,8 +32,6 @@ export function mockHiroResponse(data: unknown, ok = true): Response {
 }
 
 // Wraps dynamic route params in the Promise the App Router passes to handlers.
-export function routeParams<T extends Record<string, string>>(
-  params: T,
-): Promise<T> {
+export function routeParams<T extends Record<string, string>>(params: T): Promise<T> {
   return Promise.resolve(params);
 }
