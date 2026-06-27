@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { batchCommand } from "../src/commands/batch";
 import { hashCommand } from "../src/commands/hash";
 import { searchCommand } from "../src/commands/search";
 import { statusCommand } from "../src/commands/status";
@@ -22,6 +23,8 @@ program
     "--owner <principal>",
     "Stacks principal to check for owner-keyed batch anchors",
   )
+  .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only true or false")
   .action(verifyCommand);
 
 program
@@ -29,6 +32,8 @@ program
   .description("Compute the SHA-256 hash of one or more files")
   .argument("<filepaths...>", "paths of files to hash")
   .option("--verify", "also check whether each hash is anchored on Stacks")
+  .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the hash for each file")
   .action(hashCommand);
 
 program
@@ -37,6 +42,8 @@ program
     "Show protocol status, or anchor stats for a wallet when a principal is given",
   )
   .argument("[principal]", "Stacks principal to look up")
+  .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the health state or anchor count")
   .action(statusCommand);
 
 program
@@ -44,7 +51,24 @@ program
   .description("Search anchors by hash, wallet principal, or label substring")
   .argument("<query>", "64-hex hash, Stacks principal, or label text")
   .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only one matching hash per line")
+  .option(
+    "--limit <n>",
+    "maximum number of results to show",
+    (value) => parseInt(value, 10),
+  )
   .action(searchCommand);
+
+program
+  .command("batch")
+  .description("Hash every file in a directory")
+  .argument("<dir>", "directory to scan")
+  .option("--verify", "also check whether each hash is anchored on Stacks")
+  .option("--recursive", "descend into subdirectories")
+  .option("--exclude <patterns>", "comma-separated glob patterns to skip")
+  .option("--json", "print machine-readable JSON output")
+  .option("--quiet", "print only the hash for each file")
+  .action(batchCommand);
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   const message = err instanceof Error ? err.message : String(err);

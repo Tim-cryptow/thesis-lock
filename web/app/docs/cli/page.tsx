@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/docs/cli" },
   title: { absolute: "CLI Guide | ThesisLock Docs" },
   description:
-    "Verify, hash, search, and check status of ThesisLock anchors from the terminal or a CI pipeline with the thesislock-cli package.",
+    "Verify, hash, search, batch-hash, and check ThesisLock anchors from the terminal or a CI pipeline with the thesislock-cli package, including JSON and quiet output and shell completions.",
 };
 
 export default function CliGuide() {
@@ -19,6 +19,12 @@ export default function CliGuide() {
         files locally and compares only the SHA-256 digest against on-chain
         data; files are never uploaded.
       </Lead>
+
+      <P>
+        Every command also accepts <Code>--json</Code> for machine-readable
+        output and <Code>--quiet</Code> for a single essential value, which makes
+        the CLI easy to script.
+      </P>
 
       <H2>Installation</H2>
       <P>
@@ -54,6 +60,12 @@ npm install -g thesislock-cli`}</CodeBlock>
         explicit owner can be supplied with <Code>--owner</Code>:
       </P>
       <CodeBlock language="bash">{`thesislock verify <hash> --owner SP000...`}</CodeBlock>
+      <P>
+        Use <Code>--quiet</Code> for a bare <Code>true</Code> or{" "}
+        <Code>false</Code>, or <Code>--json</Code> for a structured result.
+      </P>
+      <CodeBlock language="bash">{`thesislock verify <hash> --quiet
+thesislock verify <hash> --json`}</CodeBlock>
 
       <H2>hash</H2>
       <P>
@@ -83,11 +95,48 @@ thesislock status SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX`}</CodeBlock>
         Search anchors across all contracts. The query type is auto-detected:
         64-hex searches by hash, a Stacks address by wallet, and anything else
         as a label substring. Results print as a table; add <Code>--json</Code>{" "}
-        for machine-readable output.
+        for machine-readable output, and <Code>--limit</Code> to cap the rows.
       </P>
       <CodeBlock language="bash">{`thesislock search "thesis draft"
 thesislock search SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX
-thesislock search 9afe6f57...585d06 --json`}</CodeBlock>
+thesislock search 9afe6f57...585d06 --json
+thesislock search SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX --limit 5`}</CodeBlock>
+
+      <H2>batch</H2>
+      <P>
+        Hash every file in a directory. For each file the CLI prints the path
+        relative to the scanned directory, size, and hash, then a summary line.
+        Add <Code>--recursive</Code> to descend into subdirectories,{" "}
+        <Code>--exclude</Code> for comma-separated glob patterns, and{" "}
+        <Code>--verify</Code> to check each hash on chain.
+      </P>
+      <CodeBlock language="bash">{`thesislock batch ./papers
+thesislock batch ./papers --recursive --exclude "*.log,node_modules"
+thesislock batch ./papers --verify --json`}</CodeBlock>
+
+      <H2>Scripting</H2>
+      <P>
+        <Code>--quiet</Code> emits a single value per command, ideal for shell
+        substitution, and <Code>--json</Code> pairs well with <Code>jq</Code>.
+      </P>
+      <CodeBlock language="bash">{`HASH=$(thesislock hash thesis.pdf --quiet)
+thesislock batch ./papers --verify --json | jq -r '.[] | select(.anchored == false) | .path'`}</CodeBlock>
+
+      <H2>Shell completion</H2>
+      <P>
+        Completion scripts for <Code>bash</Code> and <Code>zsh</Code> ship in the{" "}
+        <Code>completions/</Code> directory of the CLI package and complete every
+        command and flag.
+      </P>
+      <CodeBlock language="bash">{`# bash: from your ~/.bashrc
+source /path/to/thesislock-cli/completions/thesislock.bash
+
+# zsh: place the script on your fpath, then reload completions
+mkdir -p ~/.zsh/completions
+cp completions/thesislock.zsh ~/.zsh/completions/_thesislock
+# in ~/.zshrc, before compinit:
+#   fpath=(~/.zsh/completions $fpath)
+#   autoload -U compinit && compinit`}</CodeBlock>
 
       <H2>Configuration</H2>
       <Table
