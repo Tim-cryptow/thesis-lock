@@ -66,18 +66,11 @@ export class ThesisLockClient {
 
   constructor(config: ThesisLockConfig = {}) {
     this.network = config.network ?? "mainnet";
-    this.apiUrl = (config.apiUrl ?? DEFAULT_API_URLS[this.network]).replace(
-      /\/$/,
-      "",
-    );
+    this.apiUrl = (config.apiUrl ?? DEFAULT_API_URLS[this.network]).replace(/\/$/, "");
     this.contractAddress = config.contractAddress ?? DEFAULT_CONTRACT_ADDRESS;
   }
 
-  private async callReadOnly(
-    contract: string,
-    fn: string,
-    args: string[],
-  ): Promise<unknown> {
+  private async callReadOnly(contract: string, fn: string, args: string[]): Promise<unknown> {
     const url = `${this.apiUrl}/v2/contracts/call-read/${this.contractAddress}/${contract}/${fn}`;
     const res = await fetch(url, {
       method: "POST",
@@ -99,9 +92,7 @@ export class ThesisLockClient {
 
   /** Look up a single anchor in the thesislock contract. */
   async verify(hash: string): Promise<SingleVerifyResult> {
-    const value = await this.callReadOnly(SINGLE_CONTRACT, "get-anchor", [
-      serializeHash(hash),
-    ]);
+    const value = await this.callReadOnly(SINGLE_CONTRACT, "get-anchor", [serializeHash(hash)]);
     if (value === null || value === undefined) {
       return { verified: false, source: null, data: null };
     }
@@ -169,11 +160,9 @@ export class ThesisLockClient {
     if (!validateStacksAddress(owner)) {
       throw new Error(`Invalid Stacks principal: ${owner}`);
     }
-    const value = await this.callReadOnly(
-      REGISTRY_CONTRACT,
-      "get-recent-anchors",
-      [serializeCV(principalCV(owner))],
-    );
+    const value = await this.callReadOnly(REGISTRY_CONTRACT, "get-recent-anchors", [
+      serializeCV(principalCV(owner)),
+    ]);
     if (!Array.isArray(value)) return [];
     const entries: RegistryEntry[] = [];
     for (const item of value) {
@@ -213,11 +202,9 @@ export class ThesisLockClient {
 
   /** Resolve a proof NFT from the hash it anchors. */
   async getProofByHash(hash: string): Promise<ProofNFT | null> {
-    const idValue = await this.callReadOnly(
-      PROOF_CONTRACT,
-      "get-token-id-by-hash",
-      [serializeHash(hash)],
-    );
+    const idValue = await this.callReadOnly(PROOF_CONTRACT, "get-token-id-by-hash", [
+      serializeHash(hash),
+    ]);
     if (idValue === null || idValue === undefined) return null;
     const tokenId = Number(fieldValue(idValue));
     return this.getProof(tokenId);

@@ -42,12 +42,10 @@ export interface UnverifiedResult {
 }
 
 export type SingleVerifyResult =
-  | { verified: true; source: "single"; data: AnchorResult }
-  | UnverifiedResult;
+  { verified: true; source: "single"; data: AnchorResult } | UnverifiedResult;
 
 export type BatchVerifyResult =
-  | { verified: true; source: "batch"; data: BatchAnchorResult }
-  | UnverifiedResult;
+  { verified: true; source: "batch"; data: BatchAnchorResult } | UnverifiedResult;
 
 // Discriminated on `verified` and `source` so consumers can narrow `data`
 // after checking `result.verified`.

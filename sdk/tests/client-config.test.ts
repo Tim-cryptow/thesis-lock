@@ -18,22 +18,16 @@ describe("client configuration", () => {
   });
 
   it("lets an explicit apiUrl override the network default", () => {
-    expect(createClient({ apiUrl: "https://example.test" }).apiUrl).toBe(
-      "https://example.test",
-    );
+    expect(createClient({ apiUrl: "https://example.test" }).apiUrl).toBe("https://example.test");
   });
 
   it("strips a trailing slash from the apiUrl", () => {
-    expect(createClient({ apiUrl: "https://example.test/" }).apiUrl).toBe(
-      "https://example.test",
-    );
+    expect(createClient({ apiUrl: "https://example.test/" }).apiUrl).toBe("https://example.test");
   });
 
   it("lets a custom contractAddress override the default", () => {
     const address = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
-    expect(createClient({ contractAddress: address }).contractAddress).toBe(
-      address,
-    );
+    expect(createClient({ contractAddress: address }).contractAddress).toBe(address);
   });
 
   it("constructs directly with new ThesisLockClient", () => {

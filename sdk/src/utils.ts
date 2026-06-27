@@ -18,9 +18,7 @@ export function hashString(input: string): string {
 
 /** Lowercase 64-character hex SHA-256 digest of a file or buffer. */
 export async function hashFile(file: File | Buffer): Promise<string> {
-  const bytes = Buffer.isBuffer(file)
-    ? file
-    : Buffer.from(await file.arrayBuffer());
+  const bytes = Buffer.isBuffer(file) ? file : Buffer.from(await file.arrayBuffer());
   return createHash("sha256").update(bytes).digest("hex");
 }
 
