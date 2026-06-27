@@ -418,7 +418,7 @@ async function mapWithConcurrency<T, R>(items: T[], fn: (item: T) => Promise<R>)
     while (next < items.length) {
       const i = next;
       next += 1;
-      results[i] = await fn(items[i]);
+      results[i] = await fn(items[i]!);
     }
   });
   await Promise.all(workers);

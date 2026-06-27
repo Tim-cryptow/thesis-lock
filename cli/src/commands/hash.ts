@@ -52,11 +52,12 @@ async function computeEntry(filepath: string, verify: boolean): Promise<HashEntr
     try {
       const results = await searchByHash(hash);
       if (results.length > 0) {
+        const first = results[0]!;
         entry.anchored = true;
         entry.anchor = {
-          source: results[0].source,
-          owner: results[0].owner,
-          stacksBlock: results[0].stacksBlock,
+          source: first.source,
+          owner: first.owner,
+          stacksBlock: first.stacksBlock,
         };
       } else {
         entry.anchored = false;

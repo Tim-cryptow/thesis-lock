@@ -109,6 +109,6 @@ export async function verifyCommand(
   console.log(chalk.green.bold("Verified"));
   for (let i = 0; i < results.length; i++) {
     if (i > 0) console.log();
-    await printMatch(results[i]);
+    await printMatch(results[i]!);
   }
 }
