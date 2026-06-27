@@ -8,7 +8,13 @@ import {
   it,
   vi,
 } from "vitest";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import chalk from "chalk";
@@ -129,6 +135,33 @@ describe("batch command", () => {
     expect(out()).toContain("Verified");
     expect(process.exitCode).toBe(0);
   });
+
+  // Permission denial only bites when the process is not root and the platform
+  // enforces directory modes, so skip elsewhere (the CI runner is non-root).
+  const cannotEnforcePerms =
+    process.platform === "win32" ||
+    (typeof process.getuid === "function" && process.getuid() === 0);
+
+  it.skipIf(cannotEnforcePerms)(
+    "keeps JSON output valid when a subdirectory is unreadable",
+    async () => {
+      const locked = join(dir, "locked");
+      mkdirSync(locked);
+      writeFileSync(join(locked, "secret.txt"), "x");
+      chmodSync(locked, 0o000);
+      try {
+        await batchCommand(dir, { recursive: true, json: true });
+        const parsed = JSON.parse(out());
+        expect(Array.isArray(parsed)).toBe(true);
+        expect(parsed.some((e: { hash?: string }) => e.hash)).toBe(true);
+        expect(parsed.some((e: { error?: string }) => e.error)).toBe(true);
+        expect(process.exitCode).toBe(1);
+      } finally {
+        chmodSync(locked, 0o755);
+        rmSync(locked, { recursive: true, force: true });
+      }
+    },
+  );
 
   it("errors and exits 1 for a path that is not a directory", async () => {
     await batchCommand(join(dir, "a.txt"), {});

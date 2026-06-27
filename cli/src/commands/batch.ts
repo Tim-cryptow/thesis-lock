@@ -40,22 +40,45 @@ function isExcluded(name: string, patterns: RegExp[]): boolean {
   return patterns.some((re) => re.test(name));
 }
 
+interface Walk {
+  files: string[];
+  failedDirs: string[];
+}
+
 function collectFiles(
   dir: string,
   recursive: boolean,
   patterns: RegExp[],
-): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+): Walk {
+  const files: string[] = [];
+  const failedDirs: string[] = [];
+
+  let dirents;
+  try {
+    dirents = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    // An unreadable directory (permissions, or one removed mid-scan) should not
+    // abort the whole walk. Record it and keep going so partial results, and
+    // valid JSON, still come through.
+    failedDirs.push(dir);
+    return { files, failedDirs };
+  }
+
+  for (const entry of dirents) {
     if (isExcluded(entry.name, patterns)) continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (recursive) found.push(...collectFiles(full, recursive, patterns));
+      if (recursive) {
+        const sub = collectFiles(full, recursive, patterns);
+        files.push(...sub.files);
+        failedDirs.push(...sub.failedDirs);
+      }
     } else if (entry.isFile()) {
-      found.push(full);
+      files.push(full);
     }
   }
-  return found;
+
+  return { files, failedDirs };
 }
 
 async function computeEntry(
@@ -168,11 +191,21 @@ export async function batchCommand(
   }
 
   const patterns = parseExcludes(options.exclude);
-  const files = collectFiles(dir, recursive, patterns).sort();
+  const walk = collectFiles(dir, recursive, patterns);
+  const files = walk.files.sort();
 
   const entries: BatchEntry[] = [];
   for (const file of files) {
     entries.push(await computeEntry(dir, file, verify));
+  }
+  // Surface directories that could not be read as error entries, so JSON mode
+  // stays valid and the failure is visible instead of crashing the command.
+  for (const failed of walk.failedDirs.sort()) {
+    entries.push({
+      file: failed,
+      path: relative(dir, failed) || failed,
+      error: "Cannot read directory",
+    });
   }
 
   if (json) {
