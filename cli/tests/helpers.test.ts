@@ -1,12 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import chalk from "chalk";
-import {
-  field,
-  formatError,
-  formatSize,
-  stripAnsi,
-  toJson,
-} from "../src/output";
+import { field, formatError, formatSize, stripAnsi, toJson } from "../src/output";
 
 const ESC = String.fromCharCode(27);
 

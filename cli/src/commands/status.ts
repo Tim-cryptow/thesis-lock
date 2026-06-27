@@ -66,9 +66,7 @@ async function showProtocolStatus(options: StatusOptions): Promise<void> {
   console.log(
     `${chalk.bold("API health:")}   ${healthy ? chalk.green("ok") : chalk.red("unreachable")}`,
   );
-  console.log(
-    `${chalk.bold("Latest block:")} ${latestBlock ?? chalk.dim("(unavailable)")}`,
-  );
+  console.log(`${chalk.bold("Latest block:")} ${latestBlock ?? chalk.dim("(unavailable)")}`);
   console.log();
   console.log(`${chalk.bold("Contracts:")} ${CONTRACT_NAMES.length}`);
   for (const id of contractIds()) {
@@ -80,10 +78,7 @@ async function showProtocolStatus(options: StatusOptions): Promise<void> {
   }
 }
 
-async function showPrincipalStatus(
-  principal: string,
-  options: StatusOptions,
-): Promise<void> {
+async function showPrincipalStatus(principal: string, options: StatusOptions): Promise<void> {
   const json = options.json === true;
   const quiet = options.quiet === true;
   const owner = principal.trim().toUpperCase();
@@ -98,8 +93,7 @@ async function showPrincipalStatus(
     return;
   }
 
-  const spinner =
-    json || quiet ? null : ora(`Reading registry for ${owner}`).start();
+  const spinner = json || quiet ? null : ora(`Reading registry for ${owner}`).start();
   try {
     const count = await getClient().getAnchorCount(owner);
     spinner?.stop();

@@ -55,8 +55,7 @@ export async function verifyCommand(
     return;
   }
 
-  const spinner =
-    json || quiet ? null : ora(`Checking anchors for ${normalized}`).start();
+  const spinner = json || quiet ? null : ora(`Checking anchors for ${normalized}`).start();
   let results: SearchResult[];
   try {
     results = await searchByHash(normalized, options.owner);

@@ -45,11 +45,7 @@ interface Walk {
   failedDirs: string[];
 }
 
-function collectFiles(
-  dir: string,
-  recursive: boolean,
-  patterns: RegExp[],
-): Walk {
+function collectFiles(dir: string, recursive: boolean, patterns: RegExp[]): Walk {
   const files: string[] = [];
   const failedDirs: string[] = [];
 
@@ -127,11 +123,7 @@ async function computeEntry(
 }
 
 function entryFailed(entry: BatchEntry): boolean {
-  return (
-    entry.error !== undefined ||
-    entry.verifyError !== undefined ||
-    entry.anchored === false
-  );
+  return entry.error !== undefined || entry.verifyError !== undefined || entry.anchored === false;
 }
 
 function renderEntry(entry: BatchEntry, verify: boolean): void {
@@ -227,9 +219,7 @@ export async function batchCommand(
     });
     const hashed = entries.filter((e) => e.hash !== undefined).length;
     console.log();
-    console.log(
-      chalk.dim(`${hashed} file${hashed === 1 ? "" : "s"} hashed in ${dir}`),
-    );
+    console.log(chalk.dim(`${hashed} file${hashed === 1 ? "" : "s"} hashed in ${dir}`));
   }
 
   if (entries.some(entryFailed)) {

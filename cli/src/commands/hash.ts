@@ -26,10 +26,7 @@ export function hashFileStream(filepath: string): Promise<string> {
   });
 }
 
-async function computeEntry(
-  filepath: string,
-  verify: boolean,
-): Promise<HashEntry> {
+async function computeEntry(filepath: string, verify: boolean): Promise<HashEntry> {
   let stats;
   try {
     stats = statSync(filepath);
@@ -95,11 +92,7 @@ function renderEntry(entry: HashEntry, verify: boolean): void {
 }
 
 function entryFailed(entry: HashEntry): boolean {
-  return (
-    entry.error !== undefined ||
-    entry.verifyError !== undefined ||
-    entry.anchored === false
-  );
+  return entry.error !== undefined || entry.verifyError !== undefined || entry.anchored === false;
 }
 
 export async function hashCommand(
