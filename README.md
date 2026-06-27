@@ -147,7 +147,7 @@ Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-l
 - [Web App Guide](https://thesis-lock.vercel.app/docs/web-app): anchoring, batches, groups, verification, and proof NFTs.
 - [API Reference](https://thesis-lock.vercel.app/docs/api): the JSON REST API for verification, search, stats, badges, and cards.
 - [SDK Guide](https://thesis-lock.vercel.app/docs/sdk): the `thesislock-sdk` TypeScript package ([`sdk/`](sdk/README.md), [changelog](sdk/CHANGELOG.md)).
-- [CLI Guide](https://thesis-lock.vercel.app/docs/cli): the `thesislock-cli` terminal tool ([`cli/`](cli/README.md)).
+- [CLI Guide](https://thesis-lock.vercel.app/docs/cli): the `thesislock-cli` terminal tool with `verify`, `hash`, `status`, `search`, and `batch` commands, plus `--json`/`--quiet` output and shell completions ([`cli/`](cli/README.md), [changelog](cli/CHANGELOG.md)).
 - [GitHub Action](https://thesis-lock.vercel.app/docs/github-action): gate a CI pipeline on an on-chain anchor ([`action/`](action/README.md)).
 - [System Status](https://thesis-lock.vercel.app/docs/status): the public status page, what it monitors, and the status JSON API and badge.
 - [Feeds](https://thesis-lock.vercel.app/docs/feeds): RSS, Atom, and JSON Feed endpoints for protocol events, with filtering and autodiscovery.
