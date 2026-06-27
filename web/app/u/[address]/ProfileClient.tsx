@@ -343,7 +343,6 @@ export default function ProfileClient() {
                 <CopyButton value={badgeMarkdown} label="Copy badge markdown" />
               </div>
               {origin && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`${origin}/api/profile-badge/${address}`}
                   alt="ThesisLock profile badge preview"

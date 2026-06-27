@@ -140,7 +140,6 @@ export default function FilePreview({
 
   const thumbnail =
     image && thumbUrl ? (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={thumbUrl}
         alt=""

@@ -230,7 +230,6 @@ export default function EmbedClient() {
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
                 Badge
               </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={badgeUrl}
                 alt="ThesisLock verification badge preview"
@@ -241,7 +240,6 @@ export default function EmbedClient() {
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
                 Social card
               </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={cardUrl}
                 alt="ThesisLock verification card preview"

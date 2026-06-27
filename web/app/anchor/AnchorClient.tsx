@@ -558,7 +558,7 @@ export default function AnchorPage() {
   const downloadSingleCert = async (
     entryHash: string,
     entryLabel: string,
-    owner: string,
+    _owner: string,
   ) => {
     setCertNoticeHash(null);
     setCertBusyHash(entryHash);
@@ -1177,7 +1177,7 @@ export default function AnchorPage() {
 
           {rows.length > 0 && (
             <div className="mt-6 space-y-3">
-              {rows.map((row, idx) => (
+              {rows.map((row) => (
                 <div
                   key={row.id}
                   className="rounded-lg border border-foreground/10 bg-card p-4"

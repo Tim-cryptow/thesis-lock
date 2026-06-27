@@ -126,7 +126,6 @@ function ImagePreview({ result }: { result: PlaygroundResult }) {
             dangerouslySetInnerHTML={{ __html: result.text }}
           />
         ) : result.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={result.imageUrl}
             alt="API image response preview"

@@ -14,7 +14,6 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
 const SINGLE_CONTRACT = "thesislock";
-const BATCH_CONTRACT = "thesislock-batch";
 const REGISTRY_CONTRACT = "thesislock-registry";
 const PROOF_CONTRACT = "thesislock-proof";
 const GROUPS_CONTRACT = "thesislock-groups";

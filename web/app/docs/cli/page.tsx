@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Code, CodeBlock, H2, H3, Lead, P, Table } from "../ui";
+import { Code, CodeBlock, H2, Lead, P, Table } from "../ui";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/docs/cli" },

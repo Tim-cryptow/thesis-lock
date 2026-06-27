@@ -924,7 +924,6 @@ export default function VerifyPage() {
             {t("verify.embed.body")}
           </p>
           {badgeSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={badgeSrc}
               alt={t("verify.embed.badgeAlt")}
