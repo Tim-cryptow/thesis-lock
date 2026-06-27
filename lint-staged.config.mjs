@@ -1,21 +1,12 @@
-import path from "node:path";
-
-// web, sdk, and cli each own their ESLint flat config and Prettier config.
-// Flat config does not cascade across directories, so each package's tooling is
-// run from inside that package on the files staged there. lint-staged passes
-// absolute paths; rebase them onto the package directory first.
-const root = process.cwd();
-
-function inPackage(pkg, bin, flags) {
-  return (files) => {
-    const pkgDir = path.join(root, pkg);
-    const rel = files.map((file) => path.relative(pkgDir, file)).join(" ");
-    return `bash -c "cd ${pkg} && ./node_modules/.bin/${bin} ${flags} ${rel}"`;
-  };
-}
-
-const eslintFix = (pkg) => inPackage(pkg, "eslint", "--fix");
-const prettierWrite = (pkg) => inPackage(pkg, "prettier", "--write");
+// web, sdk, and cli each own their ESLint flat config and Prettier config. Flat
+// config does not cascade across directories, so each package's tooling is
+// pointed at that package's config explicitly. The commands are plain strings,
+// so lint-staged appends the staged paths as separate process arguments without
+// involving a shell; filenames with spaces or other characters are passed safely.
+const eslintFix = (pkg) =>
+  `${pkg}/node_modules/.bin/eslint --config ${pkg}/eslint.config.mjs --fix`;
+const prettierWrite = (pkg) =>
+  `${pkg}/node_modules/.bin/prettier --ignore-path ${pkg}/.prettierignore --write`;
 
 export default {
   "web/**/*.{ts,tsx}": [eslintFix("web"), prettierWrite("web")],
