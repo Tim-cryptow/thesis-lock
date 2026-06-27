@@ -38,7 +38,7 @@ export type ActivityEvent = {
   txId: string;
   blockHeight: number;
   timestamp: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   contractName: string;
 };
 
@@ -201,7 +201,7 @@ function toEvent(tx: AddressTx): ActivityEvent | null {
   const type = FUNCTION_TYPES[fn];
   if (!type) return null;
 
-  const details: Record<string, any> = {};
+  const details: Record<string, unknown> = {};
   switch (type) {
     case "anchor":
     case "register": {

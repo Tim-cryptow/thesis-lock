@@ -22,20 +22,20 @@ export type UserDataExport = {
   exportedAt: string;
   exportedBy: string | null;
   data: {
-    collections: any;
-    tags: any;
-    watchlist: any;
-    apiKeys: any;
-    auditLog: any;
-    notificationPreferences: any;
-    webhookSubscriptions: any;
-    theme: any;
-    tourComplete: any;
-    recentSearches: any;
-    requestHistory: any;
-    performanceData: any;
-    statusHistory: any;
-    customSettings: any;
+    collections: unknown;
+    tags: unknown;
+    watchlist: unknown;
+    apiKeys: unknown;
+    auditLog: unknown;
+    notificationPreferences: unknown;
+    webhookSubscriptions: unknown;
+    theme: unknown;
+    tourComplete: unknown;
+    recentSearches: unknown;
+    requestHistory: unknown;
+    performanceData: unknown;
+    statusHistory: unknown;
+    customSettings: unknown;
   };
 };
 

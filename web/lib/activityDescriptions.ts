@@ -30,7 +30,7 @@ function num(value: unknown): number | null {
 }
 
 // A label when present, otherwise the truncated hash, otherwise empty.
-function labelOrHash(details: Record<string, any>): string {
+function labelOrHash(details: Record<string, unknown>): string {
   const label = str(details.label);
   if (label) return label;
   const hash = str(details.hash);

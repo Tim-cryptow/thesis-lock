@@ -50,7 +50,7 @@ export default function GroupsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!address) {
