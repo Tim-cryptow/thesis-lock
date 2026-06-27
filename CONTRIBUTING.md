@@ -67,10 +67,10 @@ Prefer frequent, focused commits over large bulk changes.
 
 1. Fork the repository and create a branch from `main`.
 2. Make your changes, keeping commits focused.
-3. Make sure the contract tests pass (`npm test`), `clarinet check` is clean, and the frontend builds (`cd web && npm run build`).
+3. Make sure the contract tests pass (`npm test`), `clarinet check` is clean, and the frontend builds, lints, and is formatted (`cd web && npm run build && npm run lint && npm run format:check`).
 4. Open a pull request against `main` and fill in the pull request template.
 
-CI runs `clarinet check`, the contract tests, the frontend build, and a TypeScript type check on every pull request, so it helps to run these locally first.
+CI runs `clarinet check`, the contract tests, the frontend build, a TypeScript type check, and lint and format checks for each package on every pull request, so it helps to run these locally first.
 
 ## Code style
 
@@ -80,6 +80,15 @@ Prettier, and TypeScript setup. In short:
 - TypeScript in strict mode. Do not disable strict checks.
 - Tailwind for styling. No external CSS frameworks.
 - Clarity 3 syntax for contracts. Use `stacks-block-height` and `burn-block-height`.
+
+Run the linter and formatter in any package you change before opening a pull
+request. A pre-commit hook also runs lint-staged on your staged files.
+
+```bash
+cd web   # or sdk, or cli
+npm run lint
+npm run format:check
+```
 
 ## Smart contracts
 
