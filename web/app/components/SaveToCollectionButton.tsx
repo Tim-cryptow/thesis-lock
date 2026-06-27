@@ -78,7 +78,7 @@ export default function SaveToCollectionButton({
   const create = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
-    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON);
+    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON!);
     setNewName("");
     setCreating(false);
     saveAll(collection.id, collection.name);

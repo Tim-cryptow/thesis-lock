@@ -206,7 +206,7 @@ function notifyChange(): void {
 }
 
 function majorVersion(version: string): string {
-  return (version || "").split(".")[0];
+  return (version || "").split(".")[0]!;
 }
 
 function isCompatible(version: string): boolean {

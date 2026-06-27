@@ -80,8 +80,8 @@ export default function ConfirmDialog({
       if (!card) return;
       const focusable = getFocusable(card);
       if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
       const active = document.activeElement;
       if (e.shiftKey && (active === first || !card.contains(active))) {
         e.preventDefault();

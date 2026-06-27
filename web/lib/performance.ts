@@ -160,7 +160,7 @@ function percentile(values: number[], p: number): number {
   const sorted = [...values].sort((a, b) => a - b);
   const rank = Math.ceil((p / 100) * sorted.length);
   const index = Math.min(sorted.length - 1, Math.max(0, rank - 1));
-  return sorted[index];
+  return sorted[index]!;
 }
 
 export type VitalSummary = {

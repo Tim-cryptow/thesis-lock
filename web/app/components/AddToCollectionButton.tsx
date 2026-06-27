@@ -87,7 +87,7 @@ export default function AddToCollectionButton({
   const create = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
-    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON);
+    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON!);
     addToCollection(collection.id, hash, label, note, verifyUrl);
     setNewName("");
     setCreating(false);

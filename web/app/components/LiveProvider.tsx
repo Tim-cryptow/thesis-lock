@@ -35,12 +35,12 @@ const INTERVAL_KEY = "thesislock.live.interval";
 export const LIVE_INTERVALS = [15_000, 30_000, 60_000];
 
 export function getLiveInterval(): number {
-  if (typeof window === "undefined") return LIVE_INTERVALS[0];
+  if (typeof window === "undefined") return LIVE_INTERVALS[0]!;
   try {
     const value = Number(window.localStorage.getItem(INTERVAL_KEY));
-    return LIVE_INTERVALS.includes(value) ? value : LIVE_INTERVALS[0];
+    return LIVE_INTERVALS.includes(value) ? value : LIVE_INTERVALS[0]!;
   } catch {
-    return LIVE_INTERVALS[0];
+    return LIVE_INTERVALS[0]!;
   }
 }
 

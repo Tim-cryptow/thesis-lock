@@ -71,7 +71,7 @@ describe("parseLabel", () => {
   it("round-trips every non-generic template", () => {
     for (const tpl of TEMPLATES) {
       if (tpl.id === GENERIC_TEMPLATE_ID) continue;
-      const firstKey = tpl.fields[0].key;
+      const firstKey = tpl.fields[0]!.key;
       const parsed = parseLabel(buildLabel(tpl, { [firstKey]: "sample" }));
       expect(parsed.templateId).toBe(tpl.id);
       expect(parsed.fields[firstKey]).toBe("sample");
@@ -95,7 +95,7 @@ describe("parseLabel", () => {
 });
 
 describe("templateFieldError / isTemplateValid", () => {
-  const titleField = paper.fields[0];
+  const titleField = paper.fields[0]!;
 
   it("flags non-ASCII values", () => {
     expect(templateFieldError(titleField, "café")).toBe("asciiOnly");

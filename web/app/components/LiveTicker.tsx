@@ -140,7 +140,7 @@ export default function LiveTicker() {
 
   if (hidden) return null;
   if (events.length === 0) return null;
-  const newest = events[0].receivedAt;
+  const newest = events[0]!.receivedAt;
   if (Date.now() - newest > STALE_MS) return null;
 
   const dotClass =

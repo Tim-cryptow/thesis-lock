@@ -17,7 +17,7 @@ export function recordServerSnapshot(services: ServiceStatus[], timestamp: strin
   snapshots.push({ timestamp, services });
   const cutoff = Date.now() - WINDOW_MS;
   let drop = 0;
-  while (drop < snapshots.length && new Date(snapshots[drop].timestamp).getTime() < cutoff) {
+  while (drop < snapshots.length && new Date(snapshots[drop]!.timestamp).getTime() < cutoff) {
     drop += 1;
   }
   if (drop > 0) snapshots.splice(0, drop);

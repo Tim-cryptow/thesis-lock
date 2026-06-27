@@ -270,7 +270,7 @@ function buildRecentActivity(orderedAsc: AddressTx[]): ActivityItem[] {
   const items: ActivityItem[] = [];
   // orderedAsc is chain-ascending; walk newest first for the feed.
   for (let i = orderedAsc.length - 1; i >= 0 && items.length < 20; i -= 1) {
-    const tx = orderedAsc[i];
+    const tx = orderedAsc[i]!;
     const fn = tx.contract_call?.function_name;
     const id = tx.contract_call?.contract_id;
     const block = tx.block_height ?? 0;

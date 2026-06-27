@@ -42,7 +42,8 @@ function isBlockedIpv4(host: string): boolean {
   if (parts.length !== 4) return false;
   const nums = parts.map((p) => Number(p));
   if (nums.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
-  const [a, b] = nums;
+  const a = nums[0]!;
+  const b = nums[1]!;
   if (a === 0 || a === 10 || a === 127) return true;
   if (a === 169 && b === 254) return true; // link-local + cloud metadata
   if (a === 172 && b >= 16 && b <= 31) return true;
@@ -148,7 +149,7 @@ function deliverWebhook(
           if (options && (options as { all?: boolean }).all) {
             (callback as (e: null, a: ResolvedAddress[]) => void)(null, addresses);
           } else {
-            callback(null, addresses[0].address, addresses[0].family);
+            callback(null, addresses[0]!.address, addresses[0]!.family);
           }
         }) as Parameters<typeof https.request>[1]["lookup"],
       },

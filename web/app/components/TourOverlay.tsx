@@ -21,7 +21,7 @@ export type TourOverlayProps = {
 // Friendly label for the "Go to ..." button derived from a route path.
 function pageLabel(path: string): string {
   if (path === "/") return "home";
-  const seg = path.replace(/^\//, "").split("/")[0];
+  const seg = path.replace(/^\//, "").split("/")[0]!;
   return seg.replace(/-/g, " ");
 }
 

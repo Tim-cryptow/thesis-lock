@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 function exampleLabel(template: AnchorTemplate): string {
   if (template.id === GENERIC_TEMPLATE_ID) {
-    return template.fields[0].placeholder.replace(/^e\.g\.\s*/, "");
+    return template.fields[0]!.placeholder.replace(/^e\.g\.\s*/, "");
   }
   const values = Object.fromEntries(template.fields.map((field) => [field.key, field.placeholder]));
   return buildLabel(template, values);

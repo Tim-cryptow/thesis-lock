@@ -326,8 +326,8 @@ export default function AnchorPage() {
       }
       setRegisterProgress({ current: idx + 1, total: list.length });
       registerAnchor(
-        list[idx].hash,
-        list[idx].label,
+        list[idx]!.hash,
+        list[idx]!.label,
         () => registerSequentially(list, idx + 1, onAllDone, onAbort),
         () => {
           setRegisterProgress(null);
@@ -503,11 +503,11 @@ export default function AnchorPage() {
       }
       setMintProgress({ current: idx + 1, total: list.length });
       mintProof(
-        list[idx].hash,
-        list[idx].label,
+        list[idx]!.hash,
+        list[idx]!.label,
         (txId) => {
           setMintTxId(txId);
-          auditProofMint(list[idx].hash, txId);
+          auditProofMint(list[idx]!.hash, txId);
           mintProofsSequentially(list, idx + 1);
         },
         () => {

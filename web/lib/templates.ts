@@ -261,7 +261,7 @@ export function buildRawLabel(
   fieldValues: Record<string, string>,
 ): string {
   if (template.id === GENERIC_TEMPLATE_ID) {
-    const only = template.fields[0];
+    const only = template.fields[0]!;
     return (fieldValues[only.key] ?? "").trim();
   }
 

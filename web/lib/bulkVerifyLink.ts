@@ -29,7 +29,7 @@ function normalizeHash(raw: string): string {
 // staged value from being an off-site or protocol-relative link.
 function verifyPathHash(url: string): string | null {
   const m = /^\/v\/([0-9a-f]{64})(?:\?|$)/i.exec(url);
-  return m ? m[1].toLowerCase() : null;
+  return m ? m[1]!.toLowerCase() : null;
 }
 
 // Validates one staged item, dropping anything without a usable hash and any

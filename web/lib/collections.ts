@@ -89,13 +89,13 @@ export const COLLECTION_COLORS: CollectionColor[] = [
 // serializes cleanly and renders anywhere without an icon font.
 export const COLLECTION_ICONS = ["📄", "📁", "🔬", "⚖️", "💻", "🎓", "🏥", "📊"];
 
-export const DEFAULT_COLOR = COLLECTION_COLORS[0].id;
-export const DEFAULT_ICON = COLLECTION_ICONS[1];
+export const DEFAULT_COLOR = COLLECTION_COLORS[0]!.id;
+export const DEFAULT_ICON = COLLECTION_ICONS[1]!;
 
 // Resolves a stored color id to its class set, falling back to the first preset
 // so an unknown or hand-edited color never renders blank.
 export function resolveColor(id: string): CollectionColor {
-  return COLLECTION_COLORS.find((c) => c.id === id) ?? COLLECTION_COLORS[0];
+  return COLLECTION_COLORS.find((c) => c.id === id) ?? COLLECTION_COLORS[0]!;
 }
 
 function nowIso(): string {
@@ -149,7 +149,7 @@ function coerceItem(value: unknown): CollectionItem | null {
 // a Link would treat as an external redirect.
 function verifyPathHash(url: string): string | null {
   const m = /^\/v\/([0-9a-f]{64})(?:\?|$)/i.exec(url);
-  return m ? m[1].toLowerCase() : null;
+  return m ? m[1]!.toLowerCase() : null;
 }
 
 // The path a Verify link or CSV row should use for an item: the pinned source
@@ -176,7 +176,7 @@ export function itemVerifyContext(item: CollectionItem): ItemVerifyContext {
   if (!item.verifyUrl || verifyPathHash(item.verifyUrl) !== item.hash) return {};
   const ctx: ItemVerifyContext = {};
   const ownerMatch = /[?&]owner=([^&]+)/.exec(item.verifyUrl);
-  if (ownerMatch) ctx.owner = decodeURIComponent(ownerMatch[1]);
+  if (ownerMatch) ctx.owner = decodeURIComponent(ownerMatch[1]!);
   const groupMatch = /[?&]group=(\d+)(?:&|$)/.exec(item.verifyUrl);
   const indexMatch = /[?&]gi=(\d+)(?:&|$)/.exec(item.verifyUrl);
   if (groupMatch && indexMatch) {
@@ -399,7 +399,7 @@ export function reorderItem(collectionId: string, hash: string, direction: "up" 
       const target = direction === "up" ? index - 1 : index + 1;
       if (target < 0 || target >= c.items.length) return c;
       const items = [...c.items];
-      [items[index], items[target]] = [items[target], items[index]];
+      [items[index], items[target]] = [items[target]!, items[index]!];
       return { ...c, items, updatedAt: nowIso() };
     }),
   );

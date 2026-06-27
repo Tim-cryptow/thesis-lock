@@ -92,7 +92,7 @@ describe("removeWatch / removeWatchByValue / setWatchNotifications", () => {
   it("toggles per-item notifications", () => {
     const item = addWatch("hash", H1, "x");
     setWatchNotifications(item.id, false);
-    expect(loadWatchlist()[0].notifications).toBe(false);
+    expect(loadWatchlist()[0]!.notifications).toBe(false);
   });
 });
 

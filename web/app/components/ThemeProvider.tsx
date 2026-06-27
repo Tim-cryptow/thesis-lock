@@ -83,7 +83,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const cycle = useCallback(() => {
     setModeState((current) => {
-      const next = MODES[(MODES.indexOf(current) + 1) % MODES.length];
+      const next = MODES[(MODES.indexOf(current) + 1) % MODES.length]!;
       try {
         window.localStorage.setItem(STORAGE_KEY, next);
       } catch {

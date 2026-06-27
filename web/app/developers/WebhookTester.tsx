@@ -36,7 +36,9 @@ export default function WebhookTester({
     if (focusId) {
       setSelectedId(focusId);
     } else if (subscriptions.length > 0) {
-      setSelectedId((cur) => (subscriptions.some((s) => s.id === cur) ? cur : subscriptions[0].id));
+      setSelectedId((cur) =>
+        subscriptions.some((s) => s.id === cur) ? cur : subscriptions[0]!.id,
+      );
     }
   }, [focusId, subscriptions]);
 
@@ -189,7 +191,7 @@ export default function WebhookTester({
           {history.length > 0 ? (
             <div className="mt-6">
               <div className="mb-2 text-sm font-medium">Recent tests</div>
-              {history[0].corsBlocked ? (
+              {history[0]!.corsBlocked ? (
                 <div className="mb-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
                   <p className="text-sm text-amber-700 dark:text-amber-300">
                     The browser could not complete the request (likely CORS). Run this from your

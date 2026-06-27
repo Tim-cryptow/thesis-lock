@@ -336,8 +336,8 @@ export default function StatsClient() {
             )}
             {anchorsByDay.length > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
-                <span>{formatDateLabel(anchorsByDay[0].date)}</span>
-                <span>{formatDateLabel(anchorsByDay[anchorsByDay.length - 1].date)}</span>
+                <span>{formatDateLabel(anchorsByDay[0]!.date)}</span>
+                <span>{formatDateLabel(anchorsByDay[anchorsByDay.length - 1]!.date)}</span>
               </div>
             )}
           </section>

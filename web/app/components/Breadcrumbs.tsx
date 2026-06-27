@@ -66,7 +66,7 @@ function truncateMiddle(value: string): string {
 function humanize(segment: string): string {
   return segment
     .split("-")
-    .map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
+    .map((word) => (word ? word[0]!.toUpperCase() + word.slice(1) : word))
     .join(" ");
 }
 
@@ -94,7 +94,7 @@ function labelFor(
 export function titleForPath(pathname: string): string {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return "Home";
-  const last = segments[segments.length - 1];
+  const last = segments[segments.length - 1]!;
   if (isHash(last) || isPrincipal(last) || /^\d+$/.test(last)) {
     const parent = segments[segments.length - 2];
     if (parent && SEGMENT_LABELS[parent]) return SEGMENT_LABELS[parent];

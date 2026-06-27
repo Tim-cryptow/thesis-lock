@@ -286,7 +286,7 @@ export default function DashboardClient() {
   );
 
   const activeSince =
-    analytics && analytics.anchorsByDay.length > 0 ? analytics.anchorsByDay[0].date : null;
+    analytics && analytics.anchorsByDay.length > 0 ? analytics.anchorsByDay[0]!.date : null;
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
@@ -520,8 +520,8 @@ export default function DashboardClient() {
             )}
             {maxDayCount > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
-                <span>{formatDateLabel(chartDays[0].date)}</span>
-                <span>{formatDateLabel(chartDays[chartDays.length - 1].date)}</span>
+                <span>{formatDateLabel(chartDays[0]!.date)}</span>
+                <span>{formatDateLabel(chartDays[chartDays.length - 1]!.date)}</span>
               </div>
             )}
           </section>

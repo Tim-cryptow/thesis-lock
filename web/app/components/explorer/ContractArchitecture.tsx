@@ -81,7 +81,7 @@ export default function ContractArchitecture({ onSelect }: { onSelect: (name: st
           </div>
           <Box
             name="thesislock-groups"
-            role={CONTRACT_BLURBS["thesislock-groups"]}
+            role={CONTRACT_BLURBS["thesislock-groups"]!}
             onSelect={onSelect}
             variant="independent"
           />

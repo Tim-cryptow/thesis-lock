@@ -36,7 +36,7 @@ export default function QRCode({ value, size = 128 }: QRCodeProps) {
   let path = "";
   for (let row = 0; row < matrix.size; row++) {
     for (let col = 0; col < matrix.size; col++) {
-      if (matrix.modules[row][col]) {
+      if (matrix.modules[row]![col]) {
         path += `M${col + QUIET_ZONE} ${row + QUIET_ZONE}h1v1h-1z`;
       }
     }

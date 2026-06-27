@@ -383,7 +383,7 @@ export function findEndpoint(id: string): Endpoint | undefined {
 /** The default starting value for a parameter (first option for selects). */
 export function defaultParamValue(param: EndpointParam): string {
   if (param.kind === "select" && param.options && param.options.length > 0) {
-    return param.options[0];
+    return param.options[0]!;
   }
   return "";
 }

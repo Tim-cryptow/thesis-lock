@@ -160,7 +160,7 @@ export default function PreferencesSection() {
   const { startTour } = useTour();
 
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
-  const [interval, setIntervalState] = useState<number>(LIVE_INTERVALS[0]);
+  const [interval, setIntervalState] = useState<number>(LIVE_INTERVALS[0]!);
   const [perfDebug, setPerfDebug] = useState(false);
   const [tickerHidden, setTickerHiddenState] = useState(false);
   const [defaultTemplate, setDefaultTemplate] = useState("generic");

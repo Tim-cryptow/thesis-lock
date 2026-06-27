@@ -59,7 +59,7 @@ function normalizeSegment(segment: string): string {
 
 function endpointOf(url: string): string {
   const u = resolved(url);
-  if (!u) return url.split("?")[0];
+  if (!u) return url.split("?")[0]!;
   const path = u.pathname.split("/").map(normalizeSegment).join("/");
   const sameOrigin = typeof window !== "undefined" && u.origin === window.location.origin;
   return sameOrigin ? path : `${u.hostname}${path}`;

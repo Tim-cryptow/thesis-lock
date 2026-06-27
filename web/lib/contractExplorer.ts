@@ -404,7 +404,7 @@ export function argToClarityValue(type: string, raw: unknown): ClarityValue {
   const optionalMatch = t.match(/^\(optional\s+(.+)\)$/);
   if (optionalMatch) {
     if (raw === null || raw === undefined || raw === "") return noneCV();
-    return someCV(argToClarityValue(optionalMatch[1], raw));
+    return someCV(argToClarityValue(optionalMatch[1]!, raw));
   }
 
   if (t === "uint") {

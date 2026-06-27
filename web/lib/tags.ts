@@ -103,7 +103,7 @@ export function normalizeTag(raw: string): string {
 // hue chosen deterministically from the name so custom tags stay consistent.
 export function getTagColor(tag: string): string {
   const name = normalizeTag(tag);
-  if (!name) return PALETTE[0];
+  if (!name) return PALETTE[0]!;
   const overrides = loadColorOverrides();
   if (overrides[name]) return overrides[name];
   if (TAG_COLORS[name]) return TAG_COLORS[name];
@@ -111,7 +111,7 @@ export function getTagColor(tag: string): string {
   for (let i = 0; i < name.length; i += 1) {
     hash = (hash * 31 + name.charCodeAt(i)) | 0;
   }
-  return PALETTE[Math.abs(hash) % PALETTE.length];
+  return PALETTE[Math.abs(hash) % PALETTE.length]!;
 }
 
 // Sets or replaces a tag's color override, used by the editable swatch on the
@@ -414,7 +414,7 @@ export function getRecentTags(limit = 8): Tag[] {
   const byName = new Map(getAllTags().map((t) => [t.name, t]));
   return Object.keys(seen)
     .filter((name) => byName.has(name))
-    .sort((a, b) => (seen[a] < seen[b] ? 1 : seen[a] > seen[b] ? -1 : 0))
+    .sort((a, b) => (seen[a]! < seen[b]! ? 1 : seen[a]! > seen[b]! ? -1 : 0))
     .slice(0, limit)
     .map((name) => byName.get(name)!);
 }
@@ -455,7 +455,7 @@ export function suggestTags(label: string): string[] {
   const out: string[] = [];
   const parsed = parseLabel(label);
   if (parsed.templateId && TEMPLATE_TAG_SUGGESTIONS[parsed.templateId]) {
-    out.push(...TEMPLATE_TAG_SUGGESTIONS[parsed.templateId]);
+    out.push(...TEMPLATE_TAG_SUGGESTIONS[parsed.templateId]!);
   }
   const lower = label.toLowerCase();
   for (const keyword of CONTENT_KEYWORDS) {

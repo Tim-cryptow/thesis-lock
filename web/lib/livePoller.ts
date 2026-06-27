@@ -322,7 +322,7 @@ export class LivePoller {
     // real event (which would otherwise be swallowed).
     if (!this.lastSeen.has(contractId)) {
       const { events } = await this.fetchEventsPage(contractId, EVENTS_PER_POLL, 0);
-      this.lastSeen.set(contractId, events.length > 0 ? events[0].id : EMPTY_BASELINE);
+      this.lastSeen.set(contractId, events.length > 0 ? events[0]!.id : EMPTY_BASELINE);
       return [];
     }
 
@@ -338,7 +338,7 @@ export class LivePoller {
     while (offset < BURST_SAFETY_CAP) {
       const { events, rawCount } = await this.fetchEventsPage(contractId, limit, offset);
       if (events.length === 0) break;
-      if (newest === undefined) newest = events[0].id;
+      if (newest === undefined) newest = events[0]!.id;
 
       let found = false;
       for (const ev of events) {

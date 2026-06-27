@@ -258,7 +258,7 @@ export default function ActivityClient() {
     if (!node || !address) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+        if (entries[0]!.isIntersecting && hasMore && !loading && !loadingMore) {
           void loadMore(address);
         }
       },

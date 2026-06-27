@@ -17,12 +17,12 @@ function safeStringify(value: unknown): string {
 
 function stringAsciiMax(type: string): number | undefined {
   const m = type.match(/\(string-ascii\s+(\d+)\)/);
-  return m ? Number(m[1]) : undefined;
+  return m ? Number(m[1]!) : undefined;
 }
 
 function unwrapOptional(type: string): string {
   const m = type.trim().match(/^\(optional\s+(.+)\)$/);
-  return m ? m[1].trim() : type;
+  return m ? m[1]!.trim() : type;
 }
 
 function placeholderFor(type: string): string {

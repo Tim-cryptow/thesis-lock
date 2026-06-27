@@ -24,7 +24,7 @@ function isPdf(file: File): boolean {
 
 function extensionOf(name: string): string {
   const match = name.match(/\.([a-z0-9]+)$/i);
-  return match ? match[1].toUpperCase() : "FILE";
+  return match ? match[1]!.toUpperCase() : "FILE";
 }
 
 function formatModified(ms: number): string {

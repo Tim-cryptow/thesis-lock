@@ -98,8 +98,8 @@ describe("getAllTags / getHashesByTag", () => {
     setTagsForHash(H2, ["shared"]);
     const all = getAllTags();
     expect(all.map((t) => t.name)).toEqual(["shared", "alpha"]);
-    expect(all[0].count).toBe(2);
-    expect(all[1].count).toBe(1);
+    expect(all[0]!.count).toBe(2);
+    expect(all[1]!.count).toBe(1);
   });
 
   it("lists the hashes carrying a tag", () => {

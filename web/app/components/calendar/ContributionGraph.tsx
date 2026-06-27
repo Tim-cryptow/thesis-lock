@@ -48,7 +48,7 @@ type Cell = CalendarDay | null;
 // pads the trailing days to complete the last week, and chunks into weeks.
 function toWeeks(days: CalendarDay[]): Cell[][] {
   if (days.length === 0) return [];
-  const lead = new Date(`${days[0].date}T00:00:00Z`).getUTCDay();
+  const lead = new Date(`${days[0]!.date}T00:00:00Z`).getUTCDay();
   const cells: Cell[] = [];
   for (let i = 0; i < lead; i += 1) cells.push(null);
   for (const day of days) cells.push(day);
@@ -70,7 +70,7 @@ function monthLabels(weeks: Cell[][]): string[] {
     }
     const m = new Date(`${first.date}T00:00:00Z`).getUTCMonth();
     if (m !== prev) {
-      labels.push(MONTHS[m]);
+      labels.push(MONTHS[m]!);
       prev = m;
     } else {
       labels.push("");

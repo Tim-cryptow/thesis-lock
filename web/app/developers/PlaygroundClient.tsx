@@ -70,9 +70,9 @@ async function runRequest(
 }
 
 export default function PlaygroundClient() {
-  const [endpoint, setEndpoint] = useState<Endpoint>(ALL_ENDPOINTS[0]);
+  const [endpoint, setEndpoint] = useState<Endpoint>(ALL_ENDPOINTS[0]!);
   const [values, setValues] = useState<Record<string, string>>(() =>
-    initialValues(ALL_ENDPOINTS[0]),
+    initialValues(ALL_ENDPOINTS[0]!),
   );
   const [result, setResult] = useState<PlaygroundResult | null>(null);
   const [loading, setLoading] = useState(false);

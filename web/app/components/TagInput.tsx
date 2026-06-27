@@ -171,7 +171,7 @@ export default function TagInput({
     } else if (e.key === "Escape") {
       setOpen(false);
     } else if (e.key === "Backspace" && query === "" && tags.length > 0) {
-      remove(tags[tags.length - 1]);
+      remove(tags[tags.length - 1]!);
     }
   };
 

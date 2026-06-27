@@ -74,7 +74,7 @@ export default function AuditReportGenerator() {
       ["Unique Actors", String(report.uniqueActors)],
       ["Integrity Hash", report.integrityHash],
     ]
-      .map(([k, v]) => `${esc(k)},${esc(v)}`)
+      .map(([k, v]) => `${esc(k!)},${esc(v!)}`)
       .join("\r\n");
     downloadExport(
       `${preamble}\r\n\r\n${formatAuditCsv(report.entries)}`,

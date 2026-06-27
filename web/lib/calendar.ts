@@ -191,7 +191,7 @@ async function scanAnchorEntries(address: string): Promise<AnchorEntry[]> {
   const seenBatch = new Set<string>();
   const deduped: AnchorEntry[] = [];
   for (let i = entries.length - 1; i >= 0; i -= 1) {
-    const entry = entries[i];
+    const entry = entries[i]!;
     if (entry.source === "batch") {
       if (seenBatch.has(entry.hash)) continue;
       seenBatch.add(entry.hash);

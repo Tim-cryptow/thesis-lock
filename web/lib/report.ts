@@ -109,7 +109,7 @@ function pickBest(
     const byPriority = SOURCE_PRIORITY[b.source] - SOURCE_PRIORITY[a.source];
     if (byPriority !== 0) return byPriority;
     return b.stacksBlock - a.stacksBlock;
-  })[0];
+  })[0]!;
 }
 
 // Resolves a single hash into a report entry by checking every contract. A
@@ -198,7 +198,7 @@ export async function generateReport(
     while (next < hashes.length) {
       const index = next;
       next += 1;
-      const entry = await verifyReportEntry(hashes[index], owner);
+      const entry = await verifyReportEntry(hashes[index]!, owner);
       entries[index] = entry;
       done += 1;
       onProgress?.(done, hashes.length, entry, index);
