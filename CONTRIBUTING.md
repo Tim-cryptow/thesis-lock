@@ -74,6 +74,9 @@ CI runs `clarinet check`, the contract tests, the frontend build, and a TypeScri
 
 ## Code style
 
+See [CODESTYLE.md](CODESTYLE.md) for the full conventions and the ESLint,
+Prettier, and TypeScript setup. In short:
+
 - TypeScript in strict mode. Do not disable strict checks.
 - Tailwind for styling. No external CSS frameworks.
 - Clarity 3 syntax for contracts. Use `stacks-block-height` and `burn-block-height`.
