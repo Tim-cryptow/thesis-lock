@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import EndpointSelector from "@/app/components/playground/EndpointSelector";
 import ParameterForm from "@/app/components/playground/ParameterForm";
 import CurlPreview from "@/app/components/playground/CurlPreview";
-import ResponsePanel, {
-  type PlaygroundResult,
-} from "@/app/components/playground/ResponsePanel";
+import ResponsePanel, { type PlaygroundResult } from "@/app/components/playground/ResponsePanel";
 import RequestHistory, {
   clearHistory,
   loadHistory,
@@ -72,9 +70,9 @@ async function runRequest(
 }
 
 export default function PlaygroundClient() {
-  const [endpoint, setEndpoint] = useState<Endpoint>(ALL_ENDPOINTS[0]);
+  const [endpoint, setEndpoint] = useState<Endpoint>(ALL_ENDPOINTS[0]!);
   const [values, setValues] = useState<Record<string, string>>(() =>
-    initialValues(ALL_ENDPOINTS[0]),
+    initialValues(ALL_ENDPOINTS[0]!),
   );
   const [result, setResult] = useState<PlaygroundResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -124,9 +122,7 @@ export default function PlaygroundClient() {
           }),
         );
       } catch {
-        setError(
-          "Request failed. Check your connection and the parameters, then try again.",
-        );
+        setError("Request failed. Check your connection and the parameters, then try again.");
       } finally {
         setLoading(false);
       }
@@ -166,9 +162,7 @@ export default function PlaygroundClient() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl">API Playground</h2>
-        <p className="mt-1 text-sm text-foreground/70">
-          Test API endpoints interactively.
-        </p>
+        <p className="mt-1 text-sm text-foreground/70">Test API endpoints interactively.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[18rem_1fr] gap-8">
@@ -185,11 +179,7 @@ export default function PlaygroundClient() {
           />
           <CurlPreview endpoint={endpoint} values={values} />
           <ResponsePanel result={result} loading={loading} error={error} />
-          <RequestHistory
-            history={history}
-            onReplay={replay}
-            onClear={onClear}
-          />
+          <RequestHistory history={history} onReplay={replay} onClear={onClear} />
         </section>
       </div>
     </div>

@@ -10,19 +10,14 @@ const program = new Command();
 
 program
   .name("thesislock")
-  .description(
-    "Verify ThesisLock document anchors on the Stacks blockchain from the terminal",
-  )
+  .description("Verify ThesisLock document anchors on the Stacks blockchain from the terminal")
   .version("0.1.0");
 
 program
   .command("verify")
   .description("Check whether a SHA-256 hash is anchored on Stacks")
   .argument("<hash>", "64-character hex SHA-256 hash")
-  .option(
-    "--owner <principal>",
-    "Stacks principal to check for owner-keyed batch anchors",
-  )
+  .option("--owner <principal>", "Stacks principal to check for owner-keyed batch anchors")
   .option("--json", "print machine-readable JSON output")
   .option("--quiet", "print only true or false")
   .action(verifyCommand);
@@ -38,9 +33,7 @@ program
 
 program
   .command("status")
-  .description(
-    "Show protocol status, or anchor stats for a wallet when a principal is given",
-  )
+  .description("Show protocol status, or anchor stats for a wallet when a principal is given")
   .argument("[principal]", "Stacks principal to look up")
   .option("--json", "print machine-readable JSON output")
   .option("--quiet", "print only the health state or anchor count")
@@ -52,11 +45,7 @@ program
   .argument("<query>", "64-hex hash, Stacks principal, or label text")
   .option("--json", "print machine-readable JSON output")
   .option("--quiet", "print only one matching hash per line")
-  .option(
-    "--limit <n>",
-    "maximum number of results to show",
-    (value) => parseInt(value, 10),
-  )
+  .option("--limit <n>", "maximum number of results to show", (value) => parseInt(value, 10))
   .action(searchCommand);
 
 program

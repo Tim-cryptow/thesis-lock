@@ -142,10 +142,7 @@ export async function fetchTxTimes(txIds: string[]): Promise<Map<string, number>
 const HIRO_PAGE = 50;
 const PAGINATE_SAFETY_CAP = 500;
 
-export async function paginatedFetch(
-  contractName: string,
-  target: number,
-): Promise<RawEvent[]> {
+export async function paginatedFetch(contractName: string, target: number): Promise<RawEvent[]> {
   const events: RawEvent[] = [];
   let offset = 0;
   while (events.length < target) {
@@ -233,10 +230,7 @@ export async function fetchRecentAnchors(limit = 20): Promise<FeedEntry[]> {
   // row instead of surfacing as a feed-level error in the client.
   const validated = await Promise.all(
     registryOnly.map(async (entry): Promise<FeedEntry | null> => {
-      const batch: BatchAnchor | null = await readBatchAnchor(
-        entry.hash,
-        entry.owner,
-      );
+      const batch: BatchAnchor | null = await readBatchAnchor(entry.hash, entry.owner);
       if (!batch) return null;
       return {
         ...entry,

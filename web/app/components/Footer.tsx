@@ -83,9 +83,7 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col gap-4 border-t border-foreground/10 pt-6 text-sm text-foreground/60 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col gap-1">
-            <span className="text-foreground/70">
-              Built on Stacks &middot; Secured by Bitcoin
-            </span>
+            <span className="text-foreground/70">Built on Stacks &middot; Secured by Bitcoin</span>
             <span className="text-foreground/50">&copy; {YEAR} ThesisLock</span>
             <div className="mt-1 flex items-center gap-3 text-xs">
               <Link

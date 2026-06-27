@@ -1,10 +1,5 @@
 import { validateStacksAddress } from "@stacks/transactions";
-import {
-  fetchAnchor,
-  fetchBatchAnchor,
-  fetchProof,
-  fetchProofIdByHash,
-} from "./hiroAnchor";
+import { fetchAnchor, fetchBatchAnchor, fetchProof, fetchProofIdByHash } from "./hiroAnchor";
 import { findGroupAnchorByHash, getGroupAnchorByLocation } from "./groups";
 import { parseLabel, type ParsedTemplate } from "./templates";
 
@@ -106,9 +101,7 @@ async function fetchCompareEntry(
 
   const ownerCandidate = owner?.toUpperCase();
   const validOwner =
-    ownerCandidate && validateStacksAddress(ownerCandidate)
-      ? ownerCandidate
-      : undefined;
+    ownerCandidate && validateStacksAddress(ownerCandidate) ? ownerCandidate : undefined;
 
   // The proof NFT is keyed by hash alone and independent of which contract
   // anchored the document, so look it up once regardless of the source.
@@ -126,10 +119,7 @@ async function fetchCompareEntry(
   // unrelated record.
   if (group) {
     try {
-      const located = await getGroupAnchorByLocation(
-        group.groupId,
-        group.index,
-      );
+      const located = await getGroupAnchorByLocation(group.groupId, group.index);
       if (located && located.hash === normalizedHash) {
         return {
           hash: normalizedHash,
@@ -282,13 +272,11 @@ export async function compareAnchors(
     else if (right.block < left.block) olderSide = "right";
   }
 
-  const sameOwner =
-    bothFound && left.owner.toUpperCase() === right.owner.toUpperCase();
+  const sameOwner = bothFound && left.owner.toUpperCase() === right.owner.toUpperCase();
   const sameLabel = bothFound && left.label === right.label;
   const sameSource = bothFound && left.source === right.source;
   const sameTemplate =
-    bothFound &&
-    (left.template?.templateId ?? null) === (right.template?.templateId ?? null);
+    bothFound && (left.template?.templateId ?? null) === (right.template?.templateId ?? null);
 
   let supersedes: "left" | "right" | null = null;
   if (bothFound) {

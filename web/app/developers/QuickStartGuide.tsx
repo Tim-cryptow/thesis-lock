@@ -21,8 +21,7 @@ type Step = {
 const STEPS: Step[] = [
   {
     title: "Install the SDK",
-    description:
-      "The thesislock-sdk package verifies anchors from any Node.js project.",
+    description: "The thesislock-sdk package verifies anchors from any Node.js project.",
     code: "npm install thesislock-sdk",
     language: "bash",
     tab: "javascript",
@@ -30,8 +29,7 @@ const STEPS: Step[] = [
   },
   {
     title: "Verify a document",
-    description:
-      "Create a client and confirm a hash is anchored on Stacks mainnet.",
+    description: "Create a client and confirm a hash is anchored on Stacks mainnet.",
     code: `import { createClient } from 'thesislock-sdk';
 
 const client = createClient();
@@ -43,8 +41,7 @@ console.log(result.verified);`,
   },
   {
     title: "Integrate in CI",
-    description:
-      "Gate a pipeline on a document being anchored, with no wallet or secret.",
+    description: "Gate a pipeline on a document being anchored, with no wallet or secret.",
     code: `- uses: Tim-cryptow/thesis-lock/action@main
   with:
     file: ./thesis.pdf
@@ -104,17 +101,10 @@ export default function QuickStartGuide({ onLearnMore }: Props) {
   return (
     <section className="rounded-lg border border-foreground/10 bg-foreground/5 p-6">
       <h3 className="text-xl">Quick Start</h3>
-      <p className="mt-1 text-sm text-foreground/70">
-        Verify your first document in three steps.
-      </p>
+      <p className="mt-1 text-sm text-foreground/70">Verify your first document in three steps.</p>
       <ol className="mt-6 flex flex-col gap-6">
         {STEPS.map((step, index) => (
-          <QuickStartStep
-            key={step.title}
-            step={step}
-            index={index}
-            onLearnMore={onLearnMore}
-          />
+          <QuickStartStep key={step.title} step={step} index={index} onLearnMore={onLearnMore} />
         ))}
       </ol>
     </section>

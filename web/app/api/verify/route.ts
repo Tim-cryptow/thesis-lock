@@ -5,10 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function badRequest(error: string): Response {
-  return Response.json(
-    { verified: false, error },
-    { status: 400, headers: corsHeaders() },
-  );
+  return Response.json({ verified: false, error }, { status: 400, headers: corsHeaders() });
 }
 
 export async function POST(req: Request) {

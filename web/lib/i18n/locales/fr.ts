@@ -174,8 +174,7 @@ export const fr: Translations = {
     },
     integrate: {
       heading: "Intégrez ThesisLock dans votre flux de travail",
-      intro:
-        "Ancrez et vérifiez des documents depuis votre propre code, terminal ou pipeline CI.",
+      intro: "Ancrez et vérifiez des documents depuis votre propre code, terminal ou pipeline CI.",
       sdk: {
         title: "SDK",
         body: "Un client TypeScript typé pour Node et le navigateur.",
@@ -221,7 +220,8 @@ export const fr: Translations = {
       batchModeAria: "Ancrer un lot de jusqu'à {max} fichiers",
     },
     single: {
-      dropZoneAria: "Déposez un fichier ici pour calculer son empreinte, ou cliquez pour en choisir un",
+      dropZoneAria:
+        "Déposez un fichier ici pour calculer son empreinte, ou cliquez pour en choisir un",
       dropZonePrompt: "Déposez un fichier ici, ou cliquez pour en choisir un",
       hashRegionAria: "Empreinte du document",
       sha256: "SHA-256",
@@ -240,8 +240,7 @@ export const fr: Translations = {
       dropZonePrompt:
         "Déposez jusqu'à {max} fichiers ici, ou cliquez pour choisir. Ajoutés : {added}/{max}.",
       limitReached: "La limite est de {max} fichiers par lot.",
-      partiallyAdded:
-        "Seulement {added} sur {total} ajoutés. La limite est de {max} par lot.",
+      partiallyAdded: "Seulement {added} sur {total} ajoutés. La limite est de {max} par lot.",
       remove: "Retirer",
       removeFileAria: "Retirer le fichier {name}",
       labelForAria: "Étiquette pour {name}",
@@ -313,13 +312,10 @@ export const fr: Translations = {
     recordTitle: "Enregistrement de l'ancre",
     compareLink: "Comparer avec un autre document",
     lookingUp: "Recherche sur la chaîne...",
-    tweetText:
-      "Ancré sur Stacks. Horodatage vérifiable sans partager le fichier :",
+    tweetText: "Ancré sur Stacks. Horodatage vérifiable sans partager le fichier :",
     error: {
-      lookupFailed:
-        "Impossible de rechercher cette ancre. Vérifiez votre connexion et réessayez.",
-      hiroUnavailable:
-        "L'API Hiro est actuellement indisponible. Nouvel essai automatique...",
+      lookupFailed: "Impossible de rechercher cette ancre. Vérifiez votre connexion et réessayez.",
+      hiroUnavailable: "L'API Hiro est actuellement indisponible. Nouvel essai automatique...",
       hashFailed: "Impossible de calculer l'empreinte de ce fichier.",
     },
     fields: {
@@ -349,8 +345,7 @@ export const fr: Translations = {
     notAnchored: {
       body: "Cette empreinte n'a pas été ancrée.",
       batchHintPrefix: "Si cela a été ancré en lot, ajoutez",
-      batchHintSuffix:
-        "à l'URL ou connectez le portefeuille d'ancrage pour vérifier.",
+      batchHintSuffix: "à l'URL ou connectez le portefeuille d'ancrage pour vérifier.",
       cta: "Ancrer un document",
     },
     proof: {
@@ -382,7 +377,8 @@ export const fr: Translations = {
     file: {
       heading: "Vérifier un fichier",
       body: "Choisissez un fichier. Le navigateur calculera son empreinte et la comparera à l'empreinte ancrée.",
-      dropAria: "Choisissez un fichier à vérifier par rapport à cette empreinte, ou déposez-en un ici",
+      dropAria:
+        "Choisissez un fichier à vérifier par rapport à cette empreinte, ou déposez-en un ici",
       dropPrompt: "Déposez un fichier ici, ou cliquez pour en choisir un",
       hashing: "Calcul en cours...",
       match: "Correspondance. Ce fichier est le document ancré.",
@@ -408,7 +404,8 @@ export const fr: Translations = {
     labelLabel: "Étiquette",
     labelNone: "(aucune)",
     stacksBlockLabel: "Bloc Stacks",
-    certError: "Impossible de charger les données d'ancre sur la chaîne. Réessayez dans un instant.",
+    certError:
+      "Impossible de charger les données d'ancre sur la chaîne. Réessayez dans un instant.",
     showingRecent: "Affichage des 10 plus récentes sur {count} ancres. Tout exporter.",
     exportCsv: "Exporter en CSV",
     exportJson: "Exporter en JSON",
@@ -463,8 +460,7 @@ export const fr: Translations = {
   stats: {
     error: "Impossible de charger les statistiques du protocole. Réessayez bientôt.",
     title: "Statistiques du protocole",
-    subtitle:
-      "Activité sur la chaîne à travers les contrats ThesisLock sur le mainnet Stacks.",
+    subtitle: "Activité sur la chaîne à travers les contrats ThesisLock sur le mainnet Stacks.",
     totalAnchors: "Total des ancres",
     uniqueWallets: "Portefeuilles uniques",
     contractsDeployed: "Contrats déployés",
@@ -538,12 +534,10 @@ export const fr: Translations = {
       title: "Groupes",
       intro:
         "Créez un groupe nommé et ancrez-y des documents avec des membres de confiance. Chaque membre peut contribuer à un historique de documents partagé sur la chaîne.",
-      connectPrompt:
-        "Connectez votre portefeuille Stacks pour créer et gérer des groupes.",
+      connectPrompt: "Connectez votre portefeuille Stacks pour créer et gérer des groupes.",
       yourGroups: "Vos groupes",
       loadingGroups: "Chargement des groupes...",
-      empty:
-        "Vous n'êtes encore membre d'aucun groupe. Créez-en un ci-dessus pour commencer.",
+      empty: "Vous n'êtes encore membre d'aucun groupe. Créez-en un ci-dessus pour commencer.",
       loadError: "Échec du chargement des groupes.",
       cardMeta: "Groupe n°{id} · {anchors}",
       adminSuffix: " · admin",
@@ -569,20 +563,19 @@ export const fr: Translations = {
       membersHeading: "Membres",
       addMemberLabel: "Ajouter un membre par principal Stacks",
       principalPlaceholder: "SP...",
-      invalidPrincipal:
-        "Saisissez un principal Stacks valide (commençant par SP ou SM).",
+      invalidPrincipal: "Saisissez un principal Stacks valide (commençant par SP ou SM).",
       add: "Ajouter",
       signing: "Signature...",
       remove: "Retirer",
       adminSuffix: " (admin)",
-      refreshHint:
-        "Une fois la transaction confirmée, actualisez pour voir la liste mise à jour.",
+      refreshHint: "Une fois la transaction confirmée, actualisez pour voir la liste mise à jour.",
       anchorHeading: "Ancrer un document à ce groupe",
       anchorIntro:
         "Le fichier est haché dans votre navigateur. Seule l'empreinte est enregistrée sur la chaîne.",
       notMember:
         "Seuls les membres du groupe peuvent y ancrer des documents. Demandez à l'admin d'ajouter votre portefeuille.",
-      dropZoneAria: "Déposez un fichier ici pour calculer son empreinte, ou cliquez pour en choisir un",
+      dropZoneAria:
+        "Déposez un fichier ici pour calculer son empreinte, ou cliquez pour en choisir un",
       dropZoneLabel: "Déposez un fichier ici, ou cliquez pour en choisir un",
       hashError: "Impossible de calculer l'empreinte de ce fichier.",
       hashing: "Calcul en cours...",
@@ -609,8 +602,7 @@ export const fr: Translations = {
   },
   dashboard: {
     title: "Mon tableau de bord",
-    subtitle:
-      "Votre activité d'ancrage sur les contrats ThesisLock, par source et dans le temps.",
+    subtitle: "Votre activité d'ancrage sur les contrats ThesisLock, par source et dans le temps.",
     connectPrompt: "Connectez votre portefeuille Stacks pour voir vos analyses personnelles.",
     loadError: "Impossible de charger vos analyses. Réessayez bientôt.",
     exportError: "Échec de l'exportation.",
@@ -655,7 +647,8 @@ export const fr: Translations = {
       "Déposez plusieurs documents pour les vérifier tous d'un coup par rapport à la chaîne. Les fichiers sont hachés dans votre navigateur et ne sont jamais téléversés. Connectez votre portefeuille pour aussi résoudre les ancres de lot indexées à votre principal.",
     dropzone: {
       aria: "Déposez des fichiers ici pour les vérifier, ou cliquez pour choisir",
-      label: "Déposez des fichiers ici, ou cliquez pour choisir. Ajoutez-en autant que vous voulez.",
+      label:
+        "Déposez des fichiers ici, ou cliquez pour choisir. Ajoutez-en autant que vous voulez.",
     },
     summary: {
       verifiedOne: "{verified} fichier sur {total} vérifié",
@@ -698,8 +691,7 @@ export const fr: Translations = {
   },
   activity: {
     title: "Activité",
-    subtitle:
-      "Chaque interaction sur tous les contrats ThesisLock, les plus récentes d'abord.",
+    subtitle: "Chaque interaction sur tous les contrats ThesisLock, les plus récentes d'abord.",
     connectPrompt: "Connectez votre portefeuille pour voir votre activité.",
     empty: "Aucune activité pour l'instant. Commencez par ancrer un document.",
     emptyCta: "Ancrer un document",
@@ -722,8 +714,7 @@ export const fr: Translations = {
   templates: {
     selector: {
       heading: "Modèle",
-      description:
-        "Choisissez un modèle pour structurer votre étiquette, ou laissez-la libre.",
+      description: "Choisissez un modèle pour structurer votre étiquette, ou laissez-la libre.",
     },
     field: {
       required: "{name} est obligatoire.",
@@ -734,13 +725,11 @@ export const fr: Translations = {
       empty: "Remplissez les champs pour prévisualiser l'étiquette générée.",
     },
     warning: {
-      truncated:
-        "L'étiquette dépasse {max} caractères et sera tronquée sur la chaîne.",
+      truncated: "L'étiquette dépasse {max} caractères et sera tronquée sur la chaîne.",
     },
     batch: {
       defaultHeading: "Modèle par défaut",
-      defaultDescription:
-        "Appliqué à chaque fichier. Chaque fichier peut le remplacer ci-dessous.",
+      defaultDescription: "Appliqué à chaque fichier. Chaque fichier peut le remplacer ci-dessous.",
       overrideLabel: "Modèle pour ce fichier",
     },
     verify: {

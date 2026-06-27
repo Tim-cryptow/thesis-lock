@@ -41,9 +41,7 @@ const PATHS: Record<EmptyStateIconName, ReactNode> = {
       <path d="M16 4.13a4 4 0 0 1 0 7.75" />
     </>
   ),
-  folder: (
-    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-  ),
+  folder: <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
   search: (
     <>
       <circle cx="11" cy="11" r="7" />

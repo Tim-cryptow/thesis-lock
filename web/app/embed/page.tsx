@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import EmbedClientLoader from "./EmbedClientLoader";
 
 const TITLE = "Embed Verification Badge";
-const DESCRIPTION =
-  "Get an embeddable badge proving your document is anchored on Stacks";
+const DESCRIPTION = "Get an embeddable badge proving your document is anchored on Stacks";
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -6,20 +6,7 @@ import type { CalendarDay } from "@/lib/calendar";
 // shaded by how many documents were anchored that day. Reused full-size on the
 // calendar page and in a compact form on the dashboard and wallet profiles.
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // Row labels (Sunday first). Only Mon, Wed, and Fri are shown, like GitHub.
 const WEEKDAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
@@ -61,7 +48,7 @@ type Cell = CalendarDay | null;
 // pads the trailing days to complete the last week, and chunks into weeks.
 function toWeeks(days: CalendarDay[]): Cell[][] {
   if (days.length === 0) return [];
-  const lead = new Date(`${days[0].date}T00:00:00Z`).getUTCDay();
+  const lead = new Date(`${days[0]!.date}T00:00:00Z`).getUTCDay();
   const cells: Cell[] = [];
   for (let i = 0; i < lead; i += 1) cells.push(null);
   for (const day of days) cells.push(day);
@@ -83,7 +70,7 @@ function monthLabels(weeks: Cell[][]): string[] {
     }
     const m = new Date(`${first.date}T00:00:00Z`).getUTCMonth();
     if (m !== prev) {
-      labels.push(MONTHS[m]);
+      labels.push(MONTHS[m]!);
       prev = m;
     } else {
       labels.push("");
@@ -126,14 +113,7 @@ export default function ContributionGraph({
     }`;
     const base = `${cellSize} rounded-sm ${LEVEL_CLASSES[level(cell.count)]}`;
     if (future) {
-      return (
-        <span
-          key={key}
-          className={`${base} opacity-30`}
-          title={title}
-          aria-hidden="true"
-        />
-      );
+      return <span key={key} className={`${base} opacity-30`} title={title} aria-hidden="true" />;
     }
     if (!onSelectDay) {
       return <span key={key} className={base} title={title} />;
@@ -160,10 +140,7 @@ export default function ContributionGraph({
           <div className="flex flex-col gap-1 pr-1">
             <span className="h-4" aria-hidden="true" />
             {WEEKDAY_LABELS.map((label, i) => (
-              <span
-                key={i}
-                className="h-3 text-[10px] leading-3 text-foreground/40"
-              >
+              <span key={i} className="h-3 text-[10px] leading-3 text-foreground/40">
                 {label}
               </span>
             ))}

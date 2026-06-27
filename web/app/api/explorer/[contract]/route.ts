@@ -1,8 +1,4 @@
-import {
-  fetchContractCalls,
-  fetchContractCallCount,
-  getContract,
-} from "@/lib/contractExplorer";
+import { fetchContractCalls, fetchContractCallCount, getContract } from "@/lib/contractExplorer";
 import { corsHeaders } from "@/lib/verify";
 
 export const runtime = "nodejs";

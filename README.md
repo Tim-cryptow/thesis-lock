@@ -127,6 +127,23 @@ The contract suite runs in the `Contracts` CI job (`clarinet check` then
 `npm test`), which discovers every file under `tests/`. The frontend Vitest and
 Playwright suites under `web/` are described above. All suites run on every push.
 
+## Code quality
+
+ESLint, Prettier, and strict TypeScript keep the web app, SDK, and CLI
+consistent. Each package exposes the same scripts:
+
+```bash
+cd web   # or sdk, or cli
+npm run lint          # ESLint
+npm run format        # apply Prettier
+npm run format:check  # verify formatting
+```
+
+The web app additionally runs `npx tsc --noEmit` for type checking. A husky
+pre-commit hook runs lint-staged so staged files are linted and formatted before
+each commit, and CI runs lint and format checks for every package. See
+[CODESTYLE.md](CODESTYLE.md) for the full conventions.
+
 ## Documentation
 
 Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):

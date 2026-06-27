@@ -25,8 +25,7 @@ import { runSearch, type SearchResult } from "../src/search";
 
 const mockedRunSearch = vi.mocked(runSearch);
 
-const HASH =
-  "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
+const HASH = "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
 const HASH2 = "a".repeat(64);
 const HASH3 = "b".repeat(64);
 const OWNER = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
@@ -105,11 +104,7 @@ describe("search command", () => {
   });
 
   it("respects --limit", async () => {
-    mockedRunSearch.mockResolvedValue([
-      result(HASH),
-      result(HASH2),
-      result(HASH3),
-    ]);
+    mockedRunSearch.mockResolvedValue([result(HASH), result(HASH2), result(HASH3)]);
     await searchCommand(HASH, { json: true, limit: 2 });
     const parsed = JSON.parse(out());
     expect(parsed).toHaveLength(2);

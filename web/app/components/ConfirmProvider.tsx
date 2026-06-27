@@ -3,11 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import ConfirmDialog from "./ConfirmDialog";
-import {
-  ConfirmContext,
-  type ConfirmContextValue,
-  type ConfirmOptions,
-} from "./useConfirm";
+import { ConfirmContext, type ConfirmContextValue, type ConfirmOptions } from "./useConfirm";
 
 type Pending = {
   options: ConfirmOptions;
@@ -18,11 +14,7 @@ type Pending = {
 // based confirm() through context and renders the dialog into a portal on the
 // document body, so any component can request a confirmation without rendering
 // or wiring up a dialog of its own.
-export default function ConfirmProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [pending, setPending] = useState<Pending | null>(null);
   const [mounted, setMounted] = useState(false);
 

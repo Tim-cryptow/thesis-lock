@@ -61,14 +61,7 @@ const VITALS_CAP = 500;
 const PAGES_CAP = 200;
 const API_CAP = 500;
 
-export const VITAL_NAMES: WebVitalName[] = [
-  "LCP",
-  "INP",
-  "CLS",
-  "FCP",
-  "TTFB",
-  "FID",
-];
+export const VITAL_NAMES: WebVitalName[] = ["LCP", "INP", "CLS", "FCP", "TTFB", "FID"];
 
 // LCP, CLS, and INP are only known to be final once the page is hidden, but the
 // tracker lives for the whole SPA session and never unmounts on navigation. The
@@ -147,10 +140,7 @@ export function clearPerformanceData(): void {
   }
 }
 
-function withinDays<T extends { timestamp: string }>(
-  rows: T[],
-  days?: number,
-): T[] {
+function withinDays<T extends { timestamp: string }>(rows: T[], days?: number): T[] {
   if (!days || days <= 0) return rows;
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   return rows.filter((r) => {
@@ -170,7 +160,7 @@ function percentile(values: number[], p: number): number {
   const sorted = [...values].sort((a, b) => a - b);
   const rank = Math.ceil((p / 100) * sorted.length);
   const index = Math.min(sorted.length - 1, Math.max(0, rank - 1));
-  return sorted[index];
+  return sorted[index]!;
 }
 
 export type VitalSummary = {
@@ -181,9 +171,7 @@ export type VitalSummary = {
   count: number;
 };
 
-export function getVitalsSummary(
-  days?: number,
-): Record<string, VitalSummary> {
+export function getVitalsSummary(days?: number): Record<string, VitalSummary> {
   const rows = withinDays(load<WebVital>(VITALS_KEY), days);
   const byName = new Map<WebVitalName, number[]>();
   for (const row of rows) {
@@ -212,9 +200,7 @@ export type PageSummary = {
   visits: number;
 };
 
-export function getPageMetricsSummary(
-  days?: number,
-): Record<string, PageSummary> {
+export function getPageMetricsSummary(days?: number): Record<string, PageSummary> {
   const rows = withinDays(load<PageMetric>(PAGES_KEY), days);
   const byPath = new Map<string, PageMetric[]>();
   for (const row of rows) {
@@ -240,9 +226,7 @@ export type ApiSummary = {
   cachedRate: number;
 };
 
-export function getApiMetricsSummary(
-  days?: number,
-): Record<string, ApiSummary> {
+export function getApiMetricsSummary(days?: number): Record<string, ApiSummary> {
   const rows = withinDays(load<ApiMetric>(API_KEY), days);
   const byEndpoint = new Map<string, ApiMetric[]>();
   for (const row of rows) {
@@ -268,11 +252,7 @@ export function getApiMetricsSummary(
 }
 
 // Most recent measured values for one vital, oldest to newest, for sparklines.
-export function getRecentVitalValues(
-  name: WebVitalName,
-  limit = 30,
-  days?: number,
-): number[] {
+export function getRecentVitalValues(name: WebVitalName, limit = 30, days?: number): number[] {
   return withinDays(load<WebVital>(VITALS_KEY), days)
     .filter((v) => v.name === name)
     .slice(-limit)

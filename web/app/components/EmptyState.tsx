@@ -72,11 +72,7 @@ export default function EmptyState({
                 {secondaryLabel}
               </Link>
             ) : (
-              <button
-                type="button"
-                onClick={onSecondary}
-                className={SECONDARY_CLASS}
-              >
+              <button type="button" onClick={onSecondary} className={SECONDARY_CLASS}>
                 {secondaryLabel}
               </button>
             )

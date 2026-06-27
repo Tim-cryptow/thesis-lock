@@ -148,8 +148,7 @@ export const DOCS: DocMeta[] = [
   {
     slug: "api",
     title: "API Reference",
-    description:
-      "The JSON REST API for verification, search, stats, badges, cards, and health.",
+    description: "The JSON REST API for verification, search, stats, badges, cards, and health.",
   },
   {
     slug: "sdk",
@@ -160,8 +159,7 @@ export const DOCS: DocMeta[] = [
   {
     slug: "cli",
     title: "CLI Guide",
-    description:
-      "Verify, hash, search, and check status from the terminal or a CI pipeline.",
+    description: "Verify, hash, search, and check status from the terminal or a CI pipeline.",
   },
   {
     slug: "github-action",

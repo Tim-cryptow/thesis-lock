@@ -29,7 +29,7 @@ function normalizeHash(raw: string): string {
 // staged value from being an off-site or protocol-relative link.
 function verifyPathHash(url: string): string | null {
   const m = /^\/v\/([0-9a-f]{64})(?:\?|$)/i.exec(url);
-  return m ? m[1].toLowerCase() : null;
+  return m ? m[1]!.toLowerCase() : null;
 }
 
 // Validates one staged item, dropping anything without a usable hash and any
@@ -43,24 +43,13 @@ function coerce(value: unknown): BulkVerifyInput | null {
   if (!HEX_64.test(hash)) return null;
   const out: BulkVerifyInput = { hash };
   if (typeof v.name === "string" && v.name) out.name = v.name;
-  if (
-    typeof v.owner === "string" &&
-    STX_PRINCIPAL.test(v.owner.toUpperCase())
-  ) {
+  if (typeof v.owner === "string" && STX_PRINCIPAL.test(v.owner.toUpperCase())) {
     out.owner = v.owner.toUpperCase();
   }
-  if (
-    typeof v.groupId === "number" &&
-    Number.isInteger(v.groupId) &&
-    v.groupId >= 0
-  ) {
+  if (typeof v.groupId === "number" && Number.isInteger(v.groupId) && v.groupId >= 0) {
     out.groupId = v.groupId;
   }
-  if (
-    typeof v.groupIndex === "number" &&
-    Number.isInteger(v.groupIndex) &&
-    v.groupIndex >= 0
-  ) {
+  if (typeof v.groupIndex === "number" && Number.isInteger(v.groupIndex) && v.groupIndex >= 0) {
     out.groupIndex = v.groupIndex;
   }
   if (typeof v.verifyUrl === "string" && verifyPathHash(v.verifyUrl) === hash) {

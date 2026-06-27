@@ -51,19 +51,10 @@ const LINKS = [
 
 // A row (or column) of social and feed links. Used in the footer, and available
 // for the landing page or anywhere else the project's links belong.
-export default function SocialLinks({
-  size = "md",
-  layout = "row",
-}: SocialLinksProps) {
+export default function SocialLinks({ size = "md", layout = "row" }: SocialLinksProps) {
   const iconClass = size === "sm" ? "h-4 w-4" : "h-5 w-5";
   return (
-    <div
-      className={
-        layout === "column"
-          ? "flex flex-col gap-3"
-          : "flex items-center gap-4"
-      }
-    >
+    <div className={layout === "column" ? "flex flex-col gap-3" : "flex items-center gap-4"}>
       {LINKS.map(({ label, href, Icon }) => (
         <a
           key={label}

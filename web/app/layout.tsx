@@ -122,9 +122,7 @@ export const metadata: Metadata = {
   alternates: {
     types: {
       "application/rss+xml": [{ url: "/api/feed/rss", title: "ThesisLock RSS" }],
-      "application/atom+xml": [
-        { url: "/api/feed/atom", title: "ThesisLock Atom" },
-      ],
+      "application/atom+xml": [{ url: "/api/feed/atom", title: "ThesisLock Atom" }],
     },
   },
   other: {
@@ -160,41 +158,37 @@ export default function RootLayout({
           <ThemeProvider>
             <TxProvider>
               <ConfirmProvider>
-              <OfflineIndicator />
-              <SkipToContent />
-              <ServiceWorkerRegistration />
-              <KeyboardShortcuts />
-              <PerformanceTracker />
-              <PerformanceBanner />
-              <AuditLogger />
-              <LiveProvider>
-                <NotificationProvider>
-                  <TourProvider>
-                    <LiveTicker />
-                    <BackupReminder />
-                    <NotificationBell />
-                    <SettingsLink />
-                    <RecentPages />
-                    <FavoritesNavLink />
-                    <NotificationSound />
-                    <FavoritesBar />
-                    <main
-                      id="main-content"
-                      tabIndex={-1}
-                      className="flex-1 flex flex-col"
-                    >
-                      <ErrorBoundary>{children}</ErrorBoundary>
-                    </main>
-                    <Footer />
-                    <CommandPalette />
-                    <RouteVisitRecorder />
-                    <NavigationTracker />
-                  </TourProvider>
-                </NotificationProvider>
-              </LiveProvider>
-              <TxToast />
-              <ClipboardToast />
-              <InstallPrompt />
+                <OfflineIndicator />
+                <SkipToContent />
+                <ServiceWorkerRegistration />
+                <KeyboardShortcuts />
+                <PerformanceTracker />
+                <PerformanceBanner />
+                <AuditLogger />
+                <LiveProvider>
+                  <NotificationProvider>
+                    <TourProvider>
+                      <LiveTicker />
+                      <BackupReminder />
+                      <NotificationBell />
+                      <SettingsLink />
+                      <RecentPages />
+                      <FavoritesNavLink />
+                      <NotificationSound />
+                      <FavoritesBar />
+                      <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col">
+                        <ErrorBoundary>{children}</ErrorBoundary>
+                      </main>
+                      <Footer />
+                      <CommandPalette />
+                      <RouteVisitRecorder />
+                      <NavigationTracker />
+                    </TourProvider>
+                  </NotificationProvider>
+                </LiveProvider>
+                <TxToast />
+                <ClipboardToast />
+                <InstallPrompt />
               </ConfirmProvider>
             </TxProvider>
           </ThemeProvider>

@@ -16,12 +16,7 @@ const SINGLE = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 
 // The contracts whose events are surfaced in the feed. The registry is omitted
 // because its registrations mirror single anchors.
-const FEED_CONTRACTS = [
-  SINGLE,
-  "thesislock-batch",
-  "thesislock-groups",
-  "thesislock-proof",
-];
+const FEED_CONTRACTS = [SINGLE, "thesislock-batch", "thesislock-groups", "thesislock-proof"];
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -50,11 +45,7 @@ export function parseFeedQuery(url: URL): FeedQuery {
   };
 }
 
-export function buildFeedOptions(
-  origin: string,
-  feedUrl: string,
-  query: FeedQuery,
-): FeedOptions {
+export function buildFeedOptions(origin: string, feedUrl: string, query: FeedQuery): FeedOptions {
   const filters: string[] = [];
   if (query.contract) filters.push(`contract ${query.contract}`);
   if (query.address) filters.push(`wallet ${query.address}`);
@@ -74,9 +65,7 @@ export function buildFeedOptions(
 function resolveContracts(contract: string | null): string[] {
   if (!contract) return FEED_CONTRACTS;
   const c = contract.toLowerCase();
-  return FEED_CONTRACTS.filter(
-    (name) => name === c || name.replace("thesislock-", "") === c,
-  );
+  return FEED_CONTRACTS.filter((name) => name === c || name.replace("thesislock-", "") === c);
 }
 
 // Pages a contract's events (newest first) until it has collected at least

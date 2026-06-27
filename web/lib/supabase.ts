@@ -20,10 +20,8 @@ function requireEnv(name: string): string {
 // unrelated imports or the build.
 export function getSupabaseAdmin(): SupabaseClient {
   if (client) return client;
-  client = createClient(
-    requireEnv("SUPABASE_URL"),
-    requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  client = createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_SERVICE_ROLE_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   return client;
 }

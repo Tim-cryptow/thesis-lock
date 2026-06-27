@@ -17,9 +17,7 @@ beforeEach(() => {
 describe("TruncatedHash", () => {
   it("renders the hash truncated to the first and last characters", () => {
     render(<TruncatedHash hash={H} />);
-    expect(
-      screen.getByText(`${H.slice(0, 8)}...${H.slice(-8)}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${H.slice(0, 8)}...${H.slice(-8)}`)).toBeInTheDocument();
   });
 
   it("keeps the full hash in the title for hover", () => {
@@ -35,16 +33,12 @@ describe("TruncatedHash", () => {
 
   it("respects the chars prop", () => {
     render(<TruncatedHash hash={H} chars={4} />);
-    expect(
-      screen.getByText(`${H.slice(0, 4)}...${H.slice(-4)}`),
-    ).toBeInTheDocument();
+    expect(screen.getByText(`${H.slice(0, 4)}...${H.slice(-4)}`)).toBeInTheDocument();
   });
 
   it("shows an inline copy button by default", () => {
     render(<TruncatedHash hash={H} />);
-    expect(
-      screen.getByRole("button", { name: "Copy hash to clipboard" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy hash to clipboard" })).toBeInTheDocument();
   });
 
   it("hides the inline copy button when copyable is false", () => {

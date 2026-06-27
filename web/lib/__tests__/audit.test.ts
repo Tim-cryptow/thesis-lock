@@ -58,9 +58,7 @@ describe("getAuditLog filters", () => {
   });
 
   it("filters by category", () => {
-    expect(getAuditLog({ category: "verify" }).map((e) => e.action)).toEqual([
-      "verified",
-    ]);
+    expect(getAuditLog({ category: "verify" }).map((e) => e.action)).toEqual(["verified"]);
   });
 
   it("filters by actor substring", () => {
@@ -68,9 +66,7 @@ describe("getAuditLog filters", () => {
   });
 
   it("filters by action substring", () => {
-    expect(getAuditLog({ action: "anchor" }).map((e) => e.action)).toEqual([
-      "anchored",
-    ]);
+    expect(getAuditLog({ action: "anchor" }).map((e) => e.action)).toEqual(["anchored"]);
   });
 
   it("filters by a date range", () => {

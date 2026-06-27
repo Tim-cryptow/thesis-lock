@@ -233,11 +233,7 @@ export function requestBrowserPermission(): Promise<boolean> {
     .catch(() => false);
 }
 
-export function sendBrowserNotification(
-  title: string,
-  body: string,
-  url?: string,
-): void {
+export function sendBrowserNotification(title: string, body: string, url?: string): void {
   if (!canUseDom() || !("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
   try {

@@ -14,10 +14,9 @@ export default function EmptyStatesDocs() {
     <div>
       <h1 className="text-3xl md:text-4xl">Empty States</h1>
       <Lead>
-        A brand-new wallet has no anchors, no history, and an empty watchlist.
-        Rather than a bare no-data line, every page that can be empty shows a
-        short explanation of what belongs there and a button that points you to
-        the next step.
+        A brand-new wallet has no anchors, no history, and an empty watchlist. Rather than a bare
+        no-data line, every page that can be empty shows a short explanation of what belongs there
+        and a button that points you to the next step.
       </Lead>
 
       <H2>What an empty state includes</H2>
@@ -29,8 +28,8 @@ export default function EmptyStatesDocs() {
           </>,
           <>A sentence explaining what will appear here and why.</>,
           <>
-            A primary action, such as <Code>Anchor a Document</Code>, and
-            sometimes a quieter secondary link.
+            A primary action, such as <Code>Anchor a Document</Code>, and sometimes a quieter
+            secondary link.
           </>,
         ]}
       />
@@ -53,17 +52,15 @@ export default function EmptyStatesDocs() {
         <Link href="/search" className="underline hover:text-foreground">
           search
         </Link>
-        , the dashboard, activity, watchlist, collections, calendar,
-        notifications, the audit trail, and the developer API keys. Each one is
-        tailored to the page it lives on.
+        , the dashboard, activity, watchlist, collections, calendar, notifications, the audit trail,
+        and the developer API keys. Each one is tailored to the page it lives on.
       </P>
 
       <H2>For contributors</H2>
       <P>
-        These are built from a single reusable EmptyState component, so a new
-        page can adopt the same pattern by supplying an icon, a title, a
-        description, and an optional action. Keeping them consistent means the
-        app reads the same way no matter where a new user lands first.
+        These are built from a single reusable EmptyState component, so a new page can adopt the
+        same pattern by supplying an icon, a title, a description, and an optional action. Keeping
+        them consistent means the app reads the same way no matter where a new user lands first.
       </P>
     </div>
   );

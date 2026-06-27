@@ -137,9 +137,7 @@ export function saveWatchlist(items: WatchItem[]): void {
 // True when a value of the given type is already on the watchlist.
 export function isWatched(type: WatchType, value: string): boolean {
   const normalized = normalizeWatchValue(type, value);
-  return loadWatchlist().some(
-    (i) => i.type === type && i.value === normalized,
-  );
+  return loadWatchlist().some((i) => i.type === type && i.value === normalized);
 }
 
 // Creates and persists a watch item, returning it. If the value is already
@@ -190,26 +188,16 @@ export function removeWatch(id: string): void {
 // know what they are watching but not the generated id.
 export function removeWatchByValue(type: WatchType, value: string): void {
   const normalized = normalizeWatchValue(type, value);
-  saveWatchlist(
-    loadWatchlist().filter(
-      (i) => !(i.type === type && i.value === normalized),
-    ),
-  );
+  saveWatchlist(loadWatchlist().filter((i) => !(i.type === type && i.value === normalized)));
 }
 
 // Toggles per-item notifications and persists.
 export function setWatchNotifications(id: string, on: boolean): void {
-  saveWatchlist(
-    loadWatchlist().map((i) =>
-      i.id === id ? { ...i, notifications: on } : i,
-    ),
-  );
+  saveWatchlist(loadWatchlist().map((i) => (i.id === id ? { ...i, notifications: on } : i)));
 }
 
 function newFlag(item: WatchItem, verified: boolean): number {
-  return item.lastStatus !== null && verified && !item.lastStatus?.verified
-    ? 1
-    : 0;
+  return item.lastStatus !== null && verified && !item.lastStatus?.verified ? 1 : 0;
 }
 
 // Builds a verified status from a discovered batch/group anchor, carrying the
@@ -250,10 +238,7 @@ async function checkWatchCheap(item: WatchItem): Promise<WatchStatus> {
         };
       }
     }
-    if (
-      typeof ctx?.groupId === "number" &&
-      typeof ctx?.groupIndex === "number"
-    ) {
+    if (typeof ctx?.groupId === "number" && typeof ctx?.groupIndex === "number") {
       const groupAnchor = await getGroupAnchorAt(ctx.groupId, ctx.groupIndex);
       if (groupAnchor && groupAnchor.hash === item.value) {
         return {
@@ -303,10 +288,7 @@ async function checkWatchCheap(item: WatchItem): Promise<WatchStatus> {
   if (!Number.isInteger(groupId) || groupId <= 0) {
     return { verified: false, newAnchors: 0 };
   }
-  const [group, count] = await Promise.all([
-    getGroup(groupId),
-    getGroupAnchorCount(groupId),
-  ]);
+  const [group, count] = await Promise.all([getGroup(groupId), getGroupAnchorCount(groupId)]);
   const previous = item.lastStatus?.anchorCount ?? count;
   return {
     verified: group !== null,
@@ -374,11 +356,7 @@ function watchTargetUrl(item: WatchItem, status: WatchStatus): string {
 // Emits a watchlist notification when an item's status changed meaningfully
 // since the previous check: a watched hash became anchored, or a watched wallet
 // or group gained anchors.
-function notifyWatchChange(
-  item: WatchItem,
-  prior: WatchStatus | null,
-  status: WatchStatus,
-): void {
+function notifyWatchChange(item: WatchItem, prior: WatchStatus | null, status: WatchStatus): void {
   const name = item.label || shortenValue(item.value);
   if (item.type === "hash") {
     // Only notify on a real transition observed while watching: require a prior
@@ -402,8 +380,7 @@ function notifyWatchChange(
     const noun = gained === 1 ? "anchor" : "anchors";
     addNotification({
       type: "watchlist_update",
-      title:
-        item.type === "group" ? "New group activity" : "New wallet activity",
+      title: item.type === "group" ? "New group activity" : "New wallet activity",
       message: `${name} has ${gained} new ${noun}.`,
       icon: "watch",
       priority: "low",
@@ -513,7 +490,5 @@ export function mergeChecked(checked: WatchItem[]): WatchItem[] {
 // Number of watched items reporting something new since the previous check,
 // limited to items with notifications enabled. Drives the nav badge and widget.
 export function countWatchUpdates(items: WatchItem[]): number {
-  return items.filter(
-    (i) => i.notifications && (i.lastStatus?.newAnchors ?? 0) > 0,
-  ).length;
+  return items.filter((i) => i.notifications && (i.lastStatus?.newAnchors ?? 0) > 0).length;
 }

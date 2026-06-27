@@ -21,9 +21,7 @@ export default function CurlPreview({ endpoint, values }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/40">
-          curl
-        </h2>
+        <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/40">curl</h2>
         <CopyButton value={command} label="curl command" />
       </div>
       <pre className="overflow-x-auto rounded-md bg-zinc-900 px-4 py-3 text-sm text-zinc-100">

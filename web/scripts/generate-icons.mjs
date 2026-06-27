@@ -33,10 +33,7 @@ const input = Buffer.from(svg);
 
 await Promise.all(
   targets.map(({ file, size }) =>
-    sharp(input)
-      .resize(size, size)
-      .png()
-      .toFile(path.join(publicDir, file)),
+    sharp(input).resize(size, size).png().toFile(path.join(publicDir, file)),
   ),
 );
 

@@ -46,10 +46,7 @@ function readSession(): PendingTx[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (p): p is PendingTx =>
-        !!p && typeof (p as PendingTx).txId === "string",
-    );
+    return parsed.filter((p): p is PendingTx => !!p && typeof (p as PendingTx).txId === "string");
   } catch {
     return [];
   }

@@ -54,14 +54,9 @@ const NotificationContext = createContext<NotificationContextValue | null>(null)
 // a change event (including other tabs via the storage event). Sources elsewhere
 // in the app call the lib addNotification directly; this provider only needs to
 // react to the resulting events, so it does not have to be their parent.
-export function NotificationProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [preferences, setPreferences] =
-    useState<NotificationPreferences>(loadPreferences);
+  const [preferences, setPreferences] = useState<NotificationPreferences>(loadPreferences);
   const { notifications: txNotifications } = useTx();
   const seenTxRef = useRef<Set<string>>(new Set());
   const { events: liveEvents } = useLive();
@@ -153,9 +148,7 @@ export function NotificationProvider({
         addNotificationStore({
           type: "new_anchor",
           title: "New anchor",
-          message: ev.label
-            ? `New anchor: "${ev.label}"`
-            : "A new document was anchored on chain.",
+          message: ev.label ? `New anchor: "${ev.label}"` : "A new document was anchored on chain.",
           icon: "anchor",
           priority: "low",
           actionUrl: `/v/${ev.hash}`,
@@ -183,26 +176,20 @@ export function NotificationProvider({
 
   const markRead = useCallback((id: string) => markReadStore(id), []);
   const markAllRead = useCallback(() => markAllReadStore(), []);
-  const removeNotification = useCallback(
-    (id: string) => removeNotificationStore(id),
-    [],
-  );
+  const removeNotification = useCallback((id: string) => removeNotificationStore(id), []);
   const clearAll = useCallback(() => clearAllStore(), []);
 
-  const updatePreferences = useCallback(
-    (patch: PreferencesPatch) => {
-      setPreferences((prev) => {
-        const next: NotificationPreferences = {
-          ...prev,
-          ...patch,
-          types: { ...prev.types, ...(patch.types ?? {}) },
-        };
-        savePreferences(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const updatePreferences = useCallback((patch: PreferencesPatch) => {
+    setPreferences((prev) => {
+      const next: NotificationPreferences = {
+        ...prev,
+        ...patch,
+        types: { ...prev.types, ...(patch.types ?? {}) },
+      };
+      savePreferences(next);
+      return next;
+    });
+  }, []);
 
   const unreadCount = useMemo(
     () => notifications.reduce((count, n) => (n.read ? count : count + 1), 0),
@@ -234,19 +221,13 @@ export function NotificationProvider({
     ],
   );
 
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-    </NotificationContext.Provider>
-  );
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }
 
 export function useNotifications(): NotificationContextValue {
   const ctx = useContext(NotificationContext);
   if (!ctx) {
-    throw new Error(
-      "useNotifications must be used within a NotificationProvider",
-    );
+    throw new Error("useNotifications must be used within a NotificationProvider");
   }
   return ctx;
 }

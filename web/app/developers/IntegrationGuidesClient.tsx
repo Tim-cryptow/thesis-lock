@@ -2,12 +2,7 @@
 
 import CodeBlock from "@/app/components/CodeBlock";
 
-export type GuideTabId =
-  | "javascript"
-  | "python"
-  | "curl"
-  | "github"
-  | "cicd";
+export type GuideTabId = "javascript" | "python" | "curl" | "github" | "cicd";
 
 const TABS: { id: GuideTabId; label: string }[] = [
   { id: "javascript", label: "JavaScript/Node.js" },
@@ -27,9 +22,9 @@ function JavaScriptGuide() {
     <div>
       <h3 className="text-xl">JavaScript and Node.js</h3>
       <p className="mt-2 text-sm text-foreground/70">
-        The <code className="font-mono">thesislock-sdk</code> package wraps the
-        Clarity serialization and Hiro reads. It is read-only: it verifies
-        existing anchors and reads history.
+        The <code className="font-mono">thesislock-sdk</code> package wraps the Clarity
+        serialization and Hiro reads. It is read-only: it verifies existing anchors and reads
+        history.
       </p>
 
       <CodeBlock language="bash" title="Install" code={`npm install thesislock-sdk`} />
@@ -58,8 +53,8 @@ const recent = await client.getRecentAnchors(owner);`}
       />
 
       <p className="mt-4 text-sm text-foreground/70">
-        A complete verify workflow: hash a file locally, validate it, then
-        confirm it is anchored on Stacks.
+        A complete verify workflow: hash a file locally, validate it, then confirm it is anchored on
+        Stacks.
       </p>
       <CodeBlock
         language="javascript"
@@ -138,9 +133,7 @@ if __name__ == "__main__":
         print("Not anchored:", file_hash)`}
       />
 
-      <p className="mt-4 text-sm text-foreground/70">
-        Each endpoint is one call:
-      </p>
+      <p className="mt-4 text-sm text-foreground/70">Each endpoint is one call:</p>
       <CodeBlock
         language="python"
         title="Endpoints"
@@ -175,9 +168,8 @@ function CurlGuide() {
     <div>
       <h3 className="text-xl">cURL</h3>
       <p className="mt-2 text-sm text-foreground/70">
-        The API returns JSON, so piping to{" "}
-        <code className="font-mono">jq</code> gives readable output. The base URL
-        is <code className="font-mono">https://thesis-lock.vercel.app</code>.
+        The API returns JSON, so piping to <code className="font-mono">jq</code> gives readable
+        output. The base URL is <code className="font-mono">https://thesis-lock.vercel.app</code>.
       </p>
 
       <CodeBlock
@@ -212,10 +204,9 @@ function GithubActionsGuide() {
     <div>
       <h3 className="text-xl">GitHub Actions</h3>
       <p className="mt-2 text-sm text-foreground/70">
-        The reusable action{" "}
-        <code className="font-mono">Tim-cryptow/thesis-lock/action@main</code>{" "}
-        verifies a document hash from inside any workflow. It reads the public
-        Hiro mainnet API and needs no wallet or secret.
+        The reusable action <code className="font-mono">Tim-cryptow/thesis-lock/action@main</code>{" "}
+        verifies a document hash from inside any workflow. It reads the public Hiro mainnet API and
+        needs no wallet or secret.
       </p>
 
       <CodeBlock
@@ -255,8 +246,7 @@ jobs:
       />
 
       <p className="mt-4 text-sm text-foreground/70">
-        Multi-step: hash a file, verify it, and fail the job if the proof is
-        missing.
+        Multi-step: hash a file, verify it, and fail the job if the proof is missing.
       </p>
       <CodeBlock
         language="yaml"
@@ -285,9 +275,8 @@ function CicdGuide() {
     <div>
       <h3 className="text-xl">CI/CD Generic</h3>
       <p className="mt-2 text-sm text-foreground/70">
-        Outside GitHub Actions, the{" "}
-        <code className="font-mono">thesislock-cli</code> package verifies
-        anchors from any shell, including GitLab CI, CircleCI, and Jenkins.
+        Outside GitHub Actions, the <code className="font-mono">thesislock-cli</code> package
+        verifies anchors from any shell, including GitLab CI, CircleCI, and Jenkins.
       </p>
 
       <CodeBlock
@@ -335,17 +324,13 @@ echo "All files verified"`}
   );
 }
 
-export default function IntegrationGuidesClient({
-  activeTab,
-  onTabChange,
-}: Props) {
+export default function IntegrationGuidesClient({ activeTab, onTabChange }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl">Integration Guides</h2>
         <p className="mt-1 text-sm text-foreground/70">
-          Copy-ready examples for verifying anchors from your own apps and
-          pipelines.
+          Copy-ready examples for verifying anchors from your own apps and pipelines.
         </p>
       </div>
 

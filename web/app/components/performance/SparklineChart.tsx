@@ -40,12 +40,7 @@ export function SparklineChart({
     .join(" ");
 
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      aria-hidden="true"
-    >
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <polyline
         fill="none"
         stroke={strokeColor(rating)}

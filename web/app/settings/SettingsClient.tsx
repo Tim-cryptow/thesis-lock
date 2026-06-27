@@ -64,9 +64,9 @@ export default function SettingsClient() {
         <header className="mt-8 mb-8">
           <h1 className="text-3xl mb-2">Settings</h1>
           <p className="text-foreground/70 max-w-2xl">
-            ThesisLock keeps everything on your device. From here you can back up
-            and restore your data, move it to another browser, fine-tune your
-            preferences, and control exactly what is stored.
+            ThesisLock keeps everything on your device. From here you can back up and restore your
+            data, move it to another browser, fine-tune your preferences, and control exactly what
+            is stored.
           </p>
         </header>
 

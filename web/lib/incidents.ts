@@ -6,11 +6,7 @@
 
 import type { ServiceCategory, ServiceStatus } from "./statusMonitor";
 
-export type IncidentStatus =
-  | "investigating"
-  | "identified"
-  | "monitoring"
-  | "resolved";
+export type IncidentStatus = "investigating" | "identified" | "monitoring" | "resolved";
 
 export type IncidentSeverity = "minor" | "major" | "critical";
 
@@ -113,9 +109,7 @@ export function loadIncidents(): Incident[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map(coerceIncident)
-      .filter((i): i is Incident => i !== null);
+    return parsed.map(coerceIncident).filter((i): i is Incident => i !== null);
   } catch {
     return [];
   }
@@ -126,10 +120,7 @@ export function saveIncidents(incidents: Incident[]): void {
   try {
     const cutoff = Date.now() - RETENTION_MS;
     const kept = incidents.filter(
-      (i) =>
-        i.status !== "resolved" ||
-        !i.resolvedAt ||
-        new Date(i.resolvedAt).getTime() >= cutoff,
+      (i) => i.status !== "resolved" || !i.resolvedAt || new Date(i.resolvedAt).getTime() >= cutoff,
     );
     window.localStorage.setItem(INCIDENTS_KEY, JSON.stringify(kept));
     window.dispatchEvent(new CustomEvent(INCIDENTS_CHANGED_EVENT));
@@ -173,11 +164,7 @@ export function createIncident(
   return incident;
 }
 
-export function updateIncident(
-  id: string,
-  message: string,
-  status: string,
-): void {
+export function updateIncident(id: string, message: string, status: string): void {
   const incidents = loadIncidents();
   const incident = incidents.find((i) => i.id === id);
   if (!incident) return;

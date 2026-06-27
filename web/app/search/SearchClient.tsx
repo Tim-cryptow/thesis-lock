@@ -16,16 +16,9 @@ import AddToCollectionButton from "@/app/components/AddToCollectionButton";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
 import TagFilter from "@/app/components/TagFilter";
-import {
-  FOCUS_SEARCH_EVENT,
-  FOCUS_SEARCH_FLAG,
-} from "@/app/components/KeyboardShortcuts";
+import { FOCUS_SEARCH_EVENT, FOCUS_SEARCH_FLAG } from "@/app/components/KeyboardShortcuts";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
-import {
-  TAGS_CHANGED_EVENT,
-  getHashesByTag,
-  normalizeHash,
-} from "@/lib/tags";
+import { TAGS_CHANGED_EVENT, getHashesByTag, normalizeHash } from "@/lib/tags";
 import { auditSearch } from "@/lib/auditEvents";
 import { useI18n } from "@/app/components/I18nProvider";
 import type { SearchResult, SearchSource, SearchType } from "@/lib/search";
@@ -43,13 +36,7 @@ const TYPE_OPTIONS: { value: SearchType; id: string }[] = [
   { value: "label", id: "typeLabel" },
 ];
 
-const SOURCE_ORDER: SearchSource[] = [
-  "single",
-  "batch",
-  "registry",
-  "proof",
-  "group",
-];
+const SOURCE_ORDER: SearchSource[] = ["single", "batch", "registry", "proof", "group"];
 
 const SOURCE_LABEL_IDS: Record<SearchSource, string> = {
   single: "sourceSingle",
@@ -133,10 +120,7 @@ export default function SearchClient() {
 
   const pushRecent = useCallback((term: string) => {
     setRecent((prev) => {
-      const next = [term, ...prev.filter((t) => t !== term)].slice(
-        0,
-        MAX_RECENT,
-      );
+      const next = [term, ...prev.filter((t) => t !== term)].slice(0, MAX_RECENT);
       try {
         window.sessionStorage.setItem(RECENT_KEY, JSON.stringify(next));
       } catch {
@@ -159,8 +143,7 @@ export default function SearchClient() {
       try {
         const params = new URLSearchParams({ q: term, type: searchType });
         const res = await instrumentedFetch(`/api/search?${params.toString()}`);
-        if (!res.ok)
-          throw new Error(t("search.fetchFailed", { status: res.status }));
+        if (!res.ok) throw new Error(t("search.fetchFailed", { status: res.status }));
         const data = (await res.json()) as SearchResult[];
         if (id !== requestId.current) return;
         setResults(Array.isArray(data) ? data : []);
@@ -202,9 +185,7 @@ export default function SearchClient() {
 
   // Narrow results to those whose hash carries any selected tag.
   const matchingHashes =
-    selectedTags.length > 0
-      ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag)))
-      : null;
+    selectedTags.length > 0 ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag))) : null;
   const filteredResults = matchingHashes
     ? results.filter((r) => matchingHashes.has(normalizeHash(r.hash)))
     : results;
@@ -222,65 +203,39 @@ export default function SearchClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/groups"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/groups" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.groups")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.search")}
-        </span>
+        <span className="text-foreground font-medium">{t("common.nav.search")}</span>
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.stats")}
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.dashboard")}
         </Link>
-        <Link
-          href="/activity"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/activity" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.activity")}
         </Link>
-        <Link
-          href="/compare"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/compare" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.compare")}
         </Link>
-        <Link
-          href="/report"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/report" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.report")}
         </Link>
-        <Link
-          href="/explorer"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.explorer")}
         </Link>
-          <WatchlistNavLink />
-          <CollectionsNavLink />
+        <WatchlistNavLink />
+        <CollectionsNavLink />
       </div>
 
       <Breadcrumbs />
@@ -289,28 +244,28 @@ export default function SearchClient() {
       <p className="text-foreground/70 mb-8">{t("search.intro")}</p>
 
       <FadeIn>
-      <form onSubmit={onSubmit} className="mb-3">
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("search.placeholder")}
-            aria-label={t("search.inputAria")}
-            autoComplete="off"
-            spellCheck={false}
-            className="flex-1 rounded-md border border-foreground/15 bg-card px-4 py-2.5 text-sm focus:border-foreground/40 outline-none transition"
-          />
-          <button
-            type="submit"
-            disabled={loading || query.trim().length === 0}
-            className="inline-flex items-center px-5 py-2.5 rounded-md bg-heading text-background font-medium hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? t("search.searching") : t("search.submit")}
-          </button>
-        </div>
-      </form>
+        <form onSubmit={onSubmit} className="mb-3">
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("search.placeholder")}
+              aria-label={t("search.inputAria")}
+              autoComplete="off"
+              spellCheck={false}
+              className="flex-1 rounded-md border border-foreground/15 bg-card px-4 py-2.5 text-sm focus:border-foreground/40 outline-none transition"
+            />
+            <button
+              type="submit"
+              disabled={loading || query.trim().length === 0}
+              className="inline-flex items-center px-5 py-2.5 rounded-md bg-heading text-background font-medium hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? t("search.searching") : t("search.submit")}
+            </button>
+          </div>
+        </form>
       </FadeIn>
 
       <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -335,10 +290,7 @@ export default function SearchClient() {
       </div>
 
       <div className="mb-4">
-        <TagFilter
-          selectedTags={selectedTags}
-          onFilterChange={setSelectedTags}
-        />
+        <TagFilter selectedTags={selectedTags} onFilterChange={setSelectedTags} />
       </div>
 
       <p className="text-xs text-foreground/50 mb-8">
@@ -405,8 +357,7 @@ export default function SearchClient() {
           {grouped.map((group) => (
             <section key={group.source}>
               <h2 className="text-xs text-foreground/50 uppercase tracking-wide mb-3">
-                {t(`search.${SOURCE_LABEL_IDS[group.source]}`)} (
-                {group.rows.length})
+                {t(`search.${SOURCE_LABEL_IDS[group.source]}`)} ({group.rows.length})
               </h2>
               <ul className="space-y-3">
                 {group.rows.map((row, rowIndex) => (
@@ -443,30 +394,19 @@ export default function SearchClient() {
                             type="hash"
                             value={row.hash}
                             owner={
-                              row.source === "batch" ||
-                              row.source === "registry"
+                              row.source === "batch" || row.source === "registry"
                                 ? row.owner
                                 : undefined
                             }
-                            groupId={
-                              row.source === "group" ? row.groupId : undefined
-                            }
-                            groupIndex={
-                              row.source === "group"
-                                ? row.groupIndex
-                                : undefined
-                            }
+                            groupId={row.source === "group" ? row.groupId : undefined}
+                            groupIndex={row.source === "group" ? row.groupIndex : undefined}
                           />
                           <AddToCollectionButton
                             hash={row.hash}
                             label={row.label}
                             verifyUrl={row.verifyUrl}
                           />
-                          <StarButton
-                            type="hash"
-                            value={row.hash}
-                            label={row.label}
-                          />
+                          <StarButton type="hash" value={row.hash} label={row.label} />
                         </div>
                         <div className="text-sm mb-2">
                           <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">

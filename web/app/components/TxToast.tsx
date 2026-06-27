@@ -33,22 +33,15 @@ function Toast({
         <div className="min-w-0">
           {confirmed ? (
             <>
-              <p className="text-sm font-medium text-heading">
-                Anchor confirmed
-              </p>
+              <p className="text-sm font-medium text-heading">Anchor confirmed</p>
               <p className="mt-1 text-xs text-foreground/70">
                 {notification.hash ? (
-                  <code className="font-mono">
-                    {truncateHash(notification.hash)}
-                  </code>
+                  <code className="font-mono">{truncateHash(notification.hash)}</code>
                 ) : (
                   "Your transaction"
                 )}{" "}
                 is now on block{" "}
-                <span className="font-mono">
-                  {notification.blockHeight ?? "chain"}
-                </span>
-                .
+                <span className="font-mono">{notification.blockHeight ?? "chain"}</span>.
               </p>
               {notification.hash && (
                 <Link
@@ -71,9 +64,7 @@ function Toast({
               </p>
               <p className="mt-1 text-xs text-foreground/70">
                 {notification.hash ? (
-                  <code className="font-mono">
-                    {truncateHash(notification.hash)}
-                  </code>
+                  <code className="font-mono">{truncateHash(notification.hash)}</code>
                 ) : (
                   "Your transaction"
                 )}{" "}

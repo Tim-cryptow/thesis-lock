@@ -87,10 +87,7 @@ function TickerItem({ ev }: { ev: LiveEvent }) {
       href={linkFor(ev)}
       className="inline-flex shrink-0 items-center gap-2 px-4 text-xs text-foreground/70 hover:text-foreground transition"
     >
-      <span
-        aria-hidden="true"
-        className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
-      />
+      <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
       <span className="truncate">{describe(ev)}</span>
       <span className="text-foreground/40">&middot; {relativeTime(ev.receivedAt)}</span>
     </Link>
@@ -143,7 +140,7 @@ export default function LiveTicker() {
 
   if (hidden) return null;
   if (events.length === 0) return null;
-  const newest = events[0].receivedAt;
+  const newest = events[0]!.receivedAt;
   if (Date.now() - newest > STALE_MS) return null;
 
   const dotClass =
@@ -157,13 +154,8 @@ export default function LiveTicker() {
     <div className="border-b border-foreground/10 bg-card/60 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-1.5">
         <div className="flex shrink-0 items-center gap-1.5">
-          <span
-            aria-hidden="true"
-            className={`inline-block h-2 w-2 rounded-full ${dotClass}`}
-          />
-          <span className="text-[10px] uppercase tracking-wide text-foreground/50">
-            Live
-          </span>
+          <span aria-hidden="true" className={`inline-block h-2 w-2 rounded-full ${dotClass}`} />
+          <span className="text-[10px] uppercase tracking-wide text-foreground/50">Live</span>
         </div>
 
         {collapsed ? (

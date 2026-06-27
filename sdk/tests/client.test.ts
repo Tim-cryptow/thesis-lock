@@ -1,20 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { bufferCV, serializeCV } from "@stacks/transactions";
-import {
-  createClient,
-  hashString,
-  isValidHash,
-  serializeHash,
-  truncateHash,
-} from "../src/index";
+import { createClient, hashString, isValidHash, serializeHash, truncateHash } from "../src/index";
 
 // A real single anchor on mainnet (label "project"). Used by the
 // network-backed tests, which only run when SDK_INTEGRATION=1 so CI can skip
 // them by default.
-const KNOWN_HASH =
-  "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
-const UNANCHORED_HASH =
-  "0000000000000000000000000000000000000000000000000000000000000001";
+const KNOWN_HASH = "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
+const UNANCHORED_HASH = "0000000000000000000000000000000000000000000000000000000000000001";
 
 function hexToBytes(hex: string): Uint8Array {
   const bytes = new Uint8Array(hex.length / 2);
@@ -45,9 +37,7 @@ describe("isValidHash", () => {
 
 describe("hashString", () => {
   it("produces the known SHA-256 digest of an empty string", () => {
-    expect(hashString("")).toBe(
-      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    );
+    expect(hashString("")).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
   });
 
   it("produces the known SHA-256 digest of 'hello'", () => {
@@ -68,9 +58,7 @@ describe("serializeHash", () => {
   });
 
   it("normalizes a 0x prefix and uppercase input", () => {
-    expect(serializeHash("0x" + KNOWN_HASH.toUpperCase())).toBe(
-      "0200000020" + KNOWN_HASH,
-    );
+    expect(serializeHash("0x" + KNOWN_HASH.toUpperCase())).toBe("0200000020" + KNOWN_HASH);
   });
 
   it("throws on an invalid hash", () => {

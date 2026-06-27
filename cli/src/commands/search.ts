@@ -49,8 +49,7 @@ export async function searchCommand(
   const json = options.json === true;
   const quiet = options.quiet === true;
   const type = detectSearchType(query);
-  const spinner =
-    json || quiet ? null : ora(`Searching by ${type}: ${query}`).start();
+  const spinner = json || quiet ? null : ora(`Searching by ${type}: ${query}`).start();
 
   let results: SearchResult[];
   try {
@@ -72,11 +71,7 @@ export async function searchCommand(
   const limited = applyLimit(results, options.limit);
 
   if (json) {
-    console.log(
-      toJson(
-        limited.map((r) => ({ ...r, verifyUrl: `${SITE_URL}${r.verifyPath}` })),
-      ),
-    );
+    console.log(toJson(limited.map((r) => ({ ...r, verifyUrl: `${SITE_URL}${r.verifyPath}` }))));
     return;
   }
 
@@ -95,9 +90,7 @@ export async function searchCommand(
   }
 
   console.log(
-    chalk.green(
-      `${limited.length} result${limited.length === 1 ? "" : "s"} (${type} search)`,
-    ),
+    chalk.green(`${limited.length} result${limited.length === 1 ? "" : "s"} (${type} search)`),
   );
   console.log();
   printTable(limited);

@@ -26,9 +26,7 @@ export default function FeatureCard({ title, body, href, icon }: Props) {
       >
         {icon}
       </svg>
-      <h3 className="text-xl mb-2 group-hover:text-foreground transition">
-        {title}
-      </h3>
+      <h3 className="text-xl mb-2 group-hover:text-foreground transition">{title}</h3>
       <p className="text-foreground/80 text-sm leading-relaxed">{body}</p>
     </Link>
   );

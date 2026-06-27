@@ -94,16 +94,10 @@ export default function EmbedClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           &larr; ThesisLock
         </Link>
-        <Link
-          href="/search"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
           Search
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           Anchor
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
@@ -113,9 +107,8 @@ export default function EmbedClient() {
 
       <h1 className="text-3xl mt-8 mb-2">Embed a verification badge</h1>
       <p className="text-foreground/70 mb-8">
-        Paste a document hash or drop a file to generate an embeddable badge and
-        social card. Add them to a website, README, or academic submission to
-        prove a document is anchored on Stacks.
+        Paste a document hash or drop a file to generate an embeddable badge and social card. Add
+        them to a website, README, or academic submission to prove a document is anchored on Stacks.
       </p>
 
       <div className="rounded-lg border border-foreground/10 bg-card p-6">
@@ -148,8 +141,7 @@ export default function EmbedClient() {
           </p>
         ) : (
           <p className="mt-2 text-sm text-foreground/60">
-            Batch anchors are keyed by owner. Add it so the badge resolves the
-            right record.
+            Batch anchors are keyed by owner. Add it so the badge resolves the right record.
           </p>
         )}
 
@@ -166,9 +158,7 @@ export default function EmbedClient() {
             ) : fileName ? (
               <p className="text-foreground/80 font-medium">{fileName}</p>
             ) : (
-              <p className="text-foreground/60">
-                Drop a file here, or click to choose one
-              </p>
+              <p className="text-foreground/60">Drop a file here, or click to choose one</p>
             )}
           </FileDropZone>
           {hashError && (
@@ -183,9 +173,7 @@ export default function EmbedClient() {
         <h2 className="text-xl mb-4">Customize</h2>
         <div className="flex flex-wrap gap-6">
           <div>
-            <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
-              Style
-            </div>
+            <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">Style</div>
             <div className="flex gap-2">
               {(["flat", "rounded"] as BadgeStyle[]).map((s) => (
                 <button
@@ -227,21 +215,13 @@ export default function EmbedClient() {
         {valid ? (
           <div className="flex flex-col gap-6">
             <div>
-              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
-                Badge
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={badgeUrl}
-                alt="ThesisLock verification badge preview"
-                height={20}
-              />
+              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">Badge</div>
+              <img src={badgeUrl} alt="ThesisLock verification badge preview" height={20} />
             </div>
             <div>
               <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
                 Social card
               </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={cardUrl}
                 alt="ThesisLock verification card preview"
@@ -311,20 +291,11 @@ function ExampleBadge({ verified }: { verified: boolean }) {
   const message = verified ? "Verified ✓ #198432" : "Not Verified";
   const color = verified ? "#4c1" : "#9f9f9f";
   return (
-    <span
-      className="inline-flex text-xs font-sans overflow-hidden rounded"
-      style={{ height: 20 }}
-    >
-      <span
-        className="flex items-center px-2 text-white"
-        style={{ background: "#555" }}
-      >
+    <span className="inline-flex text-xs font-sans overflow-hidden rounded" style={{ height: 20 }}>
+      <span className="flex items-center px-2 text-white" style={{ background: "#555" }}>
         ThesisLock
       </span>
-      <span
-        className="flex items-center px-2 text-white"
-        style={{ background: color }}
-      >
+      <span className="flex items-center px-2 text-white" style={{ background: color }}>
         {message}
       </span>
     </span>

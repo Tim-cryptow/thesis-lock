@@ -13,10 +13,7 @@ import {
   isPerfDebugEnabled,
   setPerfDebugEnabled,
 } from "@/app/components/performance/PerformanceBanner";
-import {
-  isTickerHidden,
-  setTickerHidden,
-} from "@/app/components/LiveTicker";
+import { isTickerHidden, setTickerHidden } from "@/app/components/LiveTicker";
 import { useTour } from "@/app/components/TourProvider";
 import { resetTour } from "@/lib/onboarding";
 import { LOCALES, LOCALE_NAMES, type Locale } from "@/lib/i18n";
@@ -28,11 +25,7 @@ import {
   type NotificationType,
   NOTIFICATION_TYPES,
 } from "@/lib/notifications";
-import {
-  TEMPLATES,
-  getDefaultTemplateId,
-  setDefaultTemplateId,
-} from "@/lib/templates";
+import { TEMPLATES, getDefaultTemplateId, setDefaultTemplateId } from "@/lib/templates";
 
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: "system", label: "System" },
@@ -109,9 +102,7 @@ function Segmented<T extends string | number>({
             aria-pressed={active}
             onClick={() => onChange(opt.value)}
             className={`rounded px-3 py-1.5 text-sm transition ${
-              active
-                ? "bg-heading text-background"
-                : "text-foreground/60 hover:text-foreground"
+              active ? "bg-heading text-background" : "text-foreground/60 hover:text-foreground"
             }`}
           >
             {opt.label}
@@ -169,7 +160,7 @@ export default function PreferencesSection() {
   const { startTour } = useTour();
 
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(null);
-  const [interval, setIntervalState] = useState<number>(LIVE_INTERVALS[0]);
+  const [interval, setIntervalState] = useState<number>(LIVE_INTERVALS[0]!);
   const [perfDebug, setPerfDebug] = useState(false);
   const [tickerHidden, setTickerHiddenState] = useState(false);
   const [defaultTemplate, setDefaultTemplate] = useState("generic");
@@ -198,21 +189,12 @@ export default function PreferencesSection() {
   return (
     <div className="flex flex-col gap-8">
       <p className="text-sm text-foreground/70 max-w-2xl">
-        Every preference here is saved to this browser immediately as you change
-        it.
+        Every preference here is saved to this browser immediately as you change it.
       </p>
 
-      <SettingCard
-        title="Appearance"
-        description="Theme and language for the interface."
-      >
+      <SettingCard title="Appearance" description="Theme and language for the interface.">
         <Row label="Theme">
-          <Segmented
-            ariaLabel="Theme"
-            value={mode}
-            options={THEME_OPTIONS}
-            onChange={setMode}
-          />
+          <Segmented ariaLabel="Theme" value={mode} options={THEME_OPTIONS} onChange={setMode} />
         </Row>
         <Row label="Language">
           <Segmented
@@ -262,9 +244,7 @@ export default function PreferencesSection() {
             </Row>
 
             <fieldset className="border-t border-foreground/10 pt-4">
-              <legend className="text-sm text-foreground/55 mb-2">
-                Notify me about
-              </legend>
+              <legend className="text-sm text-foreground/55 mb-2">Notify me about</legend>
               <div className="flex flex-col gap-3">
                 {NOTIFICATION_TYPES.map((type) => (
                   <Row key={type} label={TYPE_LABELS[type]}>
@@ -351,10 +331,7 @@ export default function PreferencesSection() {
         </Row>
       </SettingCard>
 
-      <SettingCard
-        title="Anchoring"
-        description="Defaults applied when you anchor a new document."
-      >
+      <SettingCard title="Anchoring" description="Defaults applied when you anchor a new document.">
         <Row label="Default anchor template">
           <select
             value={defaultTemplate}

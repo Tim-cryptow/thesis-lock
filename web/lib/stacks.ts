@@ -121,11 +121,7 @@ export type SubmitAnchorCallbacks = {
   onError?: (message: string) => void;
 };
 
-export function submitAnchor(
-  hash: string,
-  label: string,
-  callbacks: SubmitAnchorCallbacks,
-): void {
+export function submitAnchor(hash: string, label: string, callbacks: SubmitAnchorCallbacks): void {
   openContractCall({
     contractAddress: CONTRACT_ADDRESS,
     contractName: CONTRACT_NAME,
@@ -161,18 +157,12 @@ export function submitBatchAnchor(
   });
 }
 
-export async function readBatchAnchor(
-  hash: string,
-  owner: string,
-): Promise<BatchAnchor | null> {
+export async function readBatchAnchor(hash: string, owner: string): Promise<BatchAnchor | null> {
   const result: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: BATCH_CONTRACT_NAME,
     functionName: "get-batch-anchor",
-    functionArgs: [
-      bufferCV(hexToBytes(stripHex(hash))),
-      principalCV(owner),
-    ],
+    functionArgs: [bufferCV(hexToBytes(stripHex(hash))), principalCV(owner)],
     senderAddress: CONTRACT_ADDRESS,
     network: getNetwork(),
   });
@@ -229,10 +219,7 @@ function decodeRegistryEntry(value: unknown): RegistryEntry | null {
   };
 }
 
-export async function getAnchorAt(
-  owner: string,
-  index: number,
-): Promise<RegistryEntry | null> {
+export async function getAnchorAt(owner: string, index: number): Promise<RegistryEntry | null> {
   const result: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: REGISTRY_CONTRACT_NAME,
@@ -244,9 +231,7 @@ export async function getAnchorAt(
   return decodeRegistryEntry(cvToValue(result, true));
 }
 
-export async function getRecentAnchors(
-  owner: string,
-): Promise<Array<RegistryEntry | null>> {
+export async function getRecentAnchors(owner: string): Promise<Array<RegistryEntry | null>> {
   const result: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: REGISTRY_CONTRACT_NAME,
@@ -301,9 +286,7 @@ export async function getProof(tokenId: number): Promise<Proof | null> {
   return decodeProof(cvToValue(result, true));
 }
 
-export async function getProofByHash(
-  hash: string,
-): Promise<ProofWithId | null> {
+export async function getProofByHash(hash: string): Promise<ProofWithId | null> {
   const idResult: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: PROOF_CONTRACT_NAME,
@@ -399,11 +382,7 @@ export function anchorToGroup(
     contractAddress: CONTRACT_ADDRESS,
     contractName: GROUPS_CONTRACT_NAME,
     functionName: "anchor-to-group",
-    functionArgs: [
-      uintCV(groupId),
-      bufferCV(hexToBytes(stripHex(hash))),
-      stringAsciiCV(label),
-    ],
+    functionArgs: [uintCV(groupId), bufferCV(hexToBytes(stripHex(hash))), stringAsciiCV(label)],
     network: getNetwork(),
     onFinish: (data) => onFinish(data.txId),
     onCancel: () => onCancel?.(),
@@ -429,10 +408,7 @@ export async function getGroup(groupId: number): Promise<Group | null> {
   };
 }
 
-export async function isMember(
-  groupId: number,
-  who: string,
-): Promise<boolean> {
+export async function isMember(groupId: number, who: string): Promise<boolean> {
   const result: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: GROUPS_CONTRACT_NAME,
@@ -482,9 +458,7 @@ export async function getGroupAnchorAt(
   return decodeGroupAnchor(cvToValue(result, true));
 }
 
-export async function getRecentGroupAnchors(
-  groupId: number,
-): Promise<Array<GroupAnchor | null>> {
+export async function getRecentGroupAnchors(groupId: number): Promise<Array<GroupAnchor | null>> {
   const result: ClarityValue = await fetchCallReadOnlyFunction({
     contractAddress: CONTRACT_ADDRESS,
     contractName: GROUPS_CONTRACT_NAME,
@@ -501,9 +475,7 @@ export async function getRecentGroupAnchors(
 export async function hashFile(file: File): Promise<string> {
   // crypto.subtle is only exposed in secure contexts (HTTPS or localhost).
   if (typeof crypto === "undefined" || !crypto.subtle) {
-    throw new Error(
-      "Hashing requires a secure context. Open this page over HTTPS and try again.",
-    );
+    throw new Error("Hashing requires a secure context. Open this page over HTTPS and try again.");
   }
   const buffer = await file.arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", buffer);

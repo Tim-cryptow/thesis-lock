@@ -4,10 +4,7 @@ import { test, expect } from "@playwright/test";
 // route 404s, so skip rather than fail. Once /docs is present these run live.
 test.beforeEach(async ({ page }) => {
   const res = await page.request.get("/docs");
-  test.skip(
-    res.status() === 404,
-    "docs route not present on this branch yet",
-  );
+  test.skip(res.status() === 404, "docs route not present on this branch yet");
 });
 
 const SECTIONS: { title: string; slug: string }[] = [
@@ -23,12 +20,8 @@ const SECTIONS: { title: string; slug: string }[] = [
 test.describe("docs site", () => {
   test("landing page loads with sidebar navigation", async ({ page }) => {
     await page.goto("/docs");
-    await expect(
-      page.getByRole("heading", { name: "ThesisLock Documentation" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("navigation", { name: "Documentation" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "ThesisLock Documentation" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Documentation" })).toBeVisible();
   });
 
   test("each section link navigates and renders content", async ({ page }) => {
@@ -43,9 +36,7 @@ test.describe("docs site", () => {
       // Match the page's main heading by level so a section whose title is a
       // substring of a subheading (e.g. "Contracts" vs "The five contracts")
       // does not trip strict mode.
-      await expect(
-        page.getByRole("heading", { name: title, level: 1, exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: title, level: 1, exact: true })).toBeVisible();
     }
   });
 });

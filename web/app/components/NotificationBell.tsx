@@ -80,11 +80,7 @@ export default function NotificationBell() {
         type="button"
         data-tour="notifications-nav"
         onClick={() => setOpen((o) => !o)}
-        aria-label={
-          unreadCount > 0
-            ? `Notifications, ${unreadCount} unread`
-            : "Notifications"
-        }
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
         aria-haspopup="true"
         aria-expanded={open}
         className="relative flex h-9 w-9 items-center justify-center rounded-full border border-foreground/15 bg-card text-foreground/70 shadow-sm hover:text-foreground hover:border-foreground/30 transition"
@@ -102,13 +98,9 @@ export default function NotificationBell() {
       {open ? (
         <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-lg border border-foreground/15 bg-card shadow-lg">
           <div className="flex items-center justify-between border-b border-foreground/10 px-4 py-2.5">
-            <span className="text-sm font-medium text-foreground">
-              Notifications
-            </span>
+            <span className="text-sm font-medium text-foreground">Notifications</span>
             {unreadCount > 0 ? (
-              <span className="text-xs text-foreground/55">
-                {unreadCount} unread
-              </span>
+              <span className="text-xs text-foreground/55">{unreadCount} unread</span>
             ) : null}
           </div>
 
@@ -137,9 +129,7 @@ export default function NotificationBell() {
                     <span className="min-w-0 flex-1">
                       <span
                         className={`block truncate text-sm ${
-                          n.read
-                            ? "text-foreground/90"
-                            : "font-semibold text-foreground"
+                          n.read ? "text-foreground/90" : "font-semibold text-foreground"
                         }`}
                       >
                         {n.title}

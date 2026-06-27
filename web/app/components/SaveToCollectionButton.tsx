@@ -48,10 +48,7 @@ export default function SaveToCollectionButton({
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -69,13 +66,7 @@ export default function SaveToCollectionButton({
   const saveAll = useCallback(
     (collectionId: string, name: string) => {
       for (const item of items) {
-        addToCollection(
-          collectionId,
-          item.hash,
-          item.label ?? "",
-          "",
-          item.verifyUrl,
-        );
+        addToCollection(collectionId, item.hash, item.label ?? "", "", item.verifyUrl);
       }
       setSavedTo(name);
       setTimeout(() => setSavedTo(null), 2500);
@@ -87,7 +78,7 @@ export default function SaveToCollectionButton({
   const create = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
-    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON);
+    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON!);
     setNewName("");
     setCreating(false);
     saveAll(collection.id, collection.name);
@@ -118,9 +109,7 @@ export default function SaveToCollectionButton({
           </p>
           <div className="max-h-56 overflow-y-auto">
             {collections.length === 0 ? (
-              <p className="px-1 py-2 text-xs text-foreground/55">
-                No collections yet.
-              </p>
+              <p className="px-1 py-2 text-xs text-foreground/55">No collections yet.</p>
             ) : (
               collections.map((c) => {
                 const color = resolveColor(c.color);
@@ -133,9 +122,7 @@ export default function SaveToCollectionButton({
                   >
                     <span className={`text-base ${color.text}`}>{c.icon}</span>
                     <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                    <span className="text-[10px] text-foreground/40">
-                      {c.items.length}
-                    </span>
+                    <span className="text-[10px] text-foreground/40">{c.items.length}</span>
                   </button>
                 );
               })

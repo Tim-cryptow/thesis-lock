@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import WatchlistNavLink from "@/app/components/WatchlistNavLink";
 import CollectionsNavLink from "@/app/components/CollectionsNavLink";
@@ -80,18 +74,12 @@ export default function ComparePage() {
   const [comparison, setComparison] = useState<AnchorComparison | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">(
-    "idle",
-  );
+  const [shareState, setShareState] = useState<"idle" | "copied" | "failed">("idle");
 
   const aHash = a.hash.toLowerCase().trim();
   const bHash = b.hash.toLowerCase().trim();
   const canCompare =
-    isValidHash(aHash) &&
-    isValidHash(bHash) &&
-    !loading &&
-    !a.hashing &&
-    !b.hashing;
+    isValidHash(aHash) && isValidHash(bHash) && !loading && !a.hashing && !b.hashing;
 
   // Per-column request token. Dropping a new file bumps the token, so a slower
   // earlier hashFile promise that settles out of order is discarded instead of
@@ -119,11 +107,7 @@ export default function ComparePage() {
   // shown comparison so the rendered table and the share link can never reflect
   // inputs that were edited after the comparison ran.
   const editColumn = useCallback(
-    (
-      set: typeof setA,
-      reqRef: { current: number },
-      patch: Partial<ColumnState>,
-    ) => {
+    (set: typeof setA, reqRef: { current: number }, patch: Partial<ColumnState>) => {
       reqRef.current++;
       cancelPendingCompare();
       set((s) => ({ ...s, ...patch }));
@@ -217,14 +201,8 @@ export default function ComparePage() {
     const pb = (searchParams.get("b") ?? "").toLowerCase().trim();
     const poa = searchParams.get("ownerA") ?? "";
     const pob = searchParams.get("ownerB") ?? "";
-    const pga = parseGroupParam(
-      searchParams.get("groupA"),
-      searchParams.get("giA"),
-    );
-    const pgb = parseGroupParam(
-      searchParams.get("groupB"),
-      searchParams.get("giB"),
-    );
+    const pga = parseGroupParam(searchParams.get("groupA"), searchParams.get("giA"));
+    const pgb = parseGroupParam(searchParams.get("groupB"), searchParams.get("giB"));
     if (isValidHash(pa)) setA((s) => ({ ...s, hash: pa, owner: poa, group: pga }));
     if (isValidHash(pb)) setB((s) => ({ ...s, hash: pb, owner: pob, group: pgb }));
     if (isValidHash(pa) && isValidHash(pb)) {
@@ -268,53 +246,30 @@ export default function ComparePage() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/search"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/feed"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
-        <Link
-          href="/verify-bulk"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/verify-bulk" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.bulkVerify")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.compare")}
-        </span>
-        <Link
-          href="/report"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <span className="text-foreground font-medium">{t("common.nav.compare")}</span>
+        <Link href="/report" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.report")}
         </Link>
-        <Link
-          href="/explorer"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.explorer")}
         </Link>
-          <WatchlistNavLink />
-          <CollectionsNavLink />
+        <WatchlistNavLink />
+        <CollectionsNavLink />
       </div>
 
       <h1 className="text-3xl mt-8 mb-2">{t("compare.heading")}</h1>
@@ -334,9 +289,7 @@ export default function ComparePage() {
               group: undefined,
             })
           }
-          onOwnerChange={(owner) =>
-            editColumn(setA, aReq, { owner, group: undefined })
-          }
+          onOwnerChange={(owner) => editColumn(setA, aReq, { owner, group: undefined })}
         />
         <DocColumn
           title={t("compare.columnB")}
@@ -351,9 +304,7 @@ export default function ComparePage() {
               group: undefined,
             })
           }
-          onOwnerChange={(owner) =>
-            editColumn(setB, bReq, { owner, group: undefined })
-          }
+          onOwnerChange={(owner) => editColumn(setB, bReq, { owner, group: undefined })}
         />
       </div>
 
@@ -419,9 +370,7 @@ function LabelCell({ entry }: { entry: CompareEntry }) {
   if (entry.source === "none") {
     return <span className="text-foreground/40">{t("compare.results.dash")}</span>;
   }
-  const template = entry.template?.templateId
-    ? getTemplate(entry.template.templateId)
-    : undefined;
+  const template = entry.template?.templateId ? getTemplate(entry.template.templateId) : undefined;
   if (!template || !entry.template) {
     return (
       <code className="font-mono text-xs break-all">
@@ -445,9 +394,7 @@ function LabelCell({ entry }: { entry: CompareEntry }) {
           const field = template.fields.find((f) => f.key === key);
           return (
             <div key={key} className="flex gap-2 text-xs">
-              <dt className="text-foreground/50 shrink-0">
-                {field?.name ?? key}
-              </dt>
+              <dt className="text-foreground/50 shrink-0">{field?.name ?? key}</dt>
               <dd className="font-mono break-all">{value}</dd>
             </div>
           );
@@ -504,8 +451,7 @@ function useHumanizeDuration() {
   const { t } = useI18n();
   return (minutes: number): string => {
     if (minutes < 60) return t("compare.units.minutes", { count: minutes });
-    if (minutes < 1440)
-      return t("compare.units.hours", { count: Math.round(minutes / 60) });
+    if (minutes < 1440) return t("compare.units.hours", { count: Math.round(minutes / 60) });
     return t("compare.units.days", { count: Math.round(minutes / 1440) });
   };
 }
@@ -525,9 +471,7 @@ function Timeline({ comparison }: { comparison: AnchorComparison }) {
         <h3 className="text-sm uppercase tracking-wide text-foreground/50 mb-2">
           {t("compare.timeline.heading")}
         </h3>
-        <p className="text-sm text-foreground/70">
-          {t("compare.timeline.unavailable")}
-        </p>
+        <p className="text-sm text-foreground/70">{t("compare.timeline.unavailable")}</p>
       </div>
     );
   }
@@ -555,10 +499,8 @@ function Timeline({ comparison }: { comparison: AnchorComparison }) {
 
   // Order the two markers chronologically: the earlier document sits on the
   // left of the bar regardless of which input column it came from.
-  const earlierLabel =
-    olderSide === "right" ? t("compare.columnB") : t("compare.columnA");
-  const laterLabel =
-    olderSide === "right" ? t("compare.columnA") : t("compare.columnB");
+  const earlierLabel = olderSide === "right" ? t("compare.columnB") : t("compare.columnA");
+  const laterLabel = olderSide === "right" ? t("compare.columnA") : t("compare.columnB");
 
   return (
     <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
@@ -603,29 +545,18 @@ function RelationshipBadges({ comparison }: { comparison: AnchorComparison }) {
   const bothFound = left.source !== "none" && right.source !== "none";
   if (!bothFound) return null;
 
-  const positive =
-    "border-green-600/30 text-green-700 dark:text-green-400 bg-green-500/5";
+  const positive = "border-green-600/30 text-green-700 dark:text-green-400 bg-green-500/5";
   const neutral = "border-foreground/20 text-foreground/70";
 
   return (
     <div className="mt-6 flex flex-wrap gap-2">
-      <span
-        className={`text-xs px-3 py-1 rounded-full border ${
-          sameOwner ? positive : neutral
-        }`}
-      >
-        {sameOwner
-          ? t("compare.badges.sameOwner")
-          : t("compare.badges.differentOwners")}
+      <span className={`text-xs px-3 py-1 rounded-full border ${sameOwner ? positive : neutral}`}>
+        {sameOwner ? t("compare.badges.sameOwner") : t("compare.badges.differentOwners")}
       </span>
       <span
-        className={`text-xs px-3 py-1 rounded-full border ${
-          sameTemplate ? positive : neutral
-        }`}
+        className={`text-xs px-3 py-1 rounded-full border ${sameTemplate ? positive : neutral}`}
       >
-        {sameTemplate
-          ? t("compare.badges.sameTemplate")
-          : t("compare.badges.differentTemplates")}
+        {sameTemplate ? t("compare.badges.sameTemplate") : t("compare.badges.differentTemplates")}
       </span>
       {supersedes && (
         <span className="text-xs px-3 py-1 rounded-full border border-amber-600/40 text-amber-700 dark:text-amber-400 bg-amber-500/5">
@@ -741,12 +672,8 @@ function ResultsTable({ comparison }: { comparison: AnchorComparison }) {
               <td className="p-3 text-foreground/50 uppercase text-xs tracking-wide">
                 {row.label}
               </td>
-              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>
-                {row.render(left)}
-              </td>
-              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>
-                {row.render(right)}
-              </td>
+              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>{row.render(left)}</td>
+              <td className={`p-3 ${row.differs ? HIGHLIGHT : ""}`}>{row.render(right)}</td>
             </tr>
           ))}
         </tbody>
@@ -763,13 +690,7 @@ type DocColumnProps = {
   onOwnerChange: (owner: string) => void;
 };
 
-function DocColumn({
-  title,
-  state,
-  onFile,
-  onHashChange,
-  onOwnerChange,
-}: DocColumnProps) {
+function DocColumn({ title, state, onFile, onHashChange, onOwnerChange }: DocColumnProps) {
   const { t } = useI18n();
 
   return (
@@ -777,18 +698,12 @@ function DocColumn({
       <h2 className="text-lg mb-3">{title}</h2>
       <FileDropZone onFile={onFile} ariaLabel={t("compare.dropPrompt")}>
         {state.file ? (
-          <p className="text-foreground/80 font-medium break-all">
-            {state.file.name}
-          </p>
+          <p className="text-foreground/80 font-medium break-all">{state.file.name}</p>
         ) : (
           <p className="text-foreground/60">{t("compare.dropPrompt")}</p>
         )}
       </FileDropZone>
-      {state.hashing && (
-        <p className="mt-2 text-sm text-foreground/60">
-          {t("compare.hashing")}
-        </p>
-      )}
+      {state.hashing && <p className="mt-2 text-sm text-foreground/60">{t("compare.hashing")}</p>}
       {state.hashError && (
         <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
           {state.hashError}

@@ -83,9 +83,7 @@ export default function PerformanceBanner() {
     }
 
     try {
-      const nav = performance.getEntriesByType("navigation")[0] as
-        | NavTiming
-        | undefined;
+      const nav = performance.getEntriesByType("navigation")[0] as NavTiming | undefined;
       if (nav) {
         setLoad(Math.max(0, nav.loadEventEnd - (nav.activationStart ?? 0)));
       }

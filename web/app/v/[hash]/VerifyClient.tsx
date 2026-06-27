@@ -55,9 +55,7 @@ function LabelValue({ label }: { label: string }) {
 
   if (!template) {
     return (
-      <code className="font-mono text-xs md:text-sm">
-        {label || t("verify.fields.noLabel")}
-      </code>
+      <code className="font-mono text-xs md:text-sm">{label || t("verify.fields.noLabel")}</code>
     );
   }
 
@@ -77,9 +75,7 @@ function LabelValue({ label }: { label: string }) {
           const field = template.fields.find((f) => f.key === key);
           return (
             <div key={key} className="flex gap-2 text-xs">
-              <dt className="text-foreground/50 shrink-0">
-                {field?.name ?? key}
-              </dt>
+              <dt className="text-foreground/50 shrink-0">{field?.name ?? key}</dt>
               <dd className="font-mono break-all">{value}</dd>
             </div>
           );
@@ -142,9 +138,7 @@ export default function VerifyPage() {
   const [txId, setTxId] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const [showQr, setShowQr] = useState(false);
-  const [copiedEmbed, setCopiedEmbed] = useState<"markdown" | "html" | null>(
-    null,
-  );
+  const [copiedEmbed, setCopiedEmbed] = useState<"markdown" | "html" | null>(null);
   const [copyEmbedFailed, setCopyEmbedFailed] = useState(false);
 
   useEffect(() => {
@@ -158,9 +152,7 @@ export default function VerifyPage() {
   // the same hash, which could be an unrelated entry by a different
   // anchorer. Otherwise fall back to the historical "single first, batch as
   // fallback" ordering.
-  const preferBatch = Boolean(
-    batchAnchor && batchOwner && (ownerParam || !anchor),
-  );
+  const preferBatch = Boolean(batchAnchor && batchOwner && (ownerParam || !anchor));
 
   // An explicit group link asks about one specific group anchor, so show it
   // even when the same hash also has a single or batch anchor by someone else.
@@ -175,17 +167,16 @@ export default function VerifyPage() {
   // viewing someone else's batch/group record never offers to tag it or pins a
   // link to it.
   const showingBatch = !preferGroup && preferBatch;
-  const showingGroup =
-    !showingBatch && (preferGroup || !anchor) && Boolean(groupAnchor);
+  const showingGroup = !showingBatch && (preferGroup || !anchor) && Boolean(groupAnchor);
   const ownsAnchor = Boolean(
     address &&
-      (showingBatch
-        ? batchOwner === address
-        : showingGroup
-          ? groupAnchor?.anchoredBy === address
-          : anchor
-            ? anchor.anchoredBy === address
-            : false),
+    (showingBatch
+      ? batchOwner === address
+      : showingGroup
+        ? groupAnchor?.anchoredBy === address
+        : anchor
+          ? anchor.anchoredBy === address
+          : false),
   );
   const tagLabel = showingBatch
     ? (batchAnchor?.label ?? "")
@@ -213,15 +204,7 @@ export default function VerifyPage() {
       params.set("giA", String(groupAnchor.index));
     }
     return `/compare?${params.toString()}`;
-  }, [
-    hash,
-    preferGroup,
-    preferBatch,
-    batchAnchor,
-    batchOwner,
-    anchor,
-    groupAnchor,
-  ]);
+  }, [hash, preferGroup, preferBatch, batchAnchor, batchOwner, anchor, groupAnchor]);
 
   // When the batch path resolves via the connected wallet rather than the
   // URL's ?owner=, the bare share URL points recipients to a page that
@@ -240,7 +223,6 @@ export default function VerifyPage() {
     }
     return shareUrl;
   }, [shareUrl, preferBatch, batchOwner, ownerParam]);
-
 
   // The badge endpoint resolves single anchors by hash alone, but a batch
   // record is keyed by {hash, owner}, so pass the owner when the page is
@@ -284,9 +266,7 @@ export default function VerifyPage() {
         setError(null);
         auditVerify(hash, {
           ...(ownerParam ? { owner: ownerParam } : {}),
-          ...(groupLocation
-            ? { group: groupLocation.groupId, gi: groupLocation.index }
-            : {}),
+          ...(groupLocation ? { group: groupLocation.groupId, gi: groupLocation.index } : {}),
         });
       }
       try {
@@ -337,11 +317,7 @@ export default function VerifyPage() {
         // the user to refresh manually.
         const apiUp = await isHiroAvailable();
         setHiroDown(!apiUp);
-        setError(
-          apiUp
-            ? t("verify.error.lookupFailed")
-            : t("verify.error.hiroUnavailable"),
-        );
+        setError(apiUp ? t("verify.error.lookupFailed") : t("verify.error.hiroUnavailable"));
       } finally {
         if (showLoading) setLoading(false);
       }
@@ -396,9 +372,7 @@ export default function VerifyPage() {
       const h = await hashFile(file);
       setVerifyHash(h);
     } catch (e) {
-      setVerifyError(
-        e instanceof Error ? e.message : t("verify.error.hashFailed"),
-      );
+      setVerifyError(e instanceof Error ? e.message : t("verify.error.hashFailed"));
     } finally {
       setVerifying(false);
     }
@@ -408,80 +382,50 @@ export default function VerifyPage() {
     return (
       <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
         <div className="flex items-center gap-4 text-sm flex-wrap">
-          <div className="order-last ml-auto"><ThemeToggle /></div>
+          <div className="order-last ml-auto">
+            <ThemeToggle />
+          </div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.search")}
           </Link>
-          <Link
-            href="/anchor"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.anchor")}
           </Link>
-          <Link
-            href="/anchors"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.myAnchors")}
           </Link>
-          <Link
-            href="/groups"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/groups" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.groups")}
           </Link>
-          <Link
-            href="/feed"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.feed")}
           </Link>
-          <Link
-            href="/stats"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/stats" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.stats")}
           </Link>
-          <Link
-            href="/verify-bulk"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/verify-bulk" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.bulkVerify")}
           </Link>
-          <Link
-            href="/dashboard"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.dashboard")}
           </Link>
-          <Link
-            href="/activity"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/activity" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.activity")}
           </Link>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
           <CollectionsNavLink />
         </div>
         <h1 className="text-3xl mt-8 mb-2">{t("verify.invalidHash.title")}</h1>
-        <p className="text-foreground/70">
-          {t("verify.invalidHash.body")}
-        </p>
+        <p className="text-foreground/70">{t("verify.invalidHash.body")}</p>
       </div>
     );
   }
@@ -489,69 +433,44 @@ export default function VerifyPage() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm flex-wrap">
-        <div className="order-last ml-auto"><ThemeToggle /></div>
+        <div className="order-last ml-auto">
+          <ThemeToggle />
+        </div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/groups"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/groups" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.groups")}
         </Link>
-        <Link
-          href="/feed"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
-        <Link
-          href="/stats"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.stats")}
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.dashboard")}
         </Link>
-        <Link
-          href="/activity"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/activity" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.activity")}
         </Link>
-        <Link
-          href="/compare"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/compare" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.compare")}
         </Link>
-        <Link
-          href="/explorer"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.explorer")}
         </Link>
-          <WatchlistNavLink />
-          <CollectionsNavLink />
+        <WatchlistNavLink />
+        <CollectionsNavLink />
       </div>
       <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
         <Breadcrumbs />
@@ -560,239 +479,222 @@ export default function VerifyPage() {
       <h1 className="text-3xl mb-6">{t("verify.recordTitle")}</h1>
 
       <FadeIn direction="up">
-      <div className="rounded-lg border border-foreground/10 bg-card p-6">
-        <div className="mb-4">
-          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-            {t("verify.fields.hash")}
-            <HelpText term="SHA-256 Hash" />
+        <div className="rounded-lg border border-foreground/10 bg-card p-6">
+          <div className="mb-4">
+            <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+              {t("verify.fields.hash")}
+              <HelpText term="SHA-256 Hash" />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <TruncatedHash hash={hash} chars={16} />
+              <WatchlistButton
+                type="hash"
+                value={hash}
+                owner={preferBatch && batchOwner ? batchOwner : undefined}
+                groupId={preferGroup && groupAnchor ? groupAnchor.groupId : undefined}
+                groupIndex={preferGroup && groupAnchor ? groupAnchor.index : undefined}
+                showLabel
+              />
+              <StarButton
+                type="hash"
+                value={hash}
+                label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
+              />
+              <AddToCollectionButton
+                hash={hash}
+                label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
+                verifyUrl={
+                  preferBatch && batchOwner
+                    ? `/v/${hash}?owner=${batchOwner}`
+                    : preferGroup && groupAnchor
+                      ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
+                      : undefined
+                }
+                showLabel
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <TruncatedHash hash={hash} chars={16} />
-            <WatchlistButton
-              type="hash"
-              value={hash}
-              owner={preferBatch && batchOwner ? batchOwner : undefined}
-              groupId={preferGroup && groupAnchor ? groupAnchor.groupId : undefined}
-              groupIndex={
-                preferGroup && groupAnchor ? groupAnchor.index : undefined
-              }
-              showLabel
-            />
-            <StarButton
-              type="hash"
-              value={hash}
-              label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
-            />
-            <AddToCollectionButton
-              hash={hash}
-              label={batchAnchor?.label ?? groupAnchor?.label ?? anchor?.label ?? ""}
-              verifyUrl={
-                preferBatch && batchOwner
-                  ? `/v/${hash}?owner=${batchOwner}`
-                  : preferGroup && groupAnchor
-                    ? `/v/${hash}?group=${groupAnchor.groupId}&gi=${groupAnchor.index}`
-                    : undefined
-              }
-              showLabel
-            />
-          </div>
-        </div>
 
-        <div role="status" aria-live="polite" aria-busy={loading || undefined}>
-        {loading ? (
-          <VerifySkeleton />
-        ) : error ? (
-          <div className="mt-4 pt-4 border-t border-foreground/10">
-            <p className="text-red-600 dark:text-red-400" role="alert">
-              {error}
-            </p>
-            <button
-              onClick={() => void loadAnchor()}
-              className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            >
-              {t("common.actions.tryAgain")}
-            </button>
-          </div>
-        ) : !preferGroup && preferBatch && batchAnchor && batchOwner ? (
-          <div className="mt-4 pt-4 border-t border-foreground/10">
-            <p className="text-foreground/80 text-sm mb-3">
-              {t("verify.batch.heading")}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.owner")}
-                </div>
-                <Link
-                  href={`/u/${batchOwner}`}
-                  className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
-                >
-                  {batchOwner}
-                </Link>
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.label")}
-                </div>
-                <LabelValue label={batchAnchor.label} />
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.stacksBlock")}
-                </div>
-                <code className="font-mono text-sm">
-                  {batchAnchor.stacksBlock}
-                </code>
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.burnBlock")}
-                </div>
-                <code className="font-mono text-sm">
-                  {batchAnchor.burnBlock}
-                </code>
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.batchId")}
-                </div>
-                <code className="font-mono text-sm">
-                  #{batchAnchor.batchId}
-                </code>
-              </div>
-            </div>
-          </div>
-        ) : (preferGroup || !anchor) && groupAnchor ? (
-          <div className="mt-4 pt-4 border-t border-foreground/10">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-foreground/20 text-foreground/70 uppercase tracking-wide">
-                {t("verify.group.badge")}
-              </span>
-              <p className="text-foreground/80 text-sm">
-                {groupAnchor.groupName
-                  ? t("verify.group.anchoredInNamed", {
-                      id: groupAnchor.groupId,
-                      name: groupAnchor.groupName,
-                    })
-                  : t("verify.group.anchoredIn", { id: groupAnchor.groupId })}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.anchoredBy")}
-                </div>
-                <TruncatedAddress address={groupAnchor.anchoredBy} />
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.label")}
-                </div>
-                <LabelValue label={groupAnchor.label} />
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.stacksBlock")}
-                </div>
-                <code className="font-mono text-sm">
-                  {groupAnchor.stacksBlock}
-                </code>
-              </div>
-              <div>
-                <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                  {t("verify.fields.group")}
-                </div>
-                <Link
-                  href={`/groups/${groupAnchor.groupId}`}
-                  className="text-sm underline hover:no-underline"
-                >
-                  {t("verify.group.viewHistory")}
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : !anchor ? (
-          txId ? (
-            <div className="mt-4 pt-4 border-t border-foreground/10">
-              <p className="text-foreground/80">
-                {t("verify.pending.body")}
-              </p>
-              <a
-                href={explorerTxUrl(txId)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block mt-3 text-sm underline hover:no-underline"
-              >
-                {t("verify.pending.viewTx")}
-              </a>
-            </div>
-          ) : (
-            <div className="mt-4 pt-4 border-t border-foreground/10">
-              <p className="text-foreground/80">
-                {t("verify.notAnchored.body")}
-              </p>
-              {!batchOwner && (
-                <p className="mt-3 text-sm text-foreground/70">
-                  {t("verify.notAnchored.batchHintPrefix")}{" "}
-                  <code className="font-mono">?owner=&lt;principal&gt;</code>{" "}
-                  {t("verify.notAnchored.batchHintSuffix")}
+          <div role="status" aria-live="polite" aria-busy={loading || undefined}>
+            {loading ? (
+              <VerifySkeleton />
+            ) : error ? (
+              <div className="mt-4 pt-4 border-t border-foreground/10">
+                <p className="text-red-600 dark:text-red-400" role="alert">
+                  {error}
                 </p>
-              )}
-              <Link
-                href="/anchor"
-                className="inline-block mt-3 text-sm underline hover:no-underline"
-              >
-                {t("verify.notAnchored.cta")}
-              </Link>
-              <div className="mt-4 pt-4 border-t border-foreground/10 flex items-center gap-3 flex-wrap">
-                <p className="text-sm text-foreground/70">
-                  Want to know when this hash gets anchored? Add it to your
-                  watchlist.
-                </p>
-                <WatchlistButton type="hash" value={hash} showLabel />
+                <button
+                  onClick={() => void loadAnchor()}
+                  className="mt-3 text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  {t("common.actions.tryAgain")}
+                </button>
               </div>
-            </div>
-          )
-        ) : (
-          <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                {t("verify.fields.anchoredBy")}
-                <HelpText term="Principal" />
+            ) : !preferGroup && preferBatch && batchAnchor && batchOwner ? (
+              <div className="mt-4 pt-4 border-t border-foreground/10">
+                <p className="text-foreground/80 text-sm mb-3">{t("verify.batch.heading")}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.owner")}
+                    </div>
+                    <Link
+                      href={`/u/${batchOwner}`}
+                      className="font-mono text-xs md:text-sm break-all underline hover:no-underline"
+                    >
+                      {batchOwner}
+                    </Link>
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.label")}
+                    </div>
+                    <LabelValue label={batchAnchor.label} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.stacksBlock")}
+                    </div>
+                    <code className="font-mono text-sm">{batchAnchor.stacksBlock}</code>
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.burnBlock")}
+                    </div>
+                    <code className="font-mono text-sm">{batchAnchor.burnBlock}</code>
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.batchId")}
+                    </div>
+                    <code className="font-mono text-sm">#{batchAnchor.batchId}</code>
+                  </div>
+                </div>
               </div>
-              <TruncatedAddress address={anchor.anchoredBy} />
-            </div>
-            <div>
-              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                {t("verify.fields.label")}
+            ) : (preferGroup || !anchor) && groupAnchor ? (
+              <div className="mt-4 pt-4 border-t border-foreground/10">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-foreground/20 text-foreground/70 uppercase tracking-wide">
+                    {t("verify.group.badge")}
+                  </span>
+                  <p className="text-foreground/80 text-sm">
+                    {groupAnchor.groupName
+                      ? t("verify.group.anchoredInNamed", {
+                          id: groupAnchor.groupId,
+                          name: groupAnchor.groupName,
+                        })
+                      : t("verify.group.anchoredIn", { id: groupAnchor.groupId })}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.anchoredBy")}
+                    </div>
+                    <TruncatedAddress address={groupAnchor.anchoredBy} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.label")}
+                    </div>
+                    <LabelValue label={groupAnchor.label} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.stacksBlock")}
+                    </div>
+                    <code className="font-mono text-sm">{groupAnchor.stacksBlock}</code>
+                  </div>
+                  <div>
+                    <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                      {t("verify.fields.group")}
+                    </div>
+                    <Link
+                      href={`/groups/${groupAnchor.groupId}`}
+                      className="text-sm underline hover:no-underline"
+                    >
+                      {t("verify.group.viewHistory")}
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <LabelValue label={anchor.label} />
-            </div>
-            <div>
-              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                {t("verify.fields.stacksBlock")}
-                <HelpText term="Stacks Block" />
+            ) : !anchor ? (
+              txId ? (
+                <div className="mt-4 pt-4 border-t border-foreground/10">
+                  <p className="text-foreground/80">{t("verify.pending.body")}</p>
+                  <a
+                    href={explorerTxUrl(txId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block mt-3 text-sm underline hover:no-underline"
+                  >
+                    {t("verify.pending.viewTx")}
+                  </a>
+                </div>
+              ) : (
+                <div className="mt-4 pt-4 border-t border-foreground/10">
+                  <p className="text-foreground/80">{t("verify.notAnchored.body")}</p>
+                  {!batchOwner && (
+                    <p className="mt-3 text-sm text-foreground/70">
+                      {t("verify.notAnchored.batchHintPrefix")}{" "}
+                      <code className="font-mono">?owner=&lt;principal&gt;</code>{" "}
+                      {t("verify.notAnchored.batchHintSuffix")}
+                    </p>
+                  )}
+                  <Link
+                    href="/anchor"
+                    className="inline-block mt-3 text-sm underline hover:no-underline"
+                  >
+                    {t("verify.notAnchored.cta")}
+                  </Link>
+                  <div className="mt-4 pt-4 border-t border-foreground/10 flex items-center gap-3 flex-wrap">
+                    <p className="text-sm text-foreground/70">
+                      Want to know when this hash gets anchored? Add it to your watchlist.
+                    </p>
+                    <WatchlistButton type="hash" value={hash} showLabel />
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="mt-4 pt-4 border-t border-foreground/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    {t("verify.fields.anchoredBy")}
+                    <HelpText term="Principal" />
+                  </div>
+                  <TruncatedAddress address={anchor.anchoredBy} />
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    {t("verify.fields.label")}
+                  </div>
+                  <LabelValue label={anchor.label} />
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    {t("verify.fields.stacksBlock")}
+                    <HelpText term="Stacks Block" />
+                  </div>
+                  <code className="font-mono text-sm">{anchor.stacksBlock}</code>
+                </div>
+                <div>
+                  <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
+                    {t("verify.fields.burnBlock")}
+                    <HelpText term="Burn Block" />
+                  </div>
+                  <code className="font-mono text-sm">{anchor.burnBlock}</code>
+                </div>
               </div>
-              <code className="font-mono text-sm">{anchor.stacksBlock}</code>
-            </div>
-            <div>
-              <div className="text-xs text-foreground/60 uppercase tracking-wide mb-1">
-                {t("verify.fields.burnBlock")}
-                <HelpText term="Burn Block" />
-              </div>
-              <code className="font-mono text-sm">{anchor.burnBlock}</code>
-            </div>
+            )}
           </div>
-        )}
         </div>
-      </div>
       </FadeIn>
 
       <section className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
         <h2 className="mb-2 text-xl">Verify your file matches</h2>
         <p className="mb-4 text-sm text-foreground/70">
-          Drop your file to confirm its SHA-256 hash matches this anchored hash.
-          Hashing happens in your browser; the file never leaves your device.
+          Drop your file to confirm its SHA-256 hash matches this anchored hash. Hashing happens in
+          your browser; the file never leaves your device.
         </p>
         <HashMatcher
           leftMode="hash"
@@ -806,9 +708,7 @@ export default function VerifyPage() {
 
       {ownsAnchor && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
-          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">
-            Your tags
-          </div>
+          <div className="text-xs text-foreground/60 uppercase tracking-wide mb-2">Your tags</div>
           <TagInput hash={hash} label={tagLabel} verifyUrl={tagVerifyUrl} />
           <p className="mt-2 text-xs text-foreground/50">
             Tags are stored only in this browser and never published on chain.
@@ -843,14 +743,9 @@ export default function VerifyPage() {
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <h2 className="text-xl mb-2">{t("verify.share.heading")}</h2>
-          <p className="text-foreground/70 text-sm mb-4">
-            {t("verify.share.body")}
-          </p>
+          <p className="text-foreground/70 text-sm mb-4">{t("verify.share.body")}</p>
           <div className="flex flex-wrap gap-2">
-            <ShareButtons
-              url={publicVerifyUrl}
-              title="Document verified on ThesisLock"
-            />
+            <ShareButtons url={publicVerifyUrl} title="Document verified on ThesisLock" />
             <button
               onClick={() => {
                 const verifyUrl = publicVerifyUrl || window.location.href;
@@ -920,17 +815,9 @@ export default function VerifyPage() {
       {(anchor || (batchAnchor && batchOwner)) && (
         <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-6">
           <h2 className="text-xl mb-2">{t("verify.embed.heading")}</h2>
-          <p className="text-foreground/70 text-sm mb-4">
-            {t("verify.embed.body")}
-          </p>
+          <p className="text-foreground/70 text-sm mb-4">{t("verify.embed.body")}</p>
           {badgeSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={badgeSrc}
-              alt={t("verify.embed.badgeAlt")}
-              height={20}
-              className="mb-4"
-            />
+            <img src={badgeSrc} alt={t("verify.embed.badgeAlt")} height={20} className="mb-4" />
           )}
           <div className="flex flex-wrap gap-2">
             <button
@@ -967,19 +854,12 @@ export default function VerifyPage() {
 
       <div className="mt-10 rounded-lg border border-foreground/10 bg-card p-6">
         <h2 className="text-xl mb-2">{t("verify.file.heading")}</h2>
-        <p className="text-foreground/70 text-sm mb-4">
-          {t("verify.file.body")}
-        </p>
-        <FileDropZone
-          onFile={(f) => void onVerifyFile(f)}
-          ariaLabel={t("verify.file.dropAria")}
-        >
+        <p className="text-foreground/70 text-sm mb-4">{t("verify.file.body")}</p>
+        <FileDropZone onFile={(f) => void onVerifyFile(f)} ariaLabel={t("verify.file.dropAria")}>
           {verifyFile ? (
             <p className="text-foreground/80 font-medium">{verifyFile.name}</p>
           ) : (
-            <p className="text-foreground/60">
-              {t("verify.file.dropPrompt")}
-            </p>
+            <p className="text-foreground/60">{t("verify.file.dropPrompt")}</p>
           )}
         </FileDropZone>
         {verifyFile && (
@@ -992,13 +872,9 @@ export default function VerifyPage() {
               <p className="text-foreground/60">{t("verify.file.hashing")}</p>
             ) : verifyHash ? (
               verifyHash === hash ? (
-                <p className="text-green-700 dark:text-green-400">
-                  {t("verify.file.match")}
-                </p>
+                <p className="text-green-700 dark:text-green-400">{t("verify.file.match")}</p>
               ) : (
-                <p className="text-red-600 dark:text-red-400">
-                  {t("verify.file.noMatch")}
-                </p>
+                <p className="text-red-600 dark:text-red-400">{t("verify.file.noMatch")}</p>
               )
             ) : null}
             {verifyHash && (

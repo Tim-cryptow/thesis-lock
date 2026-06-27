@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import SearchClientLoader from "./SearchClientLoader";
 
 const TITLE = "Search Anchors";
-const DESCRIPTION =
-  "Search for anchored documents by hash, wallet address, or label";
+const DESCRIPTION = "Search for anchored documents by hash, wallet address, or label";
 
 export const metadata: Metadata = {
   title: TITLE,

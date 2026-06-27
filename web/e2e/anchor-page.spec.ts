@@ -10,17 +10,11 @@ test.describe("anchor page", () => {
   });
 
   test("loads with the anchor heading", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { name: "Anchor a document" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Anchor a document" })).toBeVisible();
   });
 
-  test("prompts to connect a wallet when none is connected", async ({
-    page,
-  }) => {
-    await expect(
-      page.getByRole("button", { name: "Connect wallet" }),
-    ).toBeVisible();
+  test("prompts to connect a wallet when none is connected", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "Connect wallet" })).toBeVisible();
   });
 
   test("toggles between single and batch modes", async ({ page }) => {
@@ -39,9 +33,7 @@ test.describe("anchor page", () => {
     await expect(page.getByText(/Drop up to 10 files here/)).toBeVisible();
   });
 
-  test("hashes a dropped file locally and shows the digest", async ({
-    page,
-  }) => {
+  test("hashes a dropped file locally and shows the digest", async ({ page }) => {
     await page
       .locator('input[type="file"]')
       .first()
@@ -58,9 +50,7 @@ test.describe("anchor page", () => {
     ).toBeVisible();
   });
 
-  test("label input accepts text and shows a character count", async ({
-    page,
-  }) => {
+  test("label input accepts text and shows a character count", async ({ page }) => {
     const label = page.getByLabel(/^Label/);
     await label.fill("chapter-3-draft");
     await expect(page.getByText("15/64")).toBeVisible();

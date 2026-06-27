@@ -23,13 +23,7 @@ const ASCII_REGEX = /^[\x20-\x7E]*$/;
 
 export default function GroupsPage() {
   const { t } = useI18n();
-  const {
-    address,
-    connecting,
-    error: walletError,
-    connectWallet,
-    disconnectWallet,
-  } = useWallet();
+  const { address, connecting, error: walletError, connectWallet, disconnectWallet } = useWallet();
 
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,17 +34,20 @@ export default function GroupsPage() {
   const [pending, setPending] = useState(false);
   const [createTxId, setCreateTxId] = useState<string | null>(null);
 
-  const loadGroups = useCallback(async (owner: string) => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      setGroups(await fetchMyGroups(owner));
-    } catch (e) {
-      setLoadError(e instanceof Error ? e.message : t("groups.list.loadError"));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadGroups = useCallback(
+    async (owner: string) => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        setGroups(await fetchMyGroups(owner));
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : t("groups.list.loadError"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (!address) {
@@ -91,57 +88,38 @@ export default function GroupsPage() {
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
-          <div className="order-last ml-auto"><ThemeToggle /></div>
+          <div className="order-last ml-auto">
+            <ThemeToggle />
+          </div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
           <Link href="/search" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.search")}
           </Link>
-          <Link
-            href="/anchor"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.anchor")}
           </Link>
-          <Link
-            href="/anchors"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.myAnchors")}
           </Link>
           <span className="text-foreground font-medium">{t("common.nav.groups")}</span>
           <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.feed")}
           </Link>
-          <Link
-            href="/stats"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/stats" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.stats")}
           </Link>
-          <Link
-            href="/dashboard"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.dashboard")}
           </Link>
-          <Link
-            href="/activity"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/activity" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.activity")}
           </Link>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
@@ -171,9 +149,7 @@ export default function GroupsPage() {
         {t("groups.list.title")}
         <HelpText term="Group" />
       </h1>
-      <p className="text-foreground/70 mb-8">
-        {t("groups.list.intro")}
-      </p>
+      <p className="text-foreground/70 mb-8">{t("groups.list.intro")}</p>
 
       {walletError && (
         <p className="mb-6 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -183,9 +159,7 @@ export default function GroupsPage() {
 
       {!address ? (
         <div className="rounded-lg border border-foreground/10 bg-card p-10 text-center">
-          <p className="text-foreground/70 mb-6">
-            {t("groups.list.connectPrompt")}
-          </p>
+          <p className="text-foreground/70 mb-6">{t("groups.list.connectPrompt")}</p>
           <button
             onClick={connectWallet}
             disabled={connecting}
@@ -249,10 +223,7 @@ export default function GroupsPage() {
           </div>
 
           {loadError ? (
-            <ErrorFallback
-              message={loadError}
-              onRetry={() => void loadGroups(address)}
-            />
+            <ErrorFallback message={loadError} onRetry={() => void loadGroups(address)} />
           ) : loading && groups.length === 0 ? (
             <div className="space-y-3" aria-busy="true">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -279,35 +250,33 @@ export default function GroupsPage() {
           ) : (
             <div className="space-y-3" role="list">
               <StaggerList>
-              {groups.map((group) => (
-                <div
-                  key={group.id}
-                  role="listitem"
-                  className="rounded-lg border border-foreground/10 bg-card p-5 flex items-start justify-between gap-4 flex-wrap"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-lg font-medium truncate">
-                      {group.name}
-                    </div>
-                    <div className="mt-1 text-sm text-foreground/60">
-                      {t("groups.list.cardMeta", {
-                        id: group.id,
-                        anchors:
-                          group.anchorCount === 1
-                            ? t("groups.anchorCountOne", { count: group.anchorCount })
-                            : t("groups.anchorCountOther", { count: group.anchorCount }),
-                      })}
-                      {group.admin === address ? t("groups.list.adminSuffix") : ""}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/groups/${group.id}`}
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
+                {groups.map((group) => (
+                  <div
+                    key={group.id}
+                    role="listitem"
+                    className="rounded-lg border border-foreground/10 bg-card p-5 flex items-start justify-between gap-4 flex-wrap"
                   >
-                    {t("groups.list.open")}
-                  </Link>
-                </div>
-              ))}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-lg font-medium truncate">{group.name}</div>
+                      <div className="mt-1 text-sm text-foreground/60">
+                        {t("groups.list.cardMeta", {
+                          id: group.id,
+                          anchors:
+                            group.anchorCount === 1
+                              ? t("groups.anchorCountOne", { count: group.anchorCount })
+                              : t("groups.anchorCountOther", { count: group.anchorCount }),
+                        })}
+                        {group.admin === address ? t("groups.list.adminSuffix") : ""}
+                      </div>
+                    </div>
+                    <Link
+                      href={`/groups/${group.id}`}
+                      className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition shrink-0"
+                    >
+                      {t("groups.list.open")}
+                    </Link>
+                  </div>
+                ))}
               </StaggerList>
             </div>
           )}

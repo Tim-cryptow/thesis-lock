@@ -51,10 +51,7 @@ export function useUnsavedChanges(enabled: boolean, options: UnsavedOptions) {
       const url = new URL(anchor.href, window.location.href);
       if (url.origin !== window.location.origin) return;
       // Ignore links that do not actually change the current route.
-      if (
-        url.pathname === window.location.pathname &&
-        url.search === window.location.search
-      ) {
+      if (url.pathname === window.location.pathname && url.search === window.location.search) {
         return;
       }
 

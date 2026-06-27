@@ -4,11 +4,7 @@
 // is kept in the browser by statusMonitor's localStorage helpers. This exists so
 // /api/status/history can return the recent snapshots an instance has observed.
 
-import type {
-  ServiceStatus,
-  StatusHistory,
-  StatusHistoryCheck,
-} from "./statusMonitor";
+import type { ServiceStatus, StatusHistory, StatusHistoryCheck } from "./statusMonitor";
 
 type Snapshot = { timestamp: string; services: ServiceStatus[] };
 
@@ -17,17 +13,11 @@ const MAX_SNAPSHOTS = 500;
 
 const snapshots: Snapshot[] = [];
 
-export function recordServerSnapshot(
-  services: ServiceStatus[],
-  timestamp: string,
-): void {
+export function recordServerSnapshot(services: ServiceStatus[], timestamp: string): void {
   snapshots.push({ timestamp, services });
   const cutoff = Date.now() - WINDOW_MS;
   let drop = 0;
-  while (
-    drop < snapshots.length &&
-    new Date(snapshots[drop].timestamp).getTime() < cutoff
-  ) {
+  while (drop < snapshots.length && new Date(snapshots[drop]!.timestamp).getTime() < cutoff) {
     drop += 1;
   }
   if (drop > 0) snapshots.splice(0, drop);

@@ -8,8 +8,7 @@ import { createClient, truncateHash } from "../src/index";
 
 async function main() {
   const client = createClient();
-  const hash =
-    "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
+  const hash = "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
 
   const result = await client.verify(hash);
 

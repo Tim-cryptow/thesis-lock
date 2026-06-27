@@ -174,8 +174,7 @@ export const es: Translations = {
     },
     integrate: {
       heading: "Integra ThesisLock en tu flujo de trabajo",
-      intro:
-        "Ancla y verifica documentos desde tu propio código, terminal o pipeline de CI.",
+      intro: "Ancla y verifica documentos desde tu propio código, terminal o pipeline de CI.",
       sdk: {
         title: "SDK",
         body: "Un cliente de TypeScript tipado para Node y el navegador.",
@@ -240,8 +239,7 @@ export const es: Translations = {
       dropZonePrompt:
         "Suelta hasta {max} archivos aquí, o haz clic para elegir. Agregados: {added}/{max}.",
       limitReached: "El límite es de {max} archivos por lote.",
-      partiallyAdded:
-        "Solo se agregaron {added} de {total}. El límite es de {max} por lote.",
+      partiallyAdded: "Solo se agregaron {added} de {total}. El límite es de {max} por lote.",
       remove: "Quitar",
       removeFileAria: "Quitar el archivo {name}",
       labelForAria: "Etiqueta para {name}",
@@ -255,8 +253,7 @@ export const es: Translations = {
       batch: "Anclar lote de {count}",
       batchHelp:
         "Firmarás una transacción de lote, y luego una más por archivo para registrar cada uno en tu historial de anclajes.",
-      doNotNavigate:
-        "No salgas de la página mientras las transacciones están en tu billetera.",
+      doNotNavigate: "No salgas de la página mientras las transacciones están en tu billetera.",
     },
     success: {
       hashLabel: "Hash",
@@ -313,8 +310,7 @@ export const es: Translations = {
     recordTitle: "Registro de anclaje",
     compareLink: "Comparar con otro documento",
     lookingUp: "Consultando en la cadena...",
-    tweetText:
-      "Anclado en Stacks. Marca de tiempo verificable sin compartir el archivo:",
+    tweetText: "Anclado en Stacks. Marca de tiempo verificable sin compartir el archivo:",
     error: {
       lookupFailed:
         "No se pudo consultar este anclaje. Comprueba tu conexión e inténtalo de nuevo.",
@@ -349,8 +345,7 @@ export const es: Translations = {
     notAnchored: {
       body: "Este hash no ha sido anclado.",
       batchHintPrefix: "Si esto se ancló por lotes, agrega",
-      batchHintSuffix:
-        "a la URL o conecta la billetera de anclaje para verificar.",
+      batchHintSuffix: "a la URL o conecta la billetera de anclaje para verificar.",
       cta: "Anclar un documento",
     },
     proof: {
@@ -408,7 +403,8 @@ export const es: Translations = {
     labelLabel: "Etiqueta",
     labelNone: "(ninguno)",
     stacksBlockLabel: "Bloque de Stacks",
-    certError: "No se pudieron cargar los datos de anclaje de la cadena. Inténtalo de nuevo en un momento.",
+    certError:
+      "No se pudieron cargar los datos de anclaje de la cadena. Inténtalo de nuevo en un momento.",
     showingRecent: "Mostrando los 10 más recientes de {count} anclajes. Exportar todo.",
     exportCsv: "Exportar CSV",
     exportJson: "Exportar JSON",
@@ -538,12 +534,10 @@ export const es: Translations = {
       title: "Grupos",
       intro:
         "Crea un grupo con nombre y ancla documentos en él con miembros de tu confianza. Cada miembro puede contribuir a un historial de documentos compartido en la cadena.",
-      connectPrompt:
-        "Conecta tu billetera de Stacks para crear y gestionar grupos.",
+      connectPrompt: "Conecta tu billetera de Stacks para crear y gestionar grupos.",
       yourGroups: "Tus grupos",
       loadingGroups: "Cargando grupos...",
-      empty:
-        "Todavía no eres miembro de ningún grupo. Crea uno arriba para empezar.",
+      empty: "Todavía no eres miembro de ningún grupo. Crea uno arriba para empezar.",
       loadError: "No se pudieron cargar los grupos.",
       cardMeta: "Grupo #{id} · {anchors}",
       adminSuffix: " · administrador",
@@ -569,8 +563,7 @@ export const es: Translations = {
       membersHeading: "Miembros",
       addMemberLabel: "Agregar un miembro por principal de Stacks",
       principalPlaceholder: "SP...",
-      invalidPrincipal:
-        "Introduce un principal de Stacks válido (comienza con SP o SM).",
+      invalidPrincipal: "Introduce un principal de Stacks válido (comienza con SP o SM).",
       add: "Agregar",
       signing: "Firmando...",
       remove: "Quitar",
@@ -698,8 +691,7 @@ export const es: Translations = {
   },
   activity: {
     title: "Actividad",
-    subtitle:
-      "Cada interacción en todos los contratos de ThesisLock, las más recientes primero.",
+    subtitle: "Cada interacción en todos los contratos de ThesisLock, las más recientes primero.",
     connectPrompt: "Conecta tu monedero para ver tu actividad.",
     empty: "Todavía no hay actividad. Empieza anclando un documento.",
     emptyCta: "Anclar un documento",
@@ -722,8 +714,7 @@ export const es: Translations = {
   templates: {
     selector: {
       heading: "Plantilla",
-      description:
-        "Elige una plantilla para estructurar tu etiqueta, o déjala libre.",
+      description: "Elige una plantilla para estructurar tu etiqueta, o déjala libre.",
     },
     field: {
       required: "{name} es obligatorio.",
@@ -734,13 +725,11 @@ export const es: Translations = {
       empty: "Completa los campos para ver la etiqueta generada.",
     },
     warning: {
-      truncated:
-        "La etiqueta supera los {max} caracteres y se truncará en la cadena.",
+      truncated: "La etiqueta supera los {max} caracteres y se truncará en la cadena.",
     },
     batch: {
       defaultHeading: "Plantilla predeterminada",
-      defaultDescription:
-        "Se aplica a cada archivo. Cada archivo puede anularla abajo.",
+      defaultDescription: "Se aplica a cada archivo. Cada archivo puede anularla abajo.",
       overrideLabel: "Plantilla para este archivo",
     },
     verify: {

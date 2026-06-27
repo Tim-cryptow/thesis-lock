@@ -19,9 +19,7 @@ async function main() {
       continue;
     }
     const result = await client.verify(hash);
-    console.log(
-      `${truncateHash(hash)}: ${result.verified ? "anchored" : "not anchored"}`,
-    );
+    console.log(`${truncateHash(hash)}: ${result.verified ? "anchored" : "not anchored"}`);
   }
 }
 

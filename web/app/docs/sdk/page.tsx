@@ -14,10 +14,9 @@ export default function SdkGuide() {
     <div>
       <h1 className="text-3xl md:text-4xl">SDK Guide</h1>
       <Lead>
-        The <Code>thesislock-sdk</Code> package wraps the Clarity serialization
-        and Hiro reads for JavaScript and TypeScript projects. It is read-only:
-        it verifies existing anchors and reads history. Creating anchors needs a
-        wallet and is done in the web app.
+        The <Code>thesislock-sdk</Code> package wraps the Clarity serialization and Hiro reads for
+        JavaScript and TypeScript projects. It is read-only: it verifies existing anchors and reads
+        history. Creating anchors needs a wallet and is done in the web app.
       </Lead>
 
       <H2>Installation</H2>
@@ -37,9 +36,8 @@ if (result.verified) {
 
       <H2>Configuration</H2>
       <P>
-        Both <Code>createClient(config?)</Code> and{" "}
-        <Code>new ThesisLockClient(config?)</Code> accept an optional config
-        object:
+        Both <Code>createClient(config?)</Code> and <Code>new ThesisLockClient(config?)</Code>{" "}
+        accept an optional config object:
       </P>
       <Table
         headers={["Option", "Default", "Description"]}
@@ -70,9 +68,9 @@ const client = new ThesisLockClient({
 
       <H2>Client methods</H2>
       <P>
-        All methods return Promises. A failed network call or a contract
-        rejection throws an <Code>Error</Code>; a plain "not found" is not an
-        error, it resolves to an unverified result or <Code>null</Code>.
+        All methods return Promises. A failed network call or a contract rejection throws an{" "}
+        <Code>Error</Code>; a plain "not found" is not an error, it resolves to an unverified result
+        or <Code>null</Code>.
       </P>
 
       <H3>verify(hash)</H3>
@@ -85,34 +83,33 @@ const client = new ThesisLockClient({
 
       <H3>verifyBatch(hash, owner)</H3>
       <P>
-        Looks up an owner-keyed batch anchor in <Code>thesislock-batch</Code>.
-        The owner is required because batch anchors are keyed by hash and owner.
-        Throws if <Code>owner</Code> is not a valid Stacks principal.
+        Looks up an owner-keyed batch anchor in <Code>thesislock-batch</Code>. The owner is required
+        because batch anchors are keyed by hash and owner. Throws if <Code>owner</Code> is not a
+        valid Stacks principal.
       </P>
       <CodeBlock language="ts">{`const result = await client.verifyBatch(hash, 'SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM');
 // { verified: true, source: 'batch', data: BatchAnchorResult }`}</CodeBlock>
 
       <H3>verifyAny(hash, owner?)</H3>
       <P>
-        Tries the single anchor first, then the batch anchor when an owner is
-        given. Returns the first match, or an unverified result.
+        Tries the single anchor first, then the batch anchor when an owner is given. Returns the
+        first match, or an unverified result.
       </P>
       <CodeBlock language="ts">{`const result = await client.verifyAny(hash, owner);`}</CodeBlock>
 
       <H3>getAnchorCount(owner) and getRecentAnchors(owner)</H3>
       <P>
-        Read per-principal registry data. <Code>getAnchorCount</Code> returns
-        how many anchors a principal has registered;{" "}
-        <Code>getRecentAnchors</Code> returns up to the ten most recent entries,
-        newest first.
+        Read per-principal registry data. <Code>getAnchorCount</Code> returns how many anchors a
+        principal has registered; <Code>getRecentAnchors</Code> returns up to the ten most recent
+        entries, newest first.
       </P>
       <CodeBlock language="ts">{`const count = await client.getAnchorCount(owner);
 const entries = await client.getRecentAnchors(owner); // RegistryEntry[]`}</CodeBlock>
 
       <H3>getProof(tokenId) and getProofByHash(hash)</H3>
       <P>
-        Read soulbound proof NFTs from <Code>thesislock-proof</Code>. Both
-        return <Code>null</Code> when nothing matches.
+        Read soulbound proof NFTs from <Code>thesislock-proof</Code>. Both return <Code>null</Code>{" "}
+        when nothing matches.
       </P>
       <CodeBlock language="ts">{`const proof = await client.getProof(1);          // ProofNFT | null
 const byHash = await client.getProofByHash(hash); // ProofNFT | null`}</CodeBlock>
@@ -126,10 +123,7 @@ const byHash = await client.getProofByHash(hash); // ProofNFT | null`}</CodeBloc
             <Code key="f">hashString(input)</Code>,
             "Lowercase 64-char hex SHA-256 of a string's UTF-8 bytes.",
           ],
-          [
-            <Code key="f">hashFile(file)</Code>,
-            "SHA-256 hex of a File or Buffer (async).",
-          ],
+          [<Code key="f">hashFile(file)</Code>, "SHA-256 hex of a File or Buffer (async)."],
           [
             <Code key="f">isValidHash(hash)</Code>,
             "True when input is 64 hex chars (an optional 0x prefix and uppercase are accepted).",
@@ -152,13 +146,12 @@ console.log(truncateHash(hash, 4)); // '9afe...5d06'`}</CodeBlock>
 
       <H2>Error handling</H2>
       <P>
-        A failed network request or a contract rejection throws an{" "}
-        <Code>Error</Code>; a plain "not found" does not. Wrap calls in{" "}
-        <Code>try</Code>/<Code>catch</Code> for outages, and check{" "}
-        <Code>verified</Code> (or a <Code>null</Code> return) for the not-found
-        case. <Code>verifyBatch</Code>, <Code>getAnchorCount</Code>, and{" "}
-        <Code>getRecentAnchors</Code> also throw on an invalid principal, and{" "}
-        <Code>getProof</Code> throws on a negative or non-integer token id.
+        A failed network request or a contract rejection throws an <Code>Error</Code>; a plain "not
+        found" does not. Wrap calls in <Code>try</Code>/<Code>catch</Code> for outages, and check{" "}
+        <Code>verified</Code> (or a <Code>null</Code> return) for the not-found case.{" "}
+        <Code>verifyBatch</Code>, <Code>getAnchorCount</Code>, and <Code>getRecentAnchors</Code>{" "}
+        also throw on an invalid principal, and <Code>getProof</Code> throws on a negative or
+        non-integer token id.
       </P>
       <CodeBlock language="ts">{`try {
   const result = await client.verify(hash);
@@ -176,20 +169,18 @@ console.log(truncateHash(hash, 4)); // '9afe...5d06'`}</CodeBlock>
         >
           sdk/examples
         </a>{" "}
-        directory: <Code>verify-hash.ts</Code> (verify one hash),{" "}
-        <Code>check-wallet.ts</Code> (a wallet's anchor count and recent
-        anchors), <Code>hash-and-verify.ts</Code> (hash a local file then verify
-        it), and <Code>batch-check.ts</Code> (verify a list of hashes). Run any
+        directory: <Code>verify-hash.ts</Code> (verify one hash), <Code>check-wallet.ts</Code> (a
+        wallet's anchor count and recent anchors), <Code>hash-and-verify.ts</Code> (hash a local
+        file then verify it), and <Code>batch-check.ts</Code> (verify a list of hashes). Run any
         with <Code>{`npx ts-node examples/<name>.ts`}</Code>.
       </P>
 
       <H2>Types</H2>
       <P>
-        <Code>AnchorResult</Code>, <Code>BatchAnchorResult</Code>,{" "}
-        <Code>RegistryEntry</Code>, <Code>ProofNFT</Code>, and{" "}
-        <Code>VerifyResult</Code> are exported. <Code>VerifyResult</Code> is a
-        discriminated union, so checking <Code>result.verified</Code> narrows{" "}
-        <Code>data</Code> with no casts.
+        <Code>AnchorResult</Code>, <Code>BatchAnchorResult</Code>, <Code>RegistryEntry</Code>,{" "}
+        <Code>ProofNFT</Code>, and <Code>VerifyResult</Code> are exported. <Code>VerifyResult</Code>{" "}
+        is a discriminated union, so checking <Code>result.verified</Code> narrows <Code>data</Code>{" "}
+        with no casts.
       </P>
       <CodeBlock language="ts">{`type VerifyResult =
   | { verified: true; source: 'single'; data: AnchorResult }

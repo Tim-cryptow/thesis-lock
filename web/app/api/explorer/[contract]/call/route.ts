@@ -1,8 +1,4 @@
-import {
-  ExplorerUpstreamError,
-  callReadOnly,
-  getContract,
-} from "@/lib/contractExplorer";
+import { ExplorerUpstreamError, callReadOnly, getContract } from "@/lib/contractExplorer";
 import { corsHeaders } from "@/lib/verify";
 
 export const runtime = "nodejs";
@@ -19,9 +15,7 @@ function jsonResponse(
   body: unknown,
   init?: { status?: number; headers?: Record<string, string> },
 ): Response {
-  const text = JSON.stringify(body, (_k, v) =>
-    typeof v === "bigint" ? v.toString() : v,
-  );
+  const text = JSON.stringify(body, (_k, v) => (typeof v === "bigint" ? v.toString() : v));
   return new Response(text, {
     status: init?.status,
     headers: corsHeaders({
@@ -47,10 +41,7 @@ export async function GET(req: Request, { params }: RouteContext) {
   const url = new URL(req.url);
   const fn = url.searchParams.get("fn");
   if (!fn) {
-    return jsonResponse(
-      { error: "Missing required query parameter: fn" },
-      { status: 400 },
-    );
+    return jsonResponse({ error: "Missing required query parameter: fn" }, { status: 400 });
   }
 
   let args: unknown[];
@@ -59,10 +50,7 @@ export async function GET(req: Request, { params }: RouteContext) {
     if (!Array.isArray(parsed)) throw new Error("args must be a JSON array");
     args = parsed;
   } catch {
-    return jsonResponse(
-      { error: "Invalid args: expected a JSON-encoded array" },
-      { status: 400 },
-    );
+    return jsonResponse({ error: "Invalid args: expected a JSON-encoded array" }, { status: 400 });
   }
 
   try {

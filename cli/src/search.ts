@@ -93,10 +93,7 @@ const HIRO_PAGE = 50;
 // per-contract event count so searches page to true exhaustion.
 const HARD_OFFSET_CAP = 50_000;
 
-async function fetchEventsPage(
-  contractName: string,
-  offset: number,
-): Promise<RawEvent[]> {
+async function fetchEventsPage(contractName: string, offset: number): Promise<RawEvent[]> {
   const url = `${apiUrl()}/extended/v1/contract/${CONTRACT_ADDRESS}.${contractName}/events?limit=${HIRO_PAGE}&offset=${offset}`;
   const res = await fetch(url);
   if (!res.ok) {
@@ -280,10 +277,7 @@ async function getLastTokenId(): Promise<number> {
  * anchor-registered events (every batch entry is also registered there) and
  * then confirmed against the batch map. An explicit owner is always checked too.
  */
-export async function searchByHash(
-  hash: string,
-  owner?: string,
-): Promise<SearchResult[]> {
+export async function searchByHash(hash: string, owner?: string): Promise<SearchResult[]> {
   const client = getClient();
   const normalized = stripHex(hash).toLowerCase();
   if (!HEX_64.test(normalized)) return [];
@@ -339,15 +333,10 @@ export async function searchByHash(
     }
   }
 
-  const batches = await mapWithConcurrency(
-    Array.from(candidateOwners),
-    async (candidate) => {
-      const batch = await client
-        .verifyBatch(normalized, candidate)
-        .catch(() => null);
-      return batch && batch.verified ? { candidate, batch: batch.data } : null;
-    },
-  );
+  const batches = await mapWithConcurrency(Array.from(candidateOwners), async (candidate) => {
+    const batch = await client.verifyBatch(normalized, candidate).catch(() => null);
+    return batch && batch.verified ? { candidate, batch: batch.data } : null;
+  });
   for (const entry of batches) {
     if (!entry) continue;
     results.push({
@@ -362,11 +351,7 @@ export async function searchByHash(
 
   for (const ev of groupEvents) {
     const parsed = parseEvent(ev);
-    if (
-      parsed &&
-      parsed.event === "group-anchor-added" &&
-      parsed.hash === normalized
-    ) {
+    if (parsed && parsed.event === "group-anchor-added" && parsed.hash === normalized) {
       results.push(toResult(parsed));
     }
   }
@@ -380,9 +365,7 @@ export async function searchByHash(
  * full history (the read returns only the last ten), and the other contracts'
  * events surface single anchors, proof mints, and group anchors.
  */
-export async function searchByPrincipal(
-  principal: string,
-): Promise<SearchResult[]> {
+export async function searchByPrincipal(principal: string): Promise<SearchResult[]> {
   const client = getClient();
   const owner = principal.trim().toUpperCase();
   if (!STX_PRINCIPAL.test(owner)) return [];
@@ -412,12 +395,7 @@ export async function searchByPrincipal(
     });
   }
 
-  for (const ev of [
-    ...singleEvents,
-    ...registryEvents,
-    ...proofEvents,
-    ...groupEvents,
-  ]) {
+  for (const ev of [...singleEvents, ...registryEvents, ...proofEvents, ...groupEvents]) {
     const parsed = parseEvent(ev);
     if (parsed && parsed.owner.toUpperCase() === owner) {
       results.push(toResult(parsed));
@@ -433,22 +411,16 @@ export async function searchByPrincipal(
 // silently drop real matches.
 const READ_CONCURRENCY = 8;
 
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
+async function mapWithConcurrency<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length);
   let next = 0;
-  const workers = Array.from(
-    { length: Math.min(READ_CONCURRENCY, items.length) },
-    async () => {
-      while (next < items.length) {
-        const i = next;
-        next += 1;
-        results[i] = await fn(items[i]);
-      }
-    },
-  );
+  const workers = Array.from({ length: Math.min(READ_CONCURRENCY, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next;
+      next += 1;
+      results[i] = await fn(items[i]!);
+    }
+  });
   await Promise.all(workers);
   return results;
 }
@@ -462,9 +434,7 @@ async function fetchAllProofs(): Promise<SearchResult[]> {
   if (!Number.isFinite(lastId) || lastId < 1) return [];
 
   const ids = Array.from({ length: lastId }, (_, i) => i + 1);
-  const proofs = await mapWithConcurrency(ids, (id) =>
-    client.getProof(id).catch(() => null),
-  );
+  const proofs = await mapWithConcurrency(ids, (id) => client.getProof(id).catch(() => null));
 
   const results: SearchResult[] = [];
   for (const proof of proofs) {
@@ -494,13 +464,12 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
   const needle = label.trim().toLowerCase();
   if (!needle) return [];
 
-  const [singleEvents, registryEvents, groupEvents, proofResults] =
-    await Promise.all([
-      fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
-      fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
-      fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
-      fetchAllProofs().catch(() => [] as SearchResult[]),
-    ]);
+  const [singleEvents, registryEvents, groupEvents, proofResults] = await Promise.all([
+    fetchAllEvents(SINGLE_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllEvents(REGISTRY_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllEvents(GROUPS_CONTRACT).catch(() => [] as RawEvent[]),
+    fetchAllProofs().catch(() => [] as SearchResult[]),
+  ]);
 
   const results: SearchResult[] = [];
   for (const ev of [...singleEvents, ...groupEvents]) {
@@ -534,13 +503,10 @@ export async function searchByLabel(label: string): Promise<SearchResult[]> {
       registryHits.set(`${parsed.hash}|${parsed.owner}`, parsed);
     }
   }
-  const confirmed = await mapWithConcurrency(
-    Array.from(registryHits.values()),
-    async (hit) => {
-      const batch = await client.verifyBatch(hit.hash, hit.owner).catch(() => null);
-      return batch && batch.verified ? { hit, batch: batch.data } : null;
-    },
-  );
+  const confirmed = await mapWithConcurrency(Array.from(registryHits.values()), async (hit) => {
+    const batch = await client.verifyBatch(hit.hash, hit.owner).catch(() => null);
+    return batch && batch.verified ? { hit, batch: batch.data } : null;
+  });
   for (const entry of confirmed) {
     if (!entry) continue;
     if (!entry.batch.label.toLowerCase().includes(needle)) continue;

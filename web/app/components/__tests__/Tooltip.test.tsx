@@ -24,20 +24,14 @@ describe("Tooltip", () => {
   });
 
   it("applies the panel classes for the requested position", () => {
-    const { container } = render(
-      <Tooltip content="Help text" position="bottom" />,
-    );
+    const { container } = render(<Tooltip content="Help text" position="bottom" />);
     fireEvent.mouseEnter(container.firstChild as HTMLElement);
-    expect(screen.getByRole("tooltip").getAttribute("class")).toContain(
-      "top-full",
-    );
+    expect(screen.getByRole("tooltip").getAttribute("class")).toContain("top-full");
   });
 
   it("uses the label as the trigger's accessible name", () => {
     render(<Tooltip content="Help text" label="What is a hash?" />);
-    expect(
-      screen.getByRole("button", { name: "What is a hash?" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "What is a hash?" })).toBeInTheDocument();
   });
 
   it("toggles open and closed for the click trigger", () => {

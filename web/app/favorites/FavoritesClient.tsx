@@ -28,20 +28,17 @@ const TYPE_META: Record<FavoriteType, { label: string; plural: string; badge: st
   wallet: {
     label: "Wallet",
     plural: "Wallets",
-    badge:
-      "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
   group: {
     label: "Group",
     plural: "Groups",
-    badge:
-      "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    badge: "border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400",
   },
   page: {
     label: "Page",
     plural: "Pages",
-    badge:
-      "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    badge: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
 };
 
@@ -62,13 +59,7 @@ function truncateValue(value: string): string {
   return `${value.slice(0, 24)}...${value.slice(-10)}`;
 }
 
-function FavoriteRow({
-  fav,
-  onRemove,
-}: {
-  fav: Favorite;
-  onRemove: (id: string) => void;
-}) {
+function FavoriteRow({ fav, onRemove }: { fav: Favorite; onRemove: (id: string) => void }) {
   const meta = TYPE_META[fav.type];
   return (
     <div className="flex items-start gap-3 rounded-lg border border-foreground/10 bg-card p-4">
@@ -87,9 +78,7 @@ function FavoriteRow({
         <div className="mt-1 break-all font-mono text-xs text-foreground/55">
           {truncateValue(fav.value)}
         </div>
-        <div className="mt-1 text-xs text-foreground/45">
-          Added {formatDate(fav.addedAt)}
-        </div>
+        <div className="mt-1 text-xs text-foreground/45">Added {formatDate(fav.addedAt)}</div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Link
@@ -150,8 +139,8 @@ export default function FavoritesClient() {
 
         <h1 className="mb-2 text-3xl">Favorites</h1>
         <p className="mb-8 text-foreground/70">
-          Quick access to the hashes, wallets, groups, and pages you have
-          starred. Stored only in this browser.
+          Quick access to the hashes, wallets, groups, and pages you have starred. Stored only in
+          this browser.
         </p>
 
         {favorites.length === 0 ? (
@@ -178,9 +167,7 @@ export default function FavoritesClient() {
         ) : (
           <>
             <div className="mb-6 flex items-center gap-2">
-              <span className="mr-1 text-xs uppercase tracking-wide text-foreground/50">
-                Sort
-              </span>
+              <span className="mr-1 text-xs uppercase tracking-wide text-foreground/50">Sort</span>
               <button
                 type="button"
                 onClick={() => setSort("type")}
@@ -216,11 +203,7 @@ export default function FavoritesClient() {
                     </h2>
                     <div className="space-y-3">
                       {group.items.map((fav) => (
-                        <FavoriteRow
-                          key={fav.id}
-                          fav={fav}
-                          onRemove={removeFavorite}
-                        />
+                        <FavoriteRow key={fav.id} fav={fav} onRemove={removeFavorite} />
                       ))}
                     </div>
                   </section>
@@ -229,11 +212,7 @@ export default function FavoritesClient() {
             ) : (
               <div className="space-y-3">
                 {recent.map((fav) => (
-                  <FavoriteRow
-                    key={fav.id}
-                    fav={fav}
-                    onRemove={removeFavorite}
-                  />
+                  <FavoriteRow key={fav.id} fav={fav} onRemove={removeFavorite} />
                 ))}
               </div>
             )}

@@ -48,11 +48,7 @@ function textWidth(text: string): number {
   return width;
 }
 
-function renderBadge(
-  label: string,
-  message: string,
-  messageColor: string,
-): string {
+function renderBadge(label: string, message: string, messageColor: string): string {
   const pad = 10;
   const rx = 3;
   const labelTextW = textWidth(label);

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -90,7 +83,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const cycle = useCallback(() => {
     setModeState((current) => {
-      const next = MODES[(MODES.indexOf(current) + 1) % MODES.length];
+      const next = MODES[(MODES.indexOf(current) + 1) % MODES.length]!;
       try {
         window.localStorage.setItem(STORAGE_KEY, next);
       } catch {
@@ -105,9 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     [mode, resolved, setMode, cycle],
   );
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {

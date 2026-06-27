@@ -15,36 +15,32 @@ const EC_COLUMN = 1; // index of the M column in the [L, M, Q, H] tables.
 // Total number of codewords (data + error correction) per version. Index 0 is
 // unused so the array can be indexed directly by version number.
 const CODEWORDS_COUNT = [
-  0, 26, 44, 70, 100, 134, 172, 196, 242, 292, 346, 404, 466, 532, 581, 655,
-  733, 815, 901, 991, 1085, 1156, 1258, 1364, 1474, 1588, 1706, 1828, 1921,
-  2051, 2185, 2323, 2465, 2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706,
+  0, 26, 44, 70, 100, 134, 172, 196, 242, 292, 346, 404, 466, 532, 581, 655, 733, 815, 901, 991,
+  1085, 1156, 1258, 1364, 1474, 1588, 1706, 1828, 1921, 2051, 2185, 2323, 2465, 2611, 2761, 2876,
+  3034, 3196, 3362, 3532, 3706,
 ];
 
 // Error-correction block count per [version][L, M, Q, H].
 const EC_BLOCKS_TABLE = [
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 2, 4, 1, 2, 4, 4, 2, 4, 4, 4, 2, 4,
-  6, 5, 2, 4, 6, 6, 2, 5, 8, 8, 4, 5, 8, 8, 4, 5, 8, 11, 4, 8, 10, 11, 4, 9, 12,
-  16, 4, 9, 16, 16, 6, 10, 12, 18, 6, 10, 17, 16, 6, 11, 16, 19, 6, 13, 18, 21,
-  7, 14, 21, 25, 8, 16, 20, 25, 8, 17, 23, 25, 9, 17, 23, 34, 9, 18, 25, 30, 10,
-  20, 27, 32, 12, 21, 29, 35, 12, 23, 34, 37, 12, 25, 34, 40, 13, 26, 35, 42,
-  14, 28, 38, 45, 15, 29, 40, 48, 16, 31, 43, 51, 17, 33, 45, 54, 18, 35, 48,
-  57, 19, 37, 51, 60, 19, 38, 53, 63, 20, 40, 56, 66, 21, 43, 59, 70, 22, 45,
-  62, 74, 24, 47, 65, 77, 25, 49, 68, 81,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 2, 4, 1, 2, 4, 4, 2, 4, 4, 4, 2, 4, 6, 5, 2, 4, 6, 6, 2,
+  5, 8, 8, 4, 5, 8, 8, 4, 5, 8, 11, 4, 8, 10, 11, 4, 9, 12, 16, 4, 9, 16, 16, 6, 10, 12, 18, 6, 10,
+  17, 16, 6, 11, 16, 19, 6, 13, 18, 21, 7, 14, 21, 25, 8, 16, 20, 25, 8, 17, 23, 25, 9, 17, 23, 34,
+  9, 18, 25, 30, 10, 20, 27, 32, 12, 21, 29, 35, 12, 23, 34, 37, 12, 25, 34, 40, 13, 26, 35, 42, 14,
+  28, 38, 45, 15, 29, 40, 48, 16, 31, 43, 51, 17, 33, 45, 54, 18, 35, 48, 57, 19, 37, 51, 60, 19,
+  38, 53, 63, 20, 40, 56, 66, 21, 43, 59, 70, 22, 45, 62, 74, 24, 47, 65, 77, 25, 49, 68, 81,
 ];
 
 // Total error-correction codewords per [version][L, M, Q, H].
 const EC_CODEWORDS_TABLE = [
-  7, 10, 13, 17, 10, 16, 22, 28, 15, 26, 36, 44, 20, 36, 52, 64, 26, 48, 72, 88,
-  36, 64, 96, 112, 40, 72, 108, 130, 48, 88, 132, 156, 60, 110, 160, 192, 72,
-  130, 192, 224, 80, 150, 224, 264, 96, 176, 260, 308, 104, 198, 288, 352, 120,
-  216, 320, 384, 132, 240, 360, 432, 144, 280, 408, 480, 168, 308, 448, 532,
-  180, 338, 504, 588, 196, 364, 546, 650, 224, 416, 600, 700, 224, 442, 644,
-  750, 252, 476, 690, 816, 270, 504, 750, 900, 300, 560, 810, 960, 312, 588,
-  870, 1050, 336, 644, 952, 1110, 360, 700, 1020, 1200, 390, 728, 1050, 1260,
-  420, 784, 1140, 1350, 450, 812, 1200, 1440, 480, 868, 1290, 1530, 510, 924,
-  1350, 1620, 540, 980, 1440, 1710, 570, 1036, 1530, 1800, 570, 1064, 1590,
-  1890, 600, 1120, 1680, 1980, 630, 1204, 1770, 2100, 660, 1260, 1860, 2220,
-  720, 1316, 1950, 2310, 750, 1372, 2040, 2430,
+  7, 10, 13, 17, 10, 16, 22, 28, 15, 26, 36, 44, 20, 36, 52, 64, 26, 48, 72, 88, 36, 64, 96, 112,
+  40, 72, 108, 130, 48, 88, 132, 156, 60, 110, 160, 192, 72, 130, 192, 224, 80, 150, 224, 264, 96,
+  176, 260, 308, 104, 198, 288, 352, 120, 216, 320, 384, 132, 240, 360, 432, 144, 280, 408, 480,
+  168, 308, 448, 532, 180, 338, 504, 588, 196, 364, 546, 650, 224, 416, 600, 700, 224, 442, 644,
+  750, 252, 476, 690, 816, 270, 504, 750, 900, 300, 560, 810, 960, 312, 588, 870, 1050, 336, 644,
+  952, 1110, 360, 700, 1020, 1200, 390, 728, 1050, 1260, 420, 784, 1140, 1350, 450, 812, 1200, 1440,
+  480, 868, 1290, 1530, 510, 924, 1350, 1620, 540, 980, 1440, 1710, 570, 1036, 1530, 1800, 570,
+  1064, 1590, 1890, 600, 1120, 1680, 1980, 630, 1204, 1770, 2100, 660, 1260, 1860, 2220, 720, 1316,
+  1950, 2310, 750, 1372, 2040, 2430,
 ];
 
 const G15 = 0x537;
@@ -56,11 +52,11 @@ function symbolSize(version: number): number {
 }
 
 function ecBlocks(version: number): number {
-  return EC_BLOCKS_TABLE[(version - 1) * 4 + EC_COLUMN];
+  return EC_BLOCKS_TABLE[(version - 1) * 4 + EC_COLUMN]!;
 }
 
 function ecTotalCodewords(version: number): number {
-  return EC_CODEWORDS_TABLE[(version - 1) * 4 + EC_COLUMN];
+  return EC_CODEWORDS_TABLE[(version - 1) * 4 + EC_COLUMN]!;
 }
 
 function charCountBits(version: number): number {
@@ -68,8 +64,7 @@ function charCountBits(version: number): number {
 }
 
 function byteCapacity(version: number): number {
-  const dataBits =
-    (CODEWORDS_COUNT[version] - ecTotalCodewords(version)) * 8;
+  const dataBits = (CODEWORDS_COUNT[version]! - ecTotalCodewords(version)) * 8;
   return Math.floor((dataBits - 4 - charCountBits(version)) / 8);
 }
 
@@ -101,19 +96,19 @@ const LOG = new Uint8Array(256);
     x <<= 1;
     if (x & 0x100) x ^= 0x11d;
   }
-  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255]!;
 })();
 
 function gfMul(a: number, b: number): number {
   if (a === 0 || b === 0) return 0;
-  return EXP[LOG[a] + LOG[b]];
+  return EXP[LOG[a]! + LOG[b]!]!;
 }
 
 function polyMul(p1: Uint8Array, p2: Uint8Array): Uint8Array {
   const coeff = new Uint8Array(p1.length + p2.length - 1);
   for (let i = 0; i < p1.length; i++) {
     for (let j = 0; j < p2.length; j++) {
-      coeff[i + j] ^= gfMul(p1[i], p2[j]);
+      coeff[i + j]! ^= gfMul(p1[i]!, p2[j]!);
     }
   }
   return coeff;
@@ -122,9 +117,9 @@ function polyMul(p1: Uint8Array, p2: Uint8Array): Uint8Array {
 function polyMod(dividend: Uint8Array, divisor: Uint8Array): Uint8Array {
   let result = Array.from(dividend);
   while (result.length - divisor.length >= 0) {
-    const coeff = result[0];
+    const coeff = result[0]!;
     for (let i = 0; i < divisor.length; i++) {
-      result[i] ^= gfMul(divisor[i], coeff);
+      result[i]! ^= gfMul(divisor[i]!, coeff);
     }
     let offset = 0;
     while (offset < result.length && result[offset] === 0) offset++;
@@ -136,7 +131,7 @@ function polyMod(dividend: Uint8Array, divisor: Uint8Array): Uint8Array {
 function generateECPolynomial(degree: number): Uint8Array {
   let poly: Uint8Array = new Uint8Array([1]);
   for (let i = 0; i < degree; i++) {
-    poly = polyMul(poly, new Uint8Array([1, EXP[i]]));
+    poly = polyMul(poly, new Uint8Array([1, EXP[i]!]));
   }
   return poly;
 }
@@ -169,7 +164,7 @@ class BitBuffer {
   putBit(bit: number): void {
     const byteIndex = this.length >>> 3;
     if (this.bytes.length <= byteIndex) this.bytes.push(0);
-    if (bit) this.bytes[byteIndex] |= 0x80 >>> (this.length & 7);
+    if (bit) this.bytes[byteIndex]! |= 0x80 >>> (this.length & 7);
     this.length++;
   }
 
@@ -192,18 +187,14 @@ function encodeUtf8(text: string): Uint8Array {
     else if (code < 0x800) {
       out.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
     } else {
-      out.push(
-        0xe0 | (code >> 12),
-        0x80 | ((code >> 6) & 0x3f),
-        0x80 | (code & 0x3f),
-      );
+      out.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
     }
   }
   return Uint8Array.from(out);
 }
 
 function buildCodewords(version: number, data: Uint8Array): Uint8Array {
-  const total = CODEWORDS_COUNT[version];
+  const total = CODEWORDS_COUNT[version]!;
   const ecTotal = ecTotalCodewords(version);
   const dataTotal = total - ecTotal;
 
@@ -222,7 +213,7 @@ function buildCodewords(version: number, data: Uint8Array): Uint8Array {
   const padBytes = [0xec, 0x11];
   let pad = 0;
   while (codewords.length < dataTotal) {
-    codewords.push(padBytes[pad % 2]);
+    codewords.push(padBytes[pad % 2]!);
     pad++;
   }
 
@@ -253,11 +244,11 @@ function buildCodewords(version: number, data: Uint8Array): Uint8Array {
   let index = 0;
   for (let i = 0; i < maxData; i++) {
     for (let b = 0; b < blocks; b++) {
-      if (i < dc[b].length) out[index++] = dc[b][i];
+      if (i < dc[b]!.length) out[index++] = dc[b]![i]!;
     }
   }
   for (let i = 0; i < ecCount; i++) {
-    for (let b = 0; b < blocks; b++) out[index++] = ec[b][i];
+    for (let b = 0; b < blocks; b++) out[index++] = ec[b]![i]!;
   }
   return out;
 }
@@ -275,7 +266,7 @@ class Matrix {
   }
 
   get(row: number, col: number): number {
-    return this.data[row * this.size + col];
+    return this.data[row * this.size + col]!;
   }
 
   set(row: number, col: number, value: boolean, reserved = false): void {
@@ -290,7 +281,7 @@ class Matrix {
 
   xor(row: number, col: number, value: boolean): void {
     const i = row * this.size + col;
-    this.data[i] ^= value ? 1 : 0;
+    this.data[i]! ^= value ? 1 : 0;
   }
 }
 
@@ -303,14 +294,14 @@ function setupFinder(m: Matrix): void {
   ];
   for (const [row, col] of positions) {
     for (let r = -1; r <= 7; r++) {
-      if (row + r <= -1 || size <= row + r) continue;
+      if (row! + r <= -1 || size <= row! + r) continue;
       for (let c = -1; c <= 7; c++) {
-        if (col + c <= -1 || size <= col + c) continue;
+        if (col! + c <= -1 || size <= col! + c) continue;
         const dark =
           (r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
           (c >= 0 && c <= 6 && (r === 0 || r === 6)) ||
           (r >= 2 && r <= 4 && c >= 2 && c <= 4);
-        m.set(row + r, col + c, dark, true);
+        m.set(row! + r, col! + c, dark, true);
       }
     }
   }
@@ -328,11 +319,10 @@ function alignmentPositions(version: number): number[] {
   if (version === 1) return [];
   const posCount = Math.floor(version / 7) + 2;
   const size = symbolSize(version);
-  const intervals =
-    size === 145 ? 26 : Math.ceil((size - 13) / (2 * posCount - 2)) * 2;
+  const intervals = size === 145 ? 26 : Math.ceil((size - 13) / (2 * posCount - 2)) * 2;
   const positions = [size - 7];
   for (let i = 1; i < posCount - 1; i++) {
-    positions[i] = positions[i - 1] - intervals;
+    positions[i] = positions[i - 1]! - intervals;
   }
   positions.push(6);
   return positions.reverse();
@@ -343,15 +333,11 @@ function setupAlignment(m: Matrix, version: number): void {
   const len = pos.length;
   for (let i = 0; i < len; i++) {
     for (let j = 0; j < len; j++) {
-      if (
-        (i === 0 && j === 0) ||
-        (i === 0 && j === len - 1) ||
-        (i === len - 1 && j === 0)
-      ) {
+      if ((i === 0 && j === 0) || (i === 0 && j === len - 1) || (i === len - 1 && j === 0)) {
         continue;
       }
-      const row = pos[i];
-      const col = pos[j];
+      const row = pos[i]!;
+      const col = pos[j]!;
       for (let r = -2; r <= 2; r++) {
         for (let c = -2; c <= 2; c++) {
           const dark = r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0);
@@ -422,7 +408,7 @@ function setupData(m: Matrix, codewords: Uint8Array): void {
         if (!m.isReserved(row, col - c)) {
           let dark = false;
           if (byteIndex < codewords.length) {
-            dark = ((codewords[byteIndex] >>> bitIndex) & 1) === 1;
+            dark = ((codewords[byteIndex]! >>> bitIndex) & 1) === 1;
           }
           m.set(row, col - c, dark);
           bitIndex--;
@@ -506,10 +492,7 @@ function penalty(m: Matrix): number {
   for (let row = 0; row < size - 1; row++) {
     for (let col = 0; col < size - 1; col++) {
       const sum =
-        m.get(row, col) +
-        m.get(row, col + 1) +
-        m.get(row + 1, col) +
-        m.get(row + 1, col + 1);
+        m.get(row, col) + m.get(row, col + 1) + m.get(row + 1, col) + m.get(row + 1, col + 1);
       if (sum === 4 || sum === 0) points += 3;
     }
   }
@@ -528,8 +511,8 @@ function penalty(m: Matrix): number {
 
   // Rule 4: deviation of dark-module proportion from 50%.
   let dark = 0;
-  for (let i = 0; i < m.data.length; i++) dark += m.data[i];
-  const k = Math.abs(Math.ceil(((dark * 100) / m.data.length) / 5) - 10);
+  for (let i = 0; i < m.data.length; i++) dark += m.data[i]!;
+  const k = Math.abs(Math.ceil((dark * 100) / m.data.length / 5) - 10);
   points += k * 10;
 
   return points;

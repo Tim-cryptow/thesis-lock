@@ -80,8 +80,8 @@ export default function ConfirmDialog({
       if (!card) return;
       const focusable = getFocusable(card);
       if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
       const active = document.activeElement;
       if (e.shiftKey && (active === first || !card.contains(active))) {
         e.preventDefault();
@@ -131,11 +131,8 @@ export default function ConfirmDialog({
         {requireType ? (
           <label className="mt-4 block text-sm">
             <span className="text-foreground/70">
-              Type{" "}
-              <span className="mono font-semibold text-foreground">
-                {requireType}
-              </span>{" "}
-              to confirm.
+              Type <span className="mono font-semibold text-foreground">{requireType}</span> to
+              confirm.
             </span>
             <input
               type="text"

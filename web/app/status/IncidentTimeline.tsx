@@ -24,12 +24,7 @@ const SEVERITY: Record<IncidentSeverity, { label: string; cls: string }> = {
   },
 };
 
-const STAGES: IncidentStatus[] = [
-  "investigating",
-  "identified",
-  "monitoring",
-  "resolved",
-];
+const STAGES: IncidentStatus[] = ["investigating", "identified", "monitoring", "resolved"];
 
 const STAGE_LABEL: Record<IncidentStatus, string> = {
   investigating: "Investigating",
@@ -57,10 +52,7 @@ function fmtDateHeading(iso: string): string {
 }
 
 function formatDuration(fromIso: string, toIso: string): string {
-  const ms = Math.max(
-    0,
-    new Date(toIso).getTime() - new Date(fromIso).getTime(),
-  );
+  const ms = Math.max(0, new Date(toIso).getTime() - new Date(fromIso).getTime());
   const mins = Math.floor(ms / 60000);
   if (mins < 1) return "under a minute";
   const days = Math.floor(mins / 1440);
@@ -108,9 +100,7 @@ function IncidentCard({ incident }: { incident: Incident }) {
     <div className="rounded-lg border border-foreground/10 bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span
-            className={`rounded-full border px-2 py-0.5 text-xs font-medium ${sev.cls}`}
-          >
+          <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${sev.cls}`}>
             {sev.label}
           </span>
           <h4 className="font-medium truncate">{incident.title}</h4>
@@ -224,9 +214,7 @@ export default function IncidentTimeline() {
       ) : (
         <div className="space-y-6">
           {past.length === 0 ? (
-            <p className="text-sm text-foreground/50">
-              No resolved incidents in the last 7 days.
-            </p>
+            <p className="text-sm text-foreground/50">No resolved incidents in the last 7 days.</p>
           ) : (
             Array.from(groups.entries()).map(([day, items]) => (
               <div key={day}>

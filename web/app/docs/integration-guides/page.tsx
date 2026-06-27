@@ -14,16 +14,12 @@ export default function IntegrationGuides() {
     <div>
       <h1 className="text-3xl md:text-4xl">Integration Guides</h1>
       <Lead>
-        The developer portal ships runnable examples for every common
-        integration path. Each tab has copy buttons, and the quick start gets you
-        verifying a document in three steps.
+        The developer portal ships runnable examples for every common integration path. Each tab has
+        copy buttons, and the quick start gets you verifying a document in three steps.
       </Lead>
       <P>
         Open the{" "}
-        <Link
-          href="/developers#guides"
-          className="underline hover:text-foreground"
-        >
+        <Link href="/developers#guides" className="underline hover:text-foreground">
           Integration Guides tab
         </Link>{" "}
         in the developer portal for the full, copy-ready examples.
@@ -33,27 +29,26 @@ export default function IntegrationGuides() {
       <List
         items={[
           <>
-            <strong>JavaScript and Node.js</strong>: install the{" "}
-            <Code>thesislock-sdk</Code>, create a client, verify a hash, check a
-            batch, and read a profile, with a complete verify workflow.
+            <strong>JavaScript and Node.js</strong>: install the <Code>thesislock-sdk</Code>, create
+            a client, verify a hash, check a batch, and read a profile, with a complete verify
+            workflow.
           </>,
           <>
-            <strong>Python</strong>: hash a file with <Code>hashlib</Code> and
-            verify it through the JSON API with <Code>requests</Code>, including
-            error handling.
+            <strong>Python</strong>: hash a file with <Code>hashlib</Code> and verify it through the
+            JSON API with <Code>requests</Code>, including error handling.
           </>,
           <>
-            <strong>cURL</strong>: one command per endpoint, piped to{" "}
-            <Code>jq</Code> for readable output.
+            <strong>cURL</strong>: one command per endpoint, piped to <Code>jq</Code> for readable
+            output.
           </>,
           <>
             <strong>GitHub Actions</strong>: gate a pipeline with{" "}
-            <Code>Tim-cryptow/thesis-lock/action@main</Code> on push, on release,
-            and as a hash-verify-fail sequence.
+            <Code>Tim-cryptow/thesis-lock/action@main</Code> on push, on release, and as a
+            hash-verify-fail sequence.
           </>,
           <>
-            <strong>CI/CD Generic</strong>: run <Code>thesislock-cli</Code> in any
-            pipeline, including a Docker container and a multi-file bash script.
+            <strong>CI/CD Generic</strong>: run <Code>thesislock-cli</Code> in any pipeline,
+            including a Docker container and a multi-file bash script.
           </>,
         ]}
       />
@@ -77,10 +72,7 @@ console.log(result.verified);`}</CodeBlock>
           REST API
         </Link>
         , and the{" "}
-        <Link
-          href="/docs/github-action"
-          className="underline hover:text-foreground"
-        >
+        <Link href="/docs/github-action" className="underline hover:text-foreground">
           GitHub Action
         </Link>
         .

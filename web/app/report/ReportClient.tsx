@@ -80,8 +80,7 @@ export default function ReportClient() {
 
   useUnsavedChanges(report !== null && !exported, {
     title: "Leave this page?",
-    message:
-      "You have a generated report that you have not downloaded. Leave anyway?",
+    message: "You have a generated report that you have not downloaded. Leave anyway?",
     confirmLabel: "Leave",
   });
 
@@ -232,20 +231,16 @@ export default function ReportClient() {
     setReport(null);
     setStatuses(items.map(() => "pending"));
     setProgress({ done: 0, total: items.length });
-    const data = await generateReport(
-      items,
-      address ?? undefined,
-      (done, total, entry, index) => {
-        // Ignore progress from a run the inputs have since invalidated.
-        if (generationId.current !== runId) return;
-        setProgress({ done, total });
-        setStatuses((prev) => {
-          const next = [...prev];
-          next[index] = entry.verified ? "verified" : "notfound";
-          return next;
-        });
-      },
-    );
+    const data = await generateReport(items, address ?? undefined, (done, total, entry, index) => {
+      // Ignore progress from a run the inputs have since invalidated.
+      if (generationId.current !== runId) return;
+      setProgress({ done, total });
+      setStatuses((prev) => {
+        const next = [...prev];
+        next[index] = entry.verified ? "verified" : "notfound";
+        return next;
+      });
+    });
     // Only publish if this run still describes the current inputs and wallet.
     if (generationId.current === runId) {
       setReport({ ...data, title: title.trim() || DEFAULT_REPORT_TITLE });
@@ -299,8 +294,8 @@ export default function ReportClient() {
         <header className="mb-8">
           <h1 className="text-3xl mb-2">Verification Report</h1>
           <p className="text-foreground/70 max-w-2xl">
-            Build a formal, multi-document report proving a set of hashes were
-            anchored on the Stacks blockchain. Export it as HTML, JSON, or CSV.
+            Build a formal, multi-document report proving a set of hashes were anchored on the
+            Stacks blockchain. Export it as HTML, JSON, or CSV.
           </p>
         </header>
 
@@ -315,12 +310,18 @@ export default function ReportClient() {
           />
         </label>
 
-        <div role="tablist" aria-label="Add hashes" className="flex flex-wrap gap-1 border-b border-foreground/10">
-          {([
-            ["drop", "Drop files"],
-            ["paste", "Paste hashes"],
-            ["import", "Import from My Anchors"],
-          ] as [InputTab, string][]).map(([id, label]) => (
+        <div
+          role="tablist"
+          aria-label="Add hashes"
+          className="flex flex-wrap gap-1 border-b border-foreground/10"
+        >
+          {(
+            [
+              ["drop", "Drop files"],
+              ["paste", "Paste hashes"],
+              ["import", "Import from My Anchors"],
+            ] as [InputTab, string][]
+          ).map(([id, label]) => (
             <button
               key={id}
               type="button"
@@ -339,9 +340,7 @@ export default function ReportClient() {
         </div>
 
         <div className="mt-5">
-          {tab === "drop" ? (
-            <MultiFileDrop onFiles={addFiles} hashing={hashing} />
-          ) : null}
+          {tab === "drop" ? <MultiFileDrop onFiles={addFiles} hashing={hashing} /> : null}
 
           {tab === "paste" ? (
             <div>
@@ -428,10 +427,9 @@ export default function ReportClient() {
           </div>
           {items.length >= MAX_REPORT_HASHES ? (
             <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-              Limit of {MAX_REPORT_HASHES} documents reached. Any additional
-              hashes were not added, so this report covers only the first{" "}
-              {MAX_REPORT_HASHES}. Split the rest into separate reports to cover
-              them all.
+              Limit of {MAX_REPORT_HASHES} documents reached. Any additional hashes were not added,
+              so this report covers only the first {MAX_REPORT_HASHES}. Split the rest into separate
+              reports to cover them all.
             </p>
           ) : null}
           {items.length === 0 ? (
@@ -485,21 +483,14 @@ export default function ReportClient() {
                   : `Verified ${progress.total} hashes`}
               </span>
               <span>
-                {progress.total > 0
-                  ? Math.round((progress.done / progress.total) * 100)
-                  : 0}
-                %
+                {progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0}%
               </span>
             </div>
             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
               <div
                 className="h-full bg-foreground transition-all"
                 style={{
-                  width: `${
-                    progress.total > 0
-                      ? (progress.done / progress.total) * 100
-                      : 0
-                  }%`,
+                  width: `${progress.total > 0 ? (progress.done / progress.total) * 100 : 0}%`,
                 }}
               />
             </div>
@@ -507,18 +498,13 @@ export default function ReportClient() {
               {items.map((item, index) => {
                 const status = statuses[index] ?? "pending";
                 return (
-                  <li
-                    key={item.hash}
-                    className="flex items-center gap-3 text-xs"
-                  >
+                  <li key={item.hash} className="flex items-center gap-3 text-xs">
                     <StatusIcon status={status} />
                     <code className="font-mono text-foreground/60">
                       {item.hash.slice(0, 18)}...
                     </code>
                     {item.filename ? (
-                      <span className="truncate text-foreground/50">
-                        {item.filename}
-                      </span>
+                      <span className="truncate text-foreground/50">{item.filename}</span>
                     ) : null}
                   </li>
                 );
@@ -528,9 +514,7 @@ export default function ReportClient() {
         ) : null}
 
         {report ? <ReportPreview data={report} /> : null}
-        {report ? (
-          <ReportActions data={report} onExport={() => setExported(true)} />
-        ) : null}
+        {report ? <ReportActions data={report} onExport={() => setExported(true)} /> : null}
       </div>
     </>
   );
@@ -594,16 +578,20 @@ function MultiFileDrop({
   );
 }
 
-function StatusIcon({
-  status,
-}: {
-  status: "pending" | "verified" | "notfound";
-}) {
+function StatusIcon({ status }: { status: "pending" | "verified" | "notfound" }) {
   if (status === "verified") {
-    return <span className="text-emerald-600 dark:text-emerald-400" aria-label="Verified">✓</span>;
+    return (
+      <span className="text-emerald-600 dark:text-emerald-400" aria-label="Verified">
+        ✓
+      </span>
+    );
   }
   if (status === "notfound") {
-    return <span className="text-red-600 dark:text-red-400" aria-label="Not found">✕</span>;
+    return (
+      <span className="text-red-600 dark:text-red-400" aria-label="Not found">
+        ✕
+      </span>
+    );
   }
   return (
     <span
@@ -633,7 +621,7 @@ function ReportPreview({ data }: { data: ReportData }) {
               key={source}
               className="rounded bg-foreground/10 px-2 py-1 text-xs text-foreground/70"
             >
-              {(SOURCE_LABELS[source] ?? source)}: {count}
+              {SOURCE_LABELS[source] ?? source}: {count}
             </span>
           ))}
         </div>
@@ -656,9 +644,7 @@ function ReportPreview({ data }: { data: ReportData }) {
                 </span>
               )}
               {entry.filename ? (
-                <span className="truncate text-sm text-foreground/70">
-                  {entry.filename}
-                </span>
+                <span className="truncate text-sm text-foreground/70">{entry.filename}</span>
               ) : null}
             </div>
             <code className="mt-2 block break-all font-mono text-xs text-foreground/70">
@@ -666,10 +652,19 @@ function ReportPreview({ data }: { data: ReportData }) {
             </code>
             {entry.verified ? (
               <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-                <Field label="Source" value={SOURCE_LABELS[entry.source ?? ""] ?? entry.source ?? "-"} />
-                <Field label="Stacks block" value={entry.block !== null ? String(entry.block) : "-"} />
+                <Field
+                  label="Source"
+                  value={SOURCE_LABELS[entry.source ?? ""] ?? entry.source ?? "-"}
+                />
+                <Field
+                  label="Stacks block"
+                  value={entry.block !== null ? String(entry.block) : "-"}
+                />
                 <Field label="Label" value={entryLabel(entry)} />
-                <Field label="Proof NFT" value={entry.proofNFT !== null ? `#${entry.proofNFT}` : "None"} />
+                <Field
+                  label="Proof NFT"
+                  value={entry.proofNFT !== null ? `#${entry.proofNFT}` : "None"}
+                />
                 <Field label="Owner" value={entry.owner ?? "-"} mono />
               </dl>
             ) : null}
@@ -711,15 +706,7 @@ function Stat({
   );
 }
 
-function Field({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex gap-2">
       <dt className="text-foreground/50">{label}:</dt>

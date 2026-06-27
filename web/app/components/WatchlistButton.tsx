@@ -61,8 +61,7 @@ export default function WatchlistButton({
   const toggle = useCallback(async () => {
     if (watched) {
       const shown = label?.trim() || value;
-      const short =
-        shown.length > 28 ? `${shown.slice(0, 14)}...${shown.slice(-8)}` : shown;
+      const short = shown.length > 28 ? `${shown.slice(0, 14)}...${shown.slice(-8)}` : shown;
       const ok = await confirm({
         title: "Remove from watchlist",
         message: `Stop watching ${short}?`,
@@ -78,17 +77,7 @@ export default function WatchlistButton({
       setWatched(true);
       flashToast("Added to watchlist");
     }
-  }, [
-    watched,
-    type,
-    value,
-    label,
-    owner,
-    groupId,
-    groupIndex,
-    flashToast,
-    confirm,
-  ]);
+  }, [watched, type, value, label, owner, groupId, groupIndex, flashToast, confirm]);
 
   return (
     <span className="relative inline-flex">

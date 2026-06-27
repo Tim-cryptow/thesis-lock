@@ -35,11 +35,7 @@ import {
   submitBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
-import {
-  auditAnchor,
-  auditBatchAnchor,
-  auditProofMint,
-} from "@/lib/auditEvents";
+import { auditAnchor, auditBatchAnchor, auditProofMint } from "@/lib/auditEvents";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
 import FilePreview from "@/app/components/FilePreview";
@@ -99,13 +95,7 @@ function validateLabel(next: string): {
 }
 
 export default function AnchorPage() {
-  const {
-    address,
-    connecting,
-    error: walletError,
-    connectWallet,
-    disconnectWallet,
-  } = useWallet();
+  const { address, connecting, error: walletError, connectWallet, disconnectWallet } = useWallet();
 
   const { trackTx, pendingCount } = useTx();
   const confirm = useConfirm();
@@ -128,14 +118,11 @@ export default function AnchorPage() {
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const template = getTemplate(templateId) ?? GENERIC_TEMPLATE;
   const isGenericTemplate = templateId === GENERIC_TEMPLATE_ID;
-  const effectiveSingleLabel = isGenericTemplate
-    ? label
-    : buildLabel(template, fieldValues);
+  const effectiveSingleLabel = isGenericTemplate ? label : buildLabel(template, fieldValues);
 
   // The batch default template seeds every newly added file and re-applies to
   // all rows when changed; individual rows can override it afterward.
-  const [batchTemplateId, setBatchTemplateId] =
-    useState<string>(GENERIC_TEMPLATE_ID);
+  const [batchTemplateId, setBatchTemplateId] = useState<string>(GENERIC_TEMPLATE_ID);
 
   useEffect(() => {
     const param = searchParams.get("template");
@@ -173,13 +160,10 @@ export default function AnchorPage() {
 
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [registerProgress, setRegisterProgress] =
-    useState<RegisterProgress | null>(null);
+  const [registerProgress, setRegisterProgress] = useState<RegisterProgress | null>(null);
 
   const [batchSuccess, setBatchSuccess] = useState<BatchSuccess | null>(null);
-  const [singleSuccess, setSingleSuccess] = useState<SingleSuccess | null>(
-    null,
-  );
+  const [singleSuccess, setSingleSuccess] = useState<SingleSuccess | null>(null);
 
   // Warn before navigating away while files are staged but not yet anchored.
   const hasUnsavedWork =
@@ -191,16 +175,12 @@ export default function AnchorPage() {
     confirmLabel: "Leave",
   });
   const [copiedLinkHash, setCopiedLinkHash] = useState<string | null>(null);
-  const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(
-    null,
-  );
+  const [copyLinkFailedHash, setCopyLinkFailedHash] = useState<string | null>(null);
   const [certBusyHash, setCertBusyHash] = useState<string | null>(null);
   const [certNoticeHash, setCertNoticeHash] = useState<string | null>(null);
 
   const [minting, setMinting] = useState(false);
-  const [mintProgress, setMintProgress] = useState<RegisterProgress | null>(
-    null,
-  );
+  const [mintProgress, setMintProgress] = useState<RegisterProgress | null>(null);
   const [mintTxId, setMintTxId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -213,23 +193,24 @@ export default function AnchorPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [pending]);
 
-  const onFileSelect = useCallback(async (selected: File | null) => {
-    if (!selected) return;
-    setFile(selected);
-    setHash(null);
-    setHashError(null);
-    setHashing(true);
-    try {
-      const h = await hashFile(selected);
-      setHash(h);
-    } catch (e) {
-      setHashError(
-        e instanceof Error ? e.message : t("anchor.errors.hashFailed"),
-      );
-    } finally {
-      setHashing(false);
-    }
-  }, [t]);
+  const onFileSelect = useCallback(
+    async (selected: File | null) => {
+      if (!selected) return;
+      setFile(selected);
+      setHash(null);
+      setHashError(null);
+      setHashing(true);
+      try {
+        const h = await hashFile(selected);
+        setHash(h);
+      } catch (e) {
+        setHashError(e instanceof Error ? e.message : t("anchor.errors.hashFailed"));
+      } finally {
+        setHashing(false);
+      }
+    },
+    [t],
+  );
 
   const onLabelChange = (next: string) => {
     const { value, error } = validateLabel(next);
@@ -237,61 +218,59 @@ export default function AnchorPage() {
     setLabelError(error);
   };
 
-  const addBatchFiles = useCallback((incoming: FileList | File[] | null) => {
-    if (!incoming) return;
-    const incomingArr = Array.from(incoming);
-    setBatchLimitNotice(null);
-    setRows((prev) => {
-      const remaining = MAX_BATCH - prev.length;
-      if (remaining <= 0) {
-        setBatchLimitNotice(t("anchor.batch.limitReached", { max: MAX_BATCH }));
-        return prev;
-      }
-      const accepted = incomingArr.slice(0, remaining);
-      if (incomingArr.length > accepted.length) {
-        setBatchLimitNotice(
-          t("anchor.batch.partiallyAdded", {
-            added: accepted.length,
-            total: incomingArr.length,
-            max: MAX_BATCH,
-          }),
-        );
-      }
-      const newRows: BatchRow[] = accepted.map((f) => ({
-        id: `${f.name}-${f.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        file: f,
-        hash: null,
-        hashing: true,
-        hashError: null,
-        templateId: batchTemplateId,
-        fieldValues: {},
-      }));
-      newRows.forEach((row) => {
-        hashFile(row.file)
-          .then((h) => {
-            setRows((current) =>
-              current.map((r) =>
-                r.id === row.id
-                  ? { ...r, hash: h, hashing: false, hashError: null }
-                  : r,
-              ),
-            );
-          })
-          .catch((e: unknown) => {
-            const message =
-              e instanceof Error ? e.message : t("anchor.errors.hashFailed");
-            setRows((current) =>
-              current.map((r) =>
-                r.id === row.id
-                  ? { ...r, hash: null, hashing: false, hashError: message }
-                  : r,
-              ),
-            );
-          });
+  const addBatchFiles = useCallback(
+    (incoming: FileList | File[] | null) => {
+      if (!incoming) return;
+      const incomingArr = Array.from(incoming);
+      setBatchLimitNotice(null);
+      setRows((prev) => {
+        const remaining = MAX_BATCH - prev.length;
+        if (remaining <= 0) {
+          setBatchLimitNotice(t("anchor.batch.limitReached", { max: MAX_BATCH }));
+          return prev;
+        }
+        const accepted = incomingArr.slice(0, remaining);
+        if (incomingArr.length > accepted.length) {
+          setBatchLimitNotice(
+            t("anchor.batch.partiallyAdded", {
+              added: accepted.length,
+              total: incomingArr.length,
+              max: MAX_BATCH,
+            }),
+          );
+        }
+        const newRows: BatchRow[] = accepted.map((f) => ({
+          id: `${f.name}-${f.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          file: f,
+          hash: null,
+          hashing: true,
+          hashError: null,
+          templateId: batchTemplateId,
+          fieldValues: {},
+        }));
+        newRows.forEach((row) => {
+          hashFile(row.file)
+            .then((h) => {
+              setRows((current) =>
+                current.map((r) =>
+                  r.id === row.id ? { ...r, hash: h, hashing: false, hashError: null } : r,
+                ),
+              );
+            })
+            .catch((e: unknown) => {
+              const message = e instanceof Error ? e.message : t("anchor.errors.hashFailed");
+              setRows((current) =>
+                current.map((r) =>
+                  r.id === row.id ? { ...r, hash: null, hashing: false, hashError: message } : r,
+                ),
+              );
+            });
+        });
+        return [...prev, ...newRows];
       });
-      return [...prev, ...newRows];
-    });
-  }, [t, batchTemplateId]);
+    },
+    [t, batchTemplateId],
+  );
 
   const onBatchDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -305,20 +284,14 @@ export default function AnchorPage() {
   const updateRowField = (id: string, key: string, value: string) => {
     setRows((current) =>
       current.map((r) =>
-        r.id === id
-          ? { ...r, fieldValues: { ...r.fieldValues, [key]: value } }
-          : r,
+        r.id === id ? { ...r, fieldValues: { ...r.fieldValues, [key]: value } } : r,
       ),
     );
   };
 
   const setRowTemplate = (id: string, nextTemplateId: string) => {
     setRows((current) =>
-      current.map((r) =>
-        r.id === id
-          ? { ...r, templateId: nextTemplateId, fieldValues: {} }
-          : r,
-      ),
+      current.map((r) => (r.id === id ? { ...r, templateId: nextTemplateId, fieldValues: {} } : r)),
     );
   };
 
@@ -353,8 +326,8 @@ export default function AnchorPage() {
       }
       setRegisterProgress({ current: idx + 1, total: list.length });
       registerAnchor(
-        list[idx].hash,
-        list[idx].label,
+        list[idx]!.hash,
+        list[idx]!.label,
         () => registerSequentially(list, idx + 1, onAllDone, onAbort),
         () => {
           setRegisterProgress(null);
@@ -473,8 +446,7 @@ export default function AnchorPage() {
   };
 
   const copyVerifyLink = async (hash: string, owner: string, txId: string) => {
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const url = `${origin}/v/${hash}?owner=${encodeURIComponent(owner)}&tx=${encodeURIComponent(txId)}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -531,11 +503,11 @@ export default function AnchorPage() {
       }
       setMintProgress({ current: idx + 1, total: list.length });
       mintProof(
-        list[idx].hash,
-        list[idx].label,
+        list[idx]!.hash,
+        list[idx]!.label,
         (txId) => {
           setMintTxId(txId);
-          auditProofMint(list[idx].hash, txId);
+          auditProofMint(list[idx]!.hash, txId);
           mintProofsSequentially(list, idx + 1);
         },
         () => {
@@ -555,11 +527,7 @@ export default function AnchorPage() {
   // Block heights for the cert only exist after the tx is mined. Read the
   // live anchor at download time and surface a transient notice if it has
   // not been confirmed yet.
-  const downloadSingleCert = async (
-    entryHash: string,
-    entryLabel: string,
-    owner: string,
-  ) => {
+  const downloadSingleCert = async (entryHash: string, entryLabel: string, _owner: string) => {
     setCertNoticeHash(null);
     setCertBusyHash(entryHash);
     try {
@@ -569,8 +537,7 @@ export default function AnchorPage() {
         setTimeout(() => setCertNoticeHash(null), 4000);
         return;
       }
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : "";
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
       downloadCertificate({
         hash: entryHash,
         label: result.label || entryLabel,
@@ -601,8 +568,7 @@ export default function AnchorPage() {
         setTimeout(() => setCertNoticeHash(null), 4000);
         return;
       }
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : "";
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
       downloadCertificate({
         hash: entryHash,
         label: result.label || entryLabel,
@@ -622,7 +588,9 @@ export default function AnchorPage() {
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center justify-between mb-10 gap-4 flex-wrap">
         <div className="flex items-center gap-4 text-sm">
-          <div className="order-last ml-auto"><ThemeToggle /></div>
+          <div className="order-last ml-auto">
+            <ThemeToggle />
+          </div>
           <Link href="/" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.back")}
           </Link>
@@ -650,10 +618,7 @@ export default function AnchorPage() {
           >
             {t("common.nav.groups")}
           </Link>
-          <Link
-            href="/feed"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/feed" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.feed")}
           </Link>
           <Link
@@ -663,10 +628,7 @@ export default function AnchorPage() {
           >
             {t("common.nav.stats")}
           </Link>
-          <Link
-            href="/verify-bulk"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/verify-bulk" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.bulkVerify")}
           </Link>
           <Link
@@ -676,36 +638,21 @@ export default function AnchorPage() {
           >
             {t("common.nav.dashboard")}
           </Link>
-          <Link
-            href="/activity"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/activity" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.activity")}
           </Link>
-          <Link
-            href="/compare"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/compare" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.compare")}
           </Link>
-          <Link
-            href="/report"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/report" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.report")}
           </Link>
-          <Link
-            href="/explorer"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.explorer")}
           </Link>
           <WatchlistNavLink />
           <CollectionsNavLink />
-          <Link
-            href="/templates"
-            className="text-foreground/60 hover:text-foreground"
-          >
+          <Link href="/templates" className="text-foreground/60 hover:text-foreground">
             {t("common.nav.templates")}
           </Link>
           <Link
@@ -717,33 +664,33 @@ export default function AnchorPage() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
-        {pendingCount > 0 && (
-          <span
-            className="text-xs font-mono px-2.5 py-1 rounded-full border border-foreground/15 text-foreground/60"
-            aria-live="polite"
-            title={t("common.wallet.pendingTitle")}
-          >
-            {t("common.wallet.pending", { count: pendingCount })}
-          </span>
-        )}
-        {address ? (
-          <button
-            onClick={disconnectWallet}
-            className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            title={t("common.wallet.disconnect")}
-            aria-label={t("common.wallet.disconnectAria")}
-          >
-            {truncateAddress(address)}
-          </button>
-        ) : (
-          <button
-            onClick={connectWallet}
-            disabled={connecting}
-            className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
-          >
-            {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
-          </button>
-        )}
+          {pendingCount > 0 && (
+            <span
+              className="text-xs font-mono px-2.5 py-1 rounded-full border border-foreground/15 text-foreground/60"
+              aria-live="polite"
+              title={t("common.wallet.pendingTitle")}
+            >
+              {t("common.wallet.pending", { count: pendingCount })}
+            </span>
+          )}
+          {address ? (
+            <button
+              onClick={disconnectWallet}
+              className="text-sm font-mono px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+              title={t("common.wallet.disconnect")}
+              aria-label={t("common.wallet.disconnectAria")}
+            >
+              {truncateAddress(address)}
+            </button>
+          ) : (
+            <button
+              onClick={connectWallet}
+              disabled={connecting}
+              className="text-sm px-3 py-2 rounded-md bg-heading text-background hover:opacity-90 disabled:opacity-50"
+            >
+              {connecting ? t("common.wallet.opening") : t("common.wallet.connect")}
+            </button>
+          )}
         </div>
       </div>
 
@@ -756,515 +703,499 @@ export default function AnchorPage() {
       )}
 
       <FadeIn>
-      {singleSuccess ? (
-        <>
-          <h1 className="text-3xl mb-2">{t("anchor.success.single.heading")}</h1>
-          <p className="text-foreground/70 mb-6">
-            {t("anchor.success.single.description")}
-          </p>
-          <div className="rounded-lg border border-foreground/10 bg-card p-5">
-            <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-              {t("anchor.success.hashLabel")}
-            </div>
-            <code className="font-mono text-xs break-all block mb-3">
-              {singleSuccess.hash}
-            </code>
-            {singleSuccess.label && (
-              <div className="mb-3">
-                <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                  {t("anchor.success.labelLabel")}
-                </div>
-                <code className="font-mono text-xs">
-                  {singleSuccess.label}
-                </code>
+        {singleSuccess ? (
+          <>
+            <h1 className="text-3xl mb-2">{t("anchor.success.single.heading")}</h1>
+            <p className="text-foreground/70 mb-6">{t("anchor.success.single.description")}</p>
+            <div className="rounded-lg border border-foreground/10 bg-card p-5">
+              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                {t("anchor.success.hashLabel")}
               </div>
-            )}
-            <div className="flex flex-wrap gap-2">
+              <code className="font-mono text-xs break-all block mb-3">{singleSuccess.hash}</code>
+              {singleSuccess.label && (
+                <div className="mb-3">
+                  <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                    {t("anchor.success.labelLabel")}
+                  </div>
+                  <code className="font-mono text-xs">{singleSuccess.label}</code>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/v/${singleSuccess.hash}?tx=${encodeURIComponent(singleSuccess.txId)}`}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                >
+                  {t("anchor.success.openVerify")}
+                </Link>
+                <button
+                  onClick={() =>
+                    void downloadSingleCert(
+                      singleSuccess.hash,
+                      singleSuccess.label,
+                      singleSuccess.owner,
+                    )
+                  }
+                  disabled={certBusyHash === singleSuccess.hash}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                >
+                  {certBusyHash === singleSuccess.hash
+                    ? t("anchor.success.preparing")
+                    : t("anchor.success.downloadCertificate")}
+                </button>
+              </div>
+              {certNoticeHash === singleSuccess.hash && (
+                <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                  {t("anchor.success.notConfirmed")}
+                </p>
+              )}
+            </div>
+            <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+              <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">Tags</div>
+              <TagInput hash={singleSuccess.hash} label={singleSuccess.label} />
+            </div>
+            <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+              <h2 className="text-lg mb-1">
+                {t("anchor.proof.single.heading")}
+                <HelpText term="Proof NFT" />
+              </h2>
+              <p className="text-foreground/70 text-sm mb-4">
+                {t("anchor.proof.single.description")}
+              </p>
+              {mintTxId ? (
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  {t("anchor.proof.submitted")}{" "}
+                  <a
+                    href={explorerTxUrl(mintTxId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline hover:no-underline"
+                  >
+                    {t("anchor.proof.viewTransaction")}
+                  </a>
+                </p>
+              ) : (
+                <button
+                  onClick={() => mintSingleProof(singleSuccess.hash, singleSuccess.label)}
+                  disabled={minting || !address}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                >
+                  {minting ? t("anchor.proof.awaitingSignature") : t("anchor.proof.single.mint")}
+                </button>
+              )}
+            </div>
+            <div className="mt-8 flex gap-3 flex-wrap">
               <Link
-                href={`/v/${singleSuccess.hash}?tx=${encodeURIComponent(singleSuccess.txId)}`}
-                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                href="/anchors"
+                className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
               >
-                {t("anchor.success.openVerify")}
+                {t("anchor.success.viewMyAnchors")}
               </Link>
               <button
-                onClick={() =>
-                  void downloadSingleCert(
-                    singleSuccess.hash,
-                    singleSuccess.label,
-                    singleSuccess.owner,
-                  )
-                }
-                disabled={certBusyHash === singleSuccess.hash}
-                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                onClick={startAnotherSingle}
+                className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
               >
-                {certBusyHash === singleSuccess.hash
-                  ? t("anchor.success.preparing")
-                  : t("anchor.success.downloadCertificate")}
+                {t("anchor.success.single.anchorAnother")}
               </button>
             </div>
-            {certNoticeHash === singleSuccess.hash && (
-              <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
-                {t("anchor.success.notConfirmed")}
-              </p>
-            )}
-          </div>
-          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
-              Tags
-            </div>
-            <TagInput hash={singleSuccess.hash} label={singleSuccess.label} />
-          </div>
-          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">{t("anchor.proof.single.heading")}<HelpText term="Proof NFT" /></h2>
-            <p className="text-foreground/70 text-sm mb-4">
-              {t("anchor.proof.single.description")}
-            </p>
-            {mintTxId ? (
-              <p className="text-sm text-green-700 dark:text-green-400">
-                {t("anchor.proof.submitted")}{" "}
-                <a
-                  href={explorerTxUrl(mintTxId)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline hover:no-underline"
-                >
-                  {t("anchor.proof.viewTransaction")}
-                </a>
-              </p>
-            ) : (
-              <button
-                onClick={() =>
-                  mintSingleProof(singleSuccess.hash, singleSuccess.label)
-                }
-                disabled={minting || !address}
-                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
-              >
-                {minting ? t("anchor.proof.awaitingSignature") : t("anchor.proof.single.mint")}
-              </button>
-            )}
-          </div>
-          <div className="mt-8 flex gap-3 flex-wrap">
-            <Link
-              href="/anchors"
-              className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
-            >
-              {t("anchor.success.viewMyAnchors")}
-            </Link>
-            <button
-              onClick={startAnotherSingle}
-              className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            >
-              {t("anchor.success.single.anchorAnother")}
-            </button>
-          </div>
-        </>
-      ) : batchSuccess ? (
-        <>
-          <h1 className="text-3xl mb-2">{t("anchor.success.batch.heading")}</h1>
-          <p className="text-foreground/70 mb-6">
-            {t("anchor.success.batch.description")}
-          </p>
-          <div className="space-y-3">
-            {batchSuccess.entries.map((entry, idx) => (
-              <div
-                key={`${entry.hash}-${idx}`}
-                className="rounded-lg border border-foreground/10 bg-card p-5"
-              >
-                <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                  {t("anchor.success.hashLabel")}
-                </div>
-                <code className="font-mono text-xs break-all block mb-3">
-                  {entry.hash}
-                </code>
-                {entry.label && (
-                  <div className="mb-3">
-                    <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
-                      {t("anchor.success.labelLabel")}
-                    </div>
-                    <code className="font-mono text-xs">{entry.label}</code>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}&tx=${encodeURIComponent(batchSuccess.txId)}`}
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-                  >
-                    {t("anchor.success.openVerify")}
-                  </Link>
-                  <button
-                    onClick={() =>
-                      void copyVerifyLink(
-                        entry.hash,
-                        batchSuccess.owner,
-                        batchSuccess.txId,
-                      )
-                    }
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-                  >
-                    {copiedLinkHash === entry.hash
-                      ? t("anchor.success.linkCopied")
-                      : copyLinkFailedHash === entry.hash
-                        ? t("anchor.success.copyFailed")
-                        : t("anchor.success.copyVerifyLink")}
-                  </button>
-                  <button
-                    onClick={() =>
-                      void downloadBatchCert(
-                        entry.hash,
-                        entry.label,
-                        batchSuccess.owner,
-                        batchSuccess.txId,
-                      )
-                    }
-                    disabled={certBusyHash === entry.hash}
-                    className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
-                  >
-                    {certBusyHash === entry.hash
-                      ? t("anchor.success.preparing")
-                      : t("anchor.success.downloadCertificate")}
-                  </button>
-                </div>
-                {certNoticeHash === entry.hash && (
-                  <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
-                    {t("anchor.success.notConfirmed")}
-                  </p>
-                )}
-                <div className="mt-3 pt-3 border-t border-foreground/10">
-                  <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
-                    Tags
-                  </div>
-                  <TagInput
-                    hash={entry.hash}
-                    label={entry.label}
-                    verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}`}
-                    compact
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
-            <h2 className="text-lg mb-1">{t("anchor.proof.batch.heading")}<HelpText term="Proof NFT" /></h2>
-            <p className="text-foreground/70 text-sm mb-4">
-              {t("anchor.proof.batch.description")}
-            </p>
-            {mintProgress ? (
-              <p className="text-sm text-foreground/70">
-                {t("anchor.proof.minting", {
-                  current: mintProgress.current,
-                  total: mintProgress.total,
-                })}
-              </p>
-            ) : mintTxId ? (
-              <p className="text-sm text-green-700 dark:text-green-400">
-                {batchSuccess.entries.length === 1
-                  ? t("anchor.proof.batch.submittedOne")
-                  : t("anchor.proof.batch.submittedMany", {
-                      count: batchSuccess.entries.length,
-                    })}
-              </p>
-            ) : (
-              <button
-                onClick={() => mintBatchProofs(batchSuccess.entries)}
-                disabled={minting || !address}
-                className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
-              >
-                {minting
-                  ? t("anchor.proof.awaitingSignature")
-                  : batchSuccess.entries.length === 1
-                    ? t("anchor.proof.batch.mintOne")
-                    : t("anchor.proof.batch.mintMany", {
-                        count: batchSuccess.entries.length,
-                      })}
-              </button>
-            )}
-          </div>
-          <div className="mt-8 flex gap-3 flex-wrap">
-            <Link
-              href="/anchors"
-              className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
-            >
-              {t("anchor.success.viewMyAnchors")}
-            </Link>
-            <button
-              onClick={startAnotherBatch}
-              className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
-            >
-              {t("anchor.success.batch.anchorAnother")}
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-      <h1 className="text-3xl mb-2">{t("anchor.form.heading")}</h1>
-      <p className="text-foreground/70 mb-6">
-        {t("anchor.form.intro")}
-      </p>
-
-      <div className="flex items-center gap-2 mb-8">
-      <div
-        role="group"
-        aria-label={t("anchor.form.modeGroupAria")}
-        className="inline-flex rounded-md border border-foreground/15 p-1 bg-card"
-      >
-        <button
-          onClick={() => setMode("single")}
-          disabled={pending}
-          aria-label={t("anchor.form.singleModeAria")}
-          aria-pressed={mode === "single"}
-          className={`text-sm px-4 py-2 rounded transition ${
-            mode === "single"
-              ? "bg-heading text-background"
-              : "text-foreground/70 hover:text-foreground"
-          } disabled:opacity-50`}
-        >
-          {t("anchor.form.singleMode")}
-        </button>
-        <button
-          onClick={() => setMode("batch")}
-          disabled={pending}
-          data-tour="batch-tab"
-          aria-label={t("anchor.form.batchModeAria", { max: MAX_BATCH })}
-          aria-pressed={mode === "batch"}
-          className={`text-sm px-4 py-2 rounded transition ${
-            mode === "batch"
-              ? "bg-heading text-background"
-              : "text-foreground/70 hover:text-foreground"
-          } disabled:opacity-50`}
-        >
-          {t("anchor.form.batchMode", { max: MAX_BATCH })}
-        </button>
-      </div>
-        <HelpText term="Batch Anchor" />
-      </div>
-
-      {mode === "single" ? (
-        <>
-          <div data-tour="drop-zone">
-          <FileDropZone
-            onFile={(f) => void onFileSelect(f)}
-            disabled={pending}
-            ariaLabel={t("anchor.single.dropZoneAria")}
-          >
-            {file ? (
-              <p className="text-foreground/60">Drop another file to replace</p>
-            ) : (
-              <p className="text-foreground/60">
-                {t("anchor.single.dropZonePrompt")}
-              </p>
-            )}
-          </FileDropZone>
-          </div>
-
-          {hashError && (
-            <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
-              {hashError}
-            </p>
-          )}
-
-          {file && (
-            <div className="mt-6">
-              <FilePreview file={file} hash={hash} hashing={hashing} />
-            </div>
-          )}
-
-          <div className="mt-6" data-tour="template-selector">
-            <TemplateSelector
-              selectedId={templateId}
-              onSelect={onSelectTemplate}
-            />
-          </div>
-
-          {isGenericTemplate ? (
-            <div className="mt-6">
-              <ValidatedInput
-                id="label"
-                dataTour="label-input"
-                helpTerm="Label"
-                label={t("anchor.label.fieldLabel")}
-                value={label}
-                onChange={onLabelChange}
-                validator={validateLabelRule}
-                placeholder={t("anchor.label.placeholder")}
-                maxLength={64}
-              />
-            </div>
-          ) : (
-            <div className="mt-6">
-              <TemplateFields
-                template={template}
-                values={fieldValues}
-                onChange={setFieldValue}
-                disabled={pending}
-              />
-            </div>
-          )}
-
-          <button
-            onClick={submitSingle}
-            disabled={!canSubmitSingle}
-            className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
-          >
-            {pending
-              ? registerProgress
-                ? t("anchor.submit.registering", {
-                    current: registerProgress.current,
-                    total: registerProgress.total,
-                  })
-                : t("anchor.submit.awaitingSignature")
-              : t("anchor.submit.single")}
-          </button>
-          <p className="mt-3 text-xs text-foreground/50 text-center">
-            {t("anchor.submit.singleHelp")}
-          </p>
-        </>
-      ) : (
-        <>
-          <div className="mb-6">
-            <TemplateSelector
-              variant="compact"
-              selectId="batch-default-template"
-              label={t("templates.batch.defaultHeading")}
-              selectedId={batchTemplateId}
-              onSelect={onSelectBatchTemplate}
-            />
-            <p className="mt-1 text-xs text-foreground/50">
-              {t("templates.batch.defaultDescription")}
-            </p>
-          </div>
-
-          <div
-            role="button"
-            tabIndex={pending ? -1 : 0}
-            aria-label={t("anchor.batch.dropZoneAria", { max: MAX_BATCH })}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                batchInput.current?.click();
-              }
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setBatchDragOver(true);
-            }}
-            onDragLeave={() => setBatchDragOver(false)}
-            onDrop={onBatchDrop}
-            onClick={() => batchInput.current?.click()}
-            className={`rounded-lg border-2 border-dashed p-10 text-center cursor-pointer transition outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 ${
-              batchDragOver
-                ? "border-foreground/60 bg-foreground/5"
-                : "border-foreground/20 hover:border-foreground/40"
-            }`}
-          >
-            <input
-              ref={batchInput}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => addBatchFiles(e.target.files)}
-            />
-            <p className="text-foreground/60">
-              {t("anchor.batch.dropZonePrompt", {
-                max: MAX_BATCH,
-                added: rows.length,
-              })}
-            </p>
-          </div>
-
-          {batchLimitNotice && (
-            <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">{batchLimitNotice}</p>
-          )}
-
-          {rows.length > 0 && (
-            <div className="mt-6 space-y-3">
-              {rows.map((row, idx) => (
+          </>
+        ) : batchSuccess ? (
+          <>
+            <h1 className="text-3xl mb-2">{t("anchor.success.batch.heading")}</h1>
+            <p className="text-foreground/70 mb-6">{t("anchor.success.batch.description")}</p>
+            <div className="space-y-3">
+              {batchSuccess.entries.map((entry, idx) => (
                 <div
-                  key={row.id}
-                  className="rounded-lg border border-foreground/10 bg-card p-4"
+                  key={`${entry.hash}-${idx}`}
+                  className="rounded-lg border border-foreground/10 bg-card p-5"
                 >
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="min-w-0 flex-1">
-                      <FilePreview
-                        file={row.file}
-                        hash={row.hash}
-                        hashing={row.hashing}
-                        compact
-                      />
-                      {row.hashError ? (
-                        <p className="mt-2 text-xs text-red-600 dark:text-red-400" role="alert">
-                          {row.hashError}
-                        </p>
-                      ) : null}
+                  <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                    {t("anchor.success.hashLabel")}
+                  </div>
+                  <code className="font-mono text-xs break-all block mb-3">{entry.hash}</code>
+                  {entry.label && (
+                    <div className="mb-3">
+                      <div className="text-xs text-foreground/50 uppercase tracking-wide mb-1">
+                        {t("anchor.success.labelLabel")}
+                      </div>
+                      <code className="font-mono text-xs">{entry.label}</code>
                     </div>
-                    <button
-                      onClick={() => removeRow(row.id)}
-                      disabled={pending}
-                      aria-label={t("anchor.batch.removeFileAria", { name: row.file.name })}
-                      className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}&tx=${encodeURIComponent(batchSuccess.txId)}`}
+                      className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
                     >
-                      {t("anchor.batch.remove")}
+                      {t("anchor.success.openVerify")}
+                    </Link>
+                    <button
+                      onClick={() =>
+                        void copyVerifyLink(entry.hash, batchSuccess.owner, batchSuccess.txId)
+                      }
+                      className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+                    >
+                      {copiedLinkHash === entry.hash
+                        ? t("anchor.success.linkCopied")
+                        : copyLinkFailedHash === entry.hash
+                          ? t("anchor.success.copyFailed")
+                          : t("anchor.success.copyVerifyLink")}
+                    </button>
+                    <button
+                      onClick={() =>
+                        void downloadBatchCert(
+                          entry.hash,
+                          entry.label,
+                          batchSuccess.owner,
+                          batchSuccess.txId,
+                        )
+                      }
+                      disabled={certBusyHash === entry.hash}
+                      className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                    >
+                      {certBusyHash === entry.hash
+                        ? t("anchor.success.preparing")
+                        : t("anchor.success.downloadCertificate")}
                     </button>
                   </div>
-
-                  <div className="mt-3">
-                    <TemplateSelector
-                      variant="compact"
-                      selectId={`row-template-${row.id}`}
-                      label={t("templates.batch.overrideLabel")}
-                      selectedId={row.templateId}
-                      onSelect={(id) => setRowTemplate(row.id, id)}
-                    />
-                  </div>
-
-                  <div className="mt-3">
-                    <TemplateFields
-                      template={getTemplate(row.templateId) ?? GENERIC_TEMPLATE}
-                      values={row.fieldValues}
-                      onChange={(key, value) =>
-                        updateRowField(row.id, key, value)
-                      }
-                      disabled={pending}
-                      idPrefix={`row-${row.id}`}
+                  {certNoticeHash === entry.hash && (
+                    <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                      {t("anchor.success.notConfirmed")}
+                    </p>
+                  )}
+                  <div className="mt-3 pt-3 border-t border-foreground/10">
+                    <div className="text-xs text-foreground/50 uppercase tracking-wide mb-2">
+                      Tags
+                    </div>
+                    <TagInput
+                      hash={entry.hash}
+                      label={entry.label}
+                      verifyUrl={`/v/${entry.hash}?owner=${encodeURIComponent(batchSuccess.owner)}`}
+                      compact
                     />
                   </div>
                 </div>
               ))}
             </div>
-          )}
+            <div className="mt-6 rounded-lg border border-foreground/10 bg-card p-5">
+              <h2 className="text-lg mb-1">
+                {t("anchor.proof.batch.heading")}
+                <HelpText term="Proof NFT" />
+              </h2>
+              <p className="text-foreground/70 text-sm mb-4">
+                {t("anchor.proof.batch.description")}
+              </p>
+              {mintProgress ? (
+                <p className="text-sm text-foreground/70">
+                  {t("anchor.proof.minting", {
+                    current: mintProgress.current,
+                    total: mintProgress.total,
+                  })}
+                </p>
+              ) : mintTxId ? (
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  {batchSuccess.entries.length === 1
+                    ? t("anchor.proof.batch.submittedOne")
+                    : t("anchor.proof.batch.submittedMany", {
+                        count: batchSuccess.entries.length,
+                      })}
+                </p>
+              ) : (
+                <button
+                  onClick={() => mintBatchProofs(batchSuccess.entries)}
+                  disabled={minting || !address}
+                  className="text-sm px-3 py-2 rounded-md border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                >
+                  {minting
+                    ? t("anchor.proof.awaitingSignature")
+                    : batchSuccess.entries.length === 1
+                      ? t("anchor.proof.batch.mintOne")
+                      : t("anchor.proof.batch.mintMany", {
+                          count: batchSuccess.entries.length,
+                        })}
+                </button>
+              )}
+            </div>
+            <div className="mt-8 flex gap-3 flex-wrap">
+              <Link
+                href="/anchors"
+                className="px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 transition"
+              >
+                {t("anchor.success.viewMyAnchors")}
+              </Link>
+              <button
+                onClick={startAnotherBatch}
+                className="px-6 py-3 rounded-md border border-foreground/15 hover:border-foreground/40 transition"
+              >
+                {t("anchor.success.batch.anchorAnother")}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl mb-2">{t("anchor.form.heading")}</h1>
+            <p className="text-foreground/70 mb-6">{t("anchor.form.intro")}</p>
 
-          <button
-            onClick={submitBatch}
-            disabled={!canSubmitBatch}
-            className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
-          >
-            {pending
-              ? registerProgress
-                ? t("anchor.submit.registering", {
-                    current: registerProgress.current,
-                    total: registerProgress.total,
-                  })
-                : t("anchor.submit.awaitingSignature")
-              : t("anchor.submit.batch", { count: rows.length })}
-          </button>
-          <p className="mt-3 text-xs text-foreground/50 text-center">
-            {t("anchor.submit.batchHelp")}
-          </p>
-        </>
-      )}
+            <div className="flex items-center gap-2 mb-8">
+              <div
+                role="group"
+                aria-label={t("anchor.form.modeGroupAria")}
+                className="inline-flex rounded-md border border-foreground/15 p-1 bg-card"
+              >
+                <button
+                  onClick={() => setMode("single")}
+                  disabled={pending}
+                  aria-label={t("anchor.form.singleModeAria")}
+                  aria-pressed={mode === "single"}
+                  className={`text-sm px-4 py-2 rounded transition ${
+                    mode === "single"
+                      ? "bg-heading text-background"
+                      : "text-foreground/70 hover:text-foreground"
+                  } disabled:opacity-50`}
+                >
+                  {t("anchor.form.singleMode")}
+                </button>
+                <button
+                  onClick={() => setMode("batch")}
+                  disabled={pending}
+                  data-tour="batch-tab"
+                  aria-label={t("anchor.form.batchModeAria", { max: MAX_BATCH })}
+                  aria-pressed={mode === "batch"}
+                  className={`text-sm px-4 py-2 rounded transition ${
+                    mode === "batch"
+                      ? "bg-heading text-background"
+                      : "text-foreground/70 hover:text-foreground"
+                  } disabled:opacity-50`}
+                >
+                  {t("anchor.form.batchMode", { max: MAX_BATCH })}
+                </button>
+              </div>
+              <HelpText term="Batch Anchor" />
+            </div>
 
-      {pending && (
-        <p className="mt-4 text-sm text-foreground/60 text-center">
-          {t("anchor.submit.doNotNavigate")}
-        </p>
-      )}
+            {mode === "single" ? (
+              <>
+                <div data-tour="drop-zone">
+                  <FileDropZone
+                    onFile={(f) => void onFileSelect(f)}
+                    disabled={pending}
+                    ariaLabel={t("anchor.single.dropZoneAria")}
+                  >
+                    {file ? (
+                      <p className="text-foreground/60">Drop another file to replace</p>
+                    ) : (
+                      <p className="text-foreground/60">{t("anchor.single.dropZonePrompt")}</p>
+                    )}
+                  </FileDropZone>
+                </div>
 
-      {submitError && (
-        <p className="mt-4 text-sm text-red-600 dark:text-red-400 text-center" role="alert">
-          {submitError}
-        </p>
-      )}
-        </>
-      )}
+                {hashError && (
+                  <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
+                    {hashError}
+                  </p>
+                )}
+
+                {file && (
+                  <div className="mt-6">
+                    <FilePreview file={file} hash={hash} hashing={hashing} />
+                  </div>
+                )}
+
+                <div className="mt-6" data-tour="template-selector">
+                  <TemplateSelector selectedId={templateId} onSelect={onSelectTemplate} />
+                </div>
+
+                {isGenericTemplate ? (
+                  <div className="mt-6">
+                    <ValidatedInput
+                      id="label"
+                      dataTour="label-input"
+                      helpTerm="Label"
+                      label={t("anchor.label.fieldLabel")}
+                      value={label}
+                      onChange={onLabelChange}
+                      validator={validateLabelRule}
+                      placeholder={t("anchor.label.placeholder")}
+                      maxLength={64}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <TemplateFields
+                      template={template}
+                      values={fieldValues}
+                      onChange={setFieldValue}
+                      disabled={pending}
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={submitSingle}
+                  disabled={!canSubmitSingle}
+                  className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                >
+                  {pending
+                    ? registerProgress
+                      ? t("anchor.submit.registering", {
+                          current: registerProgress.current,
+                          total: registerProgress.total,
+                        })
+                      : t("anchor.submit.awaitingSignature")
+                    : t("anchor.submit.single")}
+                </button>
+                <p className="mt-3 text-xs text-foreground/50 text-center">
+                  {t("anchor.submit.singleHelp")}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <TemplateSelector
+                    variant="compact"
+                    selectId="batch-default-template"
+                    label={t("templates.batch.defaultHeading")}
+                    selectedId={batchTemplateId}
+                    onSelect={onSelectBatchTemplate}
+                  />
+                  <p className="mt-1 text-xs text-foreground/50">
+                    {t("templates.batch.defaultDescription")}
+                  </p>
+                </div>
+
+                <div
+                  role="button"
+                  tabIndex={pending ? -1 : 0}
+                  aria-label={t("anchor.batch.dropZoneAria", { max: MAX_BATCH })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      batchInput.current?.click();
+                    }
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setBatchDragOver(true);
+                  }}
+                  onDragLeave={() => setBatchDragOver(false)}
+                  onDrop={onBatchDrop}
+                  onClick={() => batchInput.current?.click()}
+                  className={`rounded-lg border-2 border-dashed p-10 text-center cursor-pointer transition outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 ${
+                    batchDragOver
+                      ? "border-foreground/60 bg-foreground/5"
+                      : "border-foreground/20 hover:border-foreground/40"
+                  }`}
+                >
+                  <input
+                    ref={batchInput}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => addBatchFiles(e.target.files)}
+                  />
+                  <p className="text-foreground/60">
+                    {t("anchor.batch.dropZonePrompt", {
+                      max: MAX_BATCH,
+                      added: rows.length,
+                    })}
+                  </p>
+                </div>
+
+                {batchLimitNotice && (
+                  <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">
+                    {batchLimitNotice}
+                  </p>
+                )}
+
+                {rows.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    {rows.map((row) => (
+                      <div
+                        key={row.id}
+                        className="rounded-lg border border-foreground/10 bg-card p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
+                          <div className="min-w-0 flex-1">
+                            <FilePreview
+                              file={row.file}
+                              hash={row.hash}
+                              hashing={row.hashing}
+                              compact
+                            />
+                            {row.hashError ? (
+                              <p
+                                className="mt-2 text-xs text-red-600 dark:text-red-400"
+                                role="alert"
+                              >
+                                {row.hashError}
+                              </p>
+                            ) : null}
+                          </div>
+                          <button
+                            onClick={() => removeRow(row.id)}
+                            disabled={pending}
+                            aria-label={t("anchor.batch.removeFileAria", { name: row.file.name })}
+                            className="text-xs px-2 py-1 rounded border border-foreground/15 hover:border-foreground/40 transition disabled:opacity-50"
+                          >
+                            {t("anchor.batch.remove")}
+                          </button>
+                        </div>
+
+                        <div className="mt-3">
+                          <TemplateSelector
+                            variant="compact"
+                            selectId={`row-template-${row.id}`}
+                            label={t("templates.batch.overrideLabel")}
+                            selectedId={row.templateId}
+                            onSelect={(id) => setRowTemplate(row.id, id)}
+                          />
+                        </div>
+
+                        <div className="mt-3">
+                          <TemplateFields
+                            template={getTemplate(row.templateId) ?? GENERIC_TEMPLATE}
+                            values={row.fieldValues}
+                            onChange={(key, value) => updateRowField(row.id, key, value)}
+                            disabled={pending}
+                            idPrefix={`row-${row.id}`}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  onClick={submitBatch}
+                  disabled={!canSubmitBatch}
+                  className="mt-8 w-full px-6 py-3 rounded-md bg-heading text-background font-medium hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                >
+                  {pending
+                    ? registerProgress
+                      ? t("anchor.submit.registering", {
+                          current: registerProgress.current,
+                          total: registerProgress.total,
+                        })
+                      : t("anchor.submit.awaitingSignature")
+                    : t("anchor.submit.batch", { count: rows.length })}
+                </button>
+                <p className="mt-3 text-xs text-foreground/50 text-center">
+                  {t("anchor.submit.batchHelp")}
+                </p>
+              </>
+            )}
+
+            {pending && (
+              <p className="mt-4 text-sm text-foreground/60 text-center">
+                {t("anchor.submit.doNotNavigate")}
+              </p>
+            )}
+
+            {submitError && (
+              <p className="mt-4 text-sm text-red-600 dark:text-red-400 text-center" role="alert">
+                {submitError}
+              </p>
+            )}
+          </>
+        )}
       </FadeIn>
     </div>
   );

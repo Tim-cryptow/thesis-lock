@@ -14,25 +14,22 @@ export default function FeedsDocs() {
     <div>
       <h1 className="text-3xl md:text-4xl">Feeds</h1>
       <Lead>
-        ThesisLock publishes its on-chain event stream as standard feeds so you
-        can follow new anchors, batches, group anchors, and proof mints in any
-        reader, or pipe them into tools like Slack, Zapier, or IFTTT.
+        ThesisLock publishes its on-chain event stream as standard feeds so you can follow new
+        anchors, batches, group anchors, and proof mints in any reader, or pipe them into tools like
+        Slack, Zapier, or IFTTT.
       </Lead>
 
       <H2>Endpoints</H2>
       <List
         items={[
           <>
-            <Code>GET /api/feed/rss</Code>: RSS 2.0 (
-            <Code>application/rss+xml</Code>).
+            <Code>GET /api/feed/rss</Code>: RSS 2.0 (<Code>application/rss+xml</Code>).
           </>,
           <>
-            <Code>GET /api/feed/atom</Code>: Atom 1.0 (
-            <Code>application/atom+xml</Code>).
+            <Code>GET /api/feed/atom</Code>: Atom 1.0 (<Code>application/atom+xml</Code>).
           </>,
           <>
-            <Code>GET /api/feed/json</Code>: JSON Feed 1.1 (
-            <Code>application/feed+json</Code>).
+            <Code>GET /api/feed/json</Code>: JSON Feed 1.1 (<Code>application/feed+json</Code>).
           </>,
         ]}
       />
@@ -43,18 +40,16 @@ export default function FeedsDocs() {
       <List
         items={[
           <>
-            <Code>?contract=&lt;name&gt;</Code>: only events from one contract
-            (for example <Code>batch</Code>, <Code>groups</Code>,{" "}
-            <Code>proof</Code>, or the full name like{" "}
+            <Code>?contract=&lt;name&gt;</Code>: only events from one contract (for example{" "}
+            <Code>batch</Code>, <Code>groups</Code>, <Code>proof</Code>, or the full name like{" "}
             <Code>thesislock-batch</Code>).
           </>,
           <>
-            <Code>?address=&lt;principal&gt;</Code>: only events attributed to one
-            wallet.
+            <Code>?address=&lt;principal&gt;</Code>: only events attributed to one wallet.
           </>,
           <>
-            <Code>?limit=&lt;n&gt;</Code>: how many recent events to include (up
-            to 100, default 50).
+            <Code>?limit=&lt;n&gt;</Code>: how many recent events to include (up to 100, default
+            50).
           </>,
         ]}
       />
@@ -62,9 +57,8 @@ export default function FeedsDocs() {
 
       <H2>Autodiscovery</H2>
       <P>
-        Every page advertises the RSS and Atom feeds with{" "}
-        <Code>{`<link rel="alternate">`}</Code> tags in the document head, so feed
-        readers can find them from the site root automatically.
+        Every page advertises the RSS and Atom feeds with <Code>{`<link rel="alternate">`}</Code>{" "}
+        tags in the document head, so feed readers can find them from the site root automatically.
       </P>
 
       <H2>Programmatic alerts</H2>

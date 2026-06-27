@@ -15,13 +15,15 @@ The SDK targets Node.js 18 or newer (it relies on the global `fetch` and `node:c
 ## Quick Start
 
 ```ts
-import { createClient } from 'thesislock-sdk';
+import { createClient } from "thesislock-sdk";
 
 const client = createClient();
-const result = await client.verify('9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06');
+const result = await client.verify(
+  "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06",
+);
 
 if (result.verified) {
-  console.log('Anchored by', result.data.anchoredBy, 'at block', result.data.stacksBlock);
+  console.log("Anchored by", result.data.anchoredBy, "at block", result.data.stacksBlock);
 }
 ```
 
@@ -29,18 +31,18 @@ if (result.verified) {
 
 `createClient(config?)` and `new ThesisLockClient(config?)` accept an optional config object:
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `apiUrl` | `https://api.mainnet.hiro.so` | Base URL of the Hiro Stacks API used for read-only calls. |
-| `contractAddress` | `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM` | Principal that deployed the ThesisLock contracts. |
-| `network` | `mainnet` | Network label, `mainnet` or `testnet`. Selects the default `apiUrl`. |
+| Option            | Default                                     | Description                                                          |
+| ----------------- | ------------------------------------------- | -------------------------------------------------------------------- |
+| `apiUrl`          | `https://api.mainnet.hiro.so`               | Base URL of the Hiro Stacks API used for read-only calls.            |
+| `contractAddress` | `SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM` | Principal that deployed the ThesisLock contracts.                    |
+| `network`         | `mainnet`                                   | Network label, `mainnet` or `testnet`. Selects the default `apiUrl`. |
 
 ```ts
-import { ThesisLockClient } from 'thesislock-sdk';
+import { ThesisLockClient } from "thesislock-sdk";
 
 const client = new ThesisLockClient({
-  network: 'testnet',
-  contractAddress: 'SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM',
+  network: "testnet",
+  contractAddress: "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM",
 });
 ```
 
@@ -63,7 +65,7 @@ const result = await client.verify(hash);
 Looks up an owner-keyed batch anchor in `thesislock-batch`. Batch anchors are keyed by both the hash and the owner principal, so the owner is required. Throws if `owner` is not a valid Stacks principal.
 
 ```ts
-const result = await client.verifyBatch(hash, 'SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM');
+const result = await client.verifyBatch(hash, "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM");
 // { verified: true, source: 'batch', data: BatchAnchorResult }
 ```
 
@@ -82,7 +84,7 @@ const result = await client.verifyAny(hash, owner);
 Returns the number of anchors a principal has registered in `thesislock-registry`.
 
 ```ts
-const count = await client.getAnchorCount('SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM');
+const count = await client.getAnchorCount("SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM");
 ```
 
 ### getRecentAnchors(owner)
@@ -123,8 +125,8 @@ These are exported at the top level and do not require a client.
 Returns the lowercase 64-character hex SHA-256 digest of a string's UTF-8 bytes.
 
 ```ts
-import { hashString } from 'thesislock-sdk';
-const hash = hashString('hello world');
+import { hashString } from "thesislock-sdk";
+const hash = hashString("hello world");
 ```
 
 ### hashFile(file)
@@ -132,10 +134,10 @@ const hash = hashString('hello world');
 Returns the lowercase 64-character hex SHA-256 digest of a `File` or a `Buffer`.
 
 ```ts
-import { hashFile } from 'thesislock-sdk';
-import { readFileSync } from 'node:fs';
+import { hashFile } from "thesislock-sdk";
+import { readFileSync } from "node:fs";
 
-const hash = await hashFile(readFileSync('thesis.pdf'));
+const hash = await hashFile(readFileSync("thesis.pdf"));
 ```
 
 ### isValidHash(hash)
@@ -147,8 +149,8 @@ Returns `true` when the input is exactly 64 hex characters. An optional `0x` pre
 Encodes a 64-character hex hash as a serialized Clarity `(buff 32)` value, ready to pass as a contract-call argument. Returns hex without a `0x` prefix.
 
 ```ts
-import { serializeHash } from 'thesislock-sdk';
-serializeHash('9afe6f57...'); // '02000000209afe6f57...'
+import { serializeHash } from "thesislock-sdk";
+serializeHash("9afe6f57..."); // '02000000209afe6f57...'
 ```
 
 ### truncateHash(hash, chars?)
@@ -156,8 +158,8 @@ serializeHash('9afe6f57...'); // '02000000209afe6f57...'
 Shortens a hash to its first and last `chars` characters (default 8) for display.
 
 ```ts
-import { truncateHash } from 'thesislock-sdk';
-truncateHash('9afe6f57...585d06', 4); // '9afe...5d06'
+import { truncateHash } from "thesislock-sdk";
+truncateHash("9afe6f57...585d06", 4); // '9afe...5d06'
 ```
 
 ## Error Handling
@@ -165,20 +167,20 @@ truncateHash('9afe6f57...585d06', 4); // '9afe...5d06'
 A failed network request or a contract-level rejection throws an `Error`; a plain "not found" does not. Wrap calls in `try`/`catch` for outages, and check `verified` (or a `null` return) for the not-found case.
 
 ```ts
-import { createClient } from 'thesislock-sdk';
+import { createClient } from "thesislock-sdk";
 
 const client = createClient();
 
 try {
   const result = await client.verify(hash);
   if (result.verified) {
-    console.log('Anchored at block', result.data.stacksBlock);
+    console.log("Anchored at block", result.data.stacksBlock);
   } else {
-    console.log('Not anchored');
+    console.log("Not anchored");
   }
 } catch (err) {
   // Network failure, or the Hiro API rejected the read-only call.
-  console.error('Lookup failed:', err);
+  console.error("Lookup failed:", err);
 }
 ```
 
@@ -203,8 +205,8 @@ Run any of them with `npx ts-node examples/<name>.ts`.
 
 ```ts
 type VerifyResult =
-  | { verified: true; source: 'single'; data: AnchorResult }
-  | { verified: true; source: 'batch'; data: BatchAnchorResult }
+  | { verified: true; source: "single"; data: AnchorResult }
+  | { verified: true; source: "batch"; data: BatchAnchorResult }
   | { verified: false; source: null; data: null };
 
 const result = await client.verify(hash);

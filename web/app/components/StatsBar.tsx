@@ -45,13 +45,8 @@ export default function StatsBar() {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 rounded-lg border border-foreground/10 bg-card p-6">
       {items.map((item) => (
         <div key={item.label} className="flex flex-col gap-1">
-          <CountUp
-            value={item.value}
-            className="text-3xl font-mono text-heading"
-          />
-          <span className="text-xs uppercase tracking-wide text-foreground/50">
-            {item.label}
-          </span>
+          <CountUp value={item.value} className="text-3xl font-mono text-heading" />
+          <span className="text-xs uppercase tracking-wide text-foreground/50">{item.label}</span>
         </div>
       ))}
     </div>

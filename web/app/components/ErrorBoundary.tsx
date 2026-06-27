@@ -22,10 +22,7 @@ type ErrorBoundaryState = {
   error: Error | null;
 };
 
-class ErrorBoundaryInner extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -71,11 +68,7 @@ class ErrorBoundaryInner extends Component<
   }
 }
 
-export default function ErrorBoundary({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function ErrorBoundary({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { t } = useI18n();
   return (

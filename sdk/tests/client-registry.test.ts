@@ -47,9 +47,7 @@ describe("getAnchorCount", () => {
   });
 
   it("throws for an invalid owner principal", async () => {
-    await expect(createClient().getAnchorCount("nope")).rejects.toThrow(
-      /Invalid Stacks principal/,
-    );
+    await expect(createClient().getAnchorCount("nope")).rejects.toThrow(/Invalid Stacks principal/);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
@@ -68,9 +66,7 @@ describe("getRecentAnchors", () => {
 
   it("filters out the empty slots in the recent window", async () => {
     fetchMock.mockResolvedValue(
-      okResponse(
-        Cl.list([entry(HASH1, "doc-1", 100), Cl.none(), entry(HASH2, "doc-2", 99)]),
-      ),
+      okResponse(Cl.list([entry(HASH1, "doc-1", 100), Cl.none(), entry(HASH2, "doc-2", 99)])),
     );
     const entries = await createClient().getRecentAnchors(OWNER);
     expect(entries.map((e) => e.hash)).toEqual([HASH1, HASH2]);

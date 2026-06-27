@@ -14,13 +14,12 @@ export default function PerformanceDocs() {
     <div>
       <h1 className="text-3xl md:text-4xl">Performance Monitoring</h1>
       <Lead>
-        ThesisLock measures its own performance in your browser and shows it on
-        the{" "}
+        ThesisLock measures its own performance in your browser and shows it on the{" "}
         <Link href="/performance" className="underline hover:text-foreground">
           performance dashboard
         </Link>
-        . Web Vitals, page load timings, and API response times are captured
-        locally and never sent to any analytics service.
+        . Web Vitals, page load timings, and API response times are captured locally and never sent
+        to any analytics service.
       </Lead>
 
       <H2>What is tracked</H2>
@@ -38,25 +37,23 @@ export default function PerformanceDocs() {
         <Link href="/performance" className="underline hover:text-foreground">
           /performance
         </Link>{" "}
-        shows a card per Web Vital with its p75 value, rating, and a sparkline of
-        recent measurements, plus tables of the slowest pages and API endpoints.
-        A time range selector covers the last 24 hours, 7 days, 30 days, or all
-        time, and a clear button empties the local store.
+        shows a card per Web Vital with its p75 value, rating, and a sparkline of recent
+        measurements, plus tables of the slowest pages and API endpoints. A time range selector
+        covers the last 24 hours, 7 days, 30 days, or all time, and a clear button empties the local
+        store.
       </P>
 
       <H2>Debug banner</H2>
       <P>
-        For development, a small overlay can show live LCP, CLS, and page load
-        time for the current page. Toggle it with the Enable debug banner button
-        on the performance page; it stays off otherwise and never blocks the
-        content underneath.
+        For development, a small overlay can show live LCP, CLS, and page load time for the current
+        page. Toggle it with the Enable debug banner button on the performance page; it stays off
+        otherwise and never blocks the content underneath.
       </P>
 
       <H2>Privacy</H2>
       <P>
-        Everything is stored in your browser in small capped buffers and is
-        visible only to you. No performance data leaves the device, and clearing
-        it removes it for good.
+        Everything is stored in your browser in small capped buffers and is visible only to you. No
+        performance data leaves the device, and clearing it removes it for good.
       </P>
     </div>
   );

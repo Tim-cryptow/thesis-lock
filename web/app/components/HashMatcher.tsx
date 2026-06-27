@@ -35,11 +35,7 @@ function HashDiff({ value, other }: { value: string; other: string }) {
       {value.split("").map((ch, i) => (
         <span
           key={i}
-          className={
-            other[i] === ch
-              ? "text-foreground/70"
-              : "font-semibold text-red-500"
-          }
+          className={other[i] === ch ? "text-foreground/70" : "font-semibold text-red-500"}
         >
           {ch}
         </span>
@@ -69,8 +65,7 @@ function SidePanel({
   hashing: boolean;
   onFile: (file: File) => void;
 }) {
-  const invalid =
-    mode === "hash" && value.trim().length > 0 && !HEX_64.test(normalizeHash(value));
+  const invalid = mode === "hash" && value.trim().length > 0 && !HEX_64.test(normalizeHash(value));
 
   return (
     <div className="rounded-lg border border-foreground/10 bg-card p-4">
@@ -104,9 +99,7 @@ function SidePanel({
         <>
           <FileDropZone onFile={onFile} ariaLabel={`Drop a file to hash for ${label}`}>
             <p className="text-sm text-foreground/60">
-              {file
-                ? "Drop another file to replace"
-                : "Drop a file here, or click to choose"}
+              {file ? "Drop another file to replace" : "Drop a file here, or click to choose"}
             </p>
           </FileDropZone>
           {file ? (
@@ -132,9 +125,7 @@ export default function HashMatcher({
   rightLabel = "Compare",
   showVerifyLink = false,
 }: HashMatcherProps) {
-  const [leftInput, setLeftInput] = useState(
-    initialLeftHash ? normalizeHash(initialLeftHash) : "",
-  );
+  const [leftInput, setLeftInput] = useState(initialLeftHash ? normalizeHash(initialLeftHash) : "");
   const [leftFile, setLeftFile] = useState<File | null>(null);
   const [leftFileHash, setLeftFileHash] = useState<string | null>(null);
   const [leftHashing, setLeftHashing] = useState(false);
@@ -171,10 +162,8 @@ export default function HashMatcher({
       .finally(() => setRightHashing(false));
   }, []);
 
-  const leftHash =
-    leftMode === "file" ? (leftFileHash ?? "") : normalizeHash(leftInput);
-  const rightHash =
-    rightMode === "file" ? (rightFileHash ?? "") : normalizeHash(rightInput);
+  const leftHash = leftMode === "file" ? (leftFileHash ?? "") : normalizeHash(leftInput);
+  const rightHash = rightMode === "file" ? (rightFileHash ?? "") : normalizeHash(rightInput);
 
   const bothReady = leftHash.length > 0 && rightHash.length > 0;
   const match = bothReady && leftHash === rightHash;
@@ -210,9 +199,7 @@ export default function HashMatcher({
         <div
           role="status"
           className={`mt-6 rounded-lg border p-5 ${
-            match
-              ? "border-green-500/40 bg-green-500/5"
-              : "border-red-500/40 bg-red-500/5"
+            match ? "border-green-500/40 bg-green-500/5" : "border-red-500/40 bg-red-500/5"
           }`}
         >
           <div className="flex items-center gap-3">

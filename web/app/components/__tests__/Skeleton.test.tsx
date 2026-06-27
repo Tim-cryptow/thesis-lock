@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import {
-  SkeletonLine,
-  SkeletonCircle,
-  SkeletonBlock,
-} from "@/app/components/Skeleton";
+import { SkeletonLine, SkeletonCircle, SkeletonBlock } from "@/app/components/Skeleton";
 
 describe("SkeletonLine", () => {
   it("renders with the default width and height", () => {
@@ -27,9 +23,7 @@ describe("SkeletonLine", () => {
 
   it("passes through a custom className", () => {
     const { container } = render(<SkeletonLine className="mt-2" />);
-    expect((container.firstChild as HTMLElement).getAttribute("class")).toContain(
-      "mt-2",
-    );
+    expect((container.firstChild as HTMLElement).getAttribute("class")).toContain("mt-2");
   });
 });
 

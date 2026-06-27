@@ -31,10 +31,7 @@ export default function PrivacyPage() {
     <div className="w-full flex-1">
       <div className="mx-auto w-full max-w-3xl px-6 py-12">
         <div className="mb-8 flex items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="text-sm text-foreground/60 transition hover:text-foreground"
-          >
+          <Link href="/" className="text-sm text-foreground/60 transition hover:text-foreground">
             &larr; ThesisLock
           </Link>
           <ThemeToggle />
@@ -45,13 +42,11 @@ export default function PrivacyPage() {
 
         <div className="space-y-6 leading-relaxed text-foreground/80">
           <section>
-            <h2 className="mb-2 text-lg font-medium text-foreground">
-              We collect nothing
-            </h2>
+            <h2 className="mb-2 text-lg font-medium text-foreground">We collect nothing</h2>
             <p>
-              ThesisLock has no accounts, no backend database, and no servers
-              that store your information. We do not collect, sell, or share any
-              personal data, because we never receive any in the first place.
+              ThesisLock has no accounts, no backend database, and no servers that store your
+              information. We do not collect, sell, or share any personal data, because we never
+              receive any in the first place.
             </p>
           </section>
 
@@ -60,10 +55,9 @@ export default function PrivacyPage() {
               Your data stays in your browser
             </h2>
             <p>
-              Everything ThesisLock remembers, including your settings,
-              favorites, watchlist, collections, tags, and recent activity, is
-              stored only in your own browser using local storage. It lives on
-              your device, never leaves it, and clearing your browser data
+              Everything ThesisLock remembers, including your settings, favorites, watchlist,
+              collections, tags, and recent activity, is stored only in your own browser using local
+              storage. It lives on your device, never leaves it, and clearing your browser data
               removes it.
             </p>
           </section>
@@ -73,10 +67,9 @@ export default function PrivacyPage() {
               Files never leave your device
             </h2>
             <p>
-              Hashing happens entirely in your browser. The files you drop are
-              read locally to compute their SHA-256 hash and are never uploaded.
-              Only the resulting hash, and any label you choose, is included in a
-              transaction you sign.
+              Hashing happens entirely in your browser. The files you drop are read locally to
+              compute their SHA-256 hash and are never uploaded. Only the resulting hash, and any
+              label you choose, is included in a transaction you sign.
             </p>
           </section>
 
@@ -85,22 +78,18 @@ export default function PrivacyPage() {
               On-chain activity is public
             </h2>
             <p>
-              Transactions you sign are recorded on the public Stacks blockchain.
-              The hashes you anchor, their labels, the signing wallet address,
-              and timestamps are visible to anyone, on ThesisLock and through any
-              Stacks explorer. Reads use the public Hiro API directly from your
-              browser.
+              Transactions you sign are recorded on the public Stacks blockchain. The hashes you
+              anchor, their labels, the signing wallet address, and timestamps are visible to
+              anyone, on ThesisLock and through any Stacks explorer. Reads use the public Hiro API
+              directly from your browser.
             </p>
           </section>
 
           <section>
-            <h2 className="mb-2 text-lg font-medium text-foreground">
-              No cookies or tracking
-            </h2>
+            <h2 className="mb-2 text-lg font-medium text-foreground">No cookies or tracking</h2>
             <p>
-              ThesisLock sets no cookies and runs no analytics, advertising, or
-              third-party trackers. There is nothing following you across the
-              site.
+              ThesisLock sets no cookies and runs no analytics, advertising, or third-party
+              trackers. There is nothing following you across the site.
             </p>
           </section>
 

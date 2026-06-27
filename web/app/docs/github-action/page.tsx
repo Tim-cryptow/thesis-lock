@@ -14,13 +14,13 @@ export default function GithubAction() {
     <div>
       <h1 className="text-3xl md:text-4xl">GitHub Action</h1>
       <Lead>
-        The reusable verify action confirms a document hash is anchored on
-        Stacks from inside any CI pipeline. It reads the public Hiro mainnet API
-        directly and needs no wallet, secret, or signing key.
+        The reusable verify action confirms a document hash is anchored on Stacks from inside any CI
+        pipeline. It reads the public Hiro mainnet API directly and needs no wallet, secret, or
+        signing key.
       </Lead>
       <P>
-        A typical use: a research lab anchors a dataset hash once, then confirms
-        on every release that the artifact is still backed by an on-chain proof.
+        A typical use: a research lab anchors a dataset hash once, then confirms on every release
+        that the artifact is still backed by an on-chain proof.
       </P>
 
       <H2>Usage</H2>
@@ -46,12 +46,7 @@ export default function GithubAction() {
         rows={[
           [<Code key="i">hash</Code>, "SHA-256 hash to verify (64 hex chars).", "No", ""],
           [<Code key="i">file</Code>, "Path to a file to hash and verify.", "No", ""],
-          [
-            <Code key="i">owner</Code>,
-            "Stacks principal for batch anchor lookup.",
-            "No",
-            "",
-          ],
+          [<Code key="i">owner</Code>, "Stacks principal for batch anchor lookup.", "No", ""],
           [
             <Code key="i">fail-on-unverified</Code>,
             "Fail the step if the hash is not verified.",
@@ -61,23 +56,16 @@ export default function GithubAction() {
         ]}
       />
       <P>
-        Provide either <Code>hash</Code> or <Code>file</Code>. When{" "}
-        <Code>file</Code> is set it takes precedence and the action computes the
-        file's SHA-256 digest locally.
+        Provide either <Code>hash</Code> or <Code>file</Code>. When <Code>file</Code> is set it
+        takes precedence and the action computes the file's SHA-256 digest locally.
       </P>
 
       <H2>Outputs</H2>
       <Table
         headers={["Output", "Description"]}
         rows={[
-          [
-            <Code key="o">verified</Code>,
-            "Whether the hash is verified on-chain (true/false).",
-          ],
-          [
-            <Code key="o">source</Code>,
-            "Anchor source (single, batch, proof, group).",
-          ],
+          [<Code key="o">verified</Code>, "Whether the hash is verified on-chain (true/false)."],
+          [<Code key="o">source</Code>, "Anchor source (single, batch, proof, group)."],
           [<Code key="o">block</Code>, "Stacks block number where the hash was anchored."],
           [<Code key="o">label</Code>, "Label attached to the anchor."],
         ]}
@@ -98,24 +86,23 @@ export default function GithubAction() {
       <List
         items={[
           <>
-            If <Code>file</Code> is supplied, the action reads it and computes a
-            SHA-256 digest. The file never leaves the runner.
+            If <Code>file</Code> is supplied, the action reads it and computes a SHA-256 digest. The
+            file never leaves the runner.
           </>,
           <>
-            It queries the public Hiro mainnet API with read-only contract
-            calls: <Code>thesislock.get-anchor</Code> for single anchors,{" "}
-            <Code>thesislock-batch.get-batch-anchor</Code> when an owner is
-            supplied, and <Code>thesislock-proof.get-token-id-by-hash</Code> then{" "}
-            <Code>get-proof</Code> for proof NFTs.
+            It queries the public Hiro mainnet API with read-only contract calls:{" "}
+            <Code>thesislock.get-anchor</Code> for single anchors,{" "}
+            <Code>thesislock-batch.get-batch-anchor</Code> when an owner is supplied, and{" "}
+            <Code>thesislock-proof.get-token-id-by-hash</Code> then <Code>get-proof</Code> for proof
+            NFTs.
           </>,
           <>
-            The first contract that holds the hash determines{" "}
-            <Code>source</Code>, <Code>block</Code>, and <Code>label</Code>. If
-            none do, the hash is not verified.
+            The first contract that holds the hash determines <Code>source</Code>,{" "}
+            <Code>block</Code>, and <Code>label</Code>. If none do, the hash is not verified.
           </>,
           <>
-            When <Code>fail-on-unverified</Code> is true (the default), an
-            unverified hash fails the step so a broken proof can gate a release.
+            When <Code>fail-on-unverified</Code> is true (the default), an unverified hash fails the
+            step so a broken proof can gate a release.
           </>,
         ]}
       />

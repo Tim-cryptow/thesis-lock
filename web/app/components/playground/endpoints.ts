@@ -47,29 +47,21 @@ const HEX_64 = /^[0-9a-f]{64}$/i;
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/i;
 
 function validateHash(value: string): string | null {
-  return HEX_64.test(value.trim())
-    ? null
-    : "Must be a 64 character hex hash.";
+  return HEX_64.test(value.trim()) ? null : "Must be a 64 character hex hash.";
 }
 
 function validatePrincipal(value: string): string | null {
-  return STX_PRINCIPAL.test(value.trim())
-    ? null
-    : "Must be a Stacks principal (starts with SP).";
+  return STX_PRINCIPAL.test(value.trim()) ? null : "Must be a Stacks principal (starts with SP).";
 }
 
 function validateNonNegativeInt(value: string): string | null {
   const n = Number(value.trim());
-  return Number.isInteger(n) && n >= 0
-    ? null
-    : "Must be a non-negative integer.";
+  return Number.isInteger(n) && n >= 0 ? null : "Must be a non-negative integer.";
 }
 
 function validatePositiveInt(value: string): string | null {
   const n = Number(value.trim());
-  return Number.isInteger(n) && n >= 1
-    ? null
-    : "Must be a positive integer.";
+  return Number.isInteger(n) && n >= 1 ? null : "Must be a positive integer.";
 }
 
 const hashParam: EndpointParam = {
@@ -382,9 +374,7 @@ export const ENDPOINT_GROUPS: EndpointCategory[] = [
   },
 ];
 
-export const ALL_ENDPOINTS: Endpoint[] = ENDPOINT_GROUPS.flatMap(
-  (group) => group.endpoints,
-);
+export const ALL_ENDPOINTS: Endpoint[] = ENDPOINT_GROUPS.flatMap((group) => group.endpoints);
 
 export function findEndpoint(id: string): Endpoint | undefined {
   return ALL_ENDPOINTS.find((endpoint) => endpoint.id === id);
@@ -393,7 +383,7 @@ export function findEndpoint(id: string): Endpoint | undefined {
 /** The default starting value for a parameter (first option for selects). */
 export function defaultParamValue(param: EndpointParam): string {
   if (param.kind === "select" && param.options && param.options.length > 0) {
-    return param.options[0];
+    return param.options[0]!;
   }
   return "";
 }
@@ -408,10 +398,7 @@ export function initialValues(endpoint: Endpoint): Record<string, string> {
 }
 
 /** True when every required parameter has a non-empty, valid value. */
-export function isComplete(
-  endpoint: Endpoint,
-  values: Record<string, string>,
-): boolean {
+export function isComplete(endpoint: Endpoint, values: Record<string, string>): boolean {
   for (const param of endpoint.params) {
     const value = (values[param.name] ?? "").trim();
     if (param.required && value === "") return false;
@@ -429,10 +416,7 @@ export function isComplete(
  * substituted as the empty string for required path params so the path stays
  * well-formed while typing.
  */
-export function buildPath(
-  endpoint: Endpoint,
-  values: Record<string, string>,
-): string {
+export function buildPath(endpoint: Endpoint, values: Record<string, string>): string {
   let path = endpoint.path;
   const query: string[] = [];
 
@@ -441,9 +425,7 @@ export function buildPath(
     if (param.location === "path") {
       path = path.replace(`[${param.name}]`, encodeURIComponent(raw));
     } else if (raw !== "") {
-      query.push(
-        `${encodeURIComponent(param.name)}=${encodeURIComponent(raw)}`,
-      );
+      query.push(`${encodeURIComponent(param.name)}=${encodeURIComponent(raw)}`);
     }
   }
 
@@ -451,9 +433,6 @@ export function buildPath(
 }
 
 /** Full absolute URL for a request against the production deployment. */
-export function buildUrl(
-  endpoint: Endpoint,
-  values: Record<string, string>,
-): string {
+export function buildUrl(endpoint: Endpoint, values: Record<string, string>): string {
   return `${PLAYGROUND_BASE}${buildPath(endpoint, values)}`;
 }

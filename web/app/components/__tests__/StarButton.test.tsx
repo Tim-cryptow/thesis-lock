@@ -46,9 +46,7 @@ describe("StarButton", () => {
   });
 
   it("applies a custom className", () => {
-    render(
-      <StarButton type="hash" value={H} label="My doc" className="ml-2" />,
-    );
+    render(<StarButton type="hash" value={H} label="My doc" className="ml-2" />);
     expect(screen.getByRole("button").getAttribute("class")).toContain("ml-2");
   });
 });

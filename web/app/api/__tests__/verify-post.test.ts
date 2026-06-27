@@ -32,26 +32,20 @@ beforeEach(() => {
 describe("POST /api/verify", () => {
   it("verifies a hash from a JSON body", async () => {
     vi.mocked(verifyHash).mockResolvedValue(found);
-    const res = await POST(
-      createMockRequest("POST", `${BASE}/api/verify`, { hash: HASH }),
-    );
+    const res = await POST(createMockRequest("POST", `${BASE}/api/verify`, { hash: HASH }));
     expect(res.status).toBe(200);
     expect((await res.json()).verified).toBe(true);
     expect(verifyHash).toHaveBeenCalledWith(HASH, undefined, expect.any(String));
   });
 
   it("rejects a missing hash", async () => {
-    const res = await POST(
-      createMockRequest("POST", `${BASE}/api/verify`, {}),
-    );
+    const res = await POST(createMockRequest("POST", `${BASE}/api/verify`, {}));
     expect(res.status).toBe(400);
     expect(verifyHash).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid hash", async () => {
-    const res = await POST(
-      createMockRequest("POST", `${BASE}/api/verify`, { hash: "xyz" }),
-    );
+    const res = await POST(createMockRequest("POST", `${BASE}/api/verify`, { hash: "xyz" }));
     expect(res.status).toBe(400);
   });
 
@@ -67,9 +61,7 @@ describe("POST /api/verify", () => {
 
   it("returns the verification result, matching the GET route shape", async () => {
     vi.mocked(verifyHash).mockResolvedValue(found);
-    const res = await POST(
-      createMockRequest("POST", `${BASE}/api/verify`, { hash: HASH }),
-    );
+    const res = await POST(createMockRequest("POST", `${BASE}/api/verify`, { hash: HASH }));
     expect(await res.json()).toMatchObject({
       verified: true,
       hash: HASH,

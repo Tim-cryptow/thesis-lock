@@ -28,15 +28,41 @@ const SECTION_LABELS: Record<PaletteSection, string> = {
 function PaletteIcon({ name }: { name: string }) {
   const paths: Record<string, React.ReactNode> = {
     anchor: <path d="M12 2v20M5 12H2a10 10 0 0 0 20 0h-3M12 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />,
-    search: <><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></>,
+    search: (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.3-4.3" />
+      </>
+    ),
     shield: <path d="M12 3 4 6v6c0 4 3.5 7.5 8 9 4.5-1.5 8-5 8-9V6z" />,
-    history: <><path d="M3 3v6h6" /><path d="M3 9a9 9 0 1 0 3-6.7L3 9" /><path d="M12 7v5l4 2" /></>,
+    history: (
+      <>
+        <path d="M3 3v6h6" />
+        <path d="M3 9a9 9 0 1 0 3-6.7L3 9" />
+        <path d="M12 7v5l4 2" />
+      </>
+    ),
     chart: <path d="M3 3v18h18M7 15l3-4 4 3 5-7" />,
-    group: <><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 1 0-1-5.8" /></>,
-    feed: <><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></>,
+    group: (
+      <>
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 1 0-1-5.8" />
+      </>
+    ),
+    feed: (
+      <>
+        <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </>
+    ),
     activity: <path d="M3 12h4l3 8 4-16 3 8h4" />,
     compare: <path d="M12 3v18M5 7l-3 5 3 5M19 7l3 5-3 5" />,
-    doc: <><path d="M6 2h9l5 5v15H6z" /><path d="M14 2v6h6" /></>,
+    doc: (
+      <>
+        <path d="M6 2h9l5 5v15H6z" />
+        <path d="M14 2v6h6" />
+      </>
+    ),
     code: <path d="m8 6-6 6 6 6M16 6l6 6-6 6" />,
     calendar: (
       <>
@@ -44,9 +70,19 @@ function PaletteIcon({ name }: { name: string }) {
         <path d="M16 2v4M8 2v4M3 10h18" />
       </>
     ),
-    theme: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19" /></>,
+    theme: (
+      <>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19" />
+      </>
+    ),
     tour: <path d="m12 2 2.4 6.9H21l-5.3 4 2 6.9L12 16l-5.7 3.8 2-6.9L3 8.9h6.6z" />,
-    help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01" /></>,
+    help: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7M12 17h.01" />
+      </>
+    ),
   };
   return (
     <svg

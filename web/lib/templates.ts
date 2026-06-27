@@ -44,9 +44,7 @@ export const DEFAULT_TEMPLATE_KEY = "thesislock_default_template";
 export function getDefaultTemplateId(): string {
   if (typeof window === "undefined") return GENERIC_TEMPLATE_ID;
   try {
-    return (
-      window.localStorage.getItem(DEFAULT_TEMPLATE_KEY) ?? GENERIC_TEMPLATE_ID
-    );
+    return window.localStorage.getItem(DEFAULT_TEMPLATE_KEY) ?? GENERIC_TEMPLATE_ID;
   } catch {
     return GENERIC_TEMPLATE_ID;
   }
@@ -66,8 +64,7 @@ export const TEMPLATES: AnchorTemplate[] = [
     id: "paper",
     name: "Academic Paper",
     icon: "P",
-    description:
-      "Theses, journal articles, and preprints. Records title, version, and department.",
+    description: "Theses, journal articles, and preprints. Records title, version, and department.",
     labelPrefix: "paper-",
     category: "Academic",
     fields: [
@@ -130,8 +127,7 @@ export const TEMPLATES: AnchorTemplate[] = [
     id: "release",
     name: "Code Release",
     icon: "R",
-    description:
-      "Source releases and build artifacts. Records repository, version, and tag.",
+    description: "Source releases and build artifacts. Records repository, version, and tag.",
     labelPrefix: "release-",
     category: "Software",
     fields: [
@@ -162,8 +158,7 @@ export const TEMPLATES: AnchorTemplate[] = [
     id: "dataset",
     name: "Dataset",
     icon: "D",
-    description:
-      "Research datasets and data exports. Records name, version, and format.",
+    description: "Research datasets and data exports. Records name, version, and format.",
     labelPrefix: "data-",
     category: "Data",
     fields: [
@@ -194,8 +189,7 @@ export const TEMPLATES: AnchorTemplate[] = [
     id: "certificate",
     name: "Certificate",
     icon: "C",
-    description:
-      "Diplomas, awards, and credentials. Records recipient, issuer, and date.",
+    description: "Diplomas, awards, and credentials. Records recipient, issuer, and date.",
     labelPrefix: "cert-",
     category: "Credential",
     fields: [
@@ -226,8 +220,7 @@ export const TEMPLATES: AnchorTemplate[] = [
     id: GENERIC_TEMPLATE_ID,
     name: "Generic",
     icon: "G",
-    description:
-      "A free-form label with no structure. The original anchoring behaviour.",
+    description: "A free-form label with no structure. The original anchoring behaviour.",
     labelPrefix: "",
     category: "General",
     fields: [
@@ -258,13 +251,7 @@ const KEY_VALUE_SEP = ":";
 // Normalizes a single field value: collapse whitespace to dashes and remove the
 // delimiter characters, keeping the encoded label unambiguous to parse.
 function sanitizeValue(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\s+/g, "-")
-    .split(SEGMENT_SEP)
-    .join("")
-    .split(KEY_VALUE_SEP)
-    .join("");
+  return raw.trim().replace(/\s+/g, "-").split(SEGMENT_SEP).join("").split(KEY_VALUE_SEP).join("");
 }
 
 // Like buildLabel but without the length cap, so callers (the live preview)
@@ -274,7 +261,7 @@ export function buildRawLabel(
   fieldValues: Record<string, string>,
 ): string {
   if (template.id === GENERIC_TEMPLATE_ID) {
-    const only = template.fields[0];
+    const only = template.fields[0]!;
     return (fieldValues[only.key] ?? "").trim();
   }
 
@@ -294,10 +281,7 @@ export function buildRawLabel(
 // Empty fields are skipped. The Generic template returns the raw label value
 // unchanged (aside from the length cap), preserving the original behaviour.
 // The result is always capped at MAX_LABEL_LENGTH ASCII characters.
-export function buildLabel(
-  template: AnchorTemplate,
-  fieldValues: Record<string, string>,
-): string {
+export function buildLabel(template: AnchorTemplate, fieldValues: Record<string, string>): string {
   return buildRawLabel(template, fieldValues).slice(0, MAX_LABEL_LENGTH);
 }
 

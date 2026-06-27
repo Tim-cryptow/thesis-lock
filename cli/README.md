@@ -66,11 +66,11 @@ thesislock verify <hash> --owner SP000...
 
 Exits with code `0` when the hash is anchored and `1` when it is not, so the command works directly as a CI gate.
 
-| Flag | Description |
-| --- | --- |
+| Flag                  | Description                                             |
+| --------------------- | ------------------------------------------------------- |
 | `--owner <principal>` | Also check owner-keyed batch anchors for this principal |
-| `--json` | Print `{ hash, verified, count, results }` as JSON |
-| `--quiet` | Print only `true` or `false` |
+| `--json`              | Print `{ hash, verified, count, results }` as JSON      |
+| `--quiet`             | Print only `true` or `false`                            |
 
 ### hash
 
@@ -89,11 +89,11 @@ thesislock hash thesis.pdf --verify
 
 With `--verify`, the exit code is `1` if any file is missing an anchor.
 
-| Flag | Description |
-| --- | --- |
-| `--verify` | Check each hash against the chain after computing it |
-| `--json` | Print an array of `{ file, size, hash, anchored? }` objects |
-| `--quiet` | Print only the hash, one per line |
+| Flag       | Description                                                 |
+| ---------- | ----------------------------------------------------------- |
+| `--verify` | Check each hash against the chain after computing it        |
+| `--json`   | Print an array of `{ file, size, hash, anchored? }` objects |
+| `--quiet`  | Print only the hash, one per line                           |
 
 ### status
 
@@ -109,10 +109,10 @@ Pass a principal to see how many anchors a wallet has registered:
 thesislock status SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX
 ```
 
-| Flag | Description |
-| --- | --- |
-| `--json` | Print `{ apiUrl, healthy, latestBlock, contracts }`, or `{ principal, anchors }` with a principal |
-| `--quiet` | Print only `ok`/`unreachable`, or the anchor count with a principal |
+| Flag      | Description                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| `--json`  | Print `{ apiUrl, healthy, latestBlock, contracts }`, or `{ principal, anchors }` with a principal |
+| `--quiet` | Print only `ok`/`unreachable`, or the anchor count with a principal                               |
 
 ### search
 
@@ -131,11 +131,11 @@ thesislock search "thesis draft" --json
 thesislock search SPMXTB2P571VMJP2ZG812P2H964S1XVTCDC8QNYX --limit 5
 ```
 
-| Flag | Description |
-| --- | --- |
-| `--json` | Print an array of result objects, each with a `verifyUrl` |
-| `--quiet` | Print only the matching hashes, one per line |
-| `--limit <n>` | Show at most `n` results |
+| Flag          | Description                                               |
+| ------------- | --------------------------------------------------------- |
+| `--json`      | Print an array of result objects, each with a `verifyUrl` |
+| `--quiet`     | Print only the matching hashes, one per line              |
+| `--limit <n>` | Show at most `n` results                                  |
 
 ### batch
 
@@ -149,13 +149,13 @@ thesislock batch ./papers --verify
 
 For each file the CLI prints the path (relative to the scanned directory), size, and hash, then a summary line. Add `--verify` to check each hash on chain.
 
-| Flag | Description |
-| --- | --- |
-| `--verify` | Check each hash against the chain |
-| `--recursive` | Descend into subdirectories |
-| `--exclude <patterns>` | Comma-separated glob patterns (`*` and `?`) to skip by name |
-| `--json` | Print an array of `{ file, path, size, hash, anchored? }` objects |
-| `--quiet` | Print only the hashes, one per line |
+| Flag                   | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `--verify`             | Check each hash against the chain                                 |
+| `--recursive`          | Descend into subdirectories                                       |
+| `--exclude <patterns>` | Comma-separated glob patterns (`*` and `?`) to skip by name       |
+| `--json`               | Print an array of `{ file, path, size, hash, anchored? }` objects |
+| `--quiet`              | Print only the hashes, one per line                               |
 
 ## Scripting
 
@@ -234,8 +234,8 @@ cp completions/thesislock.zsh ~/.zsh/completions/_thesislock
 
 ## Configuration
 
-| Environment variable | Default | Purpose |
-| --- | --- | --- |
+| Environment variable | Default                       | Purpose                                            |
+| -------------------- | ----------------------------- | -------------------------------------------------- |
 | `THESISLOCK_API_URL` | `https://api.mainnet.hiro.so` | Base URL of the Hiro Stacks API used for all reads |
 
 Example with a custom endpoint:

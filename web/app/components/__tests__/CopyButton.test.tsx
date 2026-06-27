@@ -15,16 +15,12 @@ beforeEach(() => {
 describe("CopyButton", () => {
   it("renders a button with the default accessible label", () => {
     render(<CopyButton value="hello" />);
-    expect(
-      screen.getByRole("button", { name: "Copy to clipboard" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy to clipboard" })).toBeInTheDocument();
   });
 
   it("uses the provided label in the accessible name", () => {
     render(<CopyButton value="hello" label="hash" />);
-    expect(
-      screen.getByRole("button", { name: "Copy hash to clipboard" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy hash to clipboard" })).toBeInTheDocument();
   });
 
   it("writes the value to the clipboard on click", async () => {
@@ -51,16 +47,12 @@ describe("CopyButton", () => {
 
   it("uses small icon sizing for size=sm", () => {
     const { container } = render(<CopyButton value="x" size="sm" />);
-    expect(container.querySelector("svg")?.getAttribute("class")).toContain(
-      "h-3.5",
-    );
+    expect(container.querySelector("svg")?.getAttribute("class")).toContain("h-3.5");
   });
 
   it("uses medium icon sizing by default", () => {
     const { container } = render(<CopyButton value="x" />);
-    expect(container.querySelector("svg")?.getAttribute("class")).toContain(
-      "h-4 w-4",
-    );
+    expect(container.querySelector("svg")?.getAttribute("class")).toContain("h-4 w-4");
   });
 
   it("does not show Copied! when the clipboard write fails", async () => {

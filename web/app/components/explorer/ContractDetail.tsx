@@ -149,13 +149,7 @@ function TabButton({
   );
 }
 
-function ContractHeader({
-  contract,
-  callCount,
-}: {
-  contract: ContractInfo;
-  callCount?: number;
-}) {
+function ContractHeader({ contract, callCount }: { contract: ContractInfo; callCount?: number }) {
   const [copied, setCopied] = useState(false);
   const identifier = `${contract.address}.${contract.name}`;
 
@@ -173,9 +167,7 @@ function ContractHeader({
     <div className="rounded-lg border border-foreground/10 bg-card p-5">
       <h2 className="text-xl font-mono">{contract.name}</h2>
       <div className="mt-2 flex items-center gap-2 text-xs">
-        <span className="font-mono text-foreground/70 break-all">
-          {identifier}
-        </span>
+        <span className="font-mono text-foreground/70 break-all">{identifier}</span>
         <button
           type="button"
           onClick={() => void copy()}
@@ -213,9 +205,7 @@ function ContractHeader({
         </div>
         <div>
           <dt className="text-xs text-foreground/45">Functions</dt>
-          <dd className="font-mono text-foreground/85">
-            {contract.functions.length}
-          </dd>
+          <dd className="font-mono text-foreground/85">{contract.functions.length}</dd>
         </div>
       </dl>
 
@@ -295,27 +285,14 @@ function FunctionGroup({
   );
 }
 
-function FunctionCard({
-  fn,
-  accent,
-}: {
-  fn: FunctionInfo;
-  accent: "public" | "read-only";
-}) {
+function FunctionCard({ fn, accent }: { fn: FunctionInfo; accent: "public" | "read-only" }) {
   const [open, setOpen] = useState(false);
-  const accentClass =
-    accent === "public"
-      ? "border-l-blue-500"
-      : "border-l-green-500";
+  const accentClass = accent === "public" ? "border-l-blue-500" : "border-l-green-500";
   const badgeClass =
-    accent === "public"
-      ? "bg-blue-500/10 text-blue-500"
-      : "bg-green-500/10 text-green-500";
+    accent === "public" ? "bg-blue-500/10 text-blue-500" : "bg-green-500/10 text-green-500";
 
   return (
-    <div
-      className={`rounded-lg border border-foreground/10 border-l-2 ${accentClass} bg-card p-4`}
-    >
+    <div className={`rounded-lg border border-foreground/10 border-l-2 ${accentClass} bg-card p-4`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -323,14 +300,10 @@ function FunctionCard({
         aria-expanded={open}
       >
         <span className="font-mono text-sm">{fn.name}</span>
-        <span
-          className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${badgeClass}`}
-        >
+        <span className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${badgeClass}`}>
           {fn.access}
         </span>
-        <span className="ml-auto text-xs text-foreground/40">
-          {open ? "Hide" : "Signature"}
-        </span>
+        <span className="ml-auto text-xs text-foreground/40">{open ? "Hide" : "Signature"}</span>
       </button>
 
       <p className="mt-2 text-sm text-foreground/70">{fn.description}</p>
@@ -430,10 +403,7 @@ function RecentCallsTab({ contract }: { contract: ContractInfo }) {
     );
   }, [liveEvents, contract.name, calls]);
 
-  const functionNames = useMemo(
-    () => contract.functions.map((f) => f.name),
-    [contract.functions],
-  );
+  const functionNames = useMemo(() => contract.functions.map((f) => f.name), [contract.functions]);
 
   const visible = useMemo(
     () => (calls ?? []).filter((c) => !filter || c.function === filter),
@@ -512,7 +482,11 @@ function RecentCallsTab({ contract }: { contract: ContractInfo }) {
                         c.status,
                       )}`}
                     >
-                      {c.status === "success" ? "success" : c.status === "pending" ? "pending" : "failed"}
+                      {c.status === "success"
+                        ? "success"
+                        : c.status === "pending"
+                          ? "pending"
+                          : "failed"}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-xs text-foreground/55">

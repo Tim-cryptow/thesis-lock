@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_LOCALE,
   getTranslation,
@@ -63,11 +56,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
-    const resolved =
-      readUrlLocale() ??
-      readStoredLocale() ??
-      readBrowserLocale() ??
-      DEFAULT_LOCALE;
+    const resolved = readUrlLocale() ?? readStoredLocale() ?? readBrowserLocale() ?? DEFAULT_LOCALE;
     setLocaleState(resolved);
   }, []);
 
@@ -96,15 +85,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const translations: Translations = getTranslation(locale);
 
   const t = useCallback(
-    (key: string, params?: TranslateParams) =>
-      interpolate(resolvePath(translations, key), params),
+    (key: string, params?: TranslateParams) => interpolate(resolvePath(translations, key), params),
     [translations],
   );
 
-  const value = useMemo<I18nContextValue>(
-    () => ({ locale, setLocale, t }),
-    [locale, setLocale, t],
-  );
+  const value = useMemo<I18nContextValue>(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

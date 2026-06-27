@@ -6,6 +6,9 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
+    "lint": "eslint app lib",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run lib/__tests__ app/components/__tests__",
@@ -31,9 +34,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.1.1",
+    "prettier": "^3.9.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "typescript-eslint": "^8.62.0",
     "vitest": "^4.1.9"
   }
 }

@@ -119,15 +119,10 @@ export function eventActor(ev: unknown): string | null {
   return actor || null;
 }
 
-function mapEvent(
-  ev: RawFeedEvent,
-  tuple: Record<string, unknown>,
-): FeedEvent | null {
+function mapEvent(ev: RawFeedEvent, tuple: Record<string, unknown>): FeedEvent | null {
   const event = asText(tuple["event"]);
   const txId = asText(ev.tx_id);
-  const pubDate = ev.block_time
-    ? new Date(ev.block_time * 1000).toISOString()
-    : "";
+  const pubDate = ev.block_time ? new Date(ev.block_time * 1000).toISOString() : "";
 
   const build = (
     guidSuffix: string,
@@ -285,9 +280,7 @@ export function generateAtom(events: FeedEvent[], options: FeedOptions): string 
     .map((e) => {
       const link = resolveUrl(e.link, options.link);
       const when = e.pubDate || updated;
-      const category = e.category
-        ? `\n    <category term="${xml(e.category)}" />`
-        : "";
+      const category = e.category ? `\n    <category term="${xml(e.category)}" />` : "";
       return `  <entry>
     <title>${xml(e.title)}</title>
     <link href="${xml(link)}" />
@@ -311,10 +304,7 @@ ${entries}
 </feed>`;
 }
 
-export function generateJSON(
-  events: FeedEvent[],
-  options: FeedOptions,
-): object {
+export function generateJSON(events: FeedEvent[], options: FeedOptions): object {
   return {
     version: "https://jsonfeed.org/version/1.1",
     title: options.title,

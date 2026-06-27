@@ -15,9 +15,7 @@ type FilePreviewProps = {
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 function isImage(file: File): boolean {
-  return (
-    IMAGE_TYPES.includes(file.type) || /\.(jpe?g|png|gif|webp)$/i.test(file.name)
-  );
+  return IMAGE_TYPES.includes(file.type) || /\.(jpe?g|png|gif|webp)$/i.test(file.name);
 }
 
 function isPdf(file: File): boolean {
@@ -26,7 +24,7 @@ function isPdf(file: File): boolean {
 
 function extensionOf(name: string): string {
   const match = name.match(/\.([a-z0-9]+)$/i);
-  return match ? match[1].toUpperCase() : "FILE";
+  return match ? match[1]!.toUpperCase() : "FILE";
 }
 
 function formatModified(ms: number): string {
@@ -51,9 +49,7 @@ async function detectPdfPages(file: File): Promise<number | null> {
   if (file.size > 10 * 1024 * 1024) return null;
   try {
     const text = await file.text();
-    const counts = [...text.matchAll(/\/Count\s+(\d+)/g)].map((m) =>
-      Number(m[1]),
-    );
+    const counts = [...text.matchAll(/\/Count\s+(\d+)/g)].map((m) => Number(m[1]));
     if (counts.length > 0) return Math.max(...counts);
     const pages = text.match(/\/Type\s*\/Page(?![a-z])/gi);
     return pages ? pages.length : null;
@@ -99,12 +95,7 @@ function Spinner({ className }: { className: string }) {
 // Shows what was dropped: a thumbnail for images, a PDF or generic file icon
 // otherwise, the core file metadata, and the computed hash (or a progress
 // indicator while it is being computed).
-export default function FilePreview({
-  file,
-  hash,
-  hashing,
-  compact = false,
-}: FilePreviewProps) {
+export default function FilePreview({ file, hash, hashing, compact = false }: FilePreviewProps) {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [pdfPages, setPdfPages] = useState<number | null>(null);
 
@@ -140,7 +131,6 @@ export default function FilePreview({
 
   const thumbnail =
     image && thumbUrl ? (
-      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={thumbUrl}
         alt=""
@@ -164,9 +154,7 @@ export default function FilePreview({
           <div className="truncate text-sm font-medium" title={file.name}>
             {file.name}
           </div>
-          <div className="text-xs text-foreground/50">
-            {formatBytes(file.size)}
-          </div>
+          <div className="text-xs text-foreground/50">{formatBytes(file.size)}</div>
           {hashing ? (
             <div className="mt-1 inline-flex items-center gap-1.5 text-xs text-foreground/50">
               <Spinner className="h-3 w-3" />
@@ -218,15 +206,8 @@ export default function FilePreview({
         </div>
       </div>
 
-      <div
-        className="mt-4"
-        role="region"
-        aria-label="Document hash"
-        aria-busy={hashing}
-      >
-        <div className="mb-1 text-xs uppercase tracking-wide text-foreground/50">
-          SHA-256
-        </div>
+      <div className="mt-4" role="region" aria-label="Document hash" aria-busy={hashing}>
+        <div className="mb-1 text-xs uppercase tracking-wide text-foreground/50">SHA-256</div>
         {hashing ? (
           <div className="inline-flex items-center gap-2 text-sm text-foreground/50">
             <Spinner className="h-4 w-4" />

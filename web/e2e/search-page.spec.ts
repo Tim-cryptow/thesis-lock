@@ -7,9 +7,7 @@ test.describe("search page", () => {
   });
 
   test("loads with the search heading and input", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { name: "Search anchors" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Search anchors" })).toBeVisible();
     await expect(page.getByLabel("Search query")).toBeVisible();
   });
 

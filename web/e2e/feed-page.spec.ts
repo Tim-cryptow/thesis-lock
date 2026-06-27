@@ -3,9 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("feed page", () => {
   test("loads with the recent anchors heading", async ({ page }) => {
     await page.goto("/feed");
-    await expect(
-      page.getByRole("heading", { name: "Recent anchors" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recent anchors" })).toBeVisible();
   });
 
   test("shows anchor entries or an empty state", async ({ page }) => {

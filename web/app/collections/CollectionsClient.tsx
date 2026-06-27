@@ -115,15 +115,11 @@ function CollectionCard({ collection }: { collection: Collection }) {
           </div>
         </div>
         {collection.description && (
-          <p className="mt-3 line-clamp-2 text-sm text-foreground/70">
-            {collection.description}
-          </p>
+          <p className="mt-3 line-clamp-2 text-sm text-foreground/70">{collection.description}</p>
         )}
         <div className="mt-auto pt-4 text-xs text-foreground/45">
           Updated {relativeTime(collection.updatedAt)}
-          {collection.isPublic && (
-            <span className={`ml-2 ${color.text}`}>Public</span>
-          )}
+          {collection.isPublic && <span className={`ml-2 ${color.text}`}>Public</span>}
         </div>
       </div>
     </Link>
@@ -213,24 +209,16 @@ export default function CollectionsClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/watchlist"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/watchlist" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.watchlist")}
         </Link>
-        <span className="text-foreground font-medium">
-          {t("common.nav.collections")}
-        </span>
+        <span className="text-foreground font-medium">{t("common.nav.collections")}</span>
         <Link href="/tags" className="text-foreground/60 hover:text-foreground">
           Tags
         </Link>
@@ -253,9 +241,9 @@ export default function CollectionsClient() {
         </button>
       </div>
       <p className="text-foreground/70 mb-8 max-w-2xl">
-        Group anchored documents into named collections, like playlists for your
-        proofs. Collections live only in this browser and are separate from
-        on-chain groups. Share one with a link or export it as JSON.
+        Group anchored documents into named collections, like playlists for your proofs. Collections
+        live only in this browser and are separate from on-chain groups. Share one with a link or
+        export it as JSON.
       </p>
 
       {importing && (
@@ -268,9 +256,7 @@ export default function CollectionsClient() {
             rows={5}
             className="w-full rounded-md border border-foreground/15 bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:border-foreground/50"
           />
-          {importError && (
-            <p className="mt-2 text-sm text-red-500">{importError}</p>
-          )}
+          {importError && <p className="mt-2 text-sm text-red-500">{importError}</p>}
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -299,10 +285,7 @@ export default function CollectionsClient() {
       )}
 
       {creating && (
-        <form
-          onSubmit={submit}
-          className="rounded-lg border border-foreground/10 bg-card p-5 mb-8"
-        >
+        <form onSubmit={submit} className="rounded-lg border border-foreground/10 bg-card p-5 mb-8">
           <h2 className="text-sm font-medium mb-4">New collection</h2>
           <div className="flex flex-col gap-4">
             <ValidatedInput

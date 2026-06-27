@@ -29,20 +29,11 @@ function DefaultIcon() {
   );
 }
 
-export default function ErrorFallback({
-  message,
-  onRetry,
-  icon,
-}: ErrorFallbackProps) {
+export default function ErrorFallback({ message, onRetry, icon }: ErrorFallbackProps) {
   const { t } = useI18n();
   return (
-    <div
-      role="alert"
-      className="rounded-lg border border-foreground/10 bg-card p-8 text-center"
-    >
-      <div className="mb-3 flex justify-center text-foreground/50">
-        {icon ?? <DefaultIcon />}
-      </div>
+    <div role="alert" className="rounded-lg border border-foreground/10 bg-card p-8 text-center">
+      <div className="mb-3 flex justify-center text-foreground/50">{icon ?? <DefaultIcon />}</div>
       <p className="text-foreground/70 mb-6">{message}</p>
       {onRetry && (
         <button

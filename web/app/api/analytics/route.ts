@@ -24,9 +24,6 @@ export async function GET(req: Request) {
       headers: { "Cache-Control": "public, s-maxage=120" },
     });
   } catch {
-    return Response.json(
-      { error: "Could not load wallet analytics." },
-      { status: 502 },
-    );
+    return Response.json({ error: "Could not load wallet analytics." }, { status: 502 });
   }
 }

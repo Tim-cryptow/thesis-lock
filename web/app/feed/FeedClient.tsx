@@ -24,11 +24,7 @@ import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
 import { explorerTxUrl, readBatchAnchor } from "@/lib/stacks";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
-import {
-  TAGS_CHANGED_EVENT,
-  getHashesByTag,
-  normalizeHash,
-} from "@/lib/tags";
+import { TAGS_CHANGED_EVENT, getHashesByTag, normalizeHash } from "@/lib/tags";
 
 const PAGE_SIZE = 20;
 // Cadence for re-rendering relative timestamps. Fresh data now arrives through
@@ -186,10 +182,7 @@ export default function FeedClient() {
       const validated: FeedEntry[] = [];
       for (const ev of registryEvents) {
         try {
-          const batch = await readBatchAnchor(
-            ev.hash as string,
-            ev.owner as string,
-          );
+          const batch = await readBatchAnchor(ev.hash as string, ev.owner as string);
           if (cancelled) return;
           processed.add(ev.id);
           if (batch) {
@@ -300,9 +293,7 @@ export default function FeedClient() {
   // Narrow the feed to entries whose hash carries any selected tag. Union the
   // tagged hashes once per selected tag rather than reading storage per row.
   const matchingHashes =
-    selectedTags.length > 0
-      ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag)))
-      : null;
+    selectedTags.length > 0 ? new Set(selectedTags.flatMap((tag) => getHashesByTag(tag))) : null;
   const displayedEntries = matchingHashes
     ? entries.filter((e) => matchingHashes.has(normalizeHash(e.hash)))
     : entries;
@@ -310,73 +301,48 @@ export default function FeedClient() {
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
-        <div className="order-last ml-auto"><ThemeToggle /></div>
+        <div className="order-last ml-auto">
+          <ThemeToggle />
+        </div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/groups"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/groups" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.groups")}
         </Link>
         <span className="text-foreground font-medium">{t("common.nav.feed")}</span>
         <Link href="/stats" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.stats")}
         </Link>
-        <Link
-          href="/verify-bulk"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/verify-bulk" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.bulkVerify")}
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.dashboard")}
         </Link>
-        <Link
-          href="/activity"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/activity" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.activity")}
         </Link>
-        <Link
-          href="/compare"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/compare" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.compare")}
         </Link>
-        <Link
-          href="/report"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/report" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.report")}
         </Link>
-        <Link
-          href="/explorer"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.explorer")}
         </Link>
-          <WatchlistNavLink />
-          <CollectionsNavLink />
+        <WatchlistNavLink />
+        <CollectionsNavLink />
       </div>
 
       <Breadcrumbs />
@@ -385,9 +351,7 @@ export default function FeedClient() {
           <h1 className="text-3xl">{t("feed.title")}</h1>
           <LiveBadge />
         </div>
-        {refreshing && (
-          <span className="text-xs text-foreground/50">{t("feed.refreshing")}</span>
-        )}
+        {refreshing && <span className="text-xs text-foreground/50">{t("feed.refreshing")}</span>}
       </div>
 
       {newBannerCount > 0 && (
@@ -402,9 +366,7 @@ export default function FeedClient() {
           {newBannerCount} new anchor{newBannerCount === 1 ? "" : "s"} &middot; scroll to top
         </button>
       )}
-      <p className="text-foreground/70 mb-8">
-        {t("feed.subtitle")}
-      </p>
+      <p className="text-foreground/70 mb-8">{t("feed.subtitle")}</p>
 
       {error && entries.length > 0 && (
         <div className="mb-6 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
@@ -413,10 +375,7 @@ export default function FeedClient() {
       )}
 
       {error && entries.length === 0 ? (
-        <ErrorFallback
-          message={error}
-          onRetry={() => void refresh(requestedLimit)}
-        />
+        <ErrorFallback message={error} onRetry={() => void refresh(requestedLimit)} />
       ) : loading ? (
         <FeedSkeleton />
       ) : entries.length === 0 ? (
@@ -430,10 +389,7 @@ export default function FeedClient() {
       ) : (
         <>
           <div className="mb-4">
-            <TagFilter
-              selectedTags={selectedTags}
-              onFilterChange={setSelectedTags}
-            />
+            <TagFilter selectedTags={selectedTags} onFilterChange={setSelectedTags} />
           </div>
           {selectedTags.length > 0 && displayedEntries.length === 0 && (
             <p className="rounded-lg border border-foreground/10 bg-card p-6 text-center text-sm text-foreground/50">
@@ -471,8 +427,7 @@ export default function FeedClient() {
                         type="hash"
                         value={entry.hash}
                         owner={
-                          entry.source === "batch" ||
-                          entry.source === "registry"
+                          entry.source === "batch" || entry.source === "registry"
                             ? entry.owner
                             : undefined
                         }
@@ -482,11 +437,7 @@ export default function FeedClient() {
                         label={entry.label}
                         verifyUrl={verifyLinkFor(entry)}
                       />
-                      <StarButton
-                        type="hash"
-                        value={entry.hash}
-                        label={entry.label}
-                      />
+                      <StarButton type="hash" value={entry.hash} label={entry.label} />
                     </div>
                     <div className="text-sm text-foreground/80 mb-2">
                       <span className="text-xs text-foreground/50 mr-2 uppercase tracking-wide">
@@ -538,9 +489,7 @@ export default function FeedClient() {
                 {loadingMore ? t("feed.loadingMore") : t("feed.loadMore")}
               </button>
             ) : (
-              <p className="text-xs text-foreground/50">
-                {t("feed.endOfFeed")}
-              </p>
+              <p className="text-xs text-foreground/50">{t("feed.endOfFeed")}</p>
             )}
           </div>
         </>

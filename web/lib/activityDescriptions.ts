@@ -30,7 +30,7 @@ function num(value: unknown): number | null {
 }
 
 // A label when present, otherwise the truncated hash, otherwise empty.
-function labelOrHash(details: Record<string, any>): string {
+function labelOrHash(details: Record<string, unknown>): string {
   const label = str(details.label);
   if (label) return label;
   const hash = str(details.hash);
@@ -54,10 +54,7 @@ export function describeActivity(event: ActivityEvent): ActivityDescription {
       const count = num(d.count) ?? 0;
       const batchId = num(d.batchId);
       return {
-        title:
-          count === 1
-            ? "Batch anchored 1 document"
-            : `Batch anchored ${count} documents`,
+        title: count === 1 ? "Batch anchored 1 document" : `Batch anchored ${count} documents`,
         subtitle: batchId !== null ? `Batch #${batchId}` : "",
         icon: "B",
       };
@@ -71,8 +68,7 @@ export function describeActivity(event: ActivityEvent): ActivityDescription {
     case "mint-proof": {
       const tokenId = num(d.tokenId);
       return {
-        title:
-          tokenId !== null ? `Minted proof NFT #${tokenId}` : "Minted proof NFT",
+        title: tokenId !== null ? `Minted proof NFT #${tokenId}` : "Minted proof NFT",
         subtitle: labelOrHash(d),
         icon: "P",
       };

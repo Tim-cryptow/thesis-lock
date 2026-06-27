@@ -6,10 +6,7 @@ import { SkeletonLine } from "@/app/components/Skeleton";
 export default function VerifySkeleton() {
   const widths = ["55%", "70%", "30%"];
   return (
-    <div
-      className="mt-4 pt-4 border-t border-foreground/10 space-y-5"
-      aria-busy="true"
-    >
+    <div className="mt-4 pt-4 border-t border-foreground/10 space-y-5" aria-busy="true">
       <SkeletonLine width="10rem" height="1rem" />
       {widths.map((width, i) => (
         <div key={i} className="space-y-2">

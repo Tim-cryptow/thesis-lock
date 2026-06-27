@@ -93,10 +93,7 @@ export default function OfflinePage() {
         </div>
       </div>
       <div className="mt-6">
-        <Link
-          href="/anchor"
-          className="text-sm text-foreground underline hover:no-underline"
-        >
+        <Link href="/anchor" className="text-sm text-foreground underline hover:no-underline">
           Hash a file offline &rarr;
         </Link>
       </div>

@@ -15,13 +15,11 @@
 
 import { cvToValue, deserializeCV } from "@stacks/transactions";
 
-const HIRO_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
+const HIRO_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.mainnet.hiro.so";
 
 // The configured single-anchor contract name. Its events are the primary
 // "anchor" kind; a custom deployment may point this at a non-default name.
-const SINGLE_CONTRACT_NAME =
-  process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
+const SINGLE_CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 
 const MAX_BACKOFF_MS = 60_000;
 // How many events to request on the first page of each poll. New activity is
@@ -38,13 +36,7 @@ const BURST_SAFETY_CAP = 200;
 // ids are never empty, so "" is a safe sentinel.
 const EMPTY_BASELINE = "";
 
-export type LiveEventKind =
-  | "anchor"
-  | "batch"
-  | "registry"
-  | "proof"
-  | "group"
-  | "other";
+export type LiveEventKind = "anchor" | "batch" | "registry" | "proof" | "group" | "other";
 
 export type LiveEvent = {
   // Stable identity across polls: contract + tx + event index.
@@ -120,10 +112,7 @@ function kindForContract(contractName: string): LiveEventKind {
   if (contractName.endsWith("-registry")) return "registry";
   if (contractName.endsWith("-proof")) return "proof";
   if (contractName.endsWith("-groups")) return "group";
-  if (
-    contractName === SINGLE_CONTRACT_NAME ||
-    contractName.endsWith(`.${SINGLE_CONTRACT_NAME}`)
-  ) {
+  if (contractName === SINGLE_CONTRACT_NAME || contractName.endsWith(`.${SINGLE_CONTRACT_NAME}`)) {
     return "anchor";
   }
   return "other";
@@ -189,15 +178,12 @@ function parseEvent(
     asString(fieldValue(tuple?.["admin"])) ??
     null;
   const stacksBlock =
-    asNumber(fieldValue(tuple?.["stacks-block"])) ??
-    asNumber(fieldValue(tuple?.["anchored-at"]));
+    asNumber(fieldValue(tuple?.["stacks-block"])) ?? asNumber(fieldValue(tuple?.["anchored-at"]));
   const kind = kindForContract(contractName);
   // Group events carry their { group-id, index } location in the print tuple,
   // so the ticker can link to the exact group row instead of an owner guess.
-  const groupId =
-    kind === "group" ? asNumber(fieldValue(tuple?.["group-id"])) : null;
-  const groupIndex =
-    kind === "group" ? asNumber(fieldValue(tuple?.["index"])) : null;
+  const groupId = kind === "group" ? asNumber(fieldValue(tuple?.["group-id"])) : null;
+  const groupIndex = kind === "group" ? asNumber(fieldValue(tuple?.["index"])) : null;
 
   return {
     id: `${contractId}:${txId}:${eventIndex}`,
@@ -335,15 +321,8 @@ export class LivePoller {
     // value means a contract that baselines empty is not rebaselined on its first
     // real event (which would otherwise be swallowed).
     if (!this.lastSeen.has(contractId)) {
-      const { events } = await this.fetchEventsPage(
-        contractId,
-        EVENTS_PER_POLL,
-        0,
-      );
-      this.lastSeen.set(
-        contractId,
-        events.length > 0 ? events[0].id : EMPTY_BASELINE,
-      );
+      const { events } = await this.fetchEventsPage(contractId, EVENTS_PER_POLL, 0);
+      this.lastSeen.set(contractId, events.length > 0 ? events[0]!.id : EMPTY_BASELINE);
       return [];
     }
 
@@ -357,13 +336,9 @@ export class LivePoller {
     let offset = 0;
     let limit = EVENTS_PER_POLL;
     while (offset < BURST_SAFETY_CAP) {
-      const { events, rawCount } = await this.fetchEventsPage(
-        contractId,
-        limit,
-        offset,
-      );
+      const { events, rawCount } = await this.fetchEventsPage(contractId, limit, offset);
       if (events.length === 0) break;
-      if (newest === undefined) newest = events[0].id;
+      if (newest === undefined) newest = events[0]!.id;
 
       let found = false;
       for (const ev of events) {

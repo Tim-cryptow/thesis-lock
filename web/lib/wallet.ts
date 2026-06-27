@@ -15,7 +15,7 @@ function readStxAddress(): string | null {
   const data = getLocalStorage();
   const stx = data?.addresses?.stx;
   if (!stx || stx.length === 0) return null;
-  return stx[0].address;
+  return stx[0]!.address;
 }
 
 // The connected Stacks address read live from wallet storage, for non-React

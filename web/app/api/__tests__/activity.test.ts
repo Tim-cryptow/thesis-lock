@@ -6,11 +6,7 @@ vi.mock("@/lib/activityLog", async (importOriginal) => {
   return { ...actual, fetchActivityLog: vi.fn() };
 });
 
-import {
-  fetchActivityLog,
-  type ActivityPage,
-  type ActivityEvent,
-} from "@/lib/activityLog";
+import { fetchActivityLog, type ActivityPage, type ActivityEvent } from "@/lib/activityLog";
 import { GET } from "@/app/api/activity/route";
 import { mockNextRequest, BASE } from "./helpers";
 

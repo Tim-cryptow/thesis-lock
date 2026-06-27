@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 const title = "My Anchors";
-const description =
-  "View the documents you have anchored on the Stacks blockchain.";
+const description = "View the documents you have anchored on the Stacks blockchain.";
 
 export const metadata: Metadata = {
   title,
@@ -22,10 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AnchorsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AnchorsLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

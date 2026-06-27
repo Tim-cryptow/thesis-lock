@@ -9,15 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  LivePoller,
-  type LiveEvent,
-  type LiveStatus,
-} from "@/lib/livePoller";
+import { LivePoller, type LiveEvent, type LiveStatus } from "@/lib/livePoller";
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
 const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 
@@ -40,12 +35,12 @@ const INTERVAL_KEY = "thesislock.live.interval";
 export const LIVE_INTERVALS = [15_000, 30_000, 60_000];
 
 export function getLiveInterval(): number {
-  if (typeof window === "undefined") return LIVE_INTERVALS[0];
+  if (typeof window === "undefined") return LIVE_INTERVALS[0]!;
   try {
     const value = Number(window.localStorage.getItem(INTERVAL_KEY));
-    return LIVE_INTERVALS.includes(value) ? value : LIVE_INTERVALS[0];
+    return LIVE_INTERVALS.includes(value) ? value : LIVE_INTERVALS[0]!;
   } catch {
-    return LIVE_INTERVALS[0];
+    return LIVE_INTERVALS[0]!;
   }
 }
 
@@ -131,9 +126,7 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
   // Create the poller once.
   if (pollerRef.current === null) {
     pollerRef.current = new LivePoller({
-      contractAddresses: CONTRACT_NAMES.map(
-        (name) => `${CONTRACT_ADDRESS}.${name}`,
-      ),
+      contractAddresses: CONTRACT_NAMES.map((name) => `${CONTRACT_ADDRESS}.${name}`),
       interval: getLiveInterval(),
       onNewEvents: handleNewEvents,
       onStatusChange: (s) => setPollStatus(s),
@@ -195,17 +188,7 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
       toggle,
       markSeen,
     }),
-    [
-      events,
-      status,
-      lastUpdate,
-      newEventCount,
-      paused,
-      pause,
-      resume,
-      toggle,
-      markSeen,
-    ],
+    [events, status, lastUpdate, newEventCount, paused, pause, resume, toggle, markSeen],
   );
 
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;

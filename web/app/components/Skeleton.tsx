@@ -8,11 +8,7 @@ type LineProps = {
   className?: string;
 };
 
-export function SkeletonLine({
-  width = "100%",
-  height = "1rem",
-  className = "",
-}: LineProps) {
+export function SkeletonLine({ width = "100%", height = "1rem", className = "" }: LineProps) {
   return (
     <span
       aria-hidden="true"
@@ -38,11 +34,7 @@ export function SkeletonCircle({
   );
 }
 
-export function SkeletonBlock({
-  width = "100%",
-  height = "100%",
-  className = "",
-}: LineProps) {
+export function SkeletonBlock({ width = "100%", height = "100%", className = "" }: LineProps) {
   return (
     <span
       aria-hidden="true"

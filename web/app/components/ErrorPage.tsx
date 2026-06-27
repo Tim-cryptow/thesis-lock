@@ -78,9 +78,7 @@ export default function ErrorPage({
                   <span>
                     <span className="block font-medium">{s.label}</span>
                     {s.hint ? (
-                      <span className="block text-sm text-foreground/60">
-                        {s.hint}
-                      </span>
+                      <span className="block text-sm text-foreground/60">{s.hint}</span>
                     ) : null}
                   </span>
                   <span aria-hidden="true" className="text-foreground/40">

@@ -55,9 +55,7 @@ describe("TruncatedAddress", () => {
 
   it("shows an inline copy button by default", () => {
     render(<TruncatedAddress address={SP} />);
-    expect(
-      screen.getByRole("button", { name: "Copy address to clipboard" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy address to clipboard" })).toBeInTheDocument();
   });
 
   it("hides the copy button when copyable is false", () => {

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 const title = "My Dashboard";
-const description =
-  "View your anchoring activity, stats, and history on ThesisLock";
+const description = "View your anchoring activity, stats, and history on ThesisLock";
 
 export const metadata: Metadata = {
   title,
@@ -22,10 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

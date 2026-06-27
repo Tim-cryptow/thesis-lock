@@ -35,11 +35,11 @@ describe("createCollection", () => {
   });
 
   it("trims fields and keeps a valid color and icon", () => {
-    const c = createCollection("  Papers  ", "  My docs  ", "green", COLLECTION_ICONS[2]);
+    const c = createCollection("  Papers  ", "  My docs  ", "green", COLLECTION_ICONS[2]!);
     expect(c.name).toBe("Papers");
     expect(c.description).toBe("My docs");
     expect(c.color).toBe("green");
-    expect(c.icon).toBe(COLLECTION_ICONS[2]);
+    expect(c.icon).toBe(COLLECTION_ICONS[2]!);
     expect(c.items).toEqual([]);
     expect(loadCollections()).toHaveLength(1);
   });
@@ -53,39 +53,39 @@ describe("createCollection", () => {
 
 describe("items", () => {
   it("adds an item with a normalized hash", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, `0x${H1.toUpperCase()}`, "Label one");
     const items = getCollection(c.id)!.items;
     expect(items).toHaveLength(1);
-    expect(items[0].hash).toBe(H1);
-    expect(items[0].label).toBe("Label one");
+    expect(items[0]!.hash).toBe(H1);
+    expect(items[0]!.label).toBe("Label one");
   });
 
   it("does not duplicate a hash and backfills the note", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, H1, "Label one");
     addToCollection(c.id, H1, "Label one", "a note");
     const items = getCollection(c.id)!.items;
     expect(items).toHaveLength(1);
-    expect(items[0].note).toBe("a note");
+    expect(items[0]!.note).toBe("a note");
   });
 
   it("removes an item", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, H1, "x");
     removeFromCollection(c.id, H1);
     expect(getCollection(c.id)!.items).toEqual([]);
   });
 
   it("reports which collections contain a hash", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, H1, "x");
     expect(collectionsContaining(H1)).toEqual([c.id]);
     expect(collectionsContaining(H2)).toEqual([]);
   });
 
   it("reorders an item within a collection", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, H1, "first");
     addToCollection(c.id, H2, "second");
     // Newest first: [H2, H1]. Moving H1 up swaps it to the front.
@@ -96,8 +96,8 @@ describe("items", () => {
 
 describe("moveItem", () => {
   it("moves an item from one collection to another", () => {
-    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]);
-    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]);
+    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]!);
+    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]!);
     addToCollection(a.id, H1, "x");
     moveItem(a.id, b.id, H1);
     expect(getCollection(a.id)!.items).toEqual([]);
@@ -105,8 +105,8 @@ describe("moveItem", () => {
   });
 
   it("removes from the source without duplicating when the destination already has the hash", () => {
-    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]);
-    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]);
+    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]!);
+    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]!);
     addToCollection(a.id, H1, "x");
     addToCollection(b.id, H1, "y");
     moveItem(a.id, b.id, H1);
@@ -117,14 +117,14 @@ describe("moveItem", () => {
 
 describe("deleteCollection / totalItemCount", () => {
   it("deletes a collection", () => {
-    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "", "blue", COLLECTION_ICONS[0]!);
     deleteCollection(c.id);
     expect(loadCollections()).toEqual([]);
   });
 
   it("totals items across collections", () => {
-    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]);
-    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]);
+    const a = createCollection("A", "", "blue", COLLECTION_ICONS[0]!);
+    const b = createCollection("B", "", "green", COLLECTION_ICONS[1]!);
     addToCollection(a.id, H1, "x");
     addToCollection(b.id, H2, "y");
     expect(totalItemCount(loadCollections())).toBe(2);
@@ -133,7 +133,7 @@ describe("deleteCollection / totalItemCount", () => {
 
 describe("export / import", () => {
   it("exports a collection as parseable JSON", () => {
-    const c = createCollection("C", "desc", "blue", COLLECTION_ICONS[0]);
+    const c = createCollection("C", "desc", "blue", COLLECTION_ICONS[0]!);
     addToCollection(c.id, H1, "x");
     const json = exportCollection(getCollection(c.id)!);
     const parsed = JSON.parse(json);
@@ -142,7 +142,7 @@ describe("export / import", () => {
   });
 
   it("round-trips through export then import with a fresh id", () => {
-    const c = createCollection("Roundtrip", "desc", "green", COLLECTION_ICONS[2]);
+    const c = createCollection("Roundtrip", "desc", "green", COLLECTION_ICONS[2]!);
     addToCollection(c.id, H1, "one");
     addToCollection(c.id, H2, "two");
     const imported = importCollection(exportCollection(getCollection(c.id)!));

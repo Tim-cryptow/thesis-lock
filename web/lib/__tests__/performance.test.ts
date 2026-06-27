@@ -39,8 +39,8 @@ describe("recordVital / getVitalsSummary", () => {
     recordVital(vital("LCP", 2000));
     recordVital(vital("LCP", 3000));
     const summary = getVitalsSummary();
-    expect(summary.LCP.avg).toBe(2000);
-    expect(summary.LCP.count).toBe(3);
+    expect(summary.LCP!.avg).toBe(2000);
+    expect(summary.LCP!.count).toBe(3);
   });
 
   it("returns an empty summary when nothing is recorded", () => {
@@ -78,15 +78,15 @@ describe("recordApiMetric / getApiMetricsSummary", () => {
     recordApiMetric(api("/api/x", 200, true));
     recordApiMetric(api("/api/x", 500, false));
     const summary = getApiMetricsSummary();
-    expect(summary["/api/x"].calls).toBe(2);
-    expect(summary["/api/x"].errorRate).toBe(0.5);
-    expect(summary["/api/x"].cachedRate).toBe(0.5);
-    expect(summary["/api/x"].avgResponse).toBe(100);
+    expect(summary["/api/x"]!.calls).toBe(2);
+    expect(summary["/api/x"]!.errorRate).toBe(0.5);
+    expect(summary["/api/x"]!.cachedRate).toBe(0.5);
+    expect(summary["/api/x"]!.avgResponse).toBe(100);
   });
 
   it("counts a status of 0 (network failure) as an error", () => {
     recordApiMetric(api("/api/y", 0, false));
-    expect(getApiMetricsSummary()["/api/y"].errorRate).toBe(1);
+    expect(getApiMetricsSummary()["/api/y"]!.errorRate).toBe(1);
   });
 });
 

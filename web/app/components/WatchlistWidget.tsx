@@ -60,9 +60,7 @@ export default function WatchlistWidget() {
     items.length === 0
       ? "No watched items yet"
       : `${items.length} watched ${items.length === 1 ? "item" : "items"}${
-          updates > 0
-            ? `, ${updates} new ${updates === 1 ? "update" : "updates"}`
-            : ""
+          updates > 0 ? `, ${updates} new ${updates === 1 ? "update" : "updates"}` : ""
         }`;
 
   return (
@@ -79,9 +77,7 @@ export default function WatchlistWidget() {
             {updates}
           </span>
         )}
-        <span className="ml-auto text-xs text-foreground/45">
-          {open ? "Hide" : "Show"}
-        </span>
+        <span className="ml-auto text-xs text-foreground/45">{open ? "Hide" : "Show"}</span>
       </button>
 
       {open && (
@@ -89,25 +85,20 @@ export default function WatchlistWidget() {
           <p className="text-xs text-foreground/55 mb-3">{summary}</p>
           {items.length === 0 ? (
             <p className="text-xs text-foreground/50">
-              Add hashes, wallets, or groups from their pages, then track them
-              here.
+              Add hashes, wallets, or groups from their pages, then track them here.
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
               {items.slice(0, MAX_PREVIEW).map((item) => (
                 <li key={item.id} className="flex items-center gap-2 text-xs">
-                  <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass(item)}`}
-                  />
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass(item)}`} />
                   <Link
                     href={viewHref(item)}
                     className="truncate text-foreground/80 hover:text-foreground"
                   >
                     {item.label}
                   </Link>
-                  <span className="ml-auto shrink-0 text-foreground/45">
-                    {statusText(item)}
-                  </span>
+                  <span className="ml-auto shrink-0 text-foreground/45">{statusText(item)}</span>
                 </li>
               ))}
             </ul>

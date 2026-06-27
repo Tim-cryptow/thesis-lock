@@ -56,10 +56,7 @@ export default function AddToCollectionButton({
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -90,7 +87,7 @@ export default function AddToCollectionButton({
   const create = useCallback(() => {
     const name = newName.trim();
     if (!name) return;
-    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON);
+    const collection = createCollection(name, "", DEFAULT_COLOR, DEFAULT_ICON!);
     addToCollection(collection.id, hash, label, note, verifyUrl);
     setNewName("");
     setCreating(false);
@@ -129,9 +126,7 @@ export default function AddToCollectionButton({
           <path d="M4 5a2 2 0 0 1 2-2h3l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
         </svg>
         {showLabel && <span>{active ? "In collections" : "Collect"}</span>}
-        {active && !showLabel && (
-          <span className="text-[10px]">{containingCount}</span>
-        )}
+        {active && !showLabel && <span className="text-[10px]">{containingCount}</span>}
       </button>
 
       {open && (
@@ -148,9 +143,7 @@ export default function AddToCollectionButton({
           />
           <div className="max-h-56 overflow-y-auto">
             {collections.length === 0 ? (
-              <p className="px-1 py-2 text-xs text-foreground/55">
-                No collections yet.
-              </p>
+              <p className="px-1 py-2 text-xs text-foreground/55">No collections yet.</p>
             ) : (
               collections.map((c) => {
                 const checked = c.items.some((i) => i.hash === normalized);
@@ -168,9 +161,7 @@ export default function AddToCollectionButton({
                     />
                     <span className={`text-base ${color.text}`}>{c.icon}</span>
                     <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                    <span className="text-[10px] text-foreground/40">
-                      {c.items.length}
-                    </span>
+                    <span className="text-[10px] text-foreground/40">{c.items.length}</span>
                   </label>
                 );
               })

@@ -1,19 +1,10 @@
 import { corsHeaders } from "@/lib/verify";
-import {
-  activityCategory,
-  fetchActivityLog,
-  type ActivityCategory,
-} from "@/lib/activityLog";
+import { activityCategory, fetchActivityLog, type ActivityCategory } from "@/lib/activityLog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CATEGORIES: ActivityCategory[] = [
-  "anchors",
-  "groups",
-  "proofs",
-  "registry",
-];
+const CATEGORIES: ActivityCategory[] = ["anchors", "groups", "proofs", "registry"];
 
 const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 

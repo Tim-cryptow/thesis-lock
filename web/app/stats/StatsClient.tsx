@@ -21,11 +21,9 @@ import type { ProtocolStats } from "@/lib/stats";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
 
 const CONTRACT_ADDRESS =
-  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ??
-  "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
+  process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
 
-const SINGLE_CONTRACT_NAME =
-  process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
+const SINGLE_CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME ?? "thesislock";
 
 const CONTRACTS = [
   { name: SINGLE_CONTRACT_NAME, labelId: "single" },
@@ -210,81 +208,53 @@ export default function StatsClient() {
     return [...days, { date: todayIso, count: liveAnchors }];
   })();
 
-  const maxDayCount = anchorsByDay.reduce(
-    (max, d) => Math.max(max, d.count),
-    0,
-  );
+  const maxDayCount = anchorsByDay.reduce((max, d) => Math.max(max, d.count), 0);
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-6 py-12 w-full">
       <div className="flex items-center gap-4 text-sm mb-8 flex-wrap">
-        <div className="order-last ml-auto"><ThemeToggle /></div>
+        <div className="order-last ml-auto">
+          <ThemeToggle />
+        </div>
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
         <Link href="/search" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.search")}
         </Link>
-        <Link
-          href="/anchor"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchor" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.anchor")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/groups"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/groups" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.groups")}
         </Link>
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.feed")}
         </Link>
         <span className="text-foreground font-medium">{t("common.nav.stats")}</span>
-        <Link
-          href="/verify-bulk"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/verify-bulk" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.bulkVerify")}
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/dashboard" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.dashboard")}
         </Link>
-        <Link
-          href="/activity"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/activity" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.activity")}
         </Link>
-        <Link
-          href="/compare"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/compare" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.compare")}
         </Link>
-        <Link
-          href="/report"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/report" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.report")}
         </Link>
-        <Link
-          href="/explorer"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/explorer" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.explorer")}
         </Link>
-          <WatchlistNavLink />
-          <CollectionsNavLink />
+        <WatchlistNavLink />
+        <CollectionsNavLink />
       </div>
 
       <Breadcrumbs />
@@ -295,9 +265,7 @@ export default function StatsClient() {
           <LiveBadge showText={false} />
         </span>
       </div>
-      <p className="text-foreground/70 mb-2">
-        {t("stats.subtitle")}
-      </p>
+      <p className="text-foreground/70 mb-2">{t("stats.subtitle")}</p>
       <p className="mb-8">
         <Link
           href="/explorer"
@@ -319,28 +287,21 @@ export default function StatsClient() {
       ) : stats ? (
         <>
           <FadeIn>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            <StatCard
-              label={t("stats.totalAnchors")}
-              term="Anchor"
-              count={totalAnchors}
-            />
-            <StatCard
-              label={t("stats.uniqueWallets")}
-              term="Principal"
-              count={stats.uniqueWallets}
-            />
-            <StatCard
-              label={t("stats.contractsDeployed")}
-              count={stats.contractsDeployed}
-            />
-            <StatCard
-              label={t("stats.latestBlock")}
-              term="Stacks Block"
-              count={stats.latestAnchorBlock || undefined}
-              value="-"
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              <StatCard label={t("stats.totalAnchors")} term="Anchor" count={totalAnchors} />
+              <StatCard
+                label={t("stats.uniqueWallets")}
+                term="Principal"
+                count={stats.uniqueWallets}
+              />
+              <StatCard label={t("stats.contractsDeployed")} count={stats.contractsDeployed} />
+              <StatCard
+                label={t("stats.latestBlock")}
+                term="Stacks Block"
+                count={stats.latestAnchorBlock || undefined}
+                value="-"
+              />
+            </div>
           </FadeIn>
 
           <section className="rounded-lg border border-foreground/10 bg-card p-6 mb-8">
@@ -356,18 +317,14 @@ export default function StatsClient() {
                 aria-label={t("stats.chartAria")}
               >
                 {anchorsByDay.map((d) => {
-                  const pct = maxDayCount
-                    ? Math.max(4, (d.count / maxDayCount) * 100)
-                    : 0;
+                  const pct = maxDayCount ? Math.max(4, (d.count / maxDayCount) * 100) : 0;
                   return (
                     <div
                       key={d.date}
                       className="flex-1 flex flex-col items-center justify-end h-full group"
                       title={`${formatDateLabel(d.date)}: ${d.count}`}
                     >
-                      <div className="text-[10px] text-foreground/50 mb-1">
-                        {d.count}
-                      </div>
+                      <div className="text-[10px] text-foreground/50 mb-1">{d.count}</div>
                       <div
                         className="w-full rounded-t bg-heading/80 group-hover:bg-heading transition"
                         style={{ height: `${pct}%` }}
@@ -379,10 +336,8 @@ export default function StatsClient() {
             )}
             {anchorsByDay.length > 0 && (
               <div className="flex justify-between text-[10px] text-foreground/40 mt-2">
-                <span>{formatDateLabel(anchorsByDay[0].date)}</span>
-                <span>
-                  {formatDateLabel(anchorsByDay[anchorsByDay.length - 1].date)}
-                </span>
+                <span>{formatDateLabel(anchorsByDay[0]!.date)}</span>
+                <span>{formatDateLabel(anchorsByDay[anchorsByDay.length - 1]!.date)}</span>
               </div>
             )}
           </section>
@@ -393,10 +348,7 @@ export default function StatsClient() {
             </h2>
             <ul className="space-y-3">
               {CONTRACTS.map((c) => (
-                <li
-                  key={c.name}
-                  className="flex items-center justify-between gap-4 flex-wrap"
-                >
+                <li key={c.name} className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="min-w-0">
                     <code className="font-mono text-sm">{c.name}</code>
                     <span className="ml-2 text-xs text-foreground/50">
@@ -417,9 +369,7 @@ export default function StatsClient() {
             <div className="mt-4 text-xs text-foreground/50 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <span>
                 {t("stats.singleAnchors", {
-                  count: formatNumber(
-                    stats.totalAnchors - stats.totalBatchAnchors,
-                  ),
+                  count: formatNumber(stats.totalAnchors - stats.totalBatchAnchors),
                 })}
               </span>
               <span>
@@ -443,10 +393,7 @@ export default function StatsClient() {
           </section>
 
           <div className="mt-10">
-            <ShareButtons
-              url={origin ? `${origin}/stats` : ""}
-              title="ThesisLock protocol stats"
-            />
+            <ShareButtons url={origin ? `${origin}/stats` : ""} title="ThesisLock protocol stats" />
           </div>
         </>
       ) : null}

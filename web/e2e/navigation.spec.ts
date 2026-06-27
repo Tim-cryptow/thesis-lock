@@ -31,11 +31,12 @@ test.describe("landing page and navigation", () => {
     await expect(footer.getByRole("link", { name: "API" })).toBeVisible();
   });
 
-  test("back to home link returns to the landing page from a sub page", async ({
-    page,
-  }) => {
+  test("back to home link returns to the landing page from a sub page", async ({ page }) => {
     await page.goto("/search");
-    await page.getByRole("link", { name: /ThesisLock/ }).first().click();
+    await page
+      .getByRole("link", { name: /ThesisLock/ })
+      .first()
+      .click();
     await expect(page).toHaveURL(/\/$/);
     await expect(
       page.getByRole("heading", {

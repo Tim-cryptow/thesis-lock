@@ -35,15 +35,11 @@ export default function PerformanceTracker() {
   // hidden, on unmount, or on demand when the dashboard opens (a reasonable
   // approximation of the official algorithm).
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      typeof PerformanceObserver === "undefined"
-    ) {
+    if (typeof window === "undefined" || typeof PerformanceObserver === "undefined") {
       return;
     }
 
-    const currentPath = () =>
-      pathRef.current || window.location.pathname || "/";
+    const currentPath = () => pathRef.current || window.location.pathname || "/";
     const report = (name: WebVitalName, value: number) => {
       recordVital({
         name,
@@ -69,9 +65,7 @@ export default function PerformanceTracker() {
     };
 
     try {
-      const nav = performance.getEntriesByType("navigation")[0] as
-        | NavTiming
-        | undefined;
+      const nav = performance.getEntriesByType("navigation")[0] as NavTiming | undefined;
       if (nav) {
         report("TTFB", Math.max(0, nav.responseStart - (nav.activationStart ?? 0)));
       }
@@ -79,18 +73,24 @@ export default function PerformanceTracker() {
       // navigation timing unavailable; skip TTFB.
     }
 
-    observe((list) => {
-      for (const entry of list.getEntries()) {
-        if (entry.name === "first-contentful-paint") report("FCP", entry.startTime);
-      }
-    }, { type: "paint", buffered: true });
+    observe(
+      (list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.name === "first-contentful-paint") report("FCP", entry.startTime);
+        }
+      },
+      { type: "paint", buffered: true },
+    );
 
     let lcp = 0;
-    observe((list) => {
-      const entries = list.getEntries();
-      const last = entries[entries.length - 1];
-      if (last) lcp = last.startTime;
-    }, { type: "largest-contentful-paint", buffered: true });
+    observe(
+      (list) => {
+        const entries = list.getEntries();
+        const last = entries[entries.length - 1];
+        if (last) lcp = last.startTime;
+      },
+      { type: "largest-contentful-paint", buffered: true },
+    );
 
     // CLS is the largest "session window" of layout shifts, not the lifetime
     // sum: shifts within 1s of each other and 5s of the window start belong to
@@ -100,28 +100,34 @@ export default function PerformanceTracker() {
     let clsWindow = 0;
     let clsFirst = 0;
     let clsPrev = 0;
-    observe((list) => {
-      for (const entry of list.getEntries() as LayoutShiftEntry[]) {
-        if (entry.hadRecentInput) continue;
-        if (
-          clsWindow !== 0 &&
-          entry.startTime - clsPrev < 1000 &&
-          entry.startTime - clsFirst < 5000
-        ) {
-          clsWindow += entry.value;
-        } else {
-          clsWindow = entry.value;
-          clsFirst = entry.startTime;
+    observe(
+      (list) => {
+        for (const entry of list.getEntries() as LayoutShiftEntry[]) {
+          if (entry.hadRecentInput) continue;
+          if (
+            clsWindow !== 0 &&
+            entry.startTime - clsPrev < 1000 &&
+            entry.startTime - clsFirst < 5000
+          ) {
+            clsWindow += entry.value;
+          } else {
+            clsWindow = entry.value;
+            clsFirst = entry.startTime;
+          }
+          clsPrev = entry.startTime;
+          if (clsWindow > cls) cls = clsWindow;
         }
-        clsPrev = entry.startTime;
-        if (clsWindow > cls) cls = clsWindow;
-      }
-    }, { type: "layout-shift", buffered: true });
+      },
+      { type: "layout-shift", buffered: true },
+    );
 
-    observe((list) => {
-      const entry = list.getEntries()[0] as PerformanceEventTiming | undefined;
-      if (entry) report("FID", entry.processingStart - entry.startTime);
-    }, { type: "first-input", buffered: true });
+    observe(
+      (list) => {
+        const entry = list.getEntries()[0] as PerformanceEventTiming | undefined;
+        if (entry) report("FID", entry.processingStart - entry.startTime);
+      },
+      { type: "first-input", buffered: true },
+    );
 
     let inp = 0;
     observe(
@@ -182,16 +188,11 @@ export default function PerformanceTracker() {
       initialDoneRef.current = true;
       const record = () => {
         try {
-          const nav = performance.getEntriesByType("navigation")[0] as
-            | NavTiming
-            | undefined;
-          const resources = performance.getEntriesByType(
-            "resource",
-          ) as PerformanceResourceTiming[];
+          const nav = performance.getEntriesByType("navigation")[0] as NavTiming | undefined;
+          const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
           const base = nav?.activationStart ?? 0;
           const transferSize =
-            (nav?.transferSize ?? 0) +
-            resources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
+            (nav?.transferSize ?? 0) + resources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
           recordPageMetric({
             path: pathRef.current,
             loadTime: nav ? Math.max(0, nav.loadEventEnd - base) : 0,

@@ -3,8 +3,7 @@ import { Cl, serializeCV, type ClarityValue } from "@stacks/transactions";
 import { createClient } from "../src/index";
 
 const OWNER = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
-const HASH =
-  "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
+const HASH = "9afe6f57ea2af60478ad37b2d44ae8ede492c4f3b7e70bcc7dfea92128585d06";
 
 function okResponse(cv: ClarityValue) {
   return {

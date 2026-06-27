@@ -36,10 +36,8 @@ const EMPTY_LABEL: Record<Filter, string> = {
 
 const EMPTY_DESCRIPTION: Record<Filter, string> = {
   all: "Notifications appear here as your transactions confirm and the protocol updates.",
-  transactions:
-    "Confirmations for your anchor and group transactions will appear here.",
-  watchlist:
-    "Updates for the hashes, wallets, and groups you watch will appear here.",
+  transactions: "Confirmations for your anchor and group transactions will appear here.",
+  watchlist: "Updates for the hashes, wallets, and groups you watch will appear here.",
   protocol: "New anchors and proof mints across the protocol will appear here.",
   system: "App and maintenance messages will appear here.",
 };
@@ -62,11 +60,7 @@ function inFilter(type: NotificationType, filter: Filter): boolean {
     case "watchlist":
       return type === "watchlist_update";
     case "protocol":
-      return (
-        type === "new_anchor" ||
-        type === "proof_minted" ||
-        type === "group_invite"
-      );
+      return type === "new_anchor" || type === "proof_minted" || type === "group_invite";
     case "system":
       return type === "system";
     default:
@@ -140,12 +134,7 @@ function PrefRow({
           <div className="text-xs text-foreground/55 mt-0.5">{description}</div>
         ) : null}
       </div>
-      <Switch
-        checked={checked}
-        onChange={onChange}
-        label={label}
-        disabled={disabled}
-      />
+      <Switch checked={checked} onChange={onChange} label={label} disabled={disabled} />
     </div>
   );
 }
@@ -163,9 +152,7 @@ function Row({
   return (
     <li
       className={`relative flex items-stretch rounded-lg border bg-card transition ${
-        unread
-          ? "border-foreground/15 border-l-2 border-l-sky-500"
-          : "border-foreground/10"
+        unread ? "border-foreground/15 border-l-2 border-l-sky-500" : "border-foreground/10"
       }`}
     >
       <button
@@ -173,20 +160,13 @@ function Row({
         onClick={() => onOpen(notification)}
         className="flex flex-1 gap-3 p-4 text-left min-w-0 hover:bg-foreground/[0.03] rounded-l-lg transition"
       >
-        <span
-          className={`mt-0.5 shrink-0 ${
-            unread ? "text-heading" : "text-foreground/45"
-          }`}
-        >
+        <span className={`mt-0.5 shrink-0 ${unread ? "text-heading" : "text-foreground/45"}`}>
           <NotificationIcon name={notification.icon} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
             {unread ? (
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500"
-              />
+              <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
             ) : null}
             <span
               className={`truncate ${
@@ -196,9 +176,7 @@ function Row({
               {notification.title}
             </span>
           </span>
-          <span className="mt-0.5 block text-sm text-foreground/70">
-            {notification.message}
-          </span>
+          <span className="mt-0.5 block text-sm text-foreground/70">{notification.message}</span>
           <span className="mt-1.5 flex items-center gap-3 text-xs text-foreground/45">
             <span>{relativeTime(notification.timestamp)}</span>
             {notification.actionUrl && notification.actionLabel ? (
@@ -249,9 +227,7 @@ export default function NotificationsClient() {
 
   const [filter, setFilter] = useState<Filter>("all");
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const [permission, setPermission] = useState<
-    NotificationPermission | "unsupported"
-  >("default");
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
 
   useEffect(() => {
     setPermission(browserPermission());
@@ -298,16 +274,10 @@ export default function NotificationsClient() {
         <Link href="/feed" className="text-foreground/60 hover:text-foreground">
           Feed
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           My anchors
         </Link>
-        <Link
-          href="/watchlist"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/watchlist" className="text-foreground/60 hover:text-foreground">
           Watchlist
         </Link>
         <span className="text-foreground font-medium">Notifications</span>
@@ -336,8 +306,7 @@ export default function NotificationsClient() {
             onClick={async () => {
               const ok = await confirm({
                 title: "Clear all notifications",
-                message:
-                  "Clear all notifications? This removes them from this device.",
+                message: "Clear all notifications? This removes them from this device.",
                 confirmLabel: "Clear all",
                 variant: "info",
               });
@@ -377,12 +346,7 @@ export default function NotificationsClient() {
       ) : (
         <ul className="space-y-2">
           {visible.map((n) => (
-            <Row
-              key={n.id}
-              notification={n}
-              onOpen={open}
-              onDismiss={removeNotification}
-            />
+            <Row key={n.id} notification={n} onOpen={open} onDismiss={removeNotification} />
           ))}
         </ul>
       )}
@@ -394,12 +358,8 @@ export default function NotificationsClient() {
           aria-expanded={prefsOpen}
           className="flex w-full items-center justify-between p-4 text-left"
         >
-          <span className="text-sm uppercase tracking-wide text-foreground/60">
-            Preferences
-          </span>
-          <span className="text-sm text-foreground/50">
-            {prefsOpen ? "Hide" : "Show"}
-          </span>
+          <span className="text-sm uppercase tracking-wide text-foreground/60">Preferences</span>
+          <span className="text-sm text-foreground/50">{prefsOpen ? "Hide" : "Show"}</span>
         </button>
         {prefsOpen ? (
           <div className="space-y-4 border-t border-foreground/10 p-4">
@@ -435,9 +395,7 @@ export default function NotificationsClient() {
                     checked={toggle.types.every((t) => preferences.types[t])}
                     onChange={(v) =>
                       updatePreferences({
-                        types: Object.fromEntries(
-                          toggle.types.map((t) => [t, v]),
-                        ),
+                        types: Object.fromEntries(toggle.types.map((t) => [t, v])),
                       })
                     }
                     disabled={!preferences.enabled}

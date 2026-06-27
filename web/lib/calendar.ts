@@ -56,10 +56,7 @@ type AnchorEntry = {
   groupIndex?: number;
 };
 
-const entryCache = new Map<
-  string,
-  { at: number; promise: Promise<AnchorEntry[]> }
->();
+const entryCache = new Map<string, { at: number; promise: Promise<AnchorEntry[]> }>();
 
 // Maps an anchor-creating activity type to its source label. Batch anchors are
 // handled separately (they carry many hashes). Registry registrations and proof
@@ -194,7 +191,7 @@ async function scanAnchorEntries(address: string): Promise<AnchorEntry[]> {
   const seenBatch = new Set<string>();
   const deduped: AnchorEntry[] = [];
   for (let i = entries.length - 1; i >= 0; i -= 1) {
-    const entry = entries[i];
+    const entry = entries[i]!;
     if (entry.source === "batch") {
       if (seenBatch.has(entry.hash)) continue;
       seenBatch.add(entry.hash);
@@ -260,10 +257,7 @@ export async function buildYearGrid(
 
 // The most recent `days` days ending today (UTC), in chronological order. Spans
 // a year boundary cleanly, for the compact graphs on the dashboard and profiles.
-export async function buildRecentDays(
-  address: string,
-  days = 30,
-): Promise<CalendarDay[]> {
+export async function buildRecentDays(address: string, days = 30): Promise<CalendarDay[]> {
   const entries = await collectAnchorEntries(address);
   const map = new Map<string, CalendarDay>();
   const now = new Date();
@@ -289,10 +283,7 @@ export async function getActiveDates(address: string): Promise<Set<string>> {
 // run that crosses the start of the range (a new year, or the mini graph's
 // window) is not cut short; an inactive today is allowed once (the day is not
 // over yet) so the streak is not reported broken before the user can anchor.
-export function getStreakInfo(
-  days: CalendarDay[],
-  allActiveDates?: Set<string>,
-): StreakInfo {
+export function getStreakInfo(days: CalendarDay[], allActiveDates?: Set<string>): StreakInfo {
   const sorted = [...days].sort((a, b) => a.date.localeCompare(b.date));
 
   let longestStreak = 0;
@@ -314,9 +305,7 @@ export function getStreakInfo(
   // past year reports 0 rather than a stale run that merely ended on its
   // December 31. Uses the full active-date set when given so a streak is not cut
   // at the range boundary; otherwise falls back to the supplied range.
-  const active =
-    allActiveDates ??
-    new Set(sorted.filter((d) => d.count > 0).map((d) => d.date));
+  const active = allActiveDates ?? new Set(sorted.filter((d) => d.count > 0).map((d) => d.date));
   const now = new Date();
   let cursor = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
   // Today not being over yet does not break the streak: if today has no anchor,

@@ -66,9 +66,7 @@ export default function TagsClient() {
       try {
         const anchors = await fetchAllAnchors(address);
         if (cancelled) return;
-        setUntagged(
-          anchors.filter((a) => getTagsForHash(a.hash).length === 0).length,
-        );
+        setUntagged(anchors.filter((a) => getTagsForHash(a.hash).length === 0).length);
       } catch {
         if (!cancelled) setUntagged(null);
       }
@@ -78,10 +76,7 @@ export default function TagsClient() {
     };
   }, [address, tags]);
 
-  const maxCount = useMemo(
-    () => (tags.length ? Math.max(...tags.map((t) => t.count)) : 1),
-    [tags],
-  );
+  const maxCount = useMemo(() => (tags.length ? Math.max(...tags.map((t) => t.count)) : 1), [tags]);
 
   const cloudSize = (count: number): string => {
     const min = 0.85;
@@ -107,16 +102,10 @@ export default function TagsClient() {
         <Link href="/" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.back")}
         </Link>
-        <Link
-          href="/anchors"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/anchors" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.myAnchors")}
         </Link>
-        <Link
-          href="/collections"
-          className="text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/collections" className="text-foreground/60 hover:text-foreground">
           {t("common.nav.collections")}
         </Link>
         <span className="text-foreground font-medium">Tags</span>
@@ -128,8 +117,8 @@ export default function TagsClient() {
       <header className="mb-8">
         <h1 className="text-3xl mb-2">Tags</h1>
         <p className="text-foreground/70 max-w-2xl">
-          Organize and explore your anchors by tag. Tags are stored only in this
-          browser and shown across the verify, history, feed, and search pages.
+          Organize and explore your anchors by tag. Tags are stored only in this browser and shown
+          across the verify, history, feed, and search pages.
         </p>
       </header>
 
@@ -159,9 +148,7 @@ export default function TagsClient() {
                   <button
                     key={tag.name}
                     type="button"
-                    onClick={() =>
-                      setActiveTag(active ? null : tag.name)
-                    }
+                    onClick={() => setActiveTag(active ? null : tag.name)}
                     style={{
                       fontSize: cloudSize(tag.count),
                       color,
@@ -185,10 +172,8 @@ export default function TagsClient() {
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-medium">
                     Anchors tagged{" "}
-                    <span style={{ color: getTagColor(activeTag) }}>
-                      {activeTag}
-                    </span>{" "}
-                    ({activeHashes.length})
+                    <span style={{ color: getTagColor(activeTag) }}>{activeTag}</span> (
+                    {activeHashes.length})
                   </h3>
                   <button
                     type="button"
@@ -298,9 +283,7 @@ export default function TagsClient() {
                   </p>
                 ) : (
                   <div>
-                    <p className="text-2xl font-semibold tabular-nums">
-                      {untagged}
-                    </p>
+                    <p className="text-2xl font-semibold tabular-nums">{untagged}</p>
                     {untagged > 0 && (
                       <Link
                         href="/anchors"
@@ -385,18 +368,13 @@ export default function TagsClient() {
                     const color = getTagColor(tag.name);
                     const editing = editingTag === tag.name;
                     return (
-                      <tr
-                        key={tag.name}
-                        className="border-b border-foreground/5 last:border-0"
-                      >
+                      <tr key={tag.name} className="border-b border-foreground/5 last:border-0">
                         <td className="py-2 pr-4">
                           <div className="flex items-center gap-2">
                             <input
                               type="color"
                               value={color}
-                              onChange={(e) =>
-                                setTagColor(tag.name, e.target.value)
-                              }
+                              onChange={(e) => setTagColor(tag.name, e.target.value)}
                               aria-label={`Color for ${tag.name}`}
                               className="h-5 w-5 cursor-pointer rounded border border-foreground/15 bg-transparent p-0"
                             />
@@ -421,9 +399,7 @@ export default function TagsClient() {
                             )}
                           </div>
                         </td>
-                        <td className="py-2 pr-4 tabular-nums text-foreground/60">
-                          {tag.count}
-                        </td>
+                        <td className="py-2 pr-4 tabular-nums text-foreground/60">{tag.count}</td>
                         <td className="py-2">
                           <div className="flex flex-wrap items-center gap-3 text-xs">
                             {editing ? (
@@ -467,9 +443,7 @@ export default function TagsClient() {
                             </button>
                             {confirmDelete === tag.name ? (
                               <span className="inline-flex items-center gap-2">
-                                <span className="text-foreground/60">
-                                  Delete?
-                                </span>
+                                <span className="text-foreground/60">Delete?</span>
                                 <button
                                   type="button"
                                   onClick={() => {

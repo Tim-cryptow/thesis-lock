@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MAX_TAGS_PER_ANCHOR,
   TAGS_CHANGED_EVENT,
@@ -155,11 +149,7 @@ export default function TagInput({
     }
 
     // Offer to create the typed tag when it is new.
-    if (
-      normalizedQuery &&
-      !taken.has(normalizedQuery) &&
-      !seen.has(normalizedQuery)
-    ) {
+    if (normalizedQuery && !taken.has(normalizedQuery) && !seen.has(normalizedQuery)) {
       out.push({ kind: "create", value: normalizedQuery });
     }
     return out;
@@ -181,7 +171,7 @@ export default function TagInput({
     } else if (e.key === "Escape") {
       setOpen(false);
     } else if (e.key === "Backspace" && query === "" && tags.length > 0) {
-      remove(tags[tags.length - 1]);
+      remove(tags[tags.length - 1]!);
     }
   };
 
@@ -193,9 +183,7 @@ export default function TagInput({
     }
   };
 
-  const pillSize = compact
-    ? "px-2 py-0.5 text-[11px]"
-    : "px-2.5 py-1 text-xs";
+  const pillSize = compact ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs";
 
   return (
     <div ref={containerRef} className="relative">

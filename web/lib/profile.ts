@@ -116,9 +116,7 @@ function emptyProfile(address: string): WalletProfile {
 // render a graceful empty state; transient Hiro failures degrade individual
 // sections (an unreachable registry leaves counts at zero) without losing the
 // rest of the profile.
-export async function fetchWalletProfile(
-  address: string,
-): Promise<WalletProfile> {
+export async function fetchWalletProfile(address: string): Promise<WalletProfile> {
   const addr = address.toUpperCase();
   if (!isValidProfileAddress(addr)) return emptyProfile(addr);
 
@@ -151,18 +149,12 @@ export async function fetchWalletProfile(
       const indexHashes = new Set(indexAnchors.map((a) => a.hash));
       // Only validate registry candidates the index didn't already confirm as a
       // single anchor; those resolve to batch (or are dropped if unbacked).
-      const extra = candidates.filter(
-        (entry) => !indexHashes.has(entry.hash.toLowerCase()),
-      );
-      const sources = await Promise.all(
-        extra.map((entry) => anchorSource(addr, entry)),
-      );
+      const extra = candidates.filter((entry) => !indexHashes.has(entry.hash.toLowerCase()));
+      const sources = await Promise.all(extra.map((entry) => anchorSource(addr, entry)));
       const extraAnchors: ProfileAnchor[] = extra
         .map((entry, i) => {
           const source = sources[i];
-          return source
-            ? { ...entry, hash: entry.hash.toLowerCase(), source }
-            : null;
+          return source ? { ...entry, hash: entry.hash.toLowerCase(), source } : null;
         })
         .filter((entry): entry is ProfileAnchor => entry !== null);
       recentAnchors = [...indexAnchors, ...extraAnchors]
@@ -170,9 +162,7 @@ export async function fetchWalletProfile(
         .slice(0, RECENT_LIMIT);
     } else {
       // Index unavailable: fall back to the registry-validated set entirely.
-      const sources = await Promise.all(
-        candidates.map((entry) => anchorSource(addr, entry)),
-      );
+      const sources = await Promise.all(candidates.map((entry) => anchorSource(addr, entry)));
       recentAnchors = candidates
         .map((entry, i) => {
           const source = sources[i];
@@ -227,9 +217,7 @@ export async function fetchWalletProfile(
       for (const entry of entries) {
         const entryHash = typeof entry.hash === "string" ? entry.hash : "";
         if (entryHash && countedHashes.has(entryHash)) continue;
-        const entryType = labelType(
-          typeof entry.label === "string" ? entry.label : "",
-        );
+        const entryType = labelType(typeof entry.label === "string" ? entry.label : "");
         if (entryType) {
           labelCounts.set(entryType, (labelCounts.get(entryType) ?? 0) + 1);
           if (entryHash) countedHashes.add(entryHash);
@@ -238,10 +226,8 @@ export async function fetchWalletProfile(
       continue;
     }
 
-    const label =
-      typeof event.details?.label === "string" ? event.details.label : "";
-    const hash =
-      typeof event.details?.hash === "string" ? event.details.hash : "";
+    const label = typeof event.details?.label === "string" ? event.details.label : "";
+    const hash = typeof event.details?.hash === "string" ? event.details.hash : "";
     // Submitting a single anchor through the app emits both an anchor-document
     // and a register-anchor call for the same hash, so skip a hash already
     // counted to weight each document once rather than twice.

@@ -58,9 +58,7 @@ function AnchorLabel({ label }: { label: string }) {
   const template = parsed.templateId ? getTemplate(parsed.templateId) : undefined;
 
   if (!template) {
-    return (
-      <code className="font-mono text-xs break-all">{label || "(no label)"}</code>
-    );
+    return <code className="font-mono text-xs break-all">{label || "(no label)"}</code>;
   }
 
   return (
@@ -82,9 +80,7 @@ function Stat({ value, label }: { value: number; label: string }) {
       <div className="text-2xl md:text-3xl font-mono">
         <CountUp value={value} />
       </div>
-      <div className="text-xs text-foreground/60 uppercase tracking-wide mt-1">
-        {label}
-      </div>
+      <div className="text-xs text-foreground/60 uppercase tracking-wide mt-1">{label}</div>
     </div>
   );
 }
@@ -166,8 +162,8 @@ export default function ProfileClient() {
         <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-8 text-center">
           <h1 className="text-2xl mb-2">Invalid address</h1>
           <p className="text-sm text-red-700 dark:text-red-400">
-            This is not a valid Stacks principal. A profile address must be a
-            standard wallet principal (SP or SM on mainnet, ST or SN on testnet).
+            This is not a valid Stacks principal. A profile address must be a standard wallet
+            principal (SP or SM on mainnet, ST or SN on testnet).
           </p>
         </div>
       ) : status === "error" ? (
@@ -182,10 +178,7 @@ export default function ProfileClient() {
           <div className="h-8 w-2/3 rounded bg-foreground/10 animate-pulse" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-20 rounded-lg bg-foreground/10 animate-pulse"
-              />
+              <div key={i} className="h-20 rounded-lg bg-foreground/10 animate-pulse" />
             ))}
           </div>
         </div>
@@ -206,11 +199,7 @@ export default function ProfileClient() {
                 {profile.address}
               </code>
               <CopyButton value={profile.address} label="Copy address" />
-              <WatchlistButton
-                type="wallet"
-                value={profile.address}
-                showLabel
-              />
+              <WatchlistButton type="wallet" value={profile.address} showLabel />
               <StarButton type="wallet" value={profile.address} label="" />
               <a
                 href={explorerAddressUrl(profile.address)}
@@ -223,25 +212,18 @@ export default function ProfileClient() {
             </div>
             {(profile.firstSeen > 0 || profile.lastSeen > 0) && (
               <p className="text-xs text-foreground/60 mt-3">
-                {profile.firstSeen > 0 && (
-                  <>Active since block {profile.firstSeen}</>
-                )}
+                {profile.firstSeen > 0 && <>Active since block {profile.firstSeen}</>}
                 {profile.firstSeen > 0 && profile.lastSeen > 0 && (
                   <span className="mx-2 text-foreground/30">&middot;</span>
                 )}
-                {profile.lastSeen > 0 && (
-                  <>Last active block {profile.lastSeen}</>
-                )}
+                {profile.lastSeen > 0 && <>Last active block {profile.lastSeen}</>}
               </p>
             )}
           </header>
 
           {/* Share */}
           <div className="mb-10">
-            <ShareButtons
-              url={origin ? profileUrl : ""}
-              title="Anchoring profile on ThesisLock"
-            />
+            <ShareButtons url={origin ? profileUrl : ""} title="Anchoring profile on ThesisLock" />
           </div>
 
           {/* Stats */}
@@ -254,11 +236,7 @@ export default function ProfileClient() {
 
           {/* Contribution graph */}
           <section className="mb-10">
-            <MiniContributionGraph
-              address={address}
-              mode="year"
-              title="Contribution graph"
-            />
+            <MiniContributionGraph address={address} mode="year" title="Contribution graph" />
           </section>
 
           {/* Document types */}
@@ -286,9 +264,7 @@ export default function ProfileClient() {
               Recent anchors
             </h2>
             {profile.recentAnchors.length === 0 ? (
-              <p className="text-sm text-foreground/60">
-                No anchors recorded for this wallet yet.
-              </p>
+              <p className="text-sm text-foreground/60">No anchors recorded for this wallet yet.</p>
             ) : (
               <ul className="space-y-3">
                 {profile.recentAnchors.map((entry, idx) => (
@@ -327,15 +303,11 @@ export default function ProfileClient() {
               Share this profile
             </h2>
             <div className="flex items-center gap-2 flex-wrap mb-4">
-              <code className="font-mono text-xs break-all text-foreground/80">
-                {profileUrl}
-              </code>
+              <code className="font-mono text-xs break-all text-foreground/80">{profileUrl}</code>
               <CopyButton value={profileUrl} label="Copy profile URL" />
             </div>
             <div>
-              <p className="text-xs text-foreground/60 mb-2">
-                Embeddable badge (Markdown)
-              </p>
+              <p className="text-xs text-foreground/60 mb-2">Embeddable badge (Markdown)</p>
               <div className="flex items-center gap-2 flex-wrap">
                 <code className="font-mono text-xs break-all text-foreground/80">
                   {badgeMarkdown}
@@ -343,7 +315,6 @@ export default function ProfileClient() {
                 <CopyButton value={badgeMarkdown} label="Copy badge markdown" />
               </div>
               {origin && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`${origin}/api/profile-badge/${address}`}
                   alt="ThesisLock profile badge preview"

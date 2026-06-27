@@ -58,10 +58,28 @@ export type CollectionColor = {
 
 export const COLLECTION_COLORS: CollectionColor[] = [
   { id: "blue", name: "Blue", bar: "bg-blue-500", chip: "bg-blue-500/15", text: "text-blue-500" },
-  { id: "green", name: "Green", bar: "bg-green-500", chip: "bg-green-500/15", text: "text-green-500" },
+  {
+    id: "green",
+    name: "Green",
+    bar: "bg-green-500",
+    chip: "bg-green-500/15",
+    text: "text-green-500",
+  },
   { id: "red", name: "Red", bar: "bg-red-500", chip: "bg-red-500/15", text: "text-red-500" },
-  { id: "purple", name: "Purple", bar: "bg-purple-500", chip: "bg-purple-500/15", text: "text-purple-500" },
-  { id: "orange", name: "Orange", bar: "bg-orange-500", chip: "bg-orange-500/15", text: "text-orange-500" },
+  {
+    id: "purple",
+    name: "Purple",
+    bar: "bg-purple-500",
+    chip: "bg-purple-500/15",
+    text: "text-purple-500",
+  },
+  {
+    id: "orange",
+    name: "Orange",
+    bar: "bg-orange-500",
+    chip: "bg-orange-500/15",
+    text: "text-orange-500",
+  },
   { id: "teal", name: "Teal", bar: "bg-teal-500", chip: "bg-teal-500/15", text: "text-teal-500" },
   { id: "pink", name: "Pink", bar: "bg-pink-500", chip: "bg-pink-500/15", text: "text-pink-500" },
   { id: "gray", name: "Gray", bar: "bg-gray-500", chip: "bg-gray-500/15", text: "text-gray-500" },
@@ -71,13 +89,13 @@ export const COLLECTION_COLORS: CollectionColor[] = [
 // serializes cleanly and renders anywhere without an icon font.
 export const COLLECTION_ICONS = ["📄", "📁", "🔬", "⚖️", "💻", "🎓", "🏥", "📊"];
 
-export const DEFAULT_COLOR = COLLECTION_COLORS[0].id;
-export const DEFAULT_ICON = COLLECTION_ICONS[1];
+export const DEFAULT_COLOR = COLLECTION_COLORS[0]!.id;
+export const DEFAULT_ICON = COLLECTION_ICONS[1]!;
 
 // Resolves a stored color id to its class set, falling back to the first preset
 // so an unknown or hand-edited color never renders blank.
 export function resolveColor(id: string): CollectionColor {
-  return COLLECTION_COLORS.find((c) => c.id === id) ?? COLLECTION_COLORS[0];
+  return COLLECTION_COLORS.find((c) => c.id === id) ?? COLLECTION_COLORS[0]!;
 }
 
 function nowIso(): string {
@@ -131,7 +149,7 @@ function coerceItem(value: unknown): CollectionItem | null {
 // a Link would treat as an external redirect.
 function verifyPathHash(url: string): string | null {
   const m = /^\/v\/([0-9a-f]{64})(?:\?|$)/i.exec(url);
-  return m ? m[1].toLowerCase() : null;
+  return m ? m[1]!.toLowerCase() : null;
 }
 
 // The path a Verify link or CSV row should use for an item: the pinned source
@@ -158,7 +176,7 @@ export function itemVerifyContext(item: CollectionItem): ItemVerifyContext {
   if (!item.verifyUrl || verifyPathHash(item.verifyUrl) !== item.hash) return {};
   const ctx: ItemVerifyContext = {};
   const ownerMatch = /[?&]owner=([^&]+)/.exec(item.verifyUrl);
-  if (ownerMatch) ctx.owner = decodeURIComponent(ownerMatch[1]);
+  if (ownerMatch) ctx.owner = decodeURIComponent(ownerMatch[1]!);
   const groupMatch = /[?&]group=(\d+)(?:&|$)/.exec(item.verifyUrl);
   const indexMatch = /[?&]gi=(\d+)(?:&|$)/.exec(item.verifyUrl);
   if (groupMatch && indexMatch) {
@@ -204,9 +222,7 @@ export function loadCollections(): Collection[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map(coerceCollection)
-      .filter((c): c is Collection => c !== null);
+    return parsed.map(coerceCollection).filter((c): c is Collection => c !== null);
   } catch {
     return [];
   }
@@ -261,9 +277,7 @@ export function updateCollection(
   patch: Partial<Omit<Collection, "id" | "items" | "createdAt">>,
 ): void {
   saveCollections(
-    loadCollections().map((c) =>
-      c.id === id ? { ...c, ...patch, updatedAt: nowIso() } : c,
-    ),
+    loadCollections().map((c) => (c.id === id ? { ...c, ...patch, updatedAt: nowIso() } : c)),
   );
 }
 
@@ -283,8 +297,7 @@ export function addToCollection(
 ): void {
   const normalized = normalizeHash(hash);
   if (!normalized) return;
-  const pinned =
-    verifyUrl && verifyPathHash(verifyUrl) === normalized ? verifyUrl : undefined;
+  const pinned = verifyUrl && verifyPathHash(verifyUrl) === normalized ? verifyUrl : undefined;
   saveCollections(
     loadCollections().map((c) => {
       if (c.id !== collectionId) return c;
@@ -331,20 +344,14 @@ export function removeFromCollection(collectionId: string, hash: string): void {
 }
 
 // Updates the free-form note on one item.
-export function setItemNote(
-  collectionId: string,
-  hash: string,
-  note: string,
-): void {
+export function setItemNote(collectionId: string, hash: string, note: string): void {
   const normalized = normalizeHash(hash);
   saveCollections(
     loadCollections().map((c) =>
       c.id === collectionId
         ? {
             ...c,
-            items: c.items.map((i) =>
-              i.hash === normalized ? { ...i, note } : i,
-            ),
+            items: c.items.map((i) => (i.hash === normalized ? { ...i, note } : i)),
             updatedAt: nowIso(),
           }
         : c,
@@ -355,11 +362,7 @@ export function setItemNote(
 // Moves one item between two collections in a single write, preserving its
 // label, note, and added time. A no-op if the source lacks the hash or the
 // destination already has it.
-export function moveItem(
-  fromCollectionId: string,
-  toCollectionId: string,
-  hash: string,
-): void {
+export function moveItem(fromCollectionId: string, toCollectionId: string, hash: string): void {
   const normalized = normalizeHash(hash);
   if (fromCollectionId === toCollectionId) return;
   const collections = loadCollections();
@@ -386,11 +389,7 @@ export function moveItem(
 
 // Shifts an item one slot up or down within its collection. Drag-to-reorder is
 // expressed as simple up/down moves so it works without a drag library.
-export function reorderItem(
-  collectionId: string,
-  hash: string,
-  direction: "up" | "down",
-): void {
+export function reorderItem(collectionId: string, hash: string, direction: "up" | "down"): void {
   const normalized = normalizeHash(hash);
   saveCollections(
     loadCollections().map((c) => {
@@ -400,7 +399,7 @@ export function reorderItem(
       const target = direction === "up" ? index - 1 : index + 1;
       if (target < 0 || target >= c.items.length) return c;
       const items = [...c.items];
-      [items[index], items[target]] = [items[target], items[index]];
+      [items[index], items[target]] = [items[target]!, items[index]!];
       return { ...c, items, updatedAt: nowIso() };
     }),
   );

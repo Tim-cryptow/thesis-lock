@@ -26,10 +26,7 @@ export function hashFileStream(filepath: string): Promise<string> {
   });
 }
 
-async function computeEntry(
-  filepath: string,
-  verify: boolean,
-): Promise<HashEntry> {
+async function computeEntry(filepath: string, verify: boolean): Promise<HashEntry> {
   let stats;
   try {
     stats = statSync(filepath);
@@ -55,11 +52,12 @@ async function computeEntry(
     try {
       const results = await searchByHash(hash);
       if (results.length > 0) {
+        const first = results[0]!;
         entry.anchored = true;
         entry.anchor = {
-          source: results[0].source,
-          owner: results[0].owner,
-          stacksBlock: results[0].stacksBlock,
+          source: first.source,
+          owner: first.owner,
+          stacksBlock: first.stacksBlock,
         };
       } else {
         entry.anchored = false;
@@ -95,11 +93,7 @@ function renderEntry(entry: HashEntry, verify: boolean): void {
 }
 
 function entryFailed(entry: HashEntry): boolean {
-  return (
-    entry.error !== undefined ||
-    entry.verifyError !== undefined ||
-    entry.anchored === false
-  );
+  return entry.error !== undefined || entry.verifyError !== undefined || entry.anchored === false;
 }
 
 export async function hashCommand(

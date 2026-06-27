@@ -11,8 +11,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "ThesisLock",
   url: "https://thesis-lock.vercel.app",
-  description:
-    "Anchor document hashes on the Stacks blockchain. Permanent, verifiable, private.",
+  description: "Anchor document hashes on the Stacks blockchain. Permanent, verifiable, private.",
   logo: "https://thesis-lock.vercel.app/icon-512.png",
 };
 

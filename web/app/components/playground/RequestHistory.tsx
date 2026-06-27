@@ -82,11 +82,7 @@ type Props = {
   onClear: () => void;
 };
 
-export default function RequestHistory({
-  history,
-  onReplay,
-  onClear,
-}: Props) {
+export default function RequestHistory({ history, onReplay, onClear }: Props) {
   const [open, setOpen] = useState(true);
 
   return (
@@ -114,9 +110,7 @@ export default function RequestHistory({
 
       {open ? (
         history.length === 0 ? (
-          <p className="mt-3 text-sm text-foreground/50">
-            No requests yet this session.
-          </p>
+          <p className="mt-3 text-sm text-foreground/50">No requests yet this session.</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-1">
             {history.map((entry) => (
@@ -128,23 +122,15 @@ export default function RequestHistory({
                   title="Re-populate the form and send again"
                 >
                   <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${statusDotColor(
-                      entry.status,
-                    )}`}
+                    className={`h-2 w-2 shrink-0 rounded-full ${statusDotColor(entry.status)}`}
                     aria-hidden="true"
                   />
-                  <span className="w-10 shrink-0 font-mono text-foreground/60">
-                    {entry.method}
-                  </span>
+                  <span className="w-10 shrink-0 font-mono text-foreground/60">{entry.method}</span>
                   <span className="min-w-0 flex-1 truncate font-mono text-foreground">
                     {entry.path.split("?")[0]}
-                    <span className="text-foreground/40">
-                      {truncateParams(entry.path)}
-                    </span>
+                    <span className="text-foreground/40">{truncateParams(entry.path)}</span>
                   </span>
-                  <span className="shrink-0 font-mono text-foreground/60">
-                    {entry.status}
-                  </span>
+                  <span className="shrink-0 font-mono text-foreground/60">{entry.status}</span>
                   <span className="hidden shrink-0 text-foreground/40 sm:inline">
                     {formatTime(entry.timestamp)}
                   </span>
