@@ -191,6 +191,14 @@ const PAGES: PaletteItem[] = [
     section: "pages",
   },
   {
+    id: "help",
+    title: "Help",
+    description: "/help",
+    icon: "help",
+    path: "/help",
+    section: "pages",
+  },
+  {
     id: "embed",
     title: "Embed",
     description: "/embed",

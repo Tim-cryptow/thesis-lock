@@ -26,6 +26,7 @@ import PerformanceTracker from "./components/PerformanceTracker";
 import PerformanceBanner from "./components/performance/PerformanceBanner";
 import AuditLogger from "./components/AuditLogger";
 import SettingsLink from "./components/SettingsLink";
+import HelpNavLink from "./components/HelpNavLink";
 import RecentPages from "./components/RecentPages";
 import NavigationTracker from "./components/NavigationTracker";
 import BackupReminder from "./components/BackupReminder";
@@ -173,6 +174,7 @@ export default function RootLayout({
                       <BackupReminder />
                       <NotificationBell />
                       <SettingsLink />
+                      <HelpNavLink />
                       <RecentPages />
                       <FavoritesNavLink />
                       <NotificationSound />
