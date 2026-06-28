@@ -17,6 +17,15 @@ const VALID: Record<(typeof KEYS)[number], string> = {
   NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
 };
 
+// Dereferenced without a fallback in lib/stacks.ts and lib/feed.ts.
+const REQUIRED = [
+  "NEXT_PUBLIC_API_URL",
+  "NEXT_PUBLIC_CONTRACT_ADDRESS",
+  "NEXT_PUBLIC_CONTRACT_NAME",
+] as const;
+// Have real fallbacks, so a missing value is only a warning.
+const OPTIONAL = ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_SUPABASE_URL"] as const;
+
 describe("env validation", () => {
   const saved: Record<string, string | undefined> = {};
 
@@ -39,13 +48,20 @@ describe("env validation", () => {
     vi.restoreAllMocks();
   });
 
-  it("reports all variables as missing when none are set", () => {
+  it("classifies unset required vars as invalid and unset optional vars as missing", () => {
     const result = inspectEnv();
-    expect(result.missing).toEqual([...KEYS]);
-    expect(result.invalid).toHaveLength(0);
+    expect(result.missing).toEqual([...OPTIONAL]);
+    expect(result.invalid.map((i) => i.name)).toEqual([...REQUIRED]);
   });
 
-  it("warns but does not throw when variables are unset", () => {
+  it("throws when a required var is unset", () => {
+    expect(() => validateEnv()).toThrow(EnvValidationError);
+  });
+
+  it("warns but does not throw when only optional vars are unset", () => {
+    for (const key of REQUIRED) {
+      process.env[key] = VALID[key];
+    }
     expect(() => validateEnv()).not.toThrow();
     expect(console.warn).toHaveBeenCalledTimes(1);
   });

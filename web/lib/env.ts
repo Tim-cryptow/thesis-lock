@@ -1,10 +1,12 @@
-// Validates the NEXT_PUBLIC_* configuration the client reads at runtime. Every
-// value has a working built-in default, so a missing variable is only a warning
-// (the app runs on its defaults). A variable that is present but malformed - a
-// non-URL API base, a bad principal, an illegal contract name - is a real
-// misconfiguration: it would silently point reads at the wrong place, so it
-// throws. Next.js inlines these values at build time, so this checks the
-// configuration the deployed bundle was actually built with.
+// Validates the NEXT_PUBLIC_* configuration the client reads at runtime. The
+// required vars (the Hiro API base, the contract address, and the contract name)
+// are dereferenced without a fallback in lib/stacks.ts and lib/feed.ts, so a
+// missing one would silently build "undefined/..." URLs and contract calls;
+// those throw. The optional vars (site URL, Supabase URL) have real fallbacks, so
+// a missing one is only a warning. A present but malformed value (a non-URL API
+// base, a bad principal, an illegal contract name) always throws. Next.js inlines
+// these values at build time, so this checks the configuration the deployed
+// bundle was actually built with.
 
 import { validateStacksAddress } from "@stacks/transactions";
 
@@ -27,13 +29,16 @@ type Rule = {
   value: string | undefined;
   valid: (value: string) => boolean;
   expected: string;
+  // Required vars throw when unset (no fallback exists); optional vars only warn.
+  required: boolean;
 };
 
 /**
- * Inspect the public environment without side effects. Returns the names that
- * are unset (and will fall back to defaults) and the ones that are present but
- * fail their format check. Referencing process.env members directly lets Next
- * inline them into the client bundle.
+ * Inspect the public environment without side effects. Returns the optional
+ * names that are unset (and fall back to defaults) under `missing`, and under
+ * `invalid` the ones that are present but malformed or required and unset.
+ * Referencing process.env members directly lets Next inline them into the
+ * client bundle.
  */
 export function inspectEnv(): EnvValidationResult {
   const rules: Rule[] = [
@@ -42,30 +47,35 @@ export function inspectEnv(): EnvValidationResult {
       value: process.env.NEXT_PUBLIC_API_URL,
       valid: isHttpUrl,
       expected: "an http(s) URL",
+      required: true,
     },
     {
       name: "NEXT_PUBLIC_CONTRACT_ADDRESS",
       value: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
       valid: (v) => validateStacksAddress(v),
       expected: "a Stacks principal with a valid checksum",
+      required: true,
     },
     {
       name: "NEXT_PUBLIC_CONTRACT_NAME",
       value: process.env.NEXT_PUBLIC_CONTRACT_NAME,
       valid: (v) => CONTRACT_NAME.test(v),
       expected: "a Clarity contract name",
+      required: true,
     },
     {
       name: "NEXT_PUBLIC_SITE_URL",
       value: process.env.NEXT_PUBLIC_SITE_URL,
       valid: isHttpUrl,
       expected: "an http(s) URL",
+      required: false,
     },
     {
       name: "NEXT_PUBLIC_SUPABASE_URL",
       value: process.env.NEXT_PUBLIC_SUPABASE_URL,
       valid: isHttpUrl,
       expected: "an http(s) URL",
+      required: false,
     },
   ];
 
@@ -75,7 +85,11 @@ export function inspectEnv(): EnvValidationResult {
   for (const rule of rules) {
     const trimmed = rule.value?.trim();
     if (!trimmed) {
-      missing.push(rule.name);
+      if (rule.required) {
+        invalid.push({ name: rule.name, reason: "is required but unset" });
+      } else {
+        missing.push(rule.name);
+      }
       continue;
     }
     if (!rule.valid(trimmed)) {

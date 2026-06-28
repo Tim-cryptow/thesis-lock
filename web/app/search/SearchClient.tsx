@@ -18,7 +18,7 @@ import TruncatedAddress from "@/app/components/TruncatedAddress";
 import TagFilter from "@/app/components/TagFilter";
 import { FOCUS_SEARCH_EVENT, FOCUS_SEARCH_FLAG } from "@/app/components/KeyboardShortcuts";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
-import { sanitizeInput } from "@/lib/sanitize";
+import { sanitizeSearchTerm } from "@/lib/sanitize";
 import { checkRateLimit, isRateLimitError } from "@/lib/rateLimit";
 import { TAGS_CHANGED_EVENT, getHashesByTag, normalizeHash } from "@/lib/tags";
 import { auditSearch } from "@/lib/auditEvents";
@@ -134,7 +134,7 @@ export default function SearchClient() {
 
   const runSearch = useCallback(
     async (rawTerm: string, searchType: SearchType) => {
-      const term = sanitizeInput(rawTerm);
+      const term = sanitizeSearchTerm(rawTerm);
       if (!term) return;
 
       try {

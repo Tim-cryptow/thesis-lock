@@ -15,6 +15,17 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
+ * Normalize a search term: remove null bytes and trim, but keep every printable
+ * character. Unlike sanitizeInput it does not strip angle brackets, because the
+ * term is passed through URLSearchParams and rendered as escaped text (so it is
+ * never interpreted as HTML), and anchor labels may legitimately contain "<" and
+ * ">" that must survive to match an exact label on the server.
+ */
+export function sanitizeSearchTerm(input: string): string {
+  return input.replace(/\0/g, "").trim();
+}
+
+/**
  * Normalize a SHA-256 hash: drop whitespace and an optional 0x prefix, lowercase,
  * and keep only hex characters. Length validation is left to the caller.
  */

@@ -5,6 +5,7 @@ import {
   sanitizeHash,
   sanitizeInput,
   sanitizeLabel,
+  sanitizeSearchTerm,
 } from "../sanitize";
 
 const OWNER = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
@@ -17,6 +18,16 @@ describe("sanitizeInput", () => {
 
   it("removes null bytes and trims", () => {
     expect(sanitizeInput("  a\0b  ")).toBe("ab");
+  });
+});
+
+describe("sanitizeSearchTerm", () => {
+  it("preserves angle brackets and other printable characters", () => {
+    expect(sanitizeSearchTerm("assay <control> v2")).toBe("assay <control> v2");
+  });
+
+  it("removes null bytes and trims", () => {
+    expect(sanitizeSearchTerm("  a\0b  ")).toBe("ab");
   });
 });
 
