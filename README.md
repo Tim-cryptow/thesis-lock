@@ -144,6 +144,33 @@ pre-commit hook runs lint-staged so staged files are linted and formatted before
 each commit, and CI runs lint and format checks for every package. See
 [CODESTYLE.md](CODESTYLE.md) for the full conventions.
 
+## Security
+
+Security practices and the vulnerability-reporting process are documented in
+[SECURITY.md](SECURITY.md). In summary:
+
+- Documents are hashed with SHA-256 in the browser and never uploaded. The chain
+  is the source of truth and reads go through the public Hiro API.
+- Every response carries a strict Content-Security-Policy and hardening headers,
+  built in `web/proxy.ts` and `web/lib/csp.ts`. Embeddable badge and image routes
+  opt into cross-origin loading; every other route denies framing.
+- User input is sanitized before it reaches a contract call, the Hiro API, a CSV
+  export, or the DOM (`web/lib/sanitize.ts`), the client rate-limits its own API
+  calls (`web/lib/rateLimit.ts`), and public configuration is validated on load
+  (`web/lib/env.ts`).
+- Dependencies are audited in CI and the build fails on any high or critical
+  advisory. Run the same checks locally:
+
+```bash
+cd web   # or the repo root, sdk, or cli
+npm audit --audit-level=high
+npm run audit:sri   # web only: confirms no unpinned third-party subresources
+```
+
+To report a vulnerability, use GitHub's private "Report a vulnerability" flow as
+described in [SECURITY.md](SECURITY.md). Please do not open a public issue for a
+sensitive report.
+
 ## Documentation
 
 Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):

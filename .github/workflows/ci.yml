@@ -41,6 +41,9 @@ jobs:
       - name: Run contract tests
         run: npm test
 
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
@@ -78,6 +81,12 @@ jobs:
 
       - name: Unit and component tests
         run: npm run test:unit
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
+      - name: Subresource integrity audit
+        run: npm run audit:sri
 
   api-tests:
     name: API tests
@@ -170,6 +179,9 @@ jobs:
       - name: Verify package contents
         run: npm pack --dry-run
 
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
   cli:
     name: CLI
     runs-on: ubuntu-latest
@@ -214,3 +226,6 @@ jobs:
 
       - name: Verify package contents
         run: npm pack --dry-run
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
