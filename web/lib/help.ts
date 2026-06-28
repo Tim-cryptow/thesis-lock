@@ -380,3 +380,15 @@ export const TROUBLESHOOTING: TroubleshootingEntry[] = [
 export function getTroubleshooting(slug: string): TroubleshootingEntry | undefined {
   return TROUBLESHOOTING.find((entry) => entry.slug === slug);
 }
+
+/**
+ * Resolve a help topic slug to its page and anchor. Searches FAQs, then guides,
+ * then troubleshooting entries. Falls back to the help center home when the slug
+ * is unknown, so a contextual link never dead-ends on a missing anchor.
+ */
+export function helpHref(topic: string): string {
+  if (getFaq(topic)) return `/help/faq#${topic}`;
+  if (getGuide(topic)) return `/help/guides#${topic}`;
+  if (getTroubleshooting(topic)) return `/help/troubleshooting#${topic}`;
+  return "/help";
+}
