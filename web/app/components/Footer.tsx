@@ -6,6 +6,7 @@ import FooterStatus from "@/app/components/FooterStatus";
 import SocialLinks from "@/app/components/SocialLinks";
 import FooterStats from "@/app/components/FooterStats";
 import BackToTop from "@/app/components/BackToTop";
+import VersionBadge from "@/app/components/VersionBadge";
 
 const YEAR = 2026;
 
@@ -99,6 +100,7 @@ export default function Footer() {
               >
                 Privacy
               </Link>
+              <VersionBadge />
             </div>
           </div>
 
