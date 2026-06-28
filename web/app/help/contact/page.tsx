@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { REPO_URL } from "@/lib/docs";
+
+export const metadata: Metadata = {
+  title: { absolute: "Contact | ThesisLock" },
+  description: "How to reach the ThesisLock project and the Stacks community for help.",
+  alternates: { canonical: "/help/contact" },
+};
 
 const DISCORD_URL = "https://discord.gg/stacks";
 

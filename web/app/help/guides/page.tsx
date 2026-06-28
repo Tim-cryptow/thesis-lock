@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { GUIDES } from "@/lib/help";
+
+export const metadata: Metadata = {
+  title: { absolute: "Guides | ThesisLock" },
+  description:
+    "Step-by-step guides for anchoring, verifying, groups, batches, proof NFTs, and exports.",
+  alternates: { canonical: "/help/guides" },
+};
 
 export default function GuidesPage() {
   return (

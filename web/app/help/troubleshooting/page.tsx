@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { TROUBLESHOOTING } from "@/lib/help";
+
+export const metadata: Metadata = {
+  title: { absolute: "Troubleshooting | ThesisLock" },
+  description: "Fixes for common wallet, transaction, hash, badge, and connectivity problems.",
+  alternates: { canonical: "/help/troubleshooting" },
+};
 
 export default function TroubleshootingPage() {
   return (
