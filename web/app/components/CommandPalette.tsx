@@ -9,6 +9,7 @@ import {
   SHORTCUTS_OPEN_EVENT,
   filterItems,
   getAllItems,
+  getHelpItems,
   getRecentVisits,
   pageItemForPath,
   recordVisit,
@@ -17,11 +18,12 @@ import {
 } from "@/lib/commandPalette";
 
 // Order the sections are rendered (and keyboard-navigated) in.
-const SECTION_ORDER: PaletteSection[] = ["recent", "pages", "actions"];
+const SECTION_ORDER: PaletteSection[] = ["recent", "pages", "actions", "help"];
 const SECTION_LABELS: Record<PaletteSection, string> = {
   recent: "Recent",
   pages: "Pages",
   actions: "Actions",
+  help: "Help",
 };
 
 // Minimal icon set keyed by PaletteItem.icon, with a generic fallback.
@@ -139,7 +141,11 @@ export default function CommandPalette() {
   // grouped and flattened in section render order so arrow-key navigation
   // matches what is on screen.
   const ordered = useMemo(() => {
-    const filtered = filterItems(query, [...recentItems, ...getAllItems()]);
+    // FAQ topics join the pool only while searching, so the default list stays short.
+    const pool = query.trim()
+      ? [...recentItems, ...getAllItems(), ...getHelpItems()]
+      : [...recentItems, ...getAllItems()];
+    const filtered = filterItems(query, pool);
     const out: PaletteItem[] = [];
     for (const section of SECTION_ORDER) {
       out.push(...filtered.filter((i) => i.section === section));
