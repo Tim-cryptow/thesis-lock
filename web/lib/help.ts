@@ -311,3 +311,72 @@ export const GUIDES: Guide[] = [
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((guide) => guide.slug === slug);
 }
+
+export type TroubleshootingEntry = {
+  // Stable anchor id, also the deep-link target for HelpLink.
+  slug: string;
+  problem: string;
+  solution: string;
+};
+
+export const TROUBLESHOOTING: TroubleshootingEntry[] = [
+  {
+    slug: "wallet-wont-connect",
+    problem: "Wallet will not connect",
+    solution:
+      "Make sure a supported wallet extension (Leather, Xverse, or Asigna) is installed and unlocked, then refresh the page so ThesisLock can detect it. If the popup does not appear, check that your browser is not blocking it and that the extension is set to Stacks mainnet.",
+  },
+  {
+    slug: "transaction-stuck-pending",
+    problem: "Transaction stuck pending",
+    solution:
+      "Stacks blocks settle on Bitcoin, so a transaction can take several minutes to confirm. Give it time, and open the transaction in the explorer to see its status. ThesisLock keeps polling and updates the page automatically once it confirms.",
+  },
+  {
+    slug: "hash-doesnt-match",
+    problem: "Hash does not match",
+    solution:
+      "A different hash means the file is not byte-for-byte identical to the one that was anchored. Even a small edit, a re-save, or a format conversion changes the hash. Re-download or restore the original file and try again.",
+  },
+  {
+    slug: "badge-shows-not-verified",
+    problem: "Badge shows Not Verified",
+    solution:
+      "Single anchors verify by hash alone, but batch anchors are recorded under the wallet that made them. If the document was batch anchored, add the owner to the request with ?owner=their-principal so the badge can find it.",
+  },
+  {
+    slug: "stats-not-loading",
+    problem: "Stats not loading",
+    solution:
+      "Stats and other live data come from the public Hiro API, which can occasionally be slow or briefly unavailable. Check the status page to see whether the API is healthy, then refresh in a moment.",
+  },
+  {
+    slug: "verification-says-not-anchored",
+    problem: "Verification says not anchored",
+    solution:
+      "The transaction may still be pending, so wait a few minutes and reload. If the document was anchored in a batch or to a group, include the owner with ?owner=their-principal, since those records are keyed by wallet.",
+  },
+  {
+    slug: "wrong-wallet-connected",
+    problem: "Wrong wallet or account connected",
+    solution:
+      "ThesisLock uses whichever account your wallet has active. Disconnect, switch to the account you want inside the wallet extension, then reconnect so the app reads the right address.",
+  },
+  {
+    slug: "anchor-history-is-empty",
+    problem: "My anchor history is empty",
+    solution:
+      "Anchor history is read from the chain for the connected wallet, so confirm the correct account is connected. If you just anchored, the transaction may still be confirming, and it appears once it lands on chain.",
+  },
+  {
+    slug: "page-looks-stale-or-offline",
+    problem: "Page looks stale or offline",
+    solution:
+      "ThesisLock caches assets for offline use through a service worker, which can occasionally serve an old page. Refresh, and if the problem persists, reload while bypassing the cache or clear the site data for this domain.",
+  },
+];
+
+/** Look up a troubleshooting entry by its slug. */
+export function getTroubleshooting(slug: string): TroubleshootingEntry | undefined {
+  return TROUBLESHOOTING.find((entry) => entry.slug === slug);
+}
