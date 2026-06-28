@@ -26,12 +26,26 @@ const CONNECT_SRC = Array.from(
   ),
 ).join(" ");
 
+// 'unsafe-eval' is only needed by the dev server (HMR and React Refresh compile
+// modules with eval). The production bundle never evaluates strings, so it is
+// dropped outside development to shrink the script attack surface.
+const isProduction = process.env.NODE_ENV === "production";
+const SCRIPT_SRC = isProduction
+  ? "script-src 'self' 'unsafe-inline'"
+  : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  SCRIPT_SRC,
   "style-src 'self' 'unsafe-inline'",
   `connect-src ${CONNECT_SRC}`,
   "img-src 'self' data: blob:",
+  // Structural directives: forbid plugins and base-tag hijacking, pin form
+  // submissions to this origin, and block this app from being framed anywhere.
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
 ].join("; ");
 
 const SECURITY_HEADERS: Record<string, string> = {
@@ -40,6 +54,13 @@ const SECURITY_HEADERS: Record<string, string> = {
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  // Force HTTPS for a year including subdomains once a browser has seen the app.
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  // Do not leak browsing intent by pre-resolving DNS for off-site links.
+  "X-DNS-Prefetch-Control": "off",
+  // Isolate this origin's browsing context group while still allowing the
+  // wallet and OAuth-style popups the app opens to keep their opener handle.
+  "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
   "Content-Security-Policy": CSP,
 };
 
