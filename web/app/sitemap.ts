@@ -65,6 +65,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/terms", 0.7, "weekly"),
     entry("/privacy", 0.7, "monthly"),
 
+    // Help center.
+    entry("/help", 0.6, "monthly"),
+    entry("/help/faq", 0.6, "monthly"),
+    entry("/help/guides", 0.6, "monthly"),
+    entry("/help/troubleshooting", 0.6, "monthly"),
+    entry("/help/contact", 0.6, "monthly"),
+
     // Documentation: the landing plus every guide, kept in sync with lib/docs.
     entry("/docs", 0.7, "weekly"),
     ...DOCS.map((doc) => entry(`/docs/${doc.slug}`, 0.7, "weekly")),
