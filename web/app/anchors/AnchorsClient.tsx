@@ -8,6 +8,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
+import HelpLink from "@/app/components/HelpLink";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import AnchorListSkeleton from "@/app/components/skeletons/AnchorListSkeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -365,13 +366,19 @@ export default function AnchorsPage() {
       ) : error ? (
         <ErrorFallback message={error} onRetry={() => void loadHistory(address)} />
       ) : count === 0 ? (
-        <EmptyState
-          icon={<EmptyStateIcon name="document" />}
-          title="No anchors yet"
-          description="Anchor your first document to create a permanent on-chain timestamp."
-          actionLabel="Anchor a Document"
-          actionHref="/anchor"
-        />
+        <>
+          <EmptyState
+            icon={<EmptyStateIcon name="document" />}
+            title="No anchors yet"
+            description="Anchor your first document to create a permanent on-chain timestamp."
+            actionLabel="Anchor a Document"
+            actionHref="/anchor"
+          />
+          <p className="mt-6 flex items-center justify-center gap-1.5 text-sm text-foreground/60">
+            New to anchoring? Read the step-by-step guide.
+            <HelpLink topic="anchor-your-first-document" label="Help: anchor your first document" />
+          </p>
+        </>
       ) : (
         <>
           <div className="flex items-center gap-2 mb-4">

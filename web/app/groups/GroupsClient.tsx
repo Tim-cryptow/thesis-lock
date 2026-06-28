@@ -8,6 +8,7 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
 import ValidatedInput from "@/app/components/ValidatedInput";
+import HelpLink from "@/app/components/HelpLink";
 import { validateGroupName } from "@/lib/validators";
 import { sanitizeLabel } from "@/lib/sanitize";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
@@ -172,7 +173,10 @@ export default function GroupsPage() {
       ) : (
         <>
           <div className="rounded-lg border border-foreground/10 bg-card p-6 mb-10">
-            <h2 className="text-lg mb-3">{t("groups.create.heading")}</h2>
+            <h2 className="text-lg mb-3 flex items-center gap-2">
+              {t("groups.create.heading")}
+              <HelpLink topic="what-are-groups" label="Help: groups" />
+            </h2>
             <ValidatedInput
               id="group-name"
               label={t("groups.create.nameLabel")}
