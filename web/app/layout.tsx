@@ -16,6 +16,7 @@ import InstallPrompt from "./components/InstallPrompt";
 import OfflineIndicator from "./components/OfflineIndicator";
 import { TourProvider } from "./components/TourProvider";
 import CommandPalette from "./components/CommandPalette";
+import WhatsNew from "./components/WhatsNew";
 import RouteVisitRecorder from "./components/RouteVisitRecorder";
 import { LiveProvider } from "./components/LiveProvider";
 import LiveTicker from "./components/LiveTicker";
@@ -123,7 +124,10 @@ export const metadata: Metadata = {
   },
   alternates: {
     types: {
-      "application/rss+xml": [{ url: "/api/feed/rss", title: "ThesisLock RSS" }],
+      "application/rss+xml": [
+        { url: "/api/feed/rss", title: "ThesisLock RSS" },
+        { url: "/changelog/rss", title: "ThesisLock releases" },
+      ],
       "application/atom+xml": [{ url: "/api/feed/atom", title: "ThesisLock Atom" }],
     },
   },
@@ -187,6 +191,7 @@ export default function RootLayout({
                       </main>
                       <Footer />
                       <CommandPalette />
+                      <WhatsNew />
                       <RouteVisitRecorder />
                       <NavigationTracker />
                     </TourProvider>

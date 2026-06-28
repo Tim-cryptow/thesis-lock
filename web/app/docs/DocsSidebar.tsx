@@ -99,6 +99,20 @@ export default function DocsSidebar() {
               Help Center
             </Link>
           </li>
+          <li>
+            <Link
+              href="/changelog"
+              onClick={() => setOpen(false)}
+              aria-current={pathname === "/changelog" ? "page" : undefined}
+              className={`block rounded-md px-3 py-2 text-sm transition ${
+                pathname === "/changelog"
+                  ? "bg-foreground/5 text-foreground font-medium"
+                  : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+              }`}
+            >
+              Releases
+            </Link>
+          </li>
         </ul>
       </nav>
     </>

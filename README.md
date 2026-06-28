@@ -1,4 +1,4 @@
-![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg) ![Status](https://thesis-lock.vercel.app/api/status/badge) [![RSS](https://img.shields.io/badge/RSS-feed-orange)](https://thesis-lock.vercel.app/api/feed/rss)
+![CI](https://github.com/Tim-cryptow/thesis-lock/actions/workflows/ci.yml/badge.svg) ![Status](https://thesis-lock.vercel.app/api/status/badge) [![RSS](https://img.shields.io/badge/RSS-feed-orange)](https://thesis-lock.vercel.app/api/feed/rss) [![Version](https://img.shields.io/badge/version-1.6.0-blue)](https://thesis-lock.vercel.app/changelog)
 
 # ThesisLock
 
@@ -180,6 +180,15 @@ searchable [FAQ](https://thesis-lock.vercel.app/help/faq), step-by-step
 [contact page](https://thesis-lock.vercel.app/help/contact). Contextual help links across the
 app deep-link into the relevant topic, and the command palette surfaces FAQ answers as you
 type. All help content is defined in one place, `web/lib/help.ts`.
+
+## Changelog
+
+Release notes and the full version history live at
+[thesis-lock.vercel.app/changelog](https://thesis-lock.vercel.app/changelog), with a
+[release RSS feed](https://thesis-lock.vercel.app/changelog/rss) you can follow in a feed reader,
+and returning visitors see a what's-new summary after each update. The current version is
+**v1.6.0**; the version and release history are defined in `web/lib/version.ts`, and the deployed
+version is also available from `GET /api/version`.
 
 ## Documentation
 

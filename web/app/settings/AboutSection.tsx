@@ -11,8 +11,7 @@ import {
   EXPLORER_CONTRACT_ADDRESS,
 } from "@/lib/contractExplorer";
 import { REPO_URL } from "@/lib/docs";
-
-const APP_VERSION = "1.0.0";
+import { APP_VERSION, BUILD_DATE } from "@/lib/version";
 
 const TECH_STACK = [
   "Next.js 16 (App Router, TypeScript)",
@@ -67,6 +66,13 @@ export default function AboutSection() {
         <p className="text-sm text-foreground/70 max-w-2xl">
           A hash-anchor service for academic and creative documents on the Stacks blockchain. Prove
           a document existed at a point in time without ever exposing the document itself.
+        </p>
+        <p className="mt-3 text-xs text-foreground/50">
+          Build {BUILD_DATE.slice(0, 10)}
+          {" · "}
+          <Link href="/changelog" className="underline hover:text-foreground">
+            View changelog
+          </Link>
         </p>
       </section>
 

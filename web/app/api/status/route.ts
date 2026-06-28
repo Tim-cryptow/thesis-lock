@@ -1,5 +1,6 @@
 import { checkAllServices, getOverallStatus } from "@/lib/statusMonitor";
 import { recordServerSnapshot } from "@/lib/statusServerHistory";
+import { APP_VERSION } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   const timestamp = new Date().toISOString();
   recordServerSnapshot(services, timestamp);
   return Response.json(
-    { overall, services, timestamp },
+    { overall, services, timestamp, version: APP_VERSION },
     {
       headers: {
         "Cache-Control": "public, s-maxage=30",

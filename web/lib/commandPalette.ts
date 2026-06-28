@@ -265,6 +265,13 @@ const ACTIONS: PaletteItem[] = [
     shortcut: "?",
     section: "actions",
   },
+  {
+    id: "whats-new",
+    title: "What's new",
+    description: "See the latest release highlights",
+    icon: "doc",
+    section: "actions",
+  },
 ];
 
 // All navigable pages plus the common actions.

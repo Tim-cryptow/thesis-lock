@@ -16,6 +16,7 @@ import {
   type PaletteItem,
   type PaletteSection,
 } from "@/lib/commandPalette";
+import { WHATSNEW_OPEN_EVENT } from "@/app/components/WhatsNew";
 
 // Order the sections are rendered (and keyboard-navigated) in.
 const SECTION_ORDER: PaletteSection[] = ["recent", "pages", "actions", "help"];
@@ -189,6 +190,9 @@ export default function CommandPalette() {
           break;
         case "open-shortcuts":
           window.dispatchEvent(new Event(SHORTCUTS_OPEN_EVENT));
+          break;
+        case "whats-new":
+          window.dispatchEvent(new Event(WHATSNEW_OPEN_EVENT));
           break;
       }
       close();

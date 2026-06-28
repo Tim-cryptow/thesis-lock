@@ -6,6 +6,7 @@ import FooterStatus from "@/app/components/FooterStatus";
 import SocialLinks from "@/app/components/SocialLinks";
 import FooterStats from "@/app/components/FooterStats";
 import BackToTop from "@/app/components/BackToTop";
+import VersionBadge from "@/app/components/VersionBadge";
 
 const YEAR = 2026;
 
@@ -52,6 +53,7 @@ const SECTIONS: { heading: string; links: FooterLink[] }[] = [
       { label: "Collections", href: "/collections" },
       { label: "Settings", href: "/settings" },
       { label: "Help Center", href: "/help" },
+      { label: "Changelog", href: "/changelog" },
     ],
   },
 ];
@@ -99,6 +101,7 @@ export default function Footer() {
               >
                 Privacy
               </Link>
+              <VersionBadge />
             </div>
           </div>
 
