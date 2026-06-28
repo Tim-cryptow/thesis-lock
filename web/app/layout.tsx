@@ -16,6 +16,7 @@ import InstallPrompt from "./components/InstallPrompt";
 import OfflineIndicator from "./components/OfflineIndicator";
 import { TourProvider } from "./components/TourProvider";
 import CommandPalette from "./components/CommandPalette";
+import WhatsNew from "./components/WhatsNew";
 import RouteVisitRecorder from "./components/RouteVisitRecorder";
 import { LiveProvider } from "./components/LiveProvider";
 import LiveTicker from "./components/LiveTicker";
@@ -187,6 +188,7 @@ export default function RootLayout({
                       </main>
                       <Footer />
                       <CommandPalette />
+                      <WhatsNew />
                       <RouteVisitRecorder />
                       <NavigationTracker />
                     </TourProvider>
