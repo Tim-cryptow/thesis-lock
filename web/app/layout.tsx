@@ -124,7 +124,10 @@ export const metadata: Metadata = {
   },
   alternates: {
     types: {
-      "application/rss+xml": [{ url: "/api/feed/rss", title: "ThesisLock RSS" }],
+      "application/rss+xml": [
+        { url: "/api/feed/rss", title: "ThesisLock RSS" },
+        { url: "/changelog/rss", title: "ThesisLock releases" },
+      ],
       "application/atom+xml": [{ url: "/api/feed/atom", title: "ThesisLock Atom" }],
     },
   },
