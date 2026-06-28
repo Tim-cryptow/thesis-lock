@@ -19,6 +19,7 @@ const SUGGESTIONS: ErrorSuggestion[] = [
     hint: "By hash, wallet, or label",
   },
   { href: "/feed", label: "Recent anchors", hint: "The live protocol feed" },
+  { href: "/help", label: "Visit the help center", hint: "FAQ, guides, and fixes" },
   { href: "/", label: "Go home", hint: "The ThesisLock overview" },
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { useI18n } from "./I18nProvider";
 
 type ErrorFallbackProps = {
@@ -43,6 +44,11 @@ export default function ErrorFallback({ message, onRetry, icon }: ErrorFallbackP
           {t("common.actions.tryAgain")}
         </button>
       )}
+      <p className="mt-4 text-sm text-foreground/50">
+        <Link href="/help/troubleshooting" className="underline transition hover:text-foreground">
+          Need help?
+        </Link>
+      </p>
     </div>
   );
 }
