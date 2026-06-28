@@ -238,3 +238,76 @@ export const FAQS: Faq[] = [
 export function getFaq(slug: string): Faq | undefined {
   return FAQS.find((faq) => faq.slug === slug);
 }
+
+export type Guide = {
+  // Stable anchor id, also the deep-link target for HelpLink.
+  slug: string;
+  title: string;
+  steps: string[];
+};
+
+export const GUIDES: Guide[] = [
+  {
+    slug: "anchor-your-first-document",
+    title: "Anchor your first document",
+    steps: [
+      "Open the anchor page and connect a Stacks wallet such as Leather, Xverse, or Asigna.",
+      "Drop a file onto the page or pick one. Your browser hashes it locally with SHA-256, and the file never leaves your device.",
+      "Add an optional label of up to 64 characters to describe the document, then review the hash.",
+      "Sign the transaction in your wallet. ThesisLock waits for confirmation and shows the verification link once the anchor lands on chain.",
+    ],
+  },
+  {
+    slug: "verify-a-document",
+    title: "Verify a document",
+    steps: [
+      "Open the verify page, or visit a verification link of the form /v/<hash>.",
+      "Drop the original file to re-hash it in your browser, or paste a known hash to look up.",
+      "Read the result, which shows whether the hash is anchored, when, by which wallet, and with what label.",
+    ],
+  },
+  {
+    slug: "create-a-group-and-invite-members",
+    title: "Create a group and invite members",
+    steps: [
+      "Open the groups page and connect your wallet.",
+      "Enter a name and create the group. You become its admin once the transaction confirms.",
+      "Open the group and add a member by their Stacks address.",
+      "Sign the transaction for each member you add. They can anchor to the group once it confirms.",
+      "Anchor documents to the group so they appear in its shared, on-chain history.",
+    ],
+  },
+  {
+    slug: "batch-anchor-10-files",
+    title: "Batch anchor 10 files",
+    steps: [
+      "Open the anchor page and switch to the batch tab.",
+      "Add up to ten files. Each is hashed locally, and you can give each one its own label.",
+      "Review the list of hashes and labels before submitting.",
+      "Sign the batch transaction. All of the files are anchored together under your wallet in one transaction.",
+    ],
+  },
+  {
+    slug: "mint-a-proof-nft",
+    title: "Mint a proof NFT",
+    steps: [
+      "Anchor a document, or open one you have already anchored.",
+      "Choose to mint a proof NFT for that anchor and sign the transaction.",
+      "Once it confirms, a soulbound SIP-009 token recording the hash and label appears in your wallet.",
+    ],
+  },
+  {
+    slug: "export-your-anchor-history",
+    title: "Export your anchor history",
+    steps: [
+      "Open your anchors page with your wallet connected so it loads your history.",
+      "Choose to export, and pick CSV or JSON.",
+      "Your browser downloads the file directly. Nothing is sent to a server.",
+    ],
+  },
+];
+
+/** Look up a guide by its slug. */
+export function getGuide(slug: string): Guide | undefined {
+  return GUIDES.find((guide) => guide.slug === slug);
+}
