@@ -26,23 +26,6 @@ function writeSeen(version: string): void {
   }
 }
 
-// True when the browser already holds ThesisLock state from a prior visit. This
-// distinguishes a returning user whose visits predate the version key from a
-// brand-new visitor. The version key itself is excluded.
-function hasExistingAppState(): boolean {
-  try {
-    for (let index = 0; index < window.localStorage.length; index += 1) {
-      const key = window.localStorage.key(index);
-      if (key && key !== VERSION_KEY && key.startsWith("thesislock")) {
-        return true;
-      }
-    }
-  } catch {
-    // Treat unavailable storage as no prior state.
-  }
-  return false;
-}
-
 // Shows the latest release highlights once, the first time a returning user
 // loads the app after an update. A brand-new visitor (no stored version) is not
 // interrupted: their version is recorded silently and the onboarding tour
@@ -53,14 +36,9 @@ export default function WhatsNew() {
   useEffect(() => {
     const seen = readSeen();
     if (seen === null) {
-      // No version recorded yet. A visitor with existing ThesisLock state is a
-      // returning user from before version tracking, so show this rollout's
-      // highlights; a truly new visitor is left to the onboarding tour.
-      if (hasExistingAppState()) {
-        setOpen(true);
-      } else {
-        writeSeen(APP_VERSION);
-      }
+      // First-ever visit: record the current version without interrupting. A new
+      // user is guided by the onboarding tour, not the what's-new modal.
+      writeSeen(APP_VERSION);
       return;
     }
     if (seen !== APP_VERSION) {
