@@ -35,6 +35,7 @@ import {
   submitBatchAnchor,
 } from "@/lib/stacks";
 import { truncateAddress, useWallet } from "@/lib/wallet";
+import { sanitizeLabel } from "@/lib/sanitize";
 import { auditAnchor, auditBatchAnchor, auditProofMint } from "@/lib/auditEvents";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
@@ -348,7 +349,7 @@ export default function AnchorPage() {
   const submitSingle = () => {
     if (!hash || !address) return;
     const submittingHash = hash;
-    const submittingLabel = effectiveSingleLabel;
+    const submittingLabel = sanitizeLabel(effectiveSingleLabel);
     const submittingOwner = address;
     setSubmitError(null);
     setPending(true);
@@ -405,7 +406,9 @@ export default function AnchorPage() {
     if (!canSubmitBatch || !address) return;
     const entries = rows.map((r) => ({
       hash: r.hash!,
-      label: buildLabel(getTemplate(r.templateId) ?? GENERIC_TEMPLATE, r.fieldValues),
+      label: sanitizeLabel(
+        buildLabel(getTemplate(r.templateId) ?? GENERIC_TEMPLATE, r.fieldValues),
+      ),
     }));
     if (entries.length >= 5) {
       const ok = await confirm({

@@ -39,9 +39,9 @@ import FileDropZone from "@/app/components/FileDropZone";
 import { useI18n } from "@/app/components/I18nProvider";
 import { useConfirm } from "@/app/components/useConfirm";
 import AddressInput from "@/app/components/AddressInput";
+import { sanitizeAddress } from "@/lib/sanitize";
 
 const ASCII_REGEX = /^[\x20-\x7E]*$/;
-const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
 
 export default function GroupDetailPage() {
   const { t } = useI18n();
@@ -111,8 +111,8 @@ export default function GroupDetailPage() {
   const [addPending, setAddPending] = useState(false);
 
   const submitAddMember = () => {
-    const value = newMember.trim().toUpperCase();
-    if (!STX_PRINCIPAL.test(value)) {
+    const value = sanitizeAddress(newMember);
+    if (!value) {
       setMemberError(t("groups.detail.invalidPrincipal"));
       return;
     }

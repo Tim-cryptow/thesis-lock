@@ -1,3 +1,4 @@
+import { escapeForCSV } from "./sanitize";
 import type { RegistryEntry } from "./stacks";
 
 function originBase(): string {
@@ -8,18 +9,11 @@ function verifyUrlFor(hash: string, owner: string): string {
   return `${originBase()}/v/${hash}?owner=${encodeURIComponent(owner)}`;
 }
 
-function escapeCsv(value: string): string {
-  if (/[",\r\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
-}
-
 export function formatAnchorsCSV(anchors: RegistryEntry[], owner: string): string {
   const header = ["Hash", "Label", "Stacks Block", "Owner", "Verify URL"];
   const rows = anchors.map((a) =>
     [a.hash, a.label, String(a.anchoredAt), owner, verifyUrlFor(a.hash, owner)]
-      .map(escapeCsv)
+      .map(escapeForCSV)
       .join(","),
   );
   return [header.join(","), ...rows].join("\r\n");
@@ -50,7 +44,7 @@ export function formatBulkVerifyCSV(rows: BulkVerifyRow[]): string {
   const header = ["Filename", "Full Hash", "Status", "Source", "Block"];
   const lines = rows.map((r) =>
     [r.filename, r.hash ?? "", r.status, r.source ?? "", r.block !== null ? String(r.block) : ""]
-      .map(escapeCsv)
+      .map(escapeForCSV)
       .join(","),
   );
   return [header.join(","), ...lines].join("\r\n");
