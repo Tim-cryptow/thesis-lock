@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useI18n } from "./I18nProvider";
 
 export default function OfflineIndicator() {
@@ -25,7 +26,10 @@ export default function OfflineIndicator() {
       role="status"
       className="sticky top-0 z-50 bg-yellow-200 px-4 py-2 text-center text-sm text-yellow-900"
     >
-      {t("common.offline.message")}
+      {t("common.offline.message")}{" "}
+      <Link href="/help/troubleshooting" className="underline hover:no-underline">
+        Troubleshooting
+      </Link>
     </div>
   );
 }

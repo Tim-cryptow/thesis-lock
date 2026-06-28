@@ -171,6 +171,16 @@ To report a vulnerability, use GitHub's private "Report a vulnerability" flow as
 described in [SECURITY.md](SECURITY.md). Please do not open a public issue for a
 sensitive report.
 
+## Help Center
+
+In-app help lives at [thesis-lock.vercel.app/help](https://thesis-lock.vercel.app/help): a
+searchable [FAQ](https://thesis-lock.vercel.app/help/faq), step-by-step
+[guides](https://thesis-lock.vercel.app/help/guides),
+[troubleshooting](https://thesis-lock.vercel.app/help/troubleshooting), and a
+[contact page](https://thesis-lock.vercel.app/help/contact). Contextual help links across the
+app deep-link into the relevant topic, and the command palette surfaces FAQ answers as you
+type. All help content is defined in one place, `web/lib/help.ts`.
+
 ## Documentation
 
 Full guides and reference live at [thesis-lock.vercel.app/docs](https://thesis-lock.vercel.app/docs):

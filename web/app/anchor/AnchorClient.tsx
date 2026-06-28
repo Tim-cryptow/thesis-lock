@@ -39,6 +39,7 @@ import { sanitizeLabel } from "@/lib/sanitize";
 import { auditAnchor, auditBatchAnchor, auditProofMint } from "@/lib/auditEvents";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
+import HelpLink from "@/app/components/HelpLink";
 import FilePreview from "@/app/components/FilePreview";
 import ValidatedInput from "@/app/components/ValidatedInput";
 import { validateLabel as validateLabelRule } from "@/lib/validators";
@@ -972,6 +973,7 @@ export default function AnchorPage() {
                 </button>
               </div>
               <HelpText term="Batch Anchor" />
+              <HelpLink topic="how-many-files-can-i-batch-anchor" label="Help: batch anchoring" />
             </div>
 
             {mode === "single" ? (
@@ -989,6 +991,10 @@ export default function AnchorPage() {
                     )}
                   </FileDropZone>
                 </div>
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-foreground/50">
+                  Your file is hashed in your browser and never uploaded.
+                  <HelpLink topic="is-my-file-uploaded" label="Help: is my file uploaded?" />
+                </p>
 
                 {hashError && (
                   <p className="mt-3 text-sm text-red-600 dark:text-red-400" role="alert">
@@ -1019,6 +1025,10 @@ export default function AnchorPage() {
                       placeholder={t("anchor.label.placeholder")}
                       maxLength={64}
                     />
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-foreground/50">
+                      Optional. A short label up to 64 characters.
+                      <HelpLink topic="what-is-a-label" label="Help: what is a label?" />
+                    </p>
                   </div>
                 ) : (
                   <div className="mt-6">

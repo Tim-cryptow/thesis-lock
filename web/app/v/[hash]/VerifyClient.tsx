@@ -42,6 +42,7 @@ import { auditVerify } from "@/lib/auditEvents";
 import { isHiroAvailable } from "@/lib/fetchWithRetry";
 import { downloadCertificate } from "@/lib/downloadCertificate";
 import FileDropZone from "@/app/components/FileDropZone";
+import HelpLink from "@/app/components/HelpLink";
 import { useI18n } from "@/app/components/I18nProvider";
 import { getTemplate, parseLabel } from "@/lib/templates";
 
@@ -633,7 +634,13 @@ export default function VerifyPage() {
                 </div>
               ) : (
                 <div className="mt-4 pt-4 border-t border-foreground/10">
-                  <p className="text-foreground/80">{t("verify.notAnchored.body")}</p>
+                  <p className="text-foreground/80">
+                    {t("verify.notAnchored.body")}{" "}
+                    <HelpLink
+                      topic="what-if-verification-says-not-found"
+                      label="Help: verification says not found"
+                    />
+                  </p>
                   {!batchOwner && (
                     <p className="mt-3 text-sm text-foreground/70">
                       {t("verify.notAnchored.batchHintPrefix")}{" "}

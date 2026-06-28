@@ -1,9 +1,11 @@
-const CACHE = "thesislock-v2";
+const CACHE = "thesislock-v3";
 
 // App shell routes pre-cached so the core flows open without a network. The
 // offline page is included so navigations to uncached routes can fall back to
-// the themed app page rather than a bare inline document.
-const APP_SHELL = ["/", "/anchor", "/search", "/docs", "/offline"];
+// the themed app page rather than a bare inline document. The troubleshooting
+// page is pre-cached because the offline banner links to it: its content is
+// server-rendered, so it stays readable from cache even with no connection.
+const APP_SHELL = ["/", "/anchor", "/search", "/docs", "/offline", "/help/troubleshooting"];
 
 // Shown for navigations to routes that were never cached while offline.
 const OFFLINE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Offline</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF7;color:#1A1A1A;font-family:system-ui,sans-serif;text-align:center;padding:1.5rem}main{max-width:28rem}h1{font-size:1.25rem;margin:0 0 .5rem}p{color:#555;line-height:1.5;margin:0}</style></head><body><main><h1>You're offline</h1><p>This page hasn't been cached yet. Reconnect to load it. File hashing still works offline, but anchoring and verification require a connection.</p></main></body></html>`;

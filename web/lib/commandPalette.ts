@@ -5,7 +5,9 @@
 // the modal. Page items carry a `path`; action items are identified by `id` and
 // run by the modal, which has access to the router, theme, and tour.
 
-export type PaletteSection = "recent" | "pages" | "actions";
+import { FAQS } from "./help";
+
+export type PaletteSection = "recent" | "pages" | "actions" | "help";
 
 export type PaletteItem = {
   id: string;
@@ -191,6 +193,14 @@ const PAGES: PaletteItem[] = [
     section: "pages",
   },
   {
+    id: "help",
+    title: "Help",
+    description: "/help",
+    icon: "help",
+    path: "/help",
+    section: "pages",
+  },
+  {
     id: "embed",
     title: "Embed",
     description: "/embed",
@@ -260,6 +270,21 @@ const ACTIONS: PaletteItem[] = [
 // All navigable pages plus the common actions.
 export function getAllItems(): PaletteItem[] {
   return [...PAGES, ...ACTIONS];
+}
+
+// FAQ topics, surfaced in the palette only while searching so the default list
+// stays short. Selecting one opens the FAQ with that question expanded.
+const HELP: PaletteItem[] = FAQS.map((faq) => ({
+  id: `faq-${faq.slug}`,
+  title: faq.question,
+  description: `FAQ: ${faq.category}`,
+  icon: "help",
+  path: `/help/faq#${faq.slug}`,
+  section: "help",
+}));
+
+export function getHelpItems(): PaletteItem[] {
+  return HELP;
 }
 
 // Appends a visited path to the front of the recent list (deduped, capped).
