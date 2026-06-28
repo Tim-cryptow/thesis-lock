@@ -53,6 +53,7 @@ const SECTIONS: { heading: string; links: FooterLink[] }[] = [
       { label: "Collections", href: "/collections" },
       { label: "Settings", href: "/settings" },
       { label: "Help Center", href: "/help" },
+      { label: "Changelog", href: "/changelog" },
     ],
   },
 ];

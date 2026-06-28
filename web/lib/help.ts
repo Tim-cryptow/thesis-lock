@@ -61,6 +61,12 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     description: "Fixes for wallet, transaction, hash, badge, and connectivity problems.",
     href: "/help/troubleshooting",
   },
+  {
+    slug: "whats-new",
+    title: "What's New",
+    description: "Release notes and the full version history.",
+    href: "/changelog",
+  },
 ];
 
 export type FaqCategory =
