@@ -3,6 +3,7 @@ import { Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SkipToContent from "./components/SkipToContent";
 import ErrorBoundary from "./components/ErrorBoundary";
+import EnvValidator from "./components/EnvValidator";
 import { I18nProvider } from "./components/I18nProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TxProvider } from "./components/TxProvider";
@@ -177,7 +178,10 @@ export default function RootLayout({
                       <NotificationSound />
                       <FavoritesBar />
                       <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col">
-                        <ErrorBoundary>{children}</ErrorBoundary>
+                        <ErrorBoundary>
+                          <EnvValidator />
+                          {children}
+                        </ErrorBoundary>
                       </main>
                       <Footer />
                       <CommandPalette />

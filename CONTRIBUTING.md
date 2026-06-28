@@ -72,6 +72,18 @@ Prefer frequent, focused commits over large bulk changes.
 
 CI runs `clarinet check`, the contract tests, the frontend build, a TypeScript type check, and lint and format checks for each package on every pull request, so it helps to run these locally first.
 
+## Security
+
+Run a dependency audit in any package you change and resolve high or critical advisories before opening a pull request. CI enforces the same gate.
+
+```bash
+cd web   # or the repo root, sdk, or cli
+npm audit --audit-level=high
+npm run audit:sri   # web only
+```
+
+Avoid adding dependencies that carry known high or critical advisories. To report a security vulnerability, follow [SECURITY.md](SECURITY.md) and use GitHub's private vulnerability reporting rather than a public issue.
+
 ## Code style
 
 See [CODESTYLE.md](CODESTYLE.md) for the full conventions and the ESLint,

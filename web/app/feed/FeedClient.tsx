@@ -21,6 +21,7 @@ import LiveBadge from "@/app/components/LiveBadge";
 import { useLive } from "@/app/components/LiveProvider";
 import type { LiveEvent } from "@/lib/livePoller";
 import { fetchRecentAnchors, type FeedEntry } from "@/lib/feed";
+import { checkRateLimit, isRateLimitError } from "@/lib/rateLimit";
 import { explorerTxUrl, readBatchAnchor } from "@/lib/stacks";
 import TruncatedHash from "@/app/components/TruncatedHash";
 import TruncatedAddress from "@/app/components/TruncatedAddress";
@@ -121,6 +122,15 @@ export default function FeedClient() {
 
   const refresh = useCallback(
     async (n: number, silent = false) => {
+      try {
+        checkRateLimit("feed", { limit: 8, windowMs: 10_000 });
+      } catch (e) {
+        if (isRateLimitError(e)) {
+          setError(t("common.rateLimited"));
+          return;
+        }
+        throw e;
+      }
       if (silent) setRefreshing(true);
       setError(null);
       try {

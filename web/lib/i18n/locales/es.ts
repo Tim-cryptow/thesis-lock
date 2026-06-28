@@ -4,6 +4,7 @@ import type { Translations } from "../";
 export const es: Translations = {
   common: {
     brand: "ThesisLock",
+    rateLimited: "Espera un momento.",
     tagline: "Construido sobre Stacks · Asegurado por Bitcoin",
     nav: {
       back: "← ThesisLock",

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { buildContentSecurityPolicy } from "@/lib/csp";
+import { isEmbeddableRoute } from "@/lib/embeddableRoutes";
 
 // Security headers applied to every response. Next.js 16 renamed the
 // `middleware` file convention to `proxy`; this is the same request-time hook.
 
-// connect-src lists the origins the browser may read from: same-origin, the
-// Hiro mainnet hosts, and whatever NEXT_PUBLIC_API_URL is configured to (a
-// deployment may point reads at a custom Hiro proxy). Wallet connection runs
-// through injected extension providers, not page fetches, so it is unaffected.
+// A deployment may point reads at a custom Hiro proxy via NEXT_PUBLIC_API_URL;
+// its origin is added to the policy's connect-src so the browser may fetch it.
 function configuredApiOrigin(): string | null {
   const raw = process.env.NEXT_PUBLIC_API_URL;
   if (!raw) return null;
@@ -18,36 +18,47 @@ function configuredApiOrigin(): string | null {
   }
 }
 
-const CONNECT_SRC = Array.from(
-  new Set(
-    ["'self'", "https://api.hiro.so", "https://api.mainnet.hiro.so", configuredApiOrigin()].filter(
-      (s): s is string => Boolean(s),
-    ),
-  ),
-).join(" ");
+const customApiOrigin = configuredApiOrigin();
+const connectSrc = customApiOrigin ? [customApiOrigin] : [];
+const isDev = process.env.NODE_ENV !== "production";
 
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  `connect-src ${CONNECT_SRC}`,
-  "img-src 'self' data: blob:",
-].join("; ");
+// Documents may not be framed; embeddable badge and image routes can be framed
+// anywhere so they can live in a README, a social card, or another site.
+const DOCUMENT_CSP = buildContentSecurityPolicy({ connectSrc, isDev });
+const EMBEDDABLE_CSP = buildContentSecurityPolicy({ connectSrc, isDev, frameAncestors: ["*"] });
 
-const SECURITY_HEADERS: Record<string, string> = {
+// Hardening headers sent on every response regardless of route.
+const BASE_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Content-Security-Policy": CSP,
+  // Force HTTPS for a year including subdomains once a browser has seen the app.
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  // Do not leak browsing intent by pre-resolving DNS for off-site links.
+  "X-DNS-Prefetch-Control": "off",
 };
 
-export function proxy(_request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+  for (const [key, value] of Object.entries(BASE_HEADERS)) {
     response.headers.set(key, value);
   }
+
+  if (isEmbeddableRoute(request.nextUrl.pathname)) {
+    // Allow cross-origin embedding: a permissive frame policy and a resource
+    // policy that lets a cross-origin <img> or scraper load the asset.
+    response.headers.set("Content-Security-Policy", EMBEDDABLE_CSP);
+    response.headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+  } else {
+    // Deny framing, keep this origin's resources same-origin, and isolate the
+    // browsing context group while still letting wallet popups keep their opener.
+    response.headers.set("Content-Security-Policy", DOCUMENT_CSP);
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
+    response.headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  }
+
   return response;
 }
 

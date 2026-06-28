@@ -9,6 +9,7 @@ import StaggerList from "@/app/components/StaggerList";
 import EmptyState from "@/app/components/EmptyState";
 import ValidatedInput from "@/app/components/ValidatedInput";
 import { validateGroupName } from "@/lib/validators";
+import { sanitizeLabel } from "@/lib/sanitize";
 import EmptyStateIcon from "@/app/components/EmptyStateIcon";
 import { SkeletonLine, SkeletonBlock } from "@/app/components/Skeleton";
 import ErrorFallback from "@/app/components/ErrorFallback";
@@ -68,7 +69,7 @@ export default function GroupsPage() {
   };
 
   const submit = () => {
-    const trimmed = name.trim();
+    const trimmed = sanitizeLabel(name);
     if (!trimmed || !address || pending) return;
     setPending(true);
     setCreateTxId(null);
