@@ -112,6 +112,10 @@ npm run format:check
 
 The in-app help center (the FAQ, guides, and troubleshooting entries) is plain data in `web/lib/help.ts`. To add or edit an answer, a guide, or a troubleshooting entry, update that file. Each entry has a stable slug used for deep links and the command palette, so keep existing slugs unchanged when editing.
 
+## Changelog entries
+
+The user-facing changelog and version history live in `web/lib/version.ts`. When a pull request introduces a notable change, include a one-line changelog entry description in the PR (its type and a short summary, for example `feat: add X`) so it can be folded into the next release in `RELEASES`. A new release bumps `APP_VERSION` and adds a `RELEASES` entry with highlights and the per-change list.
+
 ## Questions
 
 If something is unclear or you want to discuss an idea before building it, open an issue or start a discussion on the repository. We are happy to help.
