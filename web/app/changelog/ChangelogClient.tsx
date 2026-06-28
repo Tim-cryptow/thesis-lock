@@ -1,6 +1,16 @@
 "use client";
 
-import { APP_VERSION, RELEASES } from "@/lib/version";
+import { useState } from "react";
+import { APP_VERSION, RELEASES, type ChangeType } from "@/lib/version";
+
+// Color-coded badges for each conventional-commit change type.
+const TYPE_STYLES: Record<ChangeType, string> = {
+  feat: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+  fix: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+  docs: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+  chore: "bg-foreground/10 text-foreground/60",
+  test: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300",
+};
 
 const MONTHS = [
   "January",
@@ -27,6 +37,19 @@ function formatDate(iso: string): string {
 }
 
 export default function ChangelogClient() {
+  const [openVersions, setOpenVersions] = useState<Set<string>>(new Set());
+
+  const toggle = (version: string) =>
+    setOpenVersions((prev) => {
+      const next = new Set(prev);
+      if (next.has(version)) {
+        next.delete(version);
+      } else {
+        next.add(version);
+      }
+      return next;
+    });
+
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="text-3xl md:text-4xl">Changelog</h1>
@@ -37,6 +60,7 @@ export default function ChangelogClient() {
       <div className="mt-10 space-y-8">
         {RELEASES.map((release) => {
           const isCurrent = release.version === APP_VERSION;
+          const isOpen = openVersions.has(release.version);
           return (
             <article
               key={release.version}
@@ -67,6 +91,29 @@ export default function ChangelogClient() {
                   </li>
                 ))}
               </ul>
+
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => toggle(release.version)}
+                className="mt-4 text-sm text-foreground/60 underline transition hover:text-foreground"
+              >
+                {isOpen ? "Hide changes" : `All changes (${release.changes.length})`}
+              </button>
+              {isOpen && (
+                <ul className="mt-3 space-y-2">
+                  {release.changes.map((change, index) => (
+                    <li key={index} className="flex items-start gap-2.5 text-sm text-foreground/80">
+                      <span
+                        className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[0.65rem] font-medium uppercase ${TYPE_STYLES[change.type]}`}
+                      >
+                        {change.type}
+                      </span>
+                      <span className="leading-relaxed">{change.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </article>
           );
         })}
