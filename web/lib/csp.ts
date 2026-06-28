@@ -25,11 +25,14 @@ export type BuildCspOptions = {
   // The dev server compiles modules with eval for HMR and React Refresh, so it
   // needs 'unsafe-eval'. Production never evaluates strings and must omit it.
   isDev?: boolean;
+  // Who may frame this response. Defaults to 'none' so documents cannot be
+  // framed; embeddable image and badge routes pass ["*"] to allow it.
+  frameAncestors?: readonly string[];
 };
 
 /** Build the typed directive map for the app's Content-Security-Policy. */
 export function buildCspDirectives(options: BuildCspOptions = {}): CspDirectives {
-  const { connectSrc = [], nonce, isDev = false } = options;
+  const { connectSrc = [], nonce, isDev = false, frameAncestors = ["'none'"] } = options;
 
   const scriptSrc = ["'self'", "'unsafe-inline'"];
   if (nonce) {
@@ -52,7 +55,7 @@ export function buildCspDirectives(options: BuildCspOptions = {}): CspDirectives
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
-    "frame-ancestors": ["'none'"],
+    "frame-ancestors": frameAncestors,
   };
 }
 

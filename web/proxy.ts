@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildContentSecurityPolicy } from "@/lib/csp";
+import { isEmbeddableRoute } from "@/lib/embeddableRoutes";
 
 // Security headers applied to every response. Next.js 16 renamed the
 // `middleware` file convention to `proxy`; this is the same request-time hook.
@@ -18,14 +19,17 @@ function configuredApiOrigin(): string | null {
 }
 
 const customApiOrigin = configuredApiOrigin();
-const CSP = buildContentSecurityPolicy({
-  connectSrc: customApiOrigin ? [customApiOrigin] : [],
-  isDev: process.env.NODE_ENV !== "production",
-});
+const connectSrc = customApiOrigin ? [customApiOrigin] : [];
+const isDev = process.env.NODE_ENV !== "production";
 
-const SECURITY_HEADERS: Record<string, string> = {
+// Documents may not be framed; embeddable badge and image routes can be framed
+// anywhere so they can live in a README, a social card, or another site.
+const DOCUMENT_CSP = buildContentSecurityPolicy({ connectSrc, isDev });
+const EMBEDDABLE_CSP = buildContentSecurityPolicy({ connectSrc, isDev, frameAncestors: ["*"] });
+
+// Hardening headers sent on every response regardless of route.
+const BASE_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
@@ -33,17 +37,28 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   // Do not leak browsing intent by pre-resolving DNS for off-site links.
   "X-DNS-Prefetch-Control": "off",
-  // Isolate this origin's browsing context group while still allowing the
-  // wallet and OAuth-style popups the app opens to keep their opener handle.
-  "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-  "Content-Security-Policy": CSP,
 };
 
-export function proxy(_request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+  for (const [key, value] of Object.entries(BASE_HEADERS)) {
     response.headers.set(key, value);
   }
+
+  if (isEmbeddableRoute(request.nextUrl.pathname)) {
+    // Allow cross-origin embedding: a permissive frame policy and a resource
+    // policy that lets a cross-origin <img> or scraper load the asset.
+    response.headers.set("Content-Security-Policy", EMBEDDABLE_CSP);
+    response.headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+  } else {
+    // Deny framing, keep this origin's resources same-origin, and isolate the
+    // browsing context group while still letting wallet popups keep their opener.
+    response.headers.set("Content-Security-Policy", DOCUMENT_CSP);
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
+    response.headers.set("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  }
+
   return response;
 }
 

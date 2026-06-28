@@ -33,6 +33,13 @@ describe("buildContentSecurityPolicy", () => {
     expect(connect).toContain("https://example.test");
     expect(connect.filter((v) => v === "'self'")).toHaveLength(1);
   });
+
+  it("defaults frame-ancestors to 'none' and honors an override", () => {
+    expect(buildContentSecurityPolicy()).toContain("frame-ancestors 'none'");
+    const embeddable = buildContentSecurityPolicy({ frameAncestors: ["*"] });
+    expect(embeddable).toContain("frame-ancestors *");
+    expect(embeddable).not.toContain("frame-ancestors 'none'");
+  });
 });
 
 describe("serializeCsp", () => {
