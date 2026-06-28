@@ -6,7 +6,8 @@
 // throws. Next.js inlines these values at build time, so this checks the
 // configuration the deployed bundle was actually built with.
 
-const STX_PRINCIPAL = /^S[PMNT][0-9A-Z]{5,40}$/;
+import { validateStacksAddress } from "@stacks/transactions";
+
 const CONTRACT_NAME = /^[a-zA-Z][a-zA-Z0-9_-]{0,39}$/;
 
 export type EnvIssue = { name: string; reason: string };
@@ -45,8 +46,8 @@ export function inspectEnv(): EnvValidationResult {
     {
       name: "NEXT_PUBLIC_CONTRACT_ADDRESS",
       value: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
-      valid: (v) => STX_PRINCIPAL.test(v),
-      expected: "a Stacks principal (for example SP...)",
+      valid: (v) => validateStacksAddress(v),
+      expected: "a Stacks principal with a valid checksum",
     },
     {
       name: "NEXT_PUBLIC_CONTRACT_NAME",

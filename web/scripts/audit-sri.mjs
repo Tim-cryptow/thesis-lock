@@ -53,8 +53,11 @@ function collectFiles(dir) {
 // its first '>'. Case-sensitive on purpose so the next/navigation <Link> router
 // component is not mistaken for an HTML <link>.
 const TAG_RE = /<(script|link|Script)\b[^>]*>/g;
-// A src/href whose value begins with http(s): or protocol-relative // is external.
-const EXTERNAL_RE = /\b(?:src|href)\s*=\s*(["'{])\s*(https?:|\/\/)/i;
+// A src/href whose value begins with http(s): or a protocol-relative // is
+// external. The optional brace, quote, or backtick handles JSX expression
+// values (src={"https://..."}, src={'...'}, src={`...`}) and unquoted HTML
+// attributes, so a third-party URL in any of those forms is still caught.
+const EXTERNAL_RE = /\b(?:src|href)\s*=\s*\{?\s*["'`]?\s*(?:https?:|\/\/)/i;
 const INTEGRITY_RE = /\bintegrity\s*=/i;
 
 const violations = [];

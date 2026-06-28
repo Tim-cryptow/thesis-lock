@@ -70,4 +70,10 @@ describe("env validation", () => {
     expect(result.invalid.map((i) => i.name)).toContain("NEXT_PUBLIC_CONTRACT_ADDRESS");
     expect(() => validateEnv()).toThrow(/NEXT_PUBLIC_CONTRACT_ADDRESS/);
   });
+
+  it("rejects a principal that fails the c32 checksum", () => {
+    // Valid SP prefix and length, but the final character breaks the checksum.
+    process.env.NEXT_PUBLIC_CONTRACT_ADDRESS = "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVA";
+    expect(() => validateEnv()).toThrow(EnvValidationError);
+  });
 });
