@@ -5,10 +5,6 @@
 
 export const APP_VERSION = "1.6.0";
 
-// Evaluated when this module is first loaded. In a production build that is the
-// build/start time, which is what the version API and the about page report.
-export const BUILD_DATE = new Date().toISOString();
-
 export type ChangeType = "feat" | "fix" | "docs" | "chore" | "test";
 
 export type ChangeEntry = {
@@ -190,3 +186,10 @@ export const RELEASES: Release[] = [
 
 /** The current release (the newest entry in RELEASES). */
 export const LATEST_RELEASE: Release = RELEASES[0]!;
+
+// A stable build timestamp. Prefers a build-time injected value
+// (NEXT_PUBLIC_BUILD_DATE is inlined at build, so it is identical on the server
+// and in every browser); otherwise it falls back to the current release date.
+// This avoids a module-load `new Date()`, which in the browser would read as the
+// visitor's current time rather than the deployment date.
+export const BUILD_DATE = process.env.NEXT_PUBLIC_BUILD_DATE ?? LATEST_RELEASE.date;
