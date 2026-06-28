@@ -108,6 +108,10 @@ npm run format:check
 - New public or read-only functions need accompanying tests in `tests/`.
 - Call out any change to on-chain data shapes or function signatures, since deployed contracts cannot be edited in place.
 
+## Help content
+
+The in-app help center (the FAQ, guides, and troubleshooting entries) is plain data in `web/lib/help.ts`. To add or edit an answer, a guide, or a troubleshooting entry, update that file. Each entry has a stable slug used for deep links and the command palette, so keep existing slugs unchanged when editing.
+
 ## Questions
 
 If something is unclear or you want to discuss an idea before building it, open an issue or start a discussion on the repository. We are happy to help.

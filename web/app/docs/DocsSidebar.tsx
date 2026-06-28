@@ -85,6 +85,20 @@ export default function DocsSidebar() {
               Developer Portal
             </Link>
           </li>
+          <li>
+            <Link
+              href="/help"
+              onClick={() => setOpen(false)}
+              aria-current={pathname === "/help" ? "page" : undefined}
+              className={`block rounded-md px-3 py-2 text-sm transition ${
+                pathname === "/help"
+                  ? "bg-foreground/5 text-foreground font-medium"
+                  : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
+              }`}
+            >
+              Help Center
+            </Link>
+          </li>
         </ul>
       </nav>
     </>
