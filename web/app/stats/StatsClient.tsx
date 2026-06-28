@@ -19,6 +19,7 @@ import { useI18n } from "@/app/components/I18nProvider";
 import { explorerAddressUrl, readBatchAnchor } from "@/lib/stacks";
 import type { ProtocolStats } from "@/lib/stats";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
+import { checkRateLimit, isRateLimitError } from "@/lib/rateLimit";
 
 const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "SP3QS6X01XKTYC84BHA0J567CZTAH67BJHN88FNVM";
@@ -90,6 +91,15 @@ export default function StatsClient() {
   const seededRef = useRef(false);
 
   const load = useCallback(async () => {
+    try {
+      checkRateLimit("stats", { limit: 8, windowMs: 10_000 });
+    } catch (e) {
+      if (isRateLimitError(e)) {
+        setError(t("common.rateLimited"));
+        return;
+      }
+      throw e;
+    }
     setLoading(true);
     setError(null);
     try {

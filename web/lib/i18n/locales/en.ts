@@ -9,6 +9,7 @@
 export const en = {
   common: {
     brand: "ThesisLock",
+    rateLimited: "Please wait a moment.",
     tagline: "Built on Stacks · Secured by Bitcoin",
     nav: {
       back: "← ThesisLock",

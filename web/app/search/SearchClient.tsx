@@ -19,6 +19,7 @@ import TagFilter from "@/app/components/TagFilter";
 import { FOCUS_SEARCH_EVENT, FOCUS_SEARCH_FLAG } from "@/app/components/KeyboardShortcuts";
 import { instrumentedFetch } from "@/lib/fetchInstrumented";
 import { sanitizeInput } from "@/lib/sanitize";
+import { checkRateLimit, isRateLimitError } from "@/lib/rateLimit";
 import { TAGS_CHANGED_EVENT, getHashesByTag, normalizeHash } from "@/lib/tags";
 import { auditSearch } from "@/lib/auditEvents";
 import { useI18n } from "@/app/components/I18nProvider";
@@ -135,6 +136,16 @@ export default function SearchClient() {
     async (rawTerm: string, searchType: SearchType) => {
       const term = sanitizeInput(rawTerm);
       if (!term) return;
+
+      try {
+        checkRateLimit("search", { limit: 12, windowMs: 10_000 });
+      } catch (e) {
+        if (isRateLimitError(e)) {
+          setError(t("common.rateLimited"));
+          return;
+        }
+        throw e;
+      }
 
       const id = ++requestId.current;
       setLoading(true);
