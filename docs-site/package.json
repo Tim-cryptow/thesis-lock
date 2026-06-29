@@ -1,0 +1,24 @@
+{
+  "name": "thesislock-docs",
+  "version": "1.0.0",
+  "description": "Documentation site for ThesisLock, a proof-of-existence service for documents on the Stacks blockchain.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.41.1",
+    "astro": "^7.0.3",
+    "sharp": "^0.35.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "starlight-links-validator": "^0.25.1",
+    "typescript": "^6.0.3"
+  }
+}

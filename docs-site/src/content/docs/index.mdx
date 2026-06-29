@@ -1,0 +1,82 @@
+---
+title: ThesisLock
+description: Permanent, verifiable proof-of-existence timestamps for documents on the Stacks blockchain, secured by Bitcoin. The file never leaves your device.
+template: splash
+hero:
+  tagline: Anchor a SHA-256 hash of any document on the Stacks blockchain for a permanent, verifiable timestamp. The file never leaves your device.
+  actions:
+    - text: Get started
+      link: /quickstart/anchor-a-document/
+      icon: right-arrow
+    - text: Open the app
+      link: https://thesis-lock.vercel.app
+      icon: external
+      variant: secondary
+    - text: GitHub
+      link: https://github.com/Tim-cryptow/thesis-lock
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+ThesisLock is a hash-anchoring service for academic and creative documents. You drop a
+file into the web app, the browser hashes it with SHA-256, and you sign a Stacks
+transaction that records the hash on chain with an optional label. Anyone can later
+verify when the anchor was created, by which wallet, and what label was attached, then
+re-upload a file to confirm its hash matches. The result is a permanent, publicly
+verifiable timestamp that never exposes the document itself.
+
+<CardGrid>
+  <Card title="Private by design" icon="approve-check">
+    Your file is hashed in the browser. Only the 64-character digest is published on
+    chain, never the document.
+  </Card>
+  <Card title="Permanent and verifiable" icon="star">
+    Once anchored, a hash and its timestamp are immutable. Verification re-hashes your
+    file locally and checks it against the chain.
+  </Card>
+  <Card title="Secured by Bitcoin" icon="rocket">
+    Stacks settles to Bitcoin, so each anchor records the Bitcoin (burn) block height it
+    was confirmed against.
+  </Card>
+  <Card title="Open and scriptable" icon="puzzle">
+    Verify anchors from a TypeScript SDK, a terminal CLI, a GitHub Action, or the public
+    REST API.
+  </Card>
+</CardGrid>
+
+## Start here
+
+<CardGrid>
+  <LinkCard
+    title="Quickstart"
+    href="/quickstart/anchor-a-document/"
+    description="Anchor your first document and verify it, step by step."
+  />
+  <LinkCard
+    title="Concepts"
+    href="/concepts/"
+    description="Anchors, batches, registry, proof NFTs, groups, and how on-chain truth works."
+  />
+  <LinkCard
+    title="Smart contracts"
+    href="/reference/smart-contracts/"
+    description="All five Clarity contracts with exact signatures and error codes."
+  />
+  <LinkCard
+    title="SDK"
+    href="/reference/sdk/"
+    description="The thesislock-sdk package for verifying anchors in JavaScript and TypeScript."
+  />
+  <LinkCard
+    title="CLI"
+    href="/reference/cli/"
+    description="The thesislock-cli tool for hashing, verifying, and scripting in CI."
+  />
+  <LinkCard
+    title="REST API"
+    href="/reference/rest-api/"
+    description="Public, unauthenticated endpoints for verification, search, badges, and feeds."
+  />
+</CardGrid>
