@@ -25,6 +25,7 @@ export default defineConfig({
         baseUrl: "https://github.com/Tim-cryptow/thesis-lock/edit/main/docs-site/",
       },
       plugins: [starlightLinksValidator()],
+      customCss: ["./src/styles/custom.css"],
       sidebar: [
         {
           label: "Introduction",
