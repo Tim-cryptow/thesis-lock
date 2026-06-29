@@ -44,6 +44,17 @@ export default defineConfig({
           label: "Reference",
           items: [{ autogenerate: { directory: "reference" } }],
         },
+        {
+          label: "Resources",
+          items: [
+            { autogenerate: { directory: "resources" } },
+            {
+              label: "Changelog",
+              link: "https://thesis-lock.vercel.app/changelog",
+              attrs: { target: "_blank", rel: "noopener" },
+            },
+          ],
+        },
       ],
     }),
   ],
