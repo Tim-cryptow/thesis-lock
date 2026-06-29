@@ -28,6 +28,10 @@ export default defineConfig({
           label: "Introduction",
           items: [{ autogenerate: { directory: "introduction" } }],
         },
+        {
+          label: "Quickstart",
+          items: [{ autogenerate: { directory: "quickstart" } }],
+        },
       ],
     }),
   ],
