@@ -32,6 +32,10 @@ export default defineConfig({
           label: "Quickstart",
           items: [{ autogenerate: { directory: "quickstart" } }],
         },
+        {
+          label: "Concepts",
+          items: [{ autogenerate: { directory: "concepts" } }],
+        },
       ],
     }),
   ],
