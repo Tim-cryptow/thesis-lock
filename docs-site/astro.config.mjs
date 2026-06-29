@@ -40,6 +40,10 @@ export default defineConfig({
           label: "Guides",
           items: [{ autogenerate: { directory: "guides" } }],
         },
+        {
+          label: "Reference",
+          items: [{ autogenerate: { directory: "reference" } }],
+        },
       ],
     }),
   ],
