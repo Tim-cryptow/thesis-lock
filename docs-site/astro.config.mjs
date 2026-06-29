@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import starlightLinksValidator from "starlight-links-validator";
 
 // https://astro.build/config
 export default defineConfig({
@@ -23,6 +24,7 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/Tim-cryptow/thesis-lock/edit/main/docs-site/",
       },
+      plugins: [starlightLinksValidator()],
       sidebar: [
         {
           label: "Introduction",

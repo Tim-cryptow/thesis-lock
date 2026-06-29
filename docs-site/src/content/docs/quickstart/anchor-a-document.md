@@ -29,8 +29,9 @@ Fund the wallet with a little STX to cover the transaction fee.
    The file itself is never uploaded.
 
 3. **Add a label (optional).** A label is up to 64 ASCII characters of public metadata,
-   for example `thesis-final-v2`. You can also pick a [template](/guides/web-app/) to
-   produce a structured label. Treat the label as public and avoid putting secrets in it.
+   for example `thesis-final-v2`. You can also pick a
+   [template](/guides/anchoring-documents/#labels-and-templates) to produce a structured
+   label. Treat the label as public and avoid putting secrets in it.
 
 4. **Sign the transaction.** Confirm the contract call in your wallet. This calls
    `anchor-document` on the `thesislock` contract with your hash and label.
